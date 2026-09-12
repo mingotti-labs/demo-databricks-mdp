@@ -1,0 +1,21 @@
+# Databricks local state
+.databricks/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Editor
+.DS_Store
+.idea/
+*.swp
