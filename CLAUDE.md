@@ -26,6 +26,51 @@ Catalogs: `mdp_dev`, `mdp_tst`, `mdp_prd`
 
 Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part references.
 
+## Repository structure
+
+Decided in the `phase2-dab-cicd` OpenSpec change (see its design.md for full rationale):
+
+```
+demo-databricks-mdp/
+  databricks.yml
+  resources/
+    jobs/
+    pipelines/
+    dashboards/
+    apps/
+  src/
+    layers/
+      bronze/
+        neon/
+        atlas/
+      silver/
+        <domain>/        # domains TBD, per Phase 4
+      gold/
+        analytics_gateway/
+        integration_gateway/
+        ai_gateway/
+    common/               # shared importable Python modules (wheel packages, utilities)
+  tests/
+    common/               # mirrors src/common/ only — NOT src/layers/
+```
+
+- `resources/<type>/`: grouped by resource kind (job/pipeline/dashboard/app), not one flat directory.
+- `src/layers/{bronze,silver,gold}/<source-or-domain-or-gateway>/`: mirrors the catalog/schema naming below, not the ingestion pattern or use case.
+- `src/common/`: the only part of `src/` that is plainly importable, wheel-packaged Python.
+- `tests/` mirrors `src/common/` 1:1 (standard `databricks bundle init` convention). It does not mirror `src/layers/` — pipeline transformation correctness is validated with inline data-quality expectations and `bundle run --refresh`, not pytest.
+
+### Resource type ownership: this repo vs. Terraform
+
+The Databricks Asset Bundle resource schema (`databricks bundle schema`, CLI v1.16.1) defines 35 resource types. Not all of them belong in this repo's `resources/`. Split by who owns them:
+
+**Terraform (`demo-databricks-iac`) owns** — Unity Catalog governance and source-DB infra, same family as what Phase 1 already provisions:
+`catalogs`, `schemas`, `external_locations`, `secret_scopes`, `secrets`, `volumes`, and (if Lakebase is adopted later) `database_catalogs`, `database_instances`, `postgres_projects`, `postgres_branches`, `postgres_endpoints`, `postgres_databases`, `postgres_roles`, `postgres_snapshot_schedules`, `postgres_catalogs`.
+
+**Not applicable** — Free Edition is serverless-only (see Guardrails below): `clusters`, `cluster_policies`, `instance_pools`.
+
+**This repo (`demo-databricks-mdp`) owns** — workload resources, added under `resources/<type>/` only when a phase actually needs that type (do not pre-scaffold empty folders):
+`jobs`, `job_runs`, `pipelines`, `dashboards`, `apps`, `alerts`, `experiments`, `models`, `registered_models`, `model_serving_endpoints`, `quality_monitors`, `genie_spaces`, `vector_search_endpoints`, `vector_search_indexes`, `sql_warehouses`, `postgres_synced_tables`, `synced_database_tables`.
+
 ## DAB targets
 
 Three targets in `databricks.yml`, all pointing to the same workspace,
