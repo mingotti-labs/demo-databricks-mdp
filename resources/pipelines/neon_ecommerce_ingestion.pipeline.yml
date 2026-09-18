@@ -1,0 +1,45 @@
+resources:
+  pipelines:
+    neon_ecommerce_ingestion:
+      name: neon-ecommerce-ingestion-${bundle.target}
+      ingestion_definition:
+        connection_name: neon_dev
+        objects:
+          - table:
+              source_catalog: app
+              source_schema: public
+              source_table: customers
+              table_configuration:
+                query_based_connector_config:
+                  cursor_columns: [updated_at]
+              destination_catalog: ${var.catalog}
+              destination_schema: bronze_neon
+          - table:
+              source_catalog: app
+              source_schema: public
+              source_table: products
+              table_configuration:
+                query_based_connector_config:
+                  cursor_columns: [updated_at]
+              destination_catalog: ${var.catalog}
+              destination_schema: bronze_neon
+          - table:
+              source_catalog: app
+              source_schema: public
+              source_table: orders
+              table_configuration:
+                query_based_connector_config:
+                  cursor_columns: [updated_at]
+              destination_catalog: ${var.catalog}
+              destination_schema: bronze_neon
+          - table:
+              source_catalog: app
+              source_schema: public
+              source_table: order_items
+              table_configuration:
+                query_based_connector_config:
+                  cursor_columns: [updated_at]
+              destination_catalog: ${var.catalog}
+              destination_schema: bronze_neon
+      target: bronze_neon
+      catalog: ${var.catalog}
