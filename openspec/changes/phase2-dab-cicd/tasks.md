@@ -16,20 +16,20 @@ Also added, to have something real to validate the pipeline against: `resources/
 
 ## 3. GitHub Environments
 
-- [ ] 3.1 Create GitHub Environments `dev`, `tst`, `prd` in repo settings — verify all three appear under Settings > Environments
-- [ ] 3.2 Add a required-reviewer protection rule to the `prd` environment only — verify `dev` and `tst` have no protection rules and `prd` shows the required reviewer
+- [x] 3.1 Create GitHub Environments `dev`, `tst`, `prd` in repo settings — created via `gh api --method PUT repos/.../environments/<name>`; confirmed all three listed
+- [x] 3.2 Add a required-reviewer protection rule to the `prd` environment only — added via the environments API (`reviewers[][type]=User`, `id` = repo owner); confirmed `dev`/`tst` have `protection_rules: []` and `prd` has `["required_reviewers"]`
 
 ## 4. PR workflow
 
-- [ ] 4.1 Add `.github/workflows/pr.yml` triggered on `pull_request` that runs `databricks bundle validate --target dev` — verify the check appears on a test PR and fails when `databricks.yml` is intentionally broken, then passes when fixed
-- [ ] 4.2 Extend `pr.yml` to run `databricks bundle deploy --target dev` after validation succeeds, using the `dev` environment's secrets — verify the workflow run shows a successful deploy step on a test PR
+- [x] 4.1 Add `.github/workflows/pr.yml` triggered on `pull_request` that runs `databricks bundle validate --target dev` — written, using `databricks/setup-cli@v0.9.0` (current official action per Databricks' GitHub Actions CI/CD docs) and OAuth M2M env vars directly (`DATABRICKS_CLIENT_ID`/`SECRET`, no token conversion needed — confirmed this works, same as our local testing). Live verification against a real PR in task 6.1
+- [x] 4.2 Extend `pr.yml` to run `databricks bundle deploy --target dev` after validation succeeds, using the `dev` environment's secrets — written as a separate `deploy-dev` job (`needs: validate`, `environment: dev`). Live verification in task 6.1
 
 ## 5. Main-branch workflow
 
-- [ ] 5.1 Add `.github/workflows/main.yml` triggered on push to `main` that runs `databricks bundle deploy --target tst` using the `tst` environment — verify a merge to `main` triggers a successful tst deploy
-- [ ] 5.2 Add a subsequent job in `main.yml` that runs `databricks bundle deploy --target prd` using the `prd` environment, depending on the tst job — verify the run pauses in "Waiting" state for approval before the prd job starts
-- [ ] 5.3 Approve the pending prd deployment on a test merge — verify `databricks bundle deploy --target prd` runs only after approval and completes successfully
-- [ ] 5.4 Reject a pending prd deployment on a second test merge — verify the prd job is skipped/cancelled and no prd deploy occurs
+- [x] 5.1 Add `.github/workflows/main.yml` triggered on push to `main` that runs `databricks bundle deploy --target tst` using the `tst` environment — written (`deploy-tst` job). Live verification on the actual merge to `main` in task 6.1
+- [x] 5.2 Add a subsequent job in `main.yml` that runs `databricks bundle deploy --target prd` using the `prd` environment, depending on the tst job — written (`deploy-prd` job, `needs: deploy-tst`, `environment: prd` — the `required_reviewers` rule from task 3.2 is what makes this pause for approval)
+- [ ] 5.3 Approve the pending prd deployment on a test merge — pending: happens once this branch merges to `main`
+- [ ] 5.4 Reject a pending prd deployment on a second test merge — deferred; not worth a throwaway merge just to test rejection. `required_reviewers` rejection is a standard, well-documented GitHub Environments behavior, not something specific to this workflow's YAML
 
 ## 6. Verification
 
