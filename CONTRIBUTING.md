@@ -18,3 +18,11 @@ already make that obvious.
 
 Every change lands via PR. `main` is squash-merged only — branch protection requires
 linear history, so no merge commits, no force push, no deletion of `main`.
+
+## Comments
+
+Default to no comments — clear naming should carry most of the load. Add one only
+where the *why* isn't visible from the code itself: a behavior enforced somewhere
+else entirely (e.g. a GitHub Environment's approval rule, not the workflow YAML that
+references it), a non-obvious constraint, or a deliberate trade-off a future reader
+could otherwise "fix" by accident. Never comment what the code already says plainly.

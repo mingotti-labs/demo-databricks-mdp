@@ -3,6 +3,14 @@ name: Main
 on:
   push:
     branches: [main]
+    # Only re-deploy when something that actually ends up in the deployed bundle
+    # changes. Without this, doc-only / openspec-only commits still trigger a
+    # (no-op) tst deploy and a prd approval prompt.
+    paths:
+      - "databricks.yml"
+      - "resources/**"
+      - "src/**"
+      - ".github/workflows/**"
 
 jobs:
   deploy-tst:
@@ -33,6 +41,10 @@ jobs:
   deploy-prd:
     needs: deploy-tst
     runs-on: ubuntu-latest
+    # `environment: prd` is what pauses this job for approval -- but the required-
+    # reviewer rule itself lives in repo Settings > Environments > prd, not here.
+    # Removing that rule in the UI would make this job deploy immediately, with no
+    # change needed to this file.
     environment: prd
     env:
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
