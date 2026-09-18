@@ -3,6 +3,13 @@ name: PR
 on:
   pull_request:
     branches: [main]
+    # Same rationale as main.yml: skip validate/deploy for PRs that don't touch
+    # anything the deployed bundle actually contains.
+    paths:
+      - "databricks.yml"
+      - "resources/**"
+      - "src/**"
+      - ".github/workflows/**"
 
 jobs:
   validate:
