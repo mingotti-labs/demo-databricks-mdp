@@ -1,0 +1,41 @@
+bundle:
+  name: demo-databricks-mdp
+
+include:
+  - resources/**/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog this target writes into.
+    default: mdp_dev
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://dbc-e3197e2d-933b.cloud.databricks.com
+    variables:
+      catalog: mdp_dev
+
+  tst:
+    mode: production
+    workspace:
+      host: https://dbc-e3197e2d-933b.cloud.databricks.com
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: mdp_tst
+    permissions:
+      - group_name: users
+        level: CAN_MANAGE
+
+  prd:
+    mode: production
+    workspace:
+      host: https://dbc-e3197e2d-933b.cloud.databricks.com
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: mdp_prd
+    permissions:
+      - group_name: users
+        level: CAN_MANAGE

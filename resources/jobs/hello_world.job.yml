@@ -1,0 +1,10 @@
+resources:
+  jobs:
+    hello_world:
+      name: hello-world-${bundle.target}
+      tasks:
+        - task_key: hello_world
+          notebook_task:
+            notebook_path: ./hello_world.py
+            base_parameters:
+              catalog: ${var.catalog}
