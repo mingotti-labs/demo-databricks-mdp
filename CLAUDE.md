@@ -50,14 +50,18 @@ demo-databricks-mdp/
         integration_gateway/
         ai_gateway/
     common/               # shared importable Python modules (wheel packages, utilities)
+    seed_data/            # one-off synthetic-data generators, not part of any medallion layer
   tests/
     common/               # mirrors src/common/ only — NOT src/layers/
+  verification/           # live-environment functional checks — see "Verification vs validation"
 ```
 
 - `resources/<type>/`: grouped by resource kind (job/pipeline/dashboard/app), not one flat directory.
 - `src/layers/{bronze,silver,gold}/<source-or-domain-or-gateway>/`: mirrors the catalog/schema naming below, not the ingestion pattern or use case.
 - `src/common/`: the only part of `src/` that is plainly importable, wheel-packaged Python.
+- `src/seed_data/`: synthetic-data generation notebooks (e.g. `seed_neon_ecommerce.py`) — not a medallion layer, not deployed data, just a way to populate a source system for demo/dev purposes.
 - `tests/` mirrors `src/common/` 1:1 (standard `databricks bundle init` convention). It does not mirror `src/layers/` — pipeline transformation correctness is validated with inline data-quality expectations and `bundle run --refresh`, not pytest.
+- `verification/`: Databricks notebooks that check a *deployed* feature actually works against real/synthetic data (connection liveness, row-count parity, referential integrity), chained into a job per pattern. See CONTRIBUTING.md's "Verification vs validation" section — deliberately distinct from `tests/`.
 
 ### Resource type ownership: this repo vs. Terraform
 
@@ -82,7 +86,24 @@ differentiated by catalog:
 
 ## Sources
 
-- **Neon Postgres** (serverless, free tier) — relational source
+- **Neon Postgres** (serverless, free tier) — relational source. `bronze_neon` is
+  populated by `neon_ecommerce_ingestion`, a query-based Lakeflow Connect pipeline
+  (not CDC — the gateway architecture needs classic compute, unavailable on Free
+  Edition) reading from the Neon `dev` branch via the `neon_dev` UC Connection
+  (`demo-databricks-iac`). `dev`-scoped only: no separate `tst`/`prd` Neon
+  branch/instance exists yet, so those targets get this pipeline's code on
+  promotion but nothing to actually ingest.
+  - Seed data (`src/seed_data/seed_neon_ecommerce.py`) is synthetic, generated with
+    `Faker`, not a real dataset.
+  - Hard deletes on the Neon source are **not** propagated to `bronze_neon` —
+    query-based ingestion without `deletion_condition` can't see them (a deleted
+    row just stops appearing in query results). Accepted, not a bug.
+  - New columns/removed columns on an already-ingested table are handled by
+    Lakeflow Connect automatically (new columns backfill as `NULL` for old rows;
+    removed columns are marked `inactive`, not dropped — re-adding a same-named
+    column afterward fails the pipeline until a full refresh or a manual drop of
+    the inactive column). A **new table** is not auto-ingested — this pipeline
+    lists tables explicitly; add a `table:` block and redeploy.
 - **MongoDB Atlas** (M0 free cluster) — document source
 
 ## Development style
