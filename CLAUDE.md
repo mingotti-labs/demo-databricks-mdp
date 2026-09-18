@@ -92,6 +92,14 @@ differentiated by catalog:
 - Formatter: `ruff` for all Python (notebooks and scripts).
 - Package manager: `uv` (see global CLAUDE.md).
 
+## Workflow
+
+@CONTRIBUTING.md
+
+Non-trivial changes go through OpenSpec first: propose (`openspec change new <name>`),
+agree the spec, implement, archive. See `openspec/` and each change's `design.md` for
+the decision record behind what's built.
+
 ## Guardrails — never do without explicit confirmation
 
 - No classic clusters — serverless only
