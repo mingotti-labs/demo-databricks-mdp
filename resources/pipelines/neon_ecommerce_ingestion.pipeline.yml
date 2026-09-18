@@ -9,6 +9,7 @@ resources:
               source_catalog: app
               source_schema: public
               source_table: customers
+              destination_table: customers_raw
               table_configuration:
                 query_based_connector_config:
                   cursor_columns: [updated_at]
@@ -18,6 +19,7 @@ resources:
               source_catalog: app
               source_schema: public
               source_table: products
+              destination_table: products_raw
               table_configuration:
                 query_based_connector_config:
                   cursor_columns: [updated_at]
@@ -27,6 +29,7 @@ resources:
               source_catalog: app
               source_schema: public
               source_table: orders
+              destination_table: orders_raw
               table_configuration:
                 query_based_connector_config:
                   cursor_columns: [updated_at]
@@ -36,6 +39,7 @@ resources:
               source_catalog: app
               source_schema: public
               source_table: order_items
+              destination_table: order_items_raw
               table_configuration:
                 query_based_connector_config:
                   cursor_columns: [updated_at]
