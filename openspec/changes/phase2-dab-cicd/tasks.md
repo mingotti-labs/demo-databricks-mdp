@@ -21,8 +21,8 @@ Also added, to have something real to validate the pipeline against: `resources/
 
 ## 4. PR workflow
 
-- [x] 4.1 Add `.github/workflows/pr.yml` triggered on `pull_request` that runs `databricks bundle validate --target dev` — written, using `databricks/setup-cli@v0.9.0` (current official action per Databricks' GitHub Actions CI/CD docs) and OAuth M2M env vars directly (`DATABRICKS_CLIENT_ID`/`SECRET`, no token conversion needed — confirmed this works, same as our local testing). Live verification against a real PR in task 6.1
-- [x] 4.2 Extend `pr.yml` to run `databricks bundle deploy --target dev` after validation succeeds, using the `dev` environment's secrets — written as a separate `deploy-dev` job (`needs: validate`, `environment: dev`). Live verification in task 6.1
+- [x] 4.1 Add `.github/workflows/pr.yml` triggered on `pull_request` that runs `databricks bundle validate --target dev` — verified on a real PR (mingotti-labs/demo-databricks-mdp#8): first run failed (`databricks/setup-cli@v0.9.0` doesn't exist — the docs I checked were stale; actual tags go up to v1.17.0), fixed to `@v1.17.0` and pushed, re-ran automatically and passed. Genuine fail-then-pass, not staged
+- [x] 4.2 Extend `pr.yml` to run `databricks bundle deploy --target dev` after validation succeeds, using the `dev` environment's secrets — verified on the same PR: `deploy-dev` job passed after `validate`
 
 ## 5. Main-branch workflow
 
