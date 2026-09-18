@@ -10,21 +10,9 @@ global ~/.claude/CLAUDE.md.
 - AWS-hosted workspace: https://dbc-e3197e2d-933b.cloud.databricks.com
 - Unity Catalog: one metastore, environments separated by catalog
 
-## Catalog & schema structure
+## Naming conventions
 
-Catalogs: `mdp_dev`, `mdp_tst`, `mdp_prd`
-
-| Layer | Schema pattern | Purpose |
-|---|---|---|
-| Bronze | `bronze_<source>` | Raw ingestion, append-only |
-| Bronze history | `bronze_<source>_history` | Full change history, CDC replay safety net |
-| Bronze publish | `bronze_<source>_publish` | Validated bronze, safe for downstream reads |
-| Silver | `silver_<domain>` | Conformed, domain-modelled (domains TBD) |
-| Gold | `gold_analytics_gateway` | BI / reporting consumers |
-| Gold | `gold_integration_gateway` | Operational / API consumers |
-| Gold | `gold_ai_gateway` | ML and GenAI consumers |
-
-Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part references.
+@NAMING.md
 
 ## Repository structure
 

@@ -28,8 +28,9 @@ conn.close()
 mismatches = []
 bronze_counts = {}
 for table in tables:
+    bronze_table = f"{table}_raw"
     bronze_counts[table] = spark.sql(
-        f"SELECT count(*) AS n FROM {catalog}.bronze_neon.{table}"
+        f"SELECT count(*) AS n FROM {catalog}.bronze_neon.{bronze_table}"
     ).collect()[0]["n"]
     if bronze_counts[table] != neon_counts[table]:
         mismatches.append(f"{table}: neon={neon_counts[table]} bronze={bronze_counts[table]}")
