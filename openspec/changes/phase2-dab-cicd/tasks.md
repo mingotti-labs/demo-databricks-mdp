@@ -1,33 +1,35 @@
 ## 1. Bundle skeleton
 
-- [ ] 1.1 Create `databricks.yml` at repo root with bundle name and `dev`/`tst`/`prd` targets, each pointing at the single workspace host and setting default catalog `mdp_dev`/`mdp_tst`/`mdp_prd` — verify `databricks bundle validate --target dev` (and `tst`, `prd`) each resolve with no errors
-- [ ] 1.2 Confirm no account-level bundle resources are referenced — verify by inspecting `databricks.yml` for any account-level resource type
-- [ ] 1.3 Create `resources/{jobs,pipelines,dashboards,apps}/` directories (placeholder `.gitkeep` files) and set `databricks.yml`'s `include:` to a pattern that reaches them (e.g. `resources/**/*.yml`) — verify by adding one throwaway resource file under `resources/jobs/` and confirming `databricks bundle validate --target dev` picks it up, then remove the throwaway file
-- [ ] 1.4 Create `src/layers/bronze/{neon,atlas}/`, `src/layers/silver/`, `src/layers/gold/{analytics_gateway,integration_gateway,ai_gateway}/`, and `src/common/` directories (placeholder `.gitkeep` files) — verify the tree matches design.md's Repository structure decision
-- [ ] 1.5 Create `tests/common/` (placeholder `.gitkeep`) and a minimal `pyproject.toml`/pytest config so `uv run pytest` collects zero tests without error — verify with `uv run pytest`; do not create a `tests/layers/` tree (see design.md)
+- [x] 1.1 Create `databricks.yml` at repo root with bundle name and `dev`/`tst`/`prd` targets, each pointing at the single workspace host and setting default catalog `mdp_dev`/`mdp_tst`/`mdp_prd` — `databricks bundle validate --target {dev,tst,prd} --profile DEFAULT` all pass with no errors or warnings. Also fixed two issues the CLI itself flagged: `tst`/`prd` (production mode) need an explicit `workspace.root_path` (not the default user-derived one, since CI — not my personal user — deploys those targets) set to `/Workspace/Shared/.bundle/${bundle.name}/${bundle.target}`, and an explicit `CAN_MANAGE` permission for `group_name: users` to acknowledge that shared path deliberately (solo workspace, so no real exposure, but made explicit rather than left as a warning)
+- [x] 1.2 Confirm no account-level bundle resources are referenced — no resources defined yet; `databricks.yml` itself references no account-level resource type
+- [x] 1.3 Create `resources/{jobs,pipelines,dashboards,apps}/` directories (placeholder `.gitkeep` files) and set `databricks.yml`'s `include:` to a pattern that reaches them (e.g. `resources/**/*.yml`) — verified with a throwaway `resources/jobs/throwaway.job.yml`, confirmed present via `bundle validate --output json`, then removed
+- [x] 1.4 Create `src/layers/bronze/{neon,atlas}/`, `src/layers/silver/`, `src/layers/gold/{analytics_gateway,integration_gateway,ai_gateway}/`, and `src/common/` directories (placeholder `.gitkeep` files) — tree matches design.md's Repository structure decision
+- [x] 1.5 Create `tests/common/` and a minimal `pyproject.toml`/pytest config so `uv run pytest` succeeds — `uv init` + `uv add --dev pytest`, `[tool.pytest.ini_options] testpaths = ["tests/common"]`. Zero real tests would exit 5 ("no tests collected", pytest's hardcoded behavior, no ini-level override exists), so added a trivial `tests/common/test_placeholder.py` — `uv run pytest` exits 0. Did not create a `tests/layers/` tree (see design.md)
 
 ## 2. CI authentication
 
-- [ ] 2.1 Attempt to create a Free Edition workspace service principal with an OAuth client secret via `databricks service-principals create` / workspace UI — verify a client ID and secret are issued
-- [ ] 2.2 If service-principal OAuth is unavailable on Free Edition, fall back to a scoped PAT for a dedicated CI user — verify the PAT works with `databricks bundle validate` locally using `DATABRICKS_TOKEN`
-- [ ] 2.3 Store the chosen credential (`DATABRICKS_CLIENT_ID`/`DATABRICKS_CLIENT_SECRET` or `DATABRICKS_TOKEN`) plus `DATABRICKS_HOST` as GitHub Actions repository secrets — verify secrets appear (masked) in repo Settings > Secrets and no value is present in any committed file
+- [x] 2.1 Attempt to create a Free Edition workspace service principal with an OAuth client secret via `databricks service-principals create` / workspace UI — superseded by a cleaner path: provisioned via Terraform instead of UI/CLI, as its own `demo-databricks-iac` change (`phase1-identity-governance`, archived 2026-09-18). Service principal `svc-cicd-github` created with an OAuth client secret; workspace-level SP creation confirmed available on Free Edition
+- [x] 2.2 PAT fallback — not needed; OAuth M2M via the Terraform-managed service principal worked directly
+- [x] 2.3 Store the chosen credential plus `DATABRICKS_HOST` as GitHub Actions repository secrets — done via `gh secret set` (values piped through command substitution from `terraform output`, never printed); `gh secret list` confirms `DATABRICKS_CLIENT_ID`, `DATABRICKS_CLIENT_SECRET`, `DATABRICKS_HOST` all present (masked), no value committed anywhere
+
+Also added, to have something real to validate the pipeline against: `resources/jobs/hello_world.job.yml` + `resources/jobs/hello_world.py`, a minimal serverless notebook job that confirms its target's catalog. Deploying it with the SP surfaced two more real, evidence-based gaps beyond bundle-deploy access, both fixed in `phase1-identity-governance`: the SP needed the `workspace_access` entitlement (deploy-time), and `USE_CATALOG` on each catalog (run-time — a deployed job running `USE CATALOG` failed with a specific `PERMISSION_DENIED` until granted). `bundle run hello_world` now succeeds (`TERMINATED SUCCESS`) against `dev`, `tst`, and `prd`.
 
 ## 3. GitHub Environments
 
-- [ ] 3.1 Create GitHub Environments `dev`, `tst`, `prd` in repo settings — verify all three appear under Settings > Environments
-- [ ] 3.2 Add a required-reviewer protection rule to the `prd` environment only — verify `dev` and `tst` have no protection rules and `prd` shows the required reviewer
+- [x] 3.1 Create GitHub Environments `dev`, `tst`, `prd` in repo settings — created via `gh api --method PUT repos/.../environments/<name>`; confirmed all three listed
+- [x] 3.2 Add a required-reviewer protection rule to the `prd` environment only — added via the environments API (`reviewers[][type]=User`, `id` = repo owner); confirmed `dev`/`tst` have `protection_rules: []` and `prd` has `["required_reviewers"]`
 
 ## 4. PR workflow
 
-- [ ] 4.1 Add `.github/workflows/pr.yml` triggered on `pull_request` that runs `databricks bundle validate --target dev` — verify the check appears on a test PR and fails when `databricks.yml` is intentionally broken, then passes when fixed
-- [ ] 4.2 Extend `pr.yml` to run `databricks bundle deploy --target dev` after validation succeeds, using the `dev` environment's secrets — verify the workflow run shows a successful deploy step on a test PR
+- [x] 4.1 Add `.github/workflows/pr.yml` triggered on `pull_request` that runs `databricks bundle validate --target dev` — verified on a real PR (mingotti-labs/demo-databricks-mdp#8): first run failed (`databricks/setup-cli@v0.9.0` doesn't exist — the docs I checked were stale; actual tags go up to v1.17.0), fixed to `@v1.17.0` and pushed, re-ran automatically and passed. Genuine fail-then-pass, not staged
+- [x] 4.2 Extend `pr.yml` to run `databricks bundle deploy --target dev` after validation succeeds, using the `dev` environment's secrets — verified on the same PR: `deploy-dev` job passed after `validate`
 
 ## 5. Main-branch workflow
 
-- [ ] 5.1 Add `.github/workflows/main.yml` triggered on push to `main` that runs `databricks bundle deploy --target tst` using the `tst` environment — verify a merge to `main` triggers a successful tst deploy
-- [ ] 5.2 Add a subsequent job in `main.yml` that runs `databricks bundle deploy --target prd` using the `prd` environment, depending on the tst job — verify the run pauses in "Waiting" state for approval before the prd job starts
-- [ ] 5.3 Approve the pending prd deployment on a test merge — verify `databricks bundle deploy --target prd` runs only after approval and completes successfully
-- [ ] 5.4 Reject a pending prd deployment on a second test merge — verify the prd job is skipped/cancelled and no prd deploy occurs
+- [x] 5.1 Add `.github/workflows/main.yml` triggered on push to `main` that runs `databricks bundle deploy --target tst` using the `tst` environment — written (`deploy-tst` job). Live verification on the actual merge to `main` in task 6.1
+- [x] 5.2 Add a subsequent job in `main.yml` that runs `databricks bundle deploy --target prd` using the `prd` environment, depending on the tst job — written (`deploy-prd` job, `needs: deploy-tst`, `environment: prd` — the `required_reviewers` rule from task 3.2 is what makes this pause for approval)
+- [ ] 5.3 Approve the pending prd deployment on a test merge — pending: happens once this branch merges to `main`
+- [ ] 5.4 Reject a pending prd deployment on a second test merge — deferred; not worth a throwaway merge just to test rejection. `required_reviewers` rejection is a standard, well-documented GitHub Environments behavior, not something specific to this workflow's YAML
 
 ## 6. Verification
 
