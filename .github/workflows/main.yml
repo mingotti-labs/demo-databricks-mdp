@@ -17,6 +17,18 @@ jobs:
       - uses: databricks/setup-cli@v1.17.0
       - name: Deploy bundle (tst)
         run: databricks bundle deploy --target tst
+      - name: Summarize tst deployment
+        if: always()
+        run: |
+          {
+            echo "## tst deployment summary"
+            echo ""
+            echo "Review this before approving the \`deploy-prd\` job below."
+            echo ""
+            databricks bundle summary --target tst || echo "(bundle summary unavailable -- check the deploy step's log above)"
+            echo ""
+            echo "Full log: [this run, \"deploy-tst\" job](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy-prd:
     needs: deploy-tst
