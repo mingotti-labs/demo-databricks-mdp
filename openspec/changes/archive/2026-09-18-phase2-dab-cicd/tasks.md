@@ -26,12 +26,12 @@ Also added, to have something real to validate the pipeline against: `resources/
 
 ## 5. Main-branch workflow
 
-- [x] 5.1 Add `.github/workflows/main.yml` triggered on push to `main` that runs `databricks bundle deploy --target tst` using the `tst` environment — written (`deploy-tst` job). Live verification on the actual merge to `main` in task 6.1
-- [x] 5.2 Add a subsequent job in `main.yml` that runs `databricks bundle deploy --target prd` using the `prd` environment, depending on the tst job — written (`deploy-prd` job, `needs: deploy-tst`, `environment: prd` — the `required_reviewers` rule from task 3.2 is what makes this pause for approval)
-- [ ] 5.3 Approve the pending prd deployment on a test merge — pending: happens once this branch merges to `main`
-- [ ] 5.4 Reject a pending prd deployment on a second test merge — deferred; not worth a throwaway merge just to test rejection. `required_reviewers` rejection is a standard, well-documented GitHub Environments behavior, not something specific to this workflow's YAML
+- [x] 5.1 Add `.github/workflows/main.yml` triggered on push to `main` that runs `databricks bundle deploy --target tst` using the `tst` environment — verified on two real merges to `main` (#8, #9): `deploy-tst` ran automatically and succeeded both times
+- [x] 5.2 Add a subsequent job in `main.yml` that runs `databricks bundle deploy --target prd` using the `prd` environment, depending on the tst job — verified: `deploy-prd` showed `status: waiting` (confirmed via the Actions API, `steps: []` — nothing executes pre-approval) both times, only starting after approval
+- [x] 5.3 Approve the pending prd deployment on a test merge — done, twice (once per real merge, #8 and #9); both `deploy-prd` runs completed successfully afterward. Also added, per review feedback on the first approval: a `Summarize tst deployment` step (`databricks bundle summary --target tst` + a log link, written to `$GITHUB_STEP_SUMMARY`) so the required reviewer has something concrete to check before approving prd, not a bare prompt — shipped and verified working on the second merge (#9)
+- [ ] 5.4 Reject a pending prd deployment on a second test merge — deferred; not worth a throwaway merge just to test rejection. `required_reviewers` rejection is standard, well-documented GitHub Environments behavior, not something specific to this workflow's YAML
 
 ## 6. Verification
 
-- [ ] 6.1 Confirm end-to-end: open a PR, see validate + dev-deploy run automatically; merge it, see tst deploy automatically and prd deploy wait for approval — verify by walking one real PR through the full cycle
-- [ ] 6.2 Confirm no plaintext credential appears in `databricks.yml`, any workflow YAML, or git history — verify via `git log -p -- databricks.yml .github/workflows` review
+- [x] 6.1 Confirm end-to-end: open a PR, see validate + dev-deploy run automatically; merge it, see tst deploy automatically and prd deploy wait for approval — walked through twice for real (PR #8, then PR #9 for the summary fix): both times `validate` + `deploy-dev` ran on the PR, merging triggered `deploy-tst` automatically, and `deploy-prd` waited for and then completed after manual approval
+- [x] 6.2 Confirm no plaintext credential appears in `databricks.yml`, any workflow YAML, or git history — `git log --all -p -- databricks.yml .github/workflows` reviewed, no plaintext client secret, token, or `dapi...` PAT pattern found; only `${{ secrets.* }}` references
