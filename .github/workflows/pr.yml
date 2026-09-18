@@ -14,7 +14,7 @@ jobs:
       DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v4
-      - uses: databricks/setup-cli@v0.9.0
+      - uses: databricks/setup-cli@v1.17.0
       - name: Validate bundle (dev)
         run: databricks bundle validate --target dev
 
@@ -28,6 +28,6 @@ jobs:
       DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v4
-      - uses: databricks/setup-cli@v0.9.0
+      - uses: databricks/setup-cli@v1.17.0
       - name: Deploy bundle (dev)
         run: databricks bundle deploy --target dev
