@@ -109,6 +109,42 @@ Non-trivial changes go through OpenSpec first: propose (`openspec change new <na
 agree the spec, implement, archive. See `openspec/` and each change's `design.md` for
 the decision record behind what's built.
 
+## Operational notes
+
+- **`tst`/`prd` should be deployed via CI/CD (GitHub Actions on merge to
+  `main`), not a local human `bundle deploy -t tst|prd`** — once a resource in
+  a target has ever been deployed by the CI/CD service principal, a later
+  local deploy by a human identity fails on that resource with `403
+  PERMISSION_DENIED: Only metastore admins can change pipeline owner`
+  (confirmed via a real `tst` deploy attempt against the pre-existing
+  `neon_ecommerce_ingestion` pipeline). A target with nothing deployed yet
+  (e.g. `prd`, before its first deploy) won't hit this, since there's no
+  existing owner to conflict with — but that's an accident of ordering, not a
+  reason to keep deploying that target locally afterward.
+- **Free Edition's serverless compute pool is small and shared across
+  pipelines/warehouses/jobs** — a pipeline run can fail with `RESOURCE_EXHAUSTED:
+  You've hit the limit for serverless compute for free usage` even when
+  nothing looks busy (`databricks clusters list` empty, all pipelines `IDLE`).
+  Check `databricks warehouses list` for a `RUNNING` warehouse sitting idle and
+  `databricks warehouses stop <id>` it before retrying — that resolved it in
+  practice, confirmed via a real retry.
+- **The CI/CD SP's `[dev svc_cicd_github] ...`-prefixed pipeline/job copies
+  are the canonical, durable dev data going forward — the
+  `[dev handsonessential] ...` (or whichever human deploys locally) copies are
+  disposable personal-iteration artifacts.** Confirmed the hard way: an
+  earlier cleanup deleted the human-identity dev copy of
+  `neon_ecommerce_ingestion`, which (per Databricks' default pipeline-delete
+  behavior) dropped `bronze_neon.*_raw` along with it — the Neon Postgres
+  source itself was untouched, but the ingested-into-Databricks copy had to be
+  rebuilt from scratch. Never treat a human-identity dev pipeline/job's data
+  as something worth preserving; if it needs deleting, delete it freely. To
+  run something as the SP without local M2M credentials, just trigger the
+  SP-owned resource's ID directly (`databricks pipelines start-update
+  <pipeline_id>` / `databricks jobs run-now <job_id>`) — execution identity is
+  a property of the resource, not the caller. See
+  `demo-databricks-iac`'s CLAUDE.md ("CI/CD service principal pipeline
+  execution") for the grants this needed to actually work.
+
 ## Guardrails — never do without explicit confirmation
 
 - No classic clusters — serverless only
