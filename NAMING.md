@@ -59,7 +59,22 @@ ever needed, add a sibling folder via Auto Loader's own
 
 ## Bundle resources
 
-- Jobs and pipelines: `<what>_<detail>` (e.g. `seed_neon_ecommerce`,
-  `neon_ecommerce_ingestion`, `verify_neon_ecommerce_pattern`), deployed name
-  suffixed `-${bundle.target}` (e.g. `neon-ecommerce-ingestion-dev`) so the same
-  resource key is distinguishable across `dev`/`tst`/`prd`.
+- **Resource key** (the YAML key under `resources.jobs`/`resources.pipelines`):
+  `<what>_<detail>`, snake_case (e.g. `seed_neon_ecommerce`,
+  `neon_ecommerce_ingestion`). This is DAB's actual resource identity —
+  **never rename it on an existing resource** once it's been deployed and has
+  real data: DAB treats a changed key as "delete the old, create the new,"
+  and deleting a Lakeflow Declarative Pipeline drops its managed tables by
+  default (confirmed the hard way — see `demo-databricks-iac`'s CLAUDE.md,
+  "CI/CD service principal pipeline execution"). Add a new resource under a
+  new key instead of renaming an existing one.
+- **Deployed `name:`** (the display name shown in the UI/API — safe to change
+  freely, an in-place rename, not a recreate): `<verb>--<source>--<detail>--${bundle.target}`
+  for jobs, `bronze--<source>--<pattern>--${bundle.target}` for pipelines
+  (pipelines are bronze-layer data assets; jobs are utility/verification
+  actions on a source, hence the different first segment). Double-dash (`--`)
+  between every segment, including before `${bundle.target}` — e.g.
+  `seed--neon--ecommerce--dev`, `verify--clickstream--autoloader--tst`,
+  `bronze--neon--lakeflow--prd`. Distinguishes the same resource key across
+  `dev`/`tst`/`prd` and reads cleanly as segments in the UI, unlike a flat
+  single-dash string.

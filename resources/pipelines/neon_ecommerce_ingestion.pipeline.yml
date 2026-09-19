@@ -1,7 +1,7 @@
 resources:
   pipelines:
     neon_ecommerce_ingestion:
-      name: neon-ecommerce-ingestion-${bundle.target}
+      name: bronze--neon--lakeflow--${bundle.target}
       ingestion_definition:
         connection_name: neon_dev
         objects:

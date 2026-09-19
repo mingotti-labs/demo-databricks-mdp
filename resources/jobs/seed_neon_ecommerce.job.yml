@@ -1,7 +1,7 @@
 resources:
   jobs:
     seed_neon_ecommerce:
-      name: seed-neon-ecommerce-${bundle.target}
+      name: seed--neon--ecommerce--${bundle.target}
       tasks:
         - task_key: seed
           notebook_task:

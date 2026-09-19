@@ -1,7 +1,7 @@
 resources:
   pipelines:
     clickstream_autoloader:
-      name: clickstream-autoloader-${bundle.target}
+      name: bronze--clickstream--autoloader--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true
