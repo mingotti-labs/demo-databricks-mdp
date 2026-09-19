@@ -1,7 +1,7 @@
 resources:
   pipelines:
-    clickstream_autoloader:
-      name: bronze--clickstream--autoloader--python--add-new-columns--${bundle.target}
+    clickstream_autoloader_sql_rescue:
+      name: bronze--clickstream--autoloader--sql--rescue--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true
@@ -10,4 +10,4 @@ resources:
         clickstream_catalog: ${var.catalog}
       libraries:
         - glob:
-            include: ../../src/layers/bronze/clickstream/python_add_new_columns/**
+            include: ../../src/layers/bronze/clickstream/sql_rescue/**

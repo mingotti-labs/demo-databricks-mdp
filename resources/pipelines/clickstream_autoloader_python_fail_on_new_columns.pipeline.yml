@@ -1,0 +1,13 @@
+resources:
+  pipelines:
+    clickstream_autoloader_python_fail_on_new_columns:
+      name: bronze--clickstream--autoloader--python--fail-on-new-columns--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_clickstream
+      serverless: true
+      continuous: false
+      configuration:
+        clickstream_catalog: ${var.catalog}
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/clickstream/python_fail_on_new_columns/**
