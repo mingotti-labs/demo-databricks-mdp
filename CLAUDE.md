@@ -32,6 +32,14 @@ demo-databricks-mdp/
         neon/
         atlas/
         clickstream/
+          python_add_new_columns/   # canonical, only variant ever run
+          python_rescue/
+          python_fail_on_new_columns/
+          python_none/
+          sql_add_new_columns/
+          sql_rescue/
+          sql_fail_on_new_columns/
+          sql_none/
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -46,7 +54,7 @@ demo-databricks-mdp/
 ```
 
 - `resources/<type>/`: grouped by resource kind (job/pipeline/dashboard/app), not one flat directory.
-- `src/layers/{bronze,silver,gold}/<source-or-domain-or-gateway>/`: mirrors the catalog/schema naming below, not the ingestion pattern or use case.
+- `src/layers/{bronze,silver,gold}/<source-or-domain-or-gateway>/`: mirrors the catalog/schema naming below, not the ingestion pattern or use case. Exception: `bronze/clickstream/`'s subfolders are one per schema-evolution-mode variant (`python_add_new_columns/`, `sql_rescue/`, etc.) — deliberate, isolating each pipeline's `libraries` glob so pipelines never pick up a sibling variant's source file (see `phase3b-clickstream-schema-evolution-variants`'s design.md). Only `python_add_new_columns` is ever actually run; the other 7 exist as documented, deployable reference material.
 - `src/common/`: the only part of `src/` that is plainly importable, wheel-packaged Python.
 - `src/seed_data/`: synthetic-data generation notebooks — not a medallion layer, not deployed data, just a way to populate a source system for demo/dev purposes. Two shapes so far: truncate-and-reseed for a database source (`seed_neon_ecommerce.py`) vs. append-a-new-batch for a file-drop source (`generate_clickstream_events.py`) — pick the shape that matches how the real source would behave, not one convention for both.
 - `tests/` mirrors `src/common/` 1:1 (standard `databricks bundle init` convention). It does not mirror `src/layers/` — pipeline transformation correctness is validated with inline data-quality expectations and `bundle run --refresh`, not pytest.
@@ -118,6 +126,15 @@ differentiated by catalog:
     `bundle run`/API call that observed the mid-flight cancellation does exit
     non-zero even though the pipeline self-recovers; don't mistake that for a
     real failure.
+  - Interview-prep reference: all four `schemaEvolutionMode` values
+    (`addNewColumns`/`rescue`/`failOnNewColumns`/`none`) exist as separate,
+    independently deployable pipelines, each in both Python and SQL (8
+    total), each with its own target table and an in-code write-up of that
+    mode's behavior and error/recovery workflow. Only `addNewColumns`
+    (Python, the canonical resource above) is ever actually run — the other
+    7 are documented from Databricks' own docs, not independently
+    re-verified here. See `src/layers/bronze/clickstream/` and
+    `phase3b-clickstream-schema-evolution-variants`'s design.md.
 
 ## Development style
 
