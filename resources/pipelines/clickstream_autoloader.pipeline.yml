@@ -1,0 +1,13 @@
+resources:
+  pipelines:
+    clickstream_autoloader:
+      name: clickstream-autoloader-${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_clickstream
+      serverless: true
+      continuous: false
+      configuration:
+        clickstream_catalog: ${var.catalog}
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/clickstream/**
