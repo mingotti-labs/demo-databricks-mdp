@@ -1,0 +1,26 @@
+resources:
+  jobs:
+    verify_clickstream_pattern:
+      name: verify-clickstream-pattern-${bundle.target}
+      tasks:
+        - task_key: verify_files
+          notebook_task:
+            notebook_path: ../../verification/verify_clickstream_files.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_ingestion
+          depends_on:
+            - task_key: verify_files
+          notebook_task:
+            notebook_path: ../../verification/verify_clickstream_ingestion.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_schema_evolution
+          depends_on:
+            - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_clickstream_schema_evolution.py
+            base_parameters:
+              catalog: ${var.catalog}

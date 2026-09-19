@@ -42,6 +42,21 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
 - Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
   defined) — decide when the first one is actually built, not speculatively here.
 
+## Volume paths
+
+Files land under `/Volumes/<catalog>/bronze_<source>/<volume>/<data-source>/landing/`
+— e.g. `/Volumes/mdp_dev/bronze_clickstream/s3_clickstream_raw/web_events/landing/`.
+Volume creation and naming is `demo-databricks-iac`'s responsibility (see its
+NAMING.md's "UC Volumes" section); this repo's bundle/pipeline code only ever
+references the resulting path. `<data-source>` is one specific data source within
+the source system (e.g. `web_events` within the `clickstream` source system) — a
+source system can have more than one, each as its own subfolder under the same
+volume. `landing/` is reserved for the raw file drop zone; Auto Loader doesn't
+require moving processed files out of it for correctness (exactly-once tracking
+is checkpoint-based, not file-presence-based) — if a processed/archive step is
+ever needed, add a sibling folder via Auto Loader's own
+`cloudFiles.cleanSource.moveDestination` rather than restructuring this path.
+
 ## Bundle resources
 
 - Jobs and pipelines: `<what>_<detail>` (e.g. `seed_neon_ecommerce`,
