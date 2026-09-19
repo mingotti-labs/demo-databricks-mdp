@@ -7,8 +7,7 @@ Catalogs: `mdp_dev`, `mdp_tst`, `mdp_prd`
 | Layer | Schema pattern | Purpose |
 |---|---|---|
 | Bronze | `bronze_<source>` | Raw ingestion, append-only |
-| Bronze history | `bronze_<source>_history` | Full change history, CDC replay safety net |
-| Bronze publish | `bronze_<source>_publish` | Validated bronze, safe for downstream reads |
+| Bronze publish | `bronze_<source>_publish` | Validated bronze, safe for downstream reads — includes `<table>_scd1`/`<table>_scd2` tables |
 | Silver | `silver_<domain>` | Conformed, domain-modelled (domains TBD) |
 | Gold | `gold_analytics_gateway` | BI / reporting consumers |
 | Gold | `gold_integration_gateway` | Operational / API consumers |
@@ -30,6 +29,16 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
     table — it creates a new one under the new name. Drop the orphaned old table
     manually (`DROP TABLE <catalog>.<schema>.<old_name>`) once the new one is
     confirmed populated.
+  - Same convention applies to Auto Loader Streaming Tables — the table name
+    itself (the `@dp.table()` / `CREATE OR REFRESH STREAMING TABLE` name) is the
+    destination name, so name it `<source_table>_raw` directly (e.g.
+    `web_events_raw`); there's no separate `destination_table` setting to set it
+    through the way Lakeflow Connect has.
+- **`<table>_scd1`** / **`<table>_scd2`** — modeled tables in a
+  `bronze_<source>_publish` schema, built from that source's `_raw` table via
+  Lakeflow's `AUTO CDC`/`create_auto_cdc_flow` (`stored_as_scd_type` 1 or 2).
+  Replaces the retired `bronze_<source>_history` pattern — see
+  `demo-databricks-iac`'s `phase3b-bronze-schema-simplification` design.md.
 - Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
   defined) — decide when the first one is actually built, not speculatively here.
 
