@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    neon_scd_modeling_python:
+      name: bronze--neon--scd--python--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_neon_publish
+      serverless: true
+      continuous: false
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/neon_publish/python/**

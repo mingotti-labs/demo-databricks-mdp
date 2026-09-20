@@ -1,0 +1,16 @@
+resources:
+  jobs:
+    neon_scd2_merge_sql:
+      name: bronze--neon--scd2--sql--${bundle.target}
+      tasks:
+        - task_key: customers_scd2
+          notebook_task:
+            notebook_path: ../../src/layers/bronze/neon_publish/scd2_merge/customers_scd2_merge.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: products_scd2
+          notebook_task:
+            notebook_path: ../../src/layers/bronze/neon_publish/scd2_merge/products_scd2_merge.py
+            base_parameters:
+              catalog: ${var.catalog}

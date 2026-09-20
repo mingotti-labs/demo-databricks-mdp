@@ -35,10 +35,17 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
     `web_events_raw`); there's no separate `destination_table` setting to set it
     through the way Lakeflow Connect has.
 - **`<table>_scd1`** / **`<table>_scd2`** — modeled tables in a
-  `bronze_<source>_publish` schema, built from that source's `_raw` table via
-  Lakeflow's `AUTO CDC`/`create_auto_cdc_flow` (`stored_as_scd_type` 1 or 2).
+  `bronze_<source>_publish` schema, built from that source's `_raw` table.
   Replaces the retired `bronze_<source>_history` pattern — see
   `demo-databricks-iac`'s `phase3b-bronze-schema-simplification` design.md.
+  Mechanism depends on the source's shape and the language — not
+  necessarily `AUTO CDC`/`create_auto_cdc_flow`: for an upsert-maintained
+  (not append-only) source like `bronze_neon.*_raw`, Python uses
+  `create_auto_cdc_from_snapshot_flow` and SQL SCD1 is a plain passthrough
+  materialized view; SQL SCD2 against such a source needs a hand-rolled
+  `MERGE`-based job (`<name>_sql` suffix), since `AUTO CDC INTO` has no
+  snapshot-comparison equivalent in SQL. See
+  `phase3b-neon-scd-modeling`'s design.md for the full reasoning.
 - Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
   defined) — decide when the first one is actually built, not speculatively here.
 
