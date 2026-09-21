@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    clickstream_scd_modeling_python:
+      name: bronze--clickstream--scd--python--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_clickstream_publish
+      serverless: true
+      continuous: false
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/clickstream_publish/python/**

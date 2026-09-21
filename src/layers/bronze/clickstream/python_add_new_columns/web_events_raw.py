@@ -20,6 +20,24 @@
 #
 # schemaLocation is intentionally NOT set: the pipeline manages it
 # automatically (setting it manually is an anti-pattern for SDP pipelines).
+#
+# Production-hardening note (practitioner-sourced, not official Databricks
+# docs -- Databricks Community, "Best practice for handling schema evolution
+# with Auto Loader", https://community.databricks.com/t5/data-engineering/
+# best-practice-for-handling-schema-evolution-with-auto-loader-in/td-p/168382):
+# the recommended bronze-layer pattern pairs addNewColumns with
+# cloudFiles.rescuedDataColumn as a belt-and-suspenders safety net -- if a
+# change addNewColumns can't cleanly absorb (e.g. a type conflict, not just a
+# new field), the row isn't dropped, it lands in the rescued-data JSON blob
+# instead of being lost. Not enabled on this pipeline (kept minimal to
+# isolate exactly what was being tested), but worth adding if this pattern
+# were hardened for real production use. The same source also reframes the
+# restart-on-schema-change behavior confirmed above as a deliberate feature,
+# not an incidental side effect: it exists specifically to refresh the
+# pipeline's schema checkpoint, which is why pairing it with automatic job
+# retry (Lakeflow Jobs) is the recommended operational pattern rather than
+# something to route around. Schema strictness is pushed to silver instead
+# of bronze -- bronze stays permissive/capture-everything, silver enforces.
 from pyspark import pipelines as dp
 
 catalog = spark.conf.get("clickstream_catalog")

@@ -30,6 +30,10 @@ demo-databricks-mdp/
     layers/
       bronze/
         neon/
+        neon_publish/
+          python/          # snapshot-based Auto CDC (SCD1 all 4, SCD2 customers/products)
+          sql/              # SCD1 only (plain passthrough MVs) -- SCD2 is scd2_merge/, a job not a pipeline
+          scd2_merge/       # hand-rolled two-phase MERGE, SQL SCD2's real home
         atlas/
         clickstream/
           python_add_new_columns/   # canonical, only variant ever run
@@ -40,6 +44,9 @@ demo-databricks-mdp/
           sql_rescue/
           sql_fail_on_new_columns/
           sql_none/
+        clickstream_publish/
+          python/           # SCD1 (mechanical passthrough)
+          sql/
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -156,7 +163,25 @@ differentiated by catalog:
     (Python, the canonical resource above) is ever actually run — the other
     7 are documented from Databricks' own docs, not independently
     re-verified here. See `src/layers/bronze/clickstream/` and
-    `phase3b-clickstream-schema-evolution-variants`'s design.md.
+    `phase3b-clickstream-schema-evolution-variants`'s design.md. Production-
+    hardening pattern (practitioner-sourced, not official docs — see the
+    canonical `python_add_new_columns/web_events_raw.py`'s header for the
+    citation): pair `addNewColumns` with `rescuedDataColumn` at bronze as a
+    safety net, push schema strictness to silver instead, and treat the
+    restart-on-schema-change behavior as a deliberate checkpoint-refresh
+    mechanism meant to pair with automatic job retry, not something to
+    avoid.
+  - `bronze_clickstream_publish.web_events_scd1`/`web_events_scd1_sql`:
+    SCD1 modeling downstream of the canonical `web_events_raw`, keyed by
+    `event_id`, sequenced by `timestamp`. Exists for downstream-usage
+    consistency with every other source's `_publish` schema, not because
+    events change — each `event_id` only ever appears once, so this is a
+    mechanical passthrough. Unlike Neon's SCD pipelines, plain **streaming**
+    Auto CDC works directly here in both languages, no snapshot-based
+    workaround needed — `web_events_raw` is genuinely append-only (Auto
+    Loader only ever inserts). Confirmed by actually running both
+    pipelines, not assumed from the Neon precedent. See
+    `phase3b-clickstream-scd1`'s design.md.
 
 ## Development style
 
