@@ -47,13 +47,17 @@ demo-databricks-mdp/
         clickstream_publish/
           python/           # SCD1 (mechanical passthrough)
           sql/
+        ungm/               # unspsc_public_raw.py (Materialized View, custom API pull)
+        ungm_publish/       # snapshot + SCD1/SCD2, Python only
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
         analytics_gateway/
         integration_gateway/
         ai_gateway/
-    common/               # shared importable Python modules (wheel packages, utilities)
+    common/               # shared importable Python modules -- NOT wheel-packaged (no
+                          # build-system config yet); see the UNGM "Sources" entry below
+                          # for the confirmed sys.path-based import mechanism pipelines use
     seed_data/            # one-off synthetic-data generators, not part of any medallion layer
   tests/
     common/               # mirrors src/common/ only — NOT src/layers/
@@ -182,6 +186,41 @@ differentiated by catalog:
     Loader only ever inserts). Confirmed by actually running both
     pipelines, not assumed from the Neon precedent. See
     `phase3b-clickstream-scd1`'s design.md.
+- **UNGM UNSPSC** (Phase 3c) — custom Python/REST-API source, no native
+  connector. `bronze_ungm.unspsc_public_raw` is a Materialized View that
+  re-fetches UNGM's complete UNSPSC classification tree on every run (the
+  source has no pagination and no incremental cursor, confirmed via real
+  requests before any code was written). Endpoint parameterized per target
+  via the `ungm_base_url` bundle variable: `dev`/`tst` →
+  `wwwtest3.ungm.org` (test), `prd` → `www.ungm.org` (production) — the
+  same mechanism `catalog` already uses.
+  - `src/common/ungm.py`: a small, source-scoped fetch helper, reusable for
+    future UNGM endpoints (not a generic any-API framework). Takes an
+    optional `auth_token`, unused here (UNSPSC is public) but present for a
+    future authenticated endpoint; a comment documents the
+    `dbutils.secrets.get("ungm", "api_token")` retrieval such an endpoint
+    would use — no secret scope created speculatively.
+  - **`src/common/` cross-file imports don't work via `libraries` glob
+    inclusion alone** — confirmed via a real `ModuleNotFoundError`
+    (glob-including a sibling directory doesn't add it to `sys.path`). Fixed
+    with `sys.path.insert(0, f"{spark.conf.get('workspace_file_path')}/src")`
+    before the import, where `workspace_file_path` is threaded through the
+    pipeline's `configuration` block from DAB's own `${workspace.file_path}`
+    variable — the same variable the documented `--editable
+    ${workspace.file_path}` shared-package pattern relies on, used directly
+    here since that pattern needs setuptools/`pyproject.toml`
+    package-discovery config this repo doesn't have yet. See
+    `unspsc_public_raw.py`'s header.
+  - **UNGM's WAF blocks `requests`' default User-Agent with a 403** —
+    confirmed reproducible even from a local machine (identical URL: curl's
+    default UA gets 200, `python-requests`' default UA gets 403). Not an
+    auth issue, not a cloud-IP block. Fixed by setting an explicit
+    `User-Agent` header in `src/common/ungm.py`.
+  - `unspsc_public_scd1`/`unspsc_public_scd2` in `bronze_ungm_publish` —
+    Python-only (a scope decision, not a technical necessity for SCD1
+    specifically), via `create_auto_cdc_from_snapshot_flow` against a batch
+    snapshot, since `unspsc_public_raw` is also "full current state per
+    pull," not append-only — same pattern as Neon's SCD modeling.
 
 ## Development style
 

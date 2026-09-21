@@ -46,6 +46,11 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
   `MERGE`-based job (`<name>_sql` suffix), since `AUTO CDC INTO` has no
   snapshot-comparison equivalent in SQL. See
   `phase3b-neon-scd-modeling`'s design.md for the full reasoning.
+- **`<data_source>_public`** — an explicit qualifier for a source system
+  with more than one variant of the same data source (e.g. UNGM's UNSPSC:
+  `unspsc_public_raw`, alongside a possible future restricted/authenticated
+  variant) — not a general-purpose suffix, only used when a real
+  distinction exists to make.
 - Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
   defined) — decide when the first one is actually built, not speculatively here.
 

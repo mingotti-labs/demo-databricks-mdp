@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    ungm_unspsc_scd_modeling:
+      name: bronze--ungm--unspsc-scd--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_ungm_publish
+      serverless: true
+      continuous: false
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/ungm_publish/**

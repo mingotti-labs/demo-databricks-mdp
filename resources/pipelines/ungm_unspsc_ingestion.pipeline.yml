@@ -1,0 +1,19 @@
+resources:
+  pipelines:
+    ungm_unspsc_ingestion:
+      name: bronze--ungm--unspsc-ingestion--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_ungm
+      serverless: true
+      continuous: false
+      configuration:
+        ungm_base_url: ${var.ungm_base_url}
+        workspace_file_path: ${workspace.file_path}
+      environment:
+        dependencies:
+          - requests
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/ungm/**
+        - glob:
+            include: ../../src/common/**

@@ -8,6 +8,9 @@ variables:
   catalog:
     description: Unity Catalog catalog this target writes into.
     default: mdp_dev
+  ungm_base_url:
+    description: Base URL for the UNGM API -- test endpoint for dev/tst, production for prd.
+    default: https://wwwtest3.ungm.org
 
 targets:
   dev:
@@ -17,6 +20,7 @@ targets:
       host: https://dbc-e3197e2d-933b.cloud.databricks.com
     variables:
       catalog: mdp_dev
+      ungm_base_url: https://wwwtest3.ungm.org
 
   tst:
     mode: production
@@ -25,6 +29,7 @@ targets:
       root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     variables:
       catalog: mdp_tst
+      ungm_base_url: https://wwwtest3.ungm.org
     permissions:
       - group_name: users
         level: CAN_MANAGE
@@ -36,6 +41,7 @@ targets:
       root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     variables:
       catalog: mdp_prd
+      ungm_base_url: https://www.ungm.org
     permissions:
       - group_name: users
         level: CAN_MANAGE
