@@ -163,7 +163,14 @@ differentiated by catalog:
     (Python, the canonical resource above) is ever actually run — the other
     7 are documented from Databricks' own docs, not independently
     re-verified here. See `src/layers/bronze/clickstream/` and
-    `phase3b-clickstream-schema-evolution-variants`'s design.md.
+    `phase3b-clickstream-schema-evolution-variants`'s design.md. Production-
+    hardening pattern (practitioner-sourced, not official docs — see the
+    canonical `python_add_new_columns/web_events_raw.py`'s header for the
+    citation): pair `addNewColumns` with `rescuedDataColumn` at bronze as a
+    safety net, push schema strictness to silver instead, and treat the
+    restart-on-schema-change behavior as a deliberate checkpoint-refresh
+    mechanism meant to pair with automatic job retry, not something to
+    avoid.
   - `bronze_clickstream_publish.web_events_scd1`/`web_events_scd1_sql`:
     SCD1 modeling downstream of the canonical `web_events_raw`, keyed by
     `event_id`, sequenced by `timestamp`. Exists for downstream-usage
