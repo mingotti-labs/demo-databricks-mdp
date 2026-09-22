@@ -51,6 +51,15 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
   `unspsc_public_raw`, alongside a possible future restricted/authenticated
   variant) — not a general-purpose suffix, only used when a real
   distinction exists to make.
+- **`<table>_quarantine`** — rows a `_raw` table's downstream SCD modeling
+  can't process (e.g. a NULL SCD key), kept visible in a `bronze_<source>`
+  schema rather than silently dropped. Built as a Lakeflow expectations
+  pair: the quarantine table and its SCD-feeding counterpart both read the
+  same `_raw` source with complementary `@dp.expect_or_drop` conditions,
+  so every raw row lands somewhere. See ACNC's `charity_register_quarantine`
+  (`phase3d-acnc-charity-register-ingestion`'s design.md) for the first
+  use of this pattern — introduced when needed, not applied speculatively
+  to sources that haven't shown the problem.
 - Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
   defined) — decide when the first one is actually built, not speculatively here.
 

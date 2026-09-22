@@ -11,6 +11,15 @@ variables:
   ungm_base_url:
     description: Base URL for the UNGM API -- test endpoint for dev/tst, production for prd.
     default: https://wwwtest3.ungm.org
+  acnc_base_url:
+    description: Base URL for data.gov.au's CKAN Data API -- same for every target, no test/prod split exists for this source.
+    default: https://data.gov.au
+  acnc_resource_id:
+    description: CKAN resource_id for the ACNC Charity Register CSV resource on data.gov.au.
+    default: 8fb32972-24e9-4c95-885e-7140be51be8a
+  acnc_row_limit:
+    description: Row cap for the ACNC Charity Register pull -- empty means no cap (full dataset).
+    default: "500"
 
 targets:
   dev:
@@ -21,6 +30,7 @@ targets:
     variables:
       catalog: mdp_dev
       ungm_base_url: https://wwwtest3.ungm.org
+      acnc_row_limit: "500"
 
   tst:
     mode: production
@@ -30,6 +40,7 @@ targets:
     variables:
       catalog: mdp_tst
       ungm_base_url: https://wwwtest3.ungm.org
+      acnc_row_limit: "500"
     permissions:
       - group_name: users
         level: CAN_MANAGE
@@ -42,6 +53,7 @@ targets:
     variables:
       catalog: mdp_prd
       ungm_base_url: https://www.ungm.org
+      acnc_row_limit: ""
     permissions:
       - group_name: users
         level: CAN_MANAGE

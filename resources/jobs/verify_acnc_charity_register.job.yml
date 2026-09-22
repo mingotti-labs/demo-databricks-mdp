@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    verify_acnc_charity_register:
+      name: verify--acnc--charity-register--${bundle.target}
+      tasks:
+        - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_acnc_charity_register_ingestion.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_scd
+          depends_on:
+            - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_acnc_charity_register_scd.py
+            base_parameters:
+              catalog: ${var.catalog}

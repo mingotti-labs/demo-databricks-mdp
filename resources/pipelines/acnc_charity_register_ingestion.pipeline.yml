@@ -1,0 +1,18 @@
+resources:
+  pipelines:
+    acnc_charity_register_ingestion:
+      name: bronze--acnc--charity-register-ingestion--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_acnc
+      serverless: true
+      continuous: false
+      configuration:
+        acnc_base_url: ${var.acnc_base_url}
+        acnc_resource_id: ${var.acnc_resource_id}
+        acnc_row_limit: ${var.acnc_row_limit}
+      environment:
+        dependencies:
+          - requests
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/acnc/**

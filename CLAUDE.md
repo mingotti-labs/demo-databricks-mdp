@@ -49,6 +49,11 @@ demo-databricks-mdp/
           sql/
         ungm/               # unspsc_public_raw.py (Materialized View, custom API pull)
         ungm_publish/       # SCD1/SCD2 vs. unspsc_public_raw directly, Python only
+        acnc/               # charity_register_raw.py + charity_register_quarantine.py --
+                            # reusable CKAN custom Spark data source, inlined (see the ACNC
+                            # "Sources" entry below for why it isn't in src/common/)
+        acnc_publish/       # charity_register_valid.py (private) + SCD1/SCD2 vs. the
+                            # private view, Python only
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -236,6 +241,60 @@ differentiated by catalog:
     modeling. Unaffected by the source-Streaming-Table duplication caveat
     above, since `unspsc_public_raw` is a Materialized View, not a
     Streaming Table.
+- **ACNC Charity Register** (Phase 3d) — a reusable custom Spark data
+  source connector (`CkanDataSource`/`CkanDataSourceReader`, built on
+  `pyspark.sql.datasource`, not Lakeflow Connect's managed catalog and
+  not Databricks Labs' separate "Community Connectors" repo/CLI — see
+  `phase3d-acnc-charity-register-ingestion`'s design.md for why both were
+  considered and not chosen), generic over any CKAN portal's
+  `datastore_search` REST API (data.gov.au, data.gov.uk, etc.), with the
+  ACNC Charity Register as the first real consumer. `bronze_acnc.charity_register_raw`
+  is a Materialized View built on `spark.read.format("ckan")...load()`.
+  - **The connector's classes live inline in `charity_register_raw.py`,
+    not in `src/common/`** — confirmed via a real `ModuleNotFoundError:
+    No module named 'common.ckan'` that custom Spark data source classes
+    are cloudpickled for execution in a separate worker process that does
+    not inherit the driver notebook's `sys.path` fix (the mechanism
+    `unspsc_public_raw.py` relies on works there only because that fetch
+    is purely driver-side, never serialized to another process). This
+    matches reports of the identical failure in the Databricks Community.
+    A future second CKAN dataset would copy this file's connector block
+    rather than import it.
+  - **Schema is inferred from CKAN's own field metadata**, not hardcoded
+    to ACNC's fields — one `datastore_search?limit=1` call reads the
+    resource's `fields` array and maps CKAN's `text`/`int`/`float`/
+    `timestamp`/`bool` types to their Spark equivalents. This, not a
+    second real dataset, is what makes the connector "reusable": a new
+    CKAN dataset works by changing `resource_id`/`base_url`, no code
+    change.
+  - **Reads are partitioned by offset range** (`DataSourceReader.partitions()`),
+    not a single sequential pull — `page_size` rows per partition (default
+    1000), honoring an optional `row_limit` option.
+  - **`acnc_row_limit`, not a separate test endpoint, controls dev/tst
+    blast radius** — ACNC/data.gov.au is a single public production
+    dataset, no sandbox exists the way UNGM's test endpoint provided.
+    `dev`/`tst` pull 500 rows; `prd` pulls the full dataset (~66k rows,
+    confirmed via the CKAN API before this was built).
+  - data.gov.au runs the same class of WAF as UNGM's API — blocks
+    `requests`' default User-Agent with a 403, confirmed via a real
+    request before any code was written. Fixed the same way, proactively
+    this time.
+  - **Quarantine pattern**: ~605 of ~66k charities (mostly Private
+    Ancillary Funds) have a `NULL` ABN, confirmed via the CKAN SQL
+    endpoint (`datastore_search_sql`) before SCD modeling was built — a
+    real data-quality condition in the source, not a connector bug. Since
+    `ABN` is the SCD key, these rows have no stable identity to track.
+    Rather than silently drop them, two datasets read the same
+    `charity_register_raw` with complementary `@dp.expect_or_drop`
+    conditions: `bronze_acnc.charity_register_quarantine` (public, `ABN
+    IS NULL`) keeps them visible and queryable; a **private**
+    (`private=True`) `charity_register_valid` view in the SCD modeling
+    pipeline (`ABN IS NOT NULL`) feeds `charity_register_scd1`/`scd2`'s
+    `create_auto_cdc_from_snapshot_flow`. Unlike the removed `*_snapshot`
+    wrapper views (see Neon's entry above), `charity_register_valid` does
+    real filtering work, so an intermediate dataset is justified here, not
+    a leftover. Verification checks `raw = scd_count + quarantine_count`,
+    not raw-equals-SCD exactly.
 
 ## Development style
 
