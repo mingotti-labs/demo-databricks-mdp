@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    acnc_charity_register_scd_modeling:
+      name: bronze--acnc--charity-register-scd--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_acnc_publish
+      serverless: true
+      continuous: false
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/acnc_publish/**
