@@ -323,6 +323,31 @@ the decision record behind what's built.
   (e.g. `prd`, before its first deploy) won't hit this, since there's no
   existing owner to conflict with — but that's an accident of ordering, not a
   reason to keep deploying that target locally afterward.
+  - **The reverse order breaks CI/CD's automated deploys, and is why this
+    guardrail matters, not just a style preference.** `tst`/`prd` both set an
+    explicit `root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}`
+    in `databricks.yml` (unlike `dev`, which has no override and defaults to
+    a per-identity path) — meaning every identity that ever deploys to
+    `tst`/`prd` writes to the *same* shared resources, by design, since
+    exactly one real `tst`/`prd` copy should exist. Confirmed via a real,
+    silent, multi-merge CI/CD breakage: a human `bundle deploy -t tst` at
+    some point in the past left several `tst` jobs/pipelines owned by the
+    human identity; every subsequent automated `deploy-tst` GitHub Actions
+    run then failed trying to update those specific resources'
+    `permissions:` blocks (`403 PERMISSION_DENIED: ... only workspace admins
+    can change the owner of a job` / `Only admins can change pipeline
+    owners`), even though most of the bundle's other resources deployed
+    fine. The failure only surfaced clearly by diffing every job's/pipeline's
+    `run_as_user_name` against the CI/CD SP's client ID
+    (`databricks jobs get <id>` / `databricks pipelines get <id>`) — the
+    GitHub Actions log only showed the first handful of 403s per run, not
+    the full set. Fix: delete every human-owned `tst`/`prd` job/pipeline
+    (safe — same "human-identity copies are disposable" reasoning as dev,
+    just applied to `tst`/`prd` instead), then re-run the deploy so the SP
+    recreates and owns them cleanly. `prd`'s manual-approval gate meant this
+    had been silently queued to fail there too, never yet triggered — worth
+    checking proactively (same ownership diff) before ever approving a
+    `deploy-prd` run, not just reactively after it fails.
 - **Free Edition's serverless compute pool is small and shared across
   pipelines/warehouses/jobs** — a pipeline run can fail with `RESOURCE_EXHAUSTED:
   You've hit the limit for serverless compute for free usage` even when
