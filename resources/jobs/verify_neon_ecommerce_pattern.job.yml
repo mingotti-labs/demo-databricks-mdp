@@ -1,7 +1,7 @@
 resources:
   jobs:
     verify_neon_ecommerce_pattern:
-      name: verify--neon--ecommerce--${bundle.target}
+      name: verify--neon--lakeflow--${bundle.target}
       tasks:
         - task_key: verify_connection
           notebook_task:

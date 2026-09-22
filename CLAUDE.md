@@ -31,7 +31,7 @@ demo-databricks-mdp/
       bronze/
         neon/
         neon_publish/
-          python/          # snapshot-based Auto CDC (SCD1 all 4, SCD2 customers/products)
+          python/          # snapshot-based Auto CDC vs. bronze_neon.*_raw directly (SCD1 all 4, SCD2 customers/products)
           sql/              # SCD1 only (plain passthrough MVs) -- SCD2 is scd2_merge/, a job not a pipeline
           scd2_merge/       # hand-rolled two-phase MERGE, SQL SCD2's real home
         atlas/
@@ -48,7 +48,7 @@ demo-databricks-mdp/
           python/           # SCD1 (mechanical passthrough)
           sql/
         ungm/               # unspsc_public_raw.py (Materialized View, custom API pull)
-        ungm_publish/       # snapshot + SCD1/SCD2, Python only
+        ungm_publish/       # SCD1/SCD2 vs. unspsc_public_raw directly, Python only
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -123,8 +123,19 @@ differentiated by catalog:
     assumed. `skipChangeCommits` is not a fix — it silently drops the
     updated rows instead of surfacing them (confirmed via Databricks docs).
     - Python: `create_auto_cdc_from_snapshot_flow` (snapshot comparison,
-      not streaming) against a batch `@dp.materialized_view()` snapshot of
-      each source table — the correct, pipeline-native fix.
+      not streaming) against `bronze_neon.*_raw` directly — the correct,
+      pipeline-native fix. No intermediate snapshot materialized view is
+      needed: `source` does not have to be a dataset within the same
+      pipeline's own dataflow graph, confirmed via a real run (an earlier
+      version of this pattern wrapped the read in one anyway, following the
+      Databricks docs' example pattern literally, before this was tested
+      and found unnecessary — see `phase3b-scd-snapshot-cleanup`'s
+      design.md). **Caution confirmed the hard way**: switching a
+      snapshot flow's `source` on an *already-run* flow whose source is a
+      Streaming Table can insert spurious duplicate "no-op" versions for
+      unchanged rows into the SCD2 table — a full refresh is the fix, and
+      it discards prior history in the process. Not an issue for a flow
+      that's always pointed at the same source from its first run.
     - SQL SCD1: a plain passthrough materialized view — `bronze_neon.*_raw`
       already is "latest value per key" by construction, no CDC needed.
     - SQL SCD2: `AUTO CDC INTO` is streaming-only in SQL with no snapshot
@@ -218,9 +229,13 @@ differentiated by catalog:
     `User-Agent` header in `src/common/ungm.py`.
   - `unspsc_public_scd1`/`unspsc_public_scd2` in `bronze_ungm_publish` —
     Python-only (a scope decision, not a technical necessity for SCD1
-    specifically), via `create_auto_cdc_from_snapshot_flow` against a batch
-    snapshot, since `unspsc_public_raw` is also "full current state per
-    pull," not append-only — same pattern as Neon's SCD modeling.
+    specifically), via `create_auto_cdc_from_snapshot_flow` against
+    `unspsc_public_raw` directly (no intermediate snapshot view — see
+    Neon's entry above), since `unspsc_public_raw` is also "full current
+    state per pull," not append-only — same pattern as Neon's SCD
+    modeling. Unaffected by the source-Streaming-Table duplication caveat
+    above, since `unspsc_public_raw` is a Materialized View, not a
+    Streaming Table.
 
 ## Development style
 
