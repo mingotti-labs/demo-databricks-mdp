@@ -1,0 +1,19 @@
+resources:
+  pipelines:
+    airroi_market_summary_ingestion:
+      name: bronze--airroi--market-summary-ingestion--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_airroi
+      serverless: true
+      continuous: false
+      configuration:
+        airroi_base_url: ${var.airroi_base_url}
+        workspace_file_path: ${workspace.file_path}
+      environment:
+        dependencies:
+          - requests
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/airroi/**
+        - glob:
+            include: ../../src/common/**

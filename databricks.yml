@@ -34,6 +34,9 @@ variables:
       routine use. prd caps at 10000 (100 requests, matching ACNC's prd
       request volume) rather than pulling everything.
     default: "500"
+  airroi_base_url:
+    description: Base URL for AirROI's market intelligence API -- same for every target, no test/prod split exists for this source (no free sandbox at all).
+    default: https://api.airroi.com
 
 targets:
   dev:

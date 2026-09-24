@@ -58,6 +58,9 @@ demo-databricks-mdp/
                             # Spark data source, inlined (same reason as acnc/)
         nsw_spatial_publish/  # SCD1/SCD2 vs. property_raw directly, keyed by
                             # addressstringoid (not propid), Python only
+        airroi/             # market_summary_raw.py -- src/common/airroi.py fetch
+                            # helper (first paid-API source), not a reusable connector
+        airroi_publish/     # market_summary_scd2.py -- SCD2 only, no SCD1
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -341,6 +344,60 @@ differentiated by catalog:
     confirmed necessary for this specific server**, since every real
     request against it in this project used that header from the start.
     If it turns out unnecessary, that's a safe no-op, not a false claim.
+- **AirROI** (Phase 3h) — this project's **first source with a real,
+  paid, authenticated API**. Every prior source is free/public. AirROI
+  has no free sandbox; every call costs real money. `bronze_airroi.market_summary_raw`
+  pulls three confirmed real markets (Vitória da Conquista/BA, Urubici/SC,
+  Tauranga/NZ) via `src/common/airroi.py`'s `fetch_market_summary`, a
+  plain source-scoped fetch helper (not a full reusable connector —
+  AirROI is one proprietary vendor's API, not a reusable protocol like
+  CKAN/ArcGIS). `market_summary_scd2` in `bronze_airroi_publish` is
+  **SCD2 only, no SCD1** — a deliberate scope decision (SCD1 would just
+  duplicate SCD2's `WHERE __END_AT IS NULL` filter).
+  - **Markets confirmed/dropped based on real evidence, not the original
+    prompt's assumptions.** Originated from a pasted AI-generated prompt
+    about "AirDNA" and two illustrative Brazilian cities (Salvador/Sumaré);
+    AirDNA itself was investigated and rejected (Enterprise-only,
+    ~$50K+/year, sales-negotiation-gated). The final three markets were
+    each individually verified as clean, non-fragmented entries on
+    AirROI's own public site before being used (free to check). Sydney
+    was explicitly dropped: its plain `sydney` slug sits alongside 50+
+    separate Sydney-suburb pages (Bondi, Surry Hills, Parramatta, etc.),
+    strongly indicating a generic/residual bucket, not a real Local
+    Government Area or the Greater Sydney metro. Tauranga has one
+    accepted minor gap — Papamoa, a real Tauranga suburb, is a separate
+    sibling page, likely excluded from `tauranga`'s figures.
+  - **Both AirROI's own published request and response examples for
+    `/markets/summary` are wrong — confirmed via real calls, not assumed
+    correct from docs.** The documented request shape (flat
+    `country_code`/`state`/`city` fields) returned a real `422`; the
+    actual required shape is a nested `market` object with `country`/
+    `region`/`locality` **display names** (not URL slugs). The documented
+    response field names (`active_listings`, `average_adr`,
+    `average_occupancy`, `average_revpar`, `median_annual_revenue`, etc.)
+    also don't match the real response (`active_listings_count`,
+    `average_daily_rate`, `occupancy`, `rev_par`, `revenue`,
+    `booking_lead_time`, `length_of_stay`, `min_nights`, plus a
+    structured `market` map echoing the request) — this project's
+    evidence-over-documentation principle held even against the vendor's
+    own docs.
+  - **SCD key is the flat `_country`/`_region`/`_locality` columns
+    `market_summary_raw` carries, not the API's nested `market` map** —
+    `create_auto_cdc_from_snapshot_flow`'s `keys=` needs flat columns,
+    not a struct/map type.
+  - **Real per-call cost is $0.10, not the $0.01 AirROI's general
+    pricing page advertises** — confirmed via the user's own observed
+    charge, a 10x gap from the headline rate. Worth re-confirming before
+    scaling call volume for any future work on this source (e.g. the
+    deferred individual-listings endpoint, sized using
+    `active_listings_count` from this data once a real limit is chosen).
+  - **`revenue`'s exact time period (annual? some other window?) is not
+    confirmed** — a rough sanity check against `ADR × 365 × occupancy`
+    didn't match closely enough to confidently call it "annual," unlike
+    `rev_par`, which does check out closely against `ADR × occupancy`.
+  - No per-environment row-limiting, unlike ACNC/NSW property — there's
+    no free-tier/smaller-sample concept for a fixed 3-market pull;
+    `dev`/`tst`/`prd` all use the same three markets.
 
 ## Development style
 
