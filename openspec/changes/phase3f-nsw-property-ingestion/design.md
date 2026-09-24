@@ -23,8 +23,8 @@ serves it via this FeatureServer. Updated daily, confirmed current
 - A genuinely reusable ArcGIS FeatureServer connector — works against any
   Esri FeatureServer layer by `service_url`/`layer_id` config, not
   hardcoded to NSW's field list
-- `property_raw` landing into `bronze_nsw_property`, modeled into
-  SCD1/SCD2 in `bronze_nsw_property_publish`, same shape as every other
+- `property_raw` landing into `bronze_nsw_spatial`, modeled into
+  SCD1/SCD2 in `bronze_nsw_spatial_publish`, same shape as every other
   source
 
 **Non-Goals:**

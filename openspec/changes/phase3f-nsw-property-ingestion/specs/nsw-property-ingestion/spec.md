@@ -2,9 +2,9 @@
 
 Ingests NSW's Land Parcel and Property Theme (published by NSW Spatial
 Services, sourced from Property NSW's Valnet database) into
-`bronze_nsw_property` via a reusable custom Spark data source generic over
+`bronze_nsw_spatial` via a reusable custom Spark data source generic over
 any Esri ArcGIS REST FeatureServer layer, and models it as SCD1/SCD2 in
-`bronze_nsw_property_publish` — Phase 3f's second reusable connector class,
+`bronze_nsw_spatial_publish` — Phase 3f's second reusable connector class,
 alongside 3d's CKAN connector.
 
 ## ADDED Requirements
@@ -55,19 +55,19 @@ or `tst`, and with no row limit (full dataset) when deployed to `prd`.
 - **THEN** `property_raw`'s row count matches the NSW property layer's
   full current feature count
 
-### Requirement: Full-refresh batch ingestion into bronze_nsw_property
+### Requirement: Full-refresh batch ingestion into bronze_nsw_spatial
 `property_raw` SHALL be a Materialized View that re-fetches the current
 dataset (subject to `row_limit`) on every run — the source has no
 incremental cursor, so full-refresh batch pull is the correct approach.
 
 #### Scenario: Pipeline run lands data
 - **WHEN** the pipeline is run against a target
-- **THEN** `<catalog>.bronze_nsw_property.property_raw` exists and is
+- **THEN** `<catalog>.bronze_nsw_spatial.property_raw` exists and is
   populated
 
 ### Requirement: SCD1/SCD2 modeling, Python only
 `property_scd1` and `property_scd2` SHALL exist in
-`bronze_nsw_property_publish`, built via `create_auto_cdc_from_snapshot_flow`
+`bronze_nsw_spatial_publish`, built via `create_auto_cdc_from_snapshot_flow`
 against `property_raw` directly, keyed by `propid`. No SQL equivalent SHALL
 be built for this pattern. If duplicate `propid` values are found in the
 ingested data, the established quarantine pattern (public quarantine table

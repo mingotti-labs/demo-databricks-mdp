@@ -32,13 +32,13 @@ decision (roadmap Phase 3g), not a prerequisite for this change.
     optional `row_limit` option) and splits into offset-range partitions of
     `page_size` features each (`resultOffset`/`resultRecordCount`), mirroring
     the CKAN connector's partitioning approach for a different REST shape
-- `bronze_nsw_property.property_raw`: a Materialized View built on this
+- `bronze_nsw_spatial.property_raw`: a Materialized View built on this
   connector, batch full-refresh (no incremental cursor is exposed by the
   layer)
 - `nsw_property_row_limit` bundle variable: `dev`/`tst` → a small cap (TBD
   in design, likely `500`, matching the ACNC precedent), `prd` → unset
   (full ~4.2M rows)
-- `property_scd1`/`property_scd2` in `bronze_nsw_property_publish` (Python
+- `property_scd1`/`property_scd2` in `bronze_nsw_spatial_publish` (Python
   only, matching every other source's scope decision), via
   `create_auto_cdc_from_snapshot_flow` directly against `property_raw`
   (no quarantine pattern needed here — confirmed zero `NULL propid` values
@@ -52,14 +52,14 @@ decision (roadmap Phase 3g), not a prerequisite for this change.
 ### New Capabilities
 - `nsw-property-ingestion`: reusable ArcGIS FeatureServer custom data
   source connector, ingesting NSW's Land Parcel and Property Theme into
-  `bronze_nsw_property`, with SCD1/SCD2 modeling into
-  `bronze_nsw_property_publish`
+  `bronze_nsw_spatial`, with SCD1/SCD2 modeling into
+  `bronze_nsw_spatial_publish`
 
 ## Cross-repo dependencies
 
 Depends on `demo-databricks-iac`'s `phase3f-nsw-property-schema` (proposed
 alongside this change, not yet merged) — this change writes into
-`bronze_nsw_property`/`bronze_nsw_property_publish`, which that change
+`bronze_nsw_spatial`/`bronze_nsw_spatial_publish`, which that change
 creates. Should not deploy until that one has landed.
 
 ## Impact

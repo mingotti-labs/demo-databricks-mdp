@@ -21,7 +21,7 @@
 
 ## 3. Raw ingestion pipeline
 
-- [ ] 3.1 Create `src/layers/bronze/nsw_property/property_raw.py` — a
+- [ ] 3.1 Create `src/layers/bronze/nsw_spatial/property_raw.py` — a
       Materialized View built on the connector
 - [ ] 3.2 Create `resources/pipelines/nsw_property_ingestion.pipeline.yml`
 - [ ] 3.3 `databricks bundle validate` passes for dev
@@ -30,9 +30,9 @@
 
 ## 4. SCD modeling pipeline
 
-- [ ] 4.1 Create `src/layers/bronze/nsw_property_publish/property_scd1.py`
+- [ ] 4.1 Create `src/layers/bronze/nsw_spatial_publish/property_scd1.py`
       and `property_scd2.py` — `create_auto_cdc_from_snapshot_flow` against
-      `bronze_nsw_property.property_raw` directly (no private filtering
+      `bronze_nsw_spatial.property_raw` directly (no private filtering
       view needed, unlike ACNC — confirmed no NULL `propid` values), keyed
       by `propid`
 - [ ] 4.2 Create `resources/pipelines/nsw_property_scd_modeling.pipeline.yml`
@@ -54,5 +54,5 @@
       connector design, provenance (Spatial Services / Property NSW
       Valnet), the `row_limit` blast-radius mechanism, and whether
       quarantine was needed in practice
-- [ ] 6.2 Add `bronze/nsw_property/` and `bronze/nsw_property_publish/` to
+- [ ] 6.2 Add `bronze/nsw_spatial/` and `bronze/nsw_spatial_publish/` to
       CLAUDE.md's repository-structure tree
