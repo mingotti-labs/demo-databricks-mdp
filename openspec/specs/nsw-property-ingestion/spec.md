@@ -1,5 +1,6 @@
-## Purpose
+# nsw-property-ingestion Specification
 
+## Purpose
 Ingests NSW's Land Parcel and Property Theme (published by NSW Spatial
 Services, sourced from Property NSW's Valnet database) into
 `bronze_nsw_spatial` via a reusable custom Spark data source generic over
@@ -7,7 +8,7 @@ any Esri ArcGIS REST FeatureServer layer, and models it as SCD1/SCD2 in
 `bronze_nsw_spatial_publish` — Phase 3f's second reusable connector class,
 alongside 3d's CKAN connector.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Reusable ArcGIS FeatureServer data source connector
 A registerable Spark data source (`spark.dataSource.register()`) SHALL
@@ -42,18 +43,22 @@ fields are ingested.
 - **THEN** more than one partition is produced, and the total rows read
   across all partitions equals the layer's total feature count
 
-### Requirement: Row-limited dev/tst, full prd
+### Requirement: Row-limited in every environment, including prd
 `property_raw` SHALL be pulled with `row_limit=500` when deployed to `dev`
-or `tst`, and with no row limit (full dataset) when deployed to `prd`.
+or `tst`, and `row_limit=10000` when deployed to `prd` — not a full pull.
+Unlike every other source in this project, `prd` does not pull the
+complete dataset: this FeatureServer's own `maxRecordCount` (100) means a
+full ~4.2M-row pull would need ~42,259 requests, confirmed too many for
+routine use.
 
 #### Scenario: Dev and tst are row-limited
 - **WHEN** the pipeline is deployed and run against `dev` or `tst`
 - **THEN** `property_raw` has exactly 500 rows
 
-#### Scenario: Prd pulls the full dataset
+#### Scenario: Prd is row-limited too
 - **WHEN** the pipeline is deployed and run against `prd`
-- **THEN** `property_raw`'s row count matches the NSW property layer's
-  full current feature count
+- **THEN** `property_raw` has exactly 10000 rows, not the layer's full
+  current feature count
 
 ### Requirement: Full-refresh batch ingestion into bronze_nsw_spatial
 `property_raw` SHALL be a Materialized View that re-fetches the current
@@ -68,23 +73,21 @@ incremental cursor, so full-refresh batch pull is the correct approach.
 ### Requirement: SCD1/SCD2 modeling, Python only
 `property_scd1` and `property_scd2` SHALL exist in
 `bronze_nsw_spatial_publish`, built via `create_auto_cdc_from_snapshot_flow`
-against `property_raw` directly, keyed by `propid`. No SQL equivalent SHALL
-be built for this pattern. If duplicate `propid` values are found in the
-ingested data, the established quarantine pattern (public quarantine table
-+ private filtered view feeding the SCD flows) SHALL be applied, matching
-ACNC's precedent.
+against `property_raw` directly, keyed by `addressstringoid` — not `propid`,
+which is shared across every address within the same property (a unit
+block has one row per unit, all sharing one `propid`), confirmed via a real
+run before this key was finalized. No SQL equivalent SHALL be built for
+this pattern.
 
 #### Scenario: SCD tables match source row count on initial load
-- **WHEN** the SCD pipeline is run after `property_raw` is populated and no
-  `propid` duplicates exist
+- **WHEN** the SCD pipeline is run after `property_raw` is populated
 - **THEN** `property_scd1` and `property_scd2` each have a row count
   matching `property_raw` exactly
 
 ### Requirement: Standing verification suite
 A `verification/` suite SHALL exist checking (at minimum) that
 `property_raw` is populated and that `property_scd1`/`property_scd2` row
-counts match it (or match `property_raw` minus any quarantined rows, if
-quarantine was needed), chained into one job
+counts match it exactly, chained into one job
 (`verify_nsw_property_pattern`) so the pattern can be re-checked on demand.
 
 #### Scenario: Verification job proves the pattern still works

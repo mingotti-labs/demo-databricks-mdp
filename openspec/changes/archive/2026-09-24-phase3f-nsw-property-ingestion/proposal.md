@@ -4,10 +4,11 @@ Phase 3f adds a fifth source system and a second reusable custom Spark data
 source connector, alongside 3d's CKAN connector (ACNC). The source is NSW's
 "Land Parcel and Property Theme," served as an Esri ArcGIS REST
 FeatureServer at `portal.spatial.nsw.gov.au` — confirmed live before this
-proposal was written: ~4,225,857 properties, `propid` as a natural key with
-zero `NULL` values, no auth required, `returnGeometry=false` keeps the
-response to attributes only (no polygon boundaries, which Spark/Delta
-isn't well-suited to store anyway).
+proposal was written: ~4,225,857 rows, no auth required,
+`returnGeometry=false` keeps the response to attributes only (no polygon
+boundaries, which Spark/Delta isn't well-suited to store anyway). The SCD
+key is `addressstringoid`, not `propid` as originally assumed — see
+Cross-cutting discoveries below.
 
 This is deliberately scoped **without** the optional national address
 enrichment (G-NAF) explored alongside it — see
@@ -35,17 +36,41 @@ decision (roadmap Phase 3g), not a prerequisite for this change.
 - `bronze_nsw_spatial.property_raw`: a Materialized View built on this
   connector, batch full-refresh (no incremental cursor is exposed by the
   layer)
-- `nsw_property_row_limit` bundle variable: `dev`/`tst` → a small cap (TBD
-  in design, likely `500`, matching the ACNC precedent), `prd` → unset
-  (full ~4.2M rows)
+- `nsw_property_row_limit` bundle variable: `dev`/`tst` → `500`; `prd` →
+  `10000` — **not** unset/full, unlike every other source so far. This
+  FeatureServer's own `maxRecordCount` (100) means a full ~4.2M-row pull
+  needs ~42,259 requests; `10000` (100 requests) matches ACNC's `prd`
+  request volume instead of scaling requests 630x. See Cross-cutting
+  discoveries below.
 - `property_scd1`/`property_scd2` in `bronze_nsw_spatial_publish` (Python
   only, matching every other source's scope decision), via
-  `create_auto_cdc_from_snapshot_flow` directly against `property_raw`
-  (no quarantine pattern needed here — confirmed zero `NULL propid` values
-  via a real query before this proposal was written, unlike ACNC's
-  NULL-ABN discovery)
+  `create_auto_cdc_from_snapshot_flow` directly against `property_raw`,
+  keyed by `addressstringoid` (no quarantine pattern needed — confirmed
+  zero `NULL`s and full uniqueness across a real 500-row `dev` run)
 - A standing verification suite (`verify_nsw_property_pattern`), matching
   every other pattern's precedent
+
+## Cross-cutting discoveries (mid-implementation, not planned upfront)
+
+- **The SCD key is `addressstringoid`, not `propid`.** The first real
+  `dev` run (500 rows, `row_limit=500`) showed only 486 distinct `propid`
+  values. Investigated: this layer's actual grain is one row per address
+  *within* a property, not one row per property — a unit block has one row
+  per unit, all sharing the parent property's `propid`. `addressstringoid`
+  is the field that's actually unique per row (confirmed: 500/500 distinct,
+  zero `NULL`s). Fixed before building the SCD pipeline.
+- **`page_size` bug**: the connector's default (1000) exceeded this
+  FeatureServer's own `maxRecordCount` cap (100), which the server
+  enforces silently (truncates rather than errors) — undercounting
+  `partitions()`'s math and landing only 100 of the requested 500 rows on
+  the first run. Fixed by reading `maxRecordCount` from the layer's own
+  metadata and capping `page_size` to it.
+- **`prd` scoped to `row_limit=10000`, not a full pull, discovered as a
+  consequence of the `maxRecordCount` finding above.** Every other source
+  in this project pulls the full dataset in `prd`; this one can't
+  reasonably, since 100 rows/request × ~4.2M rows means ~42,259 requests —
+  ~630x ACNC's `prd` request volume. Explicitly decided with the user:
+  `10000` (100 requests) matches ACNC's `prd` request count instead.
 
 ## Capabilities
 

@@ -54,6 +54,10 @@ demo-databricks-mdp/
                             # "Sources" entry below for why it isn't in src/common/)
         acnc_publish/       # charity_register_valid.py (private) + SCD1/SCD2 vs. the
                             # private view, Python only
+        nsw_spatial/        # property_raw.py -- reusable ArcGIS FeatureServer custom
+                            # Spark data source, inlined (same reason as acnc/)
+        nsw_spatial_publish/  # SCD1/SCD2 vs. property_raw directly, keyed by
+                            # addressstringoid (not propid), Python only
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -295,6 +299,48 @@ differentiated by catalog:
     real filtering work, so an intermediate dataset is justified here, not
     a leftover. Verification checks `raw = scd_count + quarantine_count`,
     not raw-equals-SCD exactly.
+- **NSW Spatial Services** (Phase 3f) — a second reusable custom Spark
+  data source connector (`ArcGisFeatureServerDataSource`/`...Reader`),
+  generic over any Esri ArcGIS REST FeatureServer layer, alongside 3d's
+  CKAN connector. First consumer: NSW Spatial Services' "Property" layer
+  (`portal.spatial.nsw.gov.au`), sourced ultimately from Property NSW's
+  Valnet database. `bronze_nsw_spatial.property_raw` is a Materialized
+  View built on `spark.read.format("arcgis_feature_server")...load()`.
+  - **Connector classes are inline in `property_raw.py`**, applying
+    ACNC's `src/common/` lesson proactively — no `ModuleNotFoundError`
+    rediscovery needed this time.
+  - **Schema inferred from the layer's own `?f=json` metadata**, same
+    principle as the CKAN connector's `schema()`. Reads partitioned by
+    offset range (`resultOffset`/`resultRecordCount`, ArcGIS REST's
+    equivalent of CKAN's `offset`/`limit`).
+  - **The connector must discover each FeatureServer's own
+    `maxRecordCount`, not assume one** — confirmed via a real first run:
+    this server caps `resultRecordCount` at 100, silently truncating a
+    larger request instead of erroring, which undercounted the first
+    `dev` run's row math (100 rows landed against a `row_limit` of 500).
+    Fixed by reading `maxRecordCount` from the same metadata call
+    `schema()` already makes and capping `page_size` to it.
+  - **The SCD key is `addressstringoid`, not `propid`** — also caught via
+    the real first run (486 distinct `propid` among 500 rows), not a
+    pre-build check. This layer's actual grain is one row per *address*
+    within a property, not one row per property: a unit block has one row
+    per unit, all sharing the parent property's `propid`/`gurasid`/
+    `principaladdresssiteoid`, differentiated only by `addressstringoid`
+    (confirmed unique with zero `NULL`s across the real 500-row `dev`
+    sample — not exhaustively checked at full ~4.2M-row scale). No
+    quarantine pattern needed — this was a wrong key, not missing/dirty
+    data.
+  - **`prd` does not pull the full dataset, unlike every other source in
+    this project.** The `maxRecordCount` finding means a full ~4.2M-row
+    pull would need ~42,259 requests (page_size capped at 100) — ~630x
+    ACNC's `prd` request volume. `nsw_property_row_limit` caps `prd` at
+    `10000` (100 requests, matching ACNC's `prd` request count) instead
+    of pulling everything; `dev`/`tst` use `500`.
+  - A `curl`-style `User-Agent` header is set proactively, matching
+    UNGM's and ACNC's confirmed WAF pattern — **not independently
+    confirmed necessary for this specific server**, since every real
+    request against it in this project used that header from the start.
+    If it turns out unnecessary, that's a safe no-op, not a false claim.
 
 ## Development style
 

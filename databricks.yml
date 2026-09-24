@@ -20,6 +20,20 @@ variables:
   acnc_row_limit:
     description: Row cap for the ACNC Charity Register pull -- empty means no cap (full dataset).
     default: "500"
+  nsw_property_service_url:
+    description: Esri ArcGIS REST FeatureServer base URL for NSW Spatial Services' Land Parcel and Property Theme -- same for every target, no test/prod split exists for this source.
+    default: https://portal.spatial.nsw.gov.au/server/rest/services/NSW_Land_Parcel_Property_Theme_multiCRS/FeatureServer
+  nsw_property_layer_id:
+    description: FeatureServer layer id for the "Property" layer within the NSW Land Parcel and Property Theme service.
+    default: "12"
+  nsw_property_row_limit:
+    description: >-
+      Row cap for the NSW property pull. Not a full-dataset pull anywhere,
+      including prd -- the source's own maxRecordCount (100) means a full
+      ~4.2M-row pull would need ~42,259 requests, confirmed too many for
+      routine use. prd caps at 10000 (100 requests, matching ACNC's prd
+      request volume) rather than pulling everything.
+    default: "500"
 
 targets:
   dev:
@@ -31,6 +45,7 @@ targets:
       catalog: mdp_dev
       ungm_base_url: https://wwwtest3.ungm.org
       acnc_row_limit: "500"
+      nsw_property_row_limit: "500"
 
   tst:
     mode: production
@@ -41,6 +56,7 @@ targets:
       catalog: mdp_tst
       ungm_base_url: https://wwwtest3.ungm.org
       acnc_row_limit: "500"
+      nsw_property_row_limit: "500"
     permissions:
       - group_name: users
         level: CAN_MANAGE
@@ -54,6 +70,7 @@ targets:
       catalog: mdp_prd
       ungm_base_url: https://www.ungm.org
       acnc_row_limit: ""
+      nsw_property_row_limit: "10000"
     permissions:
       - group_name: users
         level: CAN_MANAGE
