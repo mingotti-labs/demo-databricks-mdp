@@ -8,8 +8,39 @@
 import requests
 
 
+def _market_object(country: str, region: str, locality: str, district: str | None = None) -> dict:
+    """Build AirROI's nested `market` object -- country/region/locality are
+    always required; district is optional, used for sub-localities that
+    aren't their own tracked locality on AirROI (e.g. Cumuruxatiba, a
+    district of Prado, not a standalone market)."""
+    obj = {"country": country, "region": region, "locality": locality}
+    if district:
+        obj["district"] = district
+    return obj
+
+
+def _post(base_url: str, api_key: str, path: str, market: dict) -> dict:
+    response = requests.post(
+        f"{base_url}{path}",
+        headers={"X-API-KEY": api_key},
+        json={"market": market},
+        timeout=60,
+    )
+    if not response.ok:
+        raise requests.exceptions.HTTPError(
+            f"{response.status_code} error for {market} on {path}: {response.text}",
+            response=response,
+        )
+    return response.json()
+
+
 def fetch_market_summary(
-    base_url: str, api_key: str, country: str, region: str, locality: str
+    base_url: str,
+    api_key: str,
+    country: str,
+    region: str,
+    locality: str,
+    district: str | None = None,
 ) -> dict:
     """POST AirROI's /markets/summary endpoint for one market, return parsed JSON.
 
@@ -21,15 +52,19 @@ def fetch_market_summary(
     flat country_code/state/city shape shown (incorrectly, for this
     endpoint) in AirROI's own published example.
     """
-    response = requests.post(
-        f"{base_url}/markets/summary",
-        headers={"X-API-KEY": api_key},
-        json={"market": {"country": country, "region": region, "locality": locality}},
-        timeout=60,
-    )
-    if not response.ok:
-        raise requests.exceptions.HTTPError(
-            f"{response.status_code} error for {country}/{region}/{locality}: {response.text}",
-            response=response,
-        )
-    return response.json()
+    return _post(base_url, api_key, "/markets/summary", _market_object(country, region, locality, district))
+
+
+def fetch_market_metrics_all(
+    base_url: str,
+    api_key: str,
+    country: str,
+    region: str,
+    locality: str,
+    district: str | None = None,
+) -> dict:
+    """POST AirROI's /markets/metrics/all endpoint for one market, return
+    parsed JSON -- the time-series counterpart to /markets/summary's
+    single current snapshot (occupancy/ADR/RevPAR/etc. history, not just
+    a current value). Same cost/retry caveats as fetch_market_summary."""
+    return _post(base_url, api_key, "/markets/metrics/all", _market_object(country, region, locality, district))

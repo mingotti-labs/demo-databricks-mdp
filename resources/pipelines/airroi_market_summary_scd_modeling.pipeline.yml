@@ -1,7 +1,7 @@
 resources:
   pipelines:
     airroi_market_summary_scd_modeling:
-      name: bronze--airroi--market-summary-scd--${bundle.target}
+      name: bronze--airroi--scd--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_airroi_publish
       serverless: true

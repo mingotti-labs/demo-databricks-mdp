@@ -1,7 +1,7 @@
 resources:
   pipelines:
     airroi_market_summary_ingestion:
-      name: bronze--airroi--market-summary-ingestion--${bundle.target}
+      name: bronze--airroi--ingestion--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_airroi
       serverless: true

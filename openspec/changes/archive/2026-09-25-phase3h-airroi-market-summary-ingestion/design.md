@@ -32,29 +32,45 @@ assumption:
    separate sibling page, so `tauranga` likely excludes it. Accepted as a
    minor, documented gap (one suburb, not the wholesale fragmentation
    Sydney had), not a blocker.
+6. A fourth market, Cumuruxatiba/BA, was added later. It has no standalone
+   market page — it only appears as a named neighborhood within Prado's
+   report. Queried as `locality="Prado"` + `district="Cumuruxatiba"` (the
+   `market` object's fourth, optional field, unused by the other three
+   markets). Before committing to this, `district` was confirmed genuinely
+   functional (not silently ignored) via a real before/after comparison:
+   `locality="Prado"` alone returns 1,102.7 active listings; adding
+   `district="Cumuruxatiba"` returns 360.6 — a real, different subset.
+
+A second endpoint, `/markets/metrics/all`, was added after the first
+(`/markets/summary`) was already working — the time-series/pacing
+counterpart the user asked for by name once they understood
+`/markets/summary` only gives one current point per market.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Land AirROI's market summary data for the three confirmed markets,
-  modeled as SCD2 history
+- Land AirROI's market summary and market metrics data for the four
+  confirmed markets, modeled as SCD2 history
 - Keep real-dollar-cost API usage minimal and deliberate — no
   free-and-easy retries the way every prior source allowed
+- Introduce the platform's `ingested_timestamp`/`transformed_timestamp`
+  lineage columns, starting with this source
 
 **Non-Goals:**
 - SCD1 — a deliberate scope decision (see proposal.md), not a technical
   limitation
-- The individual-listings endpoint (`/listings/search/market`) — the
-  user's own plan is to size that pull using `active_listings` counts
-  this change's data will surface, so it's explicitly a later, separate
-  increment, not bundled in here
+- The individual-listings endpoints (`/listings/*`) — the user's own plan
+  is to size any such pull using `active_listings_count` this change's
+  data surfaces, so that's explicitly a later, separate increment
 - Per-environment row-limiting — there's no "smaller sample" concept for
-  a fixed 3-market aggregate pull; `dev`/`tst`/`prd` all use the same
+  a fixed 4-market aggregate pull; `dev`/`tst`/`prd` all use the same
   market list
 - A generic/reusable AirROI connector class — this is one proprietary
   vendor's API, not a reusable protocol like CKAN/ArcGIS REST; a plain
-  fetch helper (UNGM's pattern) is the right level of abstraction, not
-  overengineered into a connector framework
+  fetch helper (UNGM's pattern) is the right level of abstraction
+- Retrofitting `ingested_timestamp`/`transformed_timestamp` onto earlier
+  sources (ACNC, NSW Spatial, UNGM, Neon, clickstream) — deferred to a
+  later, separate change, since it touches resources unrelated to AirROI
 
 ## Decisions
 
@@ -67,11 +83,11 @@ is specific to `DataSource`/`DataSourceReader` classes registered via
 `spark.dataSource.register()` — it does not apply to a plain function
 called driver-side inside a `@dp.materialized_view()` body (exactly how
 UNGM's `fetch_ungm_endpoint` already works, imported from `src/common/`
-without issue). AirROI's helper is the latter shape, so `src/common/`
+without issue). Both AirROI helpers are the latter shape, so `src/common/`
 is the right, already-proven-working location.
 
-**Request shape corrected via a real `422` response — AirROI's own
-published example for this endpoint was wrong.**
+**`/markets/summary` request shape corrected via a real `422` response —
+AirROI's own published example for this endpoint was wrong.**
 The docs' shown example (`{"country_code": "us", "state": "florida",
 "city": "miami-beach"}`) does not match the endpoint's real requirements.
 The actual first live call returned `422` with an explicit error body:
@@ -81,71 +97,111 @@ must not be null"` — the real shape is a nested `market` object
 the general API overview's hierarchical model, not the flat shape shown
 for this specific endpoint. Values are **display names**, not URL slugs
 (`"Vitória da Conquista"`, not `"vitória-da-conquista"`) — confirmed by
-the second, successful call using that shape.
+the second, successful call using that shape. `/markets/metrics/all` uses
+the identical request shape, confirmed via its own successful test call.
 
-**Response fields also don't match AirROI's docs — confirmed via the
-real successful response, used as-is rather than the documented names.**
-Real fields: `active_listings_count`, `average_daily_rate`, `occupancy`,
-`rev_par`, `revenue`, `booking_lead_time`, `length_of_stay`, `min_nights`,
-and a structured `market` map (`{locality, country, region, district}`,
-echoing the request). None of these match the docs' example response
+**Response fields also don't match AirROI's docs — confirmed via the real
+successful responses, used as-is rather than the documented names.**
+`/markets/summary` real fields: `active_listings_count`,
+`average_daily_rate`, `occupancy`, `rev_par`, `revenue`,
+`booking_lead_time`, `length_of_stay`, `min_nights`, and a structured
+`market` map (`{locality, country, region, district}`, echoing the
+request). None of these match the docs' example response
 (`active_listings`, `average_adr`, `average_occupancy`, `average_revpar`,
 `median_annual_revenue`, `avg_booking_lead_time_days`,
-`avg_length_of_stay_nights`, `currency`) — that example was not trusted
-for schema design once real data proved it wrong; `market_summary_raw`'s
-actual columns are the real ones, not the documented ones. No `currency`
-field is returned at all — presumed USD, not explicitly confirmed.
+`avg_length_of_stay_nights`, `currency`). No `currency` field is returned
+at all (presumed USD, not explicitly confirmed).
 
-**SCD key is a synthetic `country_code|state|city` string, not the API's
-returned `market` display field.**
-The response only includes `market` as a human-readable label (e.g.
-`"Miami Beach, Florida"`), not a stable identifier. Since the project
-controls exactly what `country_code`/`state`/`city` values it sends for
-each of the three fixed markets, concatenating those is a more
-deterministic key than trusting the API's display-string formatting to
-stay consistent across calls.
+`/markets/metrics/all` real response is a different shape again: `{market,
+results}`, where `results` is a rolling ~12-month array of `{date,
+occupancy, average_daily_rate, revpar, revenue, booking_lead_time,
+length_of_stay, min_nights, active_listings_count}` — every metric except
+`active_listings_count` is a **distribution object**
+(`{avg, p25, p50, p75, p90}`), not the single value `/markets/summary`
+returns. Note the field is `revpar` here vs. `rev_par` in `/markets/summary`
+— a confirmed, real inconsistency between the two endpoints.
+
+**SCD key is the flat `_country`/`_region`/`_locality`/`_district` columns
+each `_raw` table carries, not the API's `market` map, and not a synthetic
+concatenated string.**
+`create_auto_cdc_from_snapshot_flow`'s `keys=` needs flat columns, not a
+struct/map type, so each raw pipeline tags every row with flat
+`_country`/`_region`/`_locality`/`_district` columns (`_district` is `NULL`
+for the three markets that don't use it) alongside the API's own nested
+`market` field, and the SCD flows key on those flat columns directly. (An
+earlier draft of this design considered a synthetic `country|state|city`
+string key instead — superseded once the flat-column approach was actually
+implemented and proven to work; the synthetic-string idea was never built.)
+`market_metrics_all_scd2` additionally keys on `date`, since each `(market,
+date)` pair — not each market alone — is the addressable entity for that
+table.
 
 **No incremental cursor — full-refresh batch pull, same as every other
 custom-API source.**
-`market_summary_raw` re-fetches all three markets' current summary on
-every run. `create_auto_cdc_from_snapshot_flow` (SCD2 only) tracks how
-each market's stats change between runs — this is genuinely meaningful
-history for a "seasonality curves" investment story, not a mechanical
-passthrough.
+Both raw tables re-fetch all four markets' current data on every run.
+`create_auto_cdc_from_snapshot_flow` (SCD2 only) tracks how each market's
+stats change between runs — for `market_summary`, that's a genuinely
+meaningful history for a "seasonality curves" investment story; for
+`market_metrics_all`, it additionally captures how AirROI *revises* a given
+future month's forecast as it approaches, which a plain append-only landing
+would lose.
+
+**`ingested_timestamp`/`transformed_timestamp` must be excluded from
+`track_history_except_column_list`, or SCD2 breaks silently.**
+`current_timestamp()` differs on every single run. Without excluding both
+columns, Auto CDC treats every row as changed on every run (since the
+timestamp column itself always differs), creating a spurious new SCD2
+history version each time regardless of whether the real source data
+changed — silently turning "history of real changes" into "history of
+every run." Confirmed via a real multi-run test: row counts stayed correct
+(4 current rows in `market_summary_scd2`, 48 in `market_metrics_all_scd2`,
+matching total row counts with zero accumulated history) only once the
+exclusion was added; this was caught before it could accumulate junk
+history, not after.
 
 ## Risks / Trade-offs
 
 - [No free sandbox means every test run costs real money] → Realized, not
-  just theoretical: the first real run failed with a `422` (wrong request
-  shape, AirROI's own docs were wrong), costing 1 call before failing
-  fast (the market loop stops at the first error, so a retry after fixing
-  the code cost 1 more call, not 3). Total cost across both failed
-  attempts and the successful 3-market run: ~5 calls. **Real per-call
-  cost turned out to be $0.10, not the $0.01 AirROI's general pricing
-  page advertises** — confirmed by the user's own observed charge, a 10x
-  gap from the headline rate, not independently re-verified from AirROI's
-  billing dashboard in this session. ~5 calls ≈ $0.50, not "a few cents"
-  — the fail-fast loop structure still kept this bounded rather than
-  compounding, but the per-call economics are meaningfully worse than
-  assumed when this change was scoped. Worth re-confirming the real rate
-  before scaling call volume for anything beyond this fixed 3-market
-  pattern (e.g. the deferred listings-endpoint follow-on, or any
-  broader-market-scan idea like the Italy question raised and declined
-  during this session).
+  just theoretical, multiple times across this change's lifetime:
+  - `/markets/summary`'s first real run failed with a `422` (wrong request
+    shape), costing 1 call before failing fast; the retry after fixing the
+    code cost 3 more calls (successful 3-market run at the time).
+  - Diagnosing whether `district` was genuinely honored for Cumuruxatiba
+    took a real before/after comparison call plus several failed attempts
+    at a Spark `CANNOT_DETERMINE_TYPE` error while trying to build a
+    diagnostic DataFrame from heterogeneous API responses — resolved by
+    deliberately raising the raw dict in a `ValueError` to force it into
+    visible output, bypassing DataFrame construction entirely.
+  - Learning `/markets/metrics/all`'s real response shape cost exactly one
+    $0.10 call (a single-market test, confirmed via the pipeline event log
+    showing one `flow_progress ERROR`, not a retry storm) before building
+    the full 4-market pipeline.
+  - **Real per-call cost is $0.10, not the $0.01 AirROI's general pricing
+    page advertises** — confirmed by the user's own observed charge, a 10x
+    gap from the headline rate, not independently re-verified from AirROI's
+    billing dashboard. Worth re-confirming before scaling call volume for
+    anything beyond the current 4-market, 2-endpoint pattern.
 - [AirROI's own published request/response examples don't match the real
-  API] → Confirmed, not assumed: both the request shape and every
-  response field name differ from docs. Fixed by trusting the real `422`
-  error body and the real successful response over the documented
-  examples — this project's evidence-over-documentation principle held
-  even against the vendor's own docs, not just community/derived sources.
+  API, for either endpoint] → Confirmed, not assumed: both the request
+  shape and every response field name differ from docs, for both
+  `/markets/summary` and `/markets/metrics/all`. Fixed by trusting the real
+  error bodies and real successful responses over documented examples —
+  this project's evidence-over-documentation principle held even against
+  the vendor's own docs, twice.
+- [This source may be deactivated] → The user has explicitly flagged they
+  may stop using AirROI if the data doesn't prove useful enough to justify
+  the ongoing per-call cost. `docs/source_systems/airroi.md` exists
+  specifically so the integration remains understandable independent of
+  that decision.
 
 ## Migration Plan
 
-Deploy to `dev` first. Before wiring the helper into a pipeline, verify it
-directly (outside Spark) against the real AirROI API with a minimal number
-of calls — enough to confirm the request shape, auth, and diacritic
-handling, not one call per market redundantly. Then deploy the pipeline,
-run once against `dev`, verify via `verify_airroi_market_summary_pattern`,
-promote to `tst`/`prd` the same way prior patterns were. Rollback: remove
-the resources from the bundle; the pattern only ever full-refreshes on the
-raw side, though SCD2 history would be lost.
+Deploy to `dev` first, verify via `verify_airroi_market_summary_pattern`.
+Deploy to `tst`/`prd` via CI/CD on merge to `main` (this repo's standard
+promotion path). Trigger a real pipeline run in `prd` for consistency with
+`dev`; skip a separate `tst` run — `tst`'s configuration is identical to
+`dev`'s for this source (same fixed market list, no row-limiting), so it
+would duplicate real-dollar cost without proving anything `dev`'s run
+doesn't already prove. `tst` still gets the deployed code and could be run
+later if that changes. Rollback: remove the resources from the bundle; both
+raw tables only ever full-refresh, though SCD2 history would be lost.

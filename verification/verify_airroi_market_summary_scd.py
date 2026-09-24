@@ -1,8 +1,11 @@
 # Databricks notebook source
 # Checks market_summary_scd2's row count matches market_summary_raw
 # exactly -- proves the snapshot-based Auto CDC flow actually processed
-# every market, keyed correctly on the flat _country/_region/_locality
-# columns (not the nested `market` map, which Auto CDC's keys= can't use).
+# every market, keyed correctly on the flat _country/_region/_locality/
+# _district columns (not the nested `market` map, which Auto CDC's keys=
+# can't use). Also proves ingested_timestamp/transformed_timestamp are
+# correctly excluded from history-triggering -- if they weren't, this
+# equality would fail after a second run (spurious extra versions).
 dbutils.widgets.text("catalog", "")
 catalog = dbutils.widgets.get("catalog")
 
