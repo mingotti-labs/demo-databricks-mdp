@@ -63,6 +63,31 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
 - Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
   defined) — decide when the first one is actually built, not speculatively here.
 
+## Platform-added timestamp columns
+
+Two standard lineage columns, one per layer, added by the platform itself (never
+sourced from the upstream API/system):
+
+- **`ingested_timestamp`** — on every `_raw` table, stamped with `current_timestamp()`
+  inside the dataset's own query (e.g. `.withColumn("ingested_timestamp", current_timestamp())`
+  on the returned DataFrame). For a Materialized View (full-refresh), this reflects
+  the most recent run that (re)computed the row, not a true "first ever landed" time.
+- **`transformed_timestamp`** — on every `_scd1`/`_scd2` table, stamped the same way
+  in a `@dp.temporary_view()` that wraps the `_raw` source before feeding
+  `create_auto_cdc_from_snapshot_flow`/`create_auto_cdc_flow` (see the auto-cdc
+  reference's "pre-filtering via temp view" pattern — this reuses it for stamping,
+  not filtering).
+  - **Both timestamp columns must be listed in `track_history_except_column_list`**
+    (SCD2) — `current_timestamp()` differs on every single run, so without this,
+    Auto CDC would treat every row as changed on every run and create a spurious
+    new history version each time, regardless of whether the real source data
+    changed. Confirmed via a real run producing the correct row count (no
+    inflation) only once this exclusion was added.
+- First introduced with AirROI (Phase 3h) — see `market_summary_raw.py`/
+  `market_summary_scd2.py` for the reference implementation. Not yet retrofitted
+  to earlier sources (ACNC, NSW Spatial, UNGM, Neon, clickstream); apply the same
+  pattern to them if/when they're revisited.
+
 ## Volume paths
 
 Files land under `/Volumes/<catalog>/bronze_<source>/<volume>/<data-source>/landing/`

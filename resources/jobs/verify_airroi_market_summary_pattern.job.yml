@@ -1,0 +1,32 @@
+resources:
+  jobs:
+    verify_airroi_market_summary_pattern:
+      name: verify--airroi--pattern--${bundle.target}
+      tasks:
+        - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_airroi_market_summary_ingestion.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_scd
+          depends_on:
+            - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_airroi_market_summary_scd.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_metrics_all_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_airroi_market_metrics_all_ingestion.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_metrics_all_scd
+          depends_on:
+            - task_key: verify_metrics_all_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_airroi_market_metrics_all_scd.py
+            base_parameters:
+              catalog: ${var.catalog}

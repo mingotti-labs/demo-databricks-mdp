@@ -58,6 +58,11 @@ demo-databricks-mdp/
                             # Spark data source, inlined (same reason as acnc/)
         nsw_spatial_publish/  # SCD1/SCD2 vs. property_raw directly, keyed by
                             # addressstringoid (not propid), Python only
+        airroi/             # market_summary_raw.py, market_metrics_all_raw.py --
+                            # src/common/airroi.py fetch helper (first paid-API
+                            # source), not a reusable connector
+        airroi_publish/     # market_summary_scd2.py, market_metrics_all_scd2.py --
+                            # SCD2 only, no SCD1
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -341,6 +346,101 @@ differentiated by catalog:
     confirmed necessary for this specific server**, since every real
     request against it in this project used that header from the start.
     If it turns out unnecessary, that's a safe no-op, not a false claim.
+- **AirROI** (Phase 3h) — this project's **first source with a real,
+  paid, authenticated API**. Every prior source is free/public. AirROI
+  has no free sandbox; every call costs real money. `bronze_airroi.market_summary_raw`
+  pulls four confirmed real markets (Vitória da Conquista/BA, Urubici/SC,
+  Tauranga/NZ, and Prado/BA queried with `district="Cumuruxatiba"`) via
+  `src/common/airroi.py`'s `fetch_market_summary`, a plain source-scoped
+  fetch helper (not a full reusable connector — AirROI is one proprietary
+  vendor's API, not a reusable protocol like CKAN/ArcGIS). `market_summary_scd2`
+  in `bronze_airroi_publish` is **SCD2 only, no SCD1** — a deliberate
+  scope decision (SCD1 would just duplicate SCD2's `WHERE __END_AT IS
+  NULL` filter).
+  - **Cumuruxatiba has no standalone market on AirROI** — it's a named
+    neighborhood within Prado's report, queried as `locality="Prado"` +
+    `district="Cumuruxatiba"` (the `market` object's fourth, optional
+    field, `NULL` for the other three markets). `district` was confirmed
+    genuinely functional, not silently ignored, via a real before/after
+    call: `locality="Prado"` alone returns 1,102.7 active listings;
+    adding `district="Cumuruxatiba"` returns 360.6 — a real, different
+    subset. Both `market_summary_scd2` and `market_metrics_all_scd2` key
+    on `_district` alongside `_country`/`_region`/`_locality` so
+    Cumuruxatiba can't collide with a hypothetical future Prado-level
+    market.
+  - **`market_metrics_all_raw`/`market_metrics_all_scd2`** — the
+    time-series counterpart to `market_summary`, via
+    `fetch_market_metrics_all` against `/markets/metrics/all`. Real
+    response shape (confirmed via a live test call, not assumed from
+    docs): `{"market": {...}, "results": [...]}`, where `results` is a
+    rolling ~12-month window (one trailing month + ~11 forward-looking
+    months) of `{date, occupancy, average_daily_rate, revpar, revenue,
+    booking_lead_time, length_of_stay, min_nights, active_listings_count}`
+    — every metric except `active_listings_count` is a **distribution
+    object** (`{avg, p25, p50, p75, p90}`), unlike `market_summary`'s flat
+    single values. Landed as one row per `(market, date)`, metric structs
+    kept as-is (flattening is a silver concern). SCD2-keyed on
+    `_country`/`_region`/`_locality`/`_district`/`date` — unlike
+    `market_summary`, the SCD2 need here is tracking how AirROI *revises*
+    a given future month's forecast between pulls, not just tracking a
+    single evolving "current value" per market. 4 markets × 12 months =
+    48 rows/run; every run re-calls the API for all 4 markets (Materialized
+    View, always fully recomputed) — 4 × $0.10 = $0.40/run, same cost
+    profile as `market_summary_raw`.
+  - **`ingested_timestamp`/`transformed_timestamp`** — this source is
+    where the platform's two standard lineage timestamp columns were
+    introduced (see NAMING.md's "Platform-added timestamp columns").
+    `ingested_timestamp` stamped in each `_raw` MV; `transformed_timestamp`
+    stamped in a temp view wrapping the `_raw` source before each SCD2
+    flow, both excluded via `track_history_except_column_list` — without
+    that exclusion, `current_timestamp()`'s per-run difference would make
+    Auto CDC think every row changed every run, versioning spuriously.
+    Confirmed via a real run: row counts stayed correct (4 / 48 current
+    rows) only once the exclusion was in place.
+  - **Markets confirmed/dropped based on real evidence, not the original
+    prompt's assumptions.** Originated from a pasted AI-generated prompt
+    about "AirDNA" and two illustrative Brazilian cities (Salvador/Sumaré);
+    AirDNA itself was investigated and rejected (Enterprise-only,
+    ~$50K+/year, sales-negotiation-gated). The final three markets were
+    each individually verified as clean, non-fragmented entries on
+    AirROI's own public site before being used (free to check). Sydney
+    was explicitly dropped: its plain `sydney` slug sits alongside 50+
+    separate Sydney-suburb pages (Bondi, Surry Hills, Parramatta, etc.),
+    strongly indicating a generic/residual bucket, not a real Local
+    Government Area or the Greater Sydney metro. Tauranga has one
+    accepted minor gap — Papamoa, a real Tauranga suburb, is a separate
+    sibling page, likely excluded from `tauranga`'s figures.
+  - **Both AirROI's own published request and response examples for
+    `/markets/summary` are wrong — confirmed via real calls, not assumed
+    correct from docs.** The documented request shape (flat
+    `country_code`/`state`/`city` fields) returned a real `422`; the
+    actual required shape is a nested `market` object with `country`/
+    `region`/`locality` **display names** (not URL slugs). The documented
+    response field names (`active_listings`, `average_adr`,
+    `average_occupancy`, `average_revpar`, `median_annual_revenue`, etc.)
+    also don't match the real response (`active_listings_count`,
+    `average_daily_rate`, `occupancy`, `rev_par`, `revenue`,
+    `booking_lead_time`, `length_of_stay`, `min_nights`, plus a
+    structured `market` map echoing the request) — this project's
+    evidence-over-documentation principle held even against the vendor's
+    own docs.
+  - **SCD key is the flat `_country`/`_region`/`_locality` columns
+    `market_summary_raw` carries, not the API's nested `market` map** —
+    `create_auto_cdc_from_snapshot_flow`'s `keys=` needs flat columns,
+    not a struct/map type.
+  - **Real per-call cost is $0.10, not the $0.01 AirROI's general
+    pricing page advertises** — confirmed via the user's own observed
+    charge, a 10x gap from the headline rate. Worth re-confirming before
+    scaling call volume for any future work on this source (e.g. the
+    deferred individual-listings endpoint, sized using
+    `active_listings_count` from this data once a real limit is chosen).
+  - **`revenue`'s exact time period (annual? some other window?) is not
+    confirmed** — a rough sanity check against `ADR × 365 × occupancy`
+    didn't match closely enough to confidently call it "annual," unlike
+    `rev_par`, which does check out closely against `ADR × occupancy`.
+  - No per-environment row-limiting, unlike ACNC/NSW property — there's
+    no free-tier/smaller-sample concept for a fixed 3-market pull;
+    `dev`/`tst`/`prd` all use the same three markets.
 
 ## Development style
 
