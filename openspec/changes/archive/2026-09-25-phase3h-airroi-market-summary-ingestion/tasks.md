@@ -96,10 +96,18 @@
 
 ## 7. Rollout to tst/prd
 
-- [ ] 7.1 Merge to `main` via PR, triggering CI/CD deploy to `tst` and
-      `prd`
-- [ ] 7.2 Trigger a real pipeline run in `prd` (both raw pipelines + both
-      SCD pipelines) — real cost, ~$0.80
-- [ ] 7.3 `tst` receives the deployed code but is not separately run with
+- [x] 7.1 Merged to `main` via PR #26, triggering CI/CD deploy to `tst`
+      (automatic) and `prd` (manual approval gate, approved)
+- [x] 7.2 Triggered a real pipeline run in `prd` — first attempt failed on
+      `dbutils.secrets.get("airroi", "api_key")` under the CI/CD SP (see
+      `demo-databricks-iac`'s `phase3h-airroi-cicd-secret-grant`: the
+      `airroi` secret scope had no CI/CD SP grant at all, since AirROI is
+      the first source reading a secret scope directly rather than via a
+      UC Connection). Fixed with a `databricks_secret_acl` grant, re-ran:
+      both raw pipelines `COMPLETED` (4 markets, 48 metric rows), both SCD
+      pipelines `COMPLETED` (4/48 rows matching raw exactly), verification
+      job all 4 tasks `SUCCESS` — confirmed via direct queries, not just
+      pipeline status
+- [x] 7.3 `tst` received the deployed code but was not separately run with
       real API calls — same configuration as `dev`, would duplicate cost
       without proving anything new (see design.md's Migration Plan)
