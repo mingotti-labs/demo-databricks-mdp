@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    verify_nsw_property_pattern:
+      name: verify--nsw-spatial--property--${bundle.target}
+      tasks:
+        - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_nsw_property_ingestion.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_scd
+          depends_on:
+            - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_nsw_property_scd.py
+            base_parameters:
+              catalog: ${var.catalog}

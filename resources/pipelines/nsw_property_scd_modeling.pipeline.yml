@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    nsw_property_scd_modeling:
+      name: bronze--nsw-spatial--property-scd--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_nsw_spatial_publish
+      serverless: true
+      continuous: false
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/nsw_spatial_publish/**

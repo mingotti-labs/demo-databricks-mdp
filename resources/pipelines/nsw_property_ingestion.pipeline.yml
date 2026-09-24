@@ -1,0 +1,18 @@
+resources:
+  pipelines:
+    nsw_property_ingestion:
+      name: bronze--nsw-spatial--property-ingestion--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_nsw_spatial
+      serverless: true
+      continuous: false
+      configuration:
+        nsw_property_service_url: ${var.nsw_property_service_url}
+        nsw_property_layer_id: ${var.nsw_property_layer_id}
+        nsw_property_row_limit: ${var.nsw_property_row_limit}
+      environment:
+        dependencies:
+          - requests
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/nsw_spatial/**
