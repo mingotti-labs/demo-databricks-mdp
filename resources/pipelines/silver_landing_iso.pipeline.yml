@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    silver_landing_iso:
+      name: silver--landing--iso--${bundle.target}
+      catalog: ${var.catalog}
+      schema: silver_landing_iso
+      serverless: true
+      continuous: false
+      configuration:
+        workspace_file_path: ${workspace.file_path}
+      libraries:
+        - glob:
+            include: ../../src/layers/silver/landing/iso/**
+        - glob:
+            include: ../../src/common/**
