@@ -31,13 +31,10 @@
       unlike ISO's change which added it as a correction
 - [x] 2.5 Created `resources/pipelines/geonames_reference_ingestion.pipeline.yml`
 - [x] 2.6 `databricks bundle validate` passed for dev/tst/prd
-- [ ] 2.7 Deploy and run against `dev` — **blocked**: depends on
-      `demo-databricks-iac`'s `phase3j-geonames-schema` (task written up,
-      `terraform plan` reviewed and clean — 12 to add, 0 change, 0
-      destroy — but the `apply` itself needs an interactive approval this
-      session couldn't get; `bronze_geonames`/`bronze_geonames_publish`
-      don't exist yet). Not deployed to avoid a guaranteed
-      schema-not-found failure
+- [x] 2.7 Deployed and ran against `dev` (after
+      `demo-databricks-iac`'s `phase3j-geonames-schema` landed) — confirmed
+      row counts: 252 (`country_info_raw`), 3,865 (`admin1_codes_raw`),
+      47,643 (`admin2_codes_raw`), 235,878 (`cities_raw`)
 
 ## 3. SCD modeling pipeline
 
@@ -56,7 +53,10 @@
       verified in 3.1, excluding `ingested_timestamp`/`transformed_timestamp`
       via `track_history_except_column_list`
 - [x] 3.4 Created `resources/pipelines/geonames_reference_scd_modeling.pipeline.yml`
-- [ ] 3.5 Deploy and run against `dev` — **blocked**, same reason as 2.7
+- [x] 3.5 Deployed and ran against `dev` — each SCD2 table's current-row
+      count (`__END_AT IS NULL`) matches its `_raw` counterpart exactly
+      (252 / 3,865 / 47,643 / 235,878) — all four pre-verified keys held
+      up in production, no surprises
 
 ## 4. Verification suite
 
@@ -67,7 +67,7 @@
       SCD2 table's current-row count against its `_raw` row count (no
       quarantine invariant needed — see task 3.1)
 - [x] 4.3 Created `resources/jobs/verify_geonames_reference_pattern.job.yml`
-- [ ] 4.4 Run against `dev` — **blocked**, same reason as 2.7
+- [x] 4.4 Ran against `dev` — both tasks `SUCCESS`
 
 ## 5. Documentation
 
