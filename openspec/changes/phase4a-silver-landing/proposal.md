@@ -56,6 +56,15 @@ starting point instead of reading Bronze Publish directly.
 (none — no existing tracked spec's requirements change; `silver.md` is
 project documentation, not a tracked openspec capability)
 
+## Cross-repo dependencies
+
+Depends on `phase4a-silver-landing-schemas` in `demo-databricks-iac` — this
+change's 6 pipelines write into `silver_landing_{source}` schemas that
+repo's Terraform provisions (schema/catalog creation is Terraform's
+responsibility per this repo's CLAUDE.md, not this repo's). That change's
+plan has been reviewed (36 to add, 0 to change, 0 to destroy) but not yet
+applied; this repo's pipelines should not be deployed until it lands.
+
 ## Impact
 
 - Affected code: new `src/layers/silver/landing/{source}/*.py` modeling
