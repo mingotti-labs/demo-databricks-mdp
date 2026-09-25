@@ -8,20 +8,26 @@ by a person or an AI coding agent.
 Every non-trivial change follows this sequence, whether driven by a person or an AI
 agent. Skipping or reordering steps is how work gets lost or lands broken:
 
-1. **Propose** — `openspec new change <name>` (or `/opsx:propose`), producing
-   `proposal.md`, `specs/`, `design.md`, `tasks.md`. Get the proposal agreed before
-   implementing against it.
-2. **Branch** — `feature/<short-kebab-case-description>` off `main` (see Branching
-   below).
-3. **Implement** — work through `tasks.md`, committing incrementally (see Commits
-   below). If a cross-repo dependency exists, record it in `proposal.md` now (see
-   Cross-repo dependencies below).
+1. **Branch** — `feature/<short-kebab-case-description>` off `main` (see Branching
+   below), created first. Nothing lands directly on `main` — not even
+   proposal-only artifacts.
+2. **Propose** — `openspec new change <name>` (or `/opsx:propose`) on that branch,
+   producing `proposal.md`, `specs/`, `design.md`, `tasks.md`, committed as its own
+   `propose:`-prefixed commit. Push the branch and open the PR now, not after
+   implementation — propose and implement are allowed to happen at genuinely
+   different times, and an open PR (not just a local commit) is what keeps the
+   proposal reviewable and durable in the meantime. Get the proposal agreed
+   (in the PR or in chat) before implementing against it.
+3. **Implement** — work through `tasks.md`, committing incrementally onto the same
+   branch/PR opened in step 2 (see Commits below). If a cross-repo dependency
+   exists, record it in `proposal.md` now (see Cross-repo dependencies below).
 4. **Validate and verify** — `databricks bundle validate` before every deploy; deploy
    to `dev`; run the change's `verification/` job against real data (see Verification
    vs validation below). Only mark a task complete once it's verified, not just
    implemented.
-5. **Push and open a PR** — every change lands via PR (see Pull requests below).
-   Reference the openspec change, and any cross-repo PR it depends on.
+5. **Push implementation commits** — every implementation commit lands on the same
+   PR the proposal opened in step 2 (see Pull requests below), not a new one.
+   Reference any cross-repo PR it depends on.
 6. **Review and merge** — squash-merge only, once approved.
 7. **Archive the openspec change** — `openspec archive <name>` after merge, so
    `openspec/specs/` reflects the new baseline.
