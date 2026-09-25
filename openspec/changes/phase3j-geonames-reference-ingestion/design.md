@@ -22,7 +22,7 @@ started, against `download.geonames.org/export/dump/`:
 
 **Goals:**
 - A working, verified ingestion of all four files into `bronze_geonames`,
-  modeled into SCD1/SCD2
+  modeled into SCD2
 - CC BY 4.0 attribution recorded on the tables themselves
 
 **Non-Goals:**
@@ -68,10 +68,23 @@ not `cities500_raw` — the threshold is a source-selection detail (recorded
 here and in the table comment), not part of the entity's identity, matching
 `unspsc_public_raw` not encoding UNGM's pagination scheme in its name.
 
-**SCD1 + SCD2 built for all four tables**, same reasoning as ISO's:
-cheap to build, gives a real audit trail on population/name corrections.
-Keyed by `iso_alpha2` for `country_info`, `code` for `admin1_codes` and
-`admin2_codes`, `geonameid` for `cities`.
+**SCD2 only, no SCD1, for all four tables** — matching the scope decision
+made mid-implementation on `phase3i-iso-country-reference-ingestion` (see
+that change's design.md), applied here from the start rather than building
+SCD1 and dropping it later: SCD2's `WHERE __END_AT IS NULL` already gives
+the "latest value" view SCD1 would provide, for this kind of
+low-change-frequency reference data. Keyed by `iso_alpha2` for
+`country_info`, `code` for `admin1_codes` and `admin2_codes`, `geonameid`
+for `cities` — **not yet confirmed unique against the real files**; ISO
+3166-2's subdivision codes looked unique from the column name alone too,
+and a real pipeline run proved otherwise (5,046 distinct of 6,260 rows —
+see that change's design.md). Re-verify each of these four keys against
+real data during implementation, the same way, before trusting them.
+
+**`ingested_timestamp`/`transformed_timestamp` stamped from the start** —
+applying NAMING.md's platform lineage pattern to every `_raw` table and
+every SCD2 flow, same as ISO's (corrected there mid-implementation; not
+repeating that oversight here).
 
 **License attribution as a Unity Catalog table comment**, same mechanism
 as ISO's, using GeoNames' CC BY 4.0 attribution requirement.
@@ -90,6 +103,13 @@ as ISO's, using GeoNames' CC BY 4.0 attribution requirement.
   Mitigation: explicitly out of scope here (see Non-Goals); this is the
   actual justification for the future GenAI-normalization app the planning
   brainstorm describes, not a gap to quietly work around now.
+- [Any of the four SCD keys could turn out non-unique against the real
+  files, same as ISO's `subdivision_code` finding] → Mitigation: verify
+  each key's uniqueness against real data before wiring
+  `create_auto_cdc_from_snapshot_flow`, not after a `DUPLICATE_KEY_VIOLATION`;
+  if one collides, follow ISO's quarantine pattern
+  (`subdivision_codes_deduped`/`subdivision_codes_quarantine`) rather than
+  inventing a new approach.
 
 ## Migration Plan
 

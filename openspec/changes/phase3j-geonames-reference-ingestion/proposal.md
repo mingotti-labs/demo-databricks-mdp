@@ -21,10 +21,15 @@ backbone (`phase3i-iso-country-reference-ingestion`).
   (3,865 rows, state/province-level), `admin2_codes_raw` (47,643 rows,
   county-level), and `cities_raw` (from `cities500.zip` — all populated
   places with population > 500, the smallest of GeoNames' official
-  population-filtered variants) — all full-refresh batch pulls.
-- `<table>_scd1`/`<table>_scd2` for all four tables in
-  `bronze_geonames_publish`, Python only, via
-  `create_auto_cdc_from_snapshot_flow` — same pattern as ISO's.
+  population-filtered variants) — all full-refresh batch pulls, each
+  stamping a platform `ingested_timestamp` (NAMING.md).
+- `<table>_scd2` (SCD2 only, no SCD1 — same scope decision made for
+  `phase3i-iso-country-reference-ingestion`, applied here from the start)
+  for all four tables in `bronze_geonames_publish`, Python only, via
+  `create_auto_cdc_from_snapshot_flow` — same pattern as ISO's. Each flow
+  stamps `transformed_timestamp` in an intermediate dataset immediately
+  upstream of Auto CDC, excluding both timestamp columns via
+  `track_history_except_column_list`.
 - A standing verification suite (`verify_geonames_reference_pattern`).
 - CC BY 4.0 attribution recorded as a Unity Catalog table comment on all
   four `_raw` tables.
@@ -33,7 +38,7 @@ backbone (`phase3i-iso-country-reference-ingestion`).
 
 ### New Capabilities
 - `geonames-reference-ingestion`: GeoNames country/admin1/admin2/city
-  gazetteer data into `bronze_geonames`, with SCD1/SCD2 modeling into
+  gazetteer data into `bronze_geonames`, with SCD2 modeling into
   `bronze_geonames_publish`
 
 ## Cross-repo dependencies

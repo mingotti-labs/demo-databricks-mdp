@@ -63,6 +63,12 @@ demo-databricks-mdp/
                             # source), not a reusable connector
         airroi_publish/     # market_summary_scd2.py, market_metrics_all_scd2.py --
                             # SCD2 only, no SCD1
+        iso/                # country_codes_raw.py, subdivision_codes_raw.py,
+                            # subdivision_codes_quarantine.py -- src/common/iso3166.py
+                            # fetch helper, small static-CSV pull, no connector needed
+        iso_publish/        # country_codes_scd2.py, subdivision_codes_scd2.py,
+                            # subdivision_codes_deduped.py (private) -- SCD2 only, no
+                            # SCD1
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -441,6 +447,60 @@ differentiated by catalog:
   - No per-environment row-limiting, unlike ACNC/NSW property — there's
     no free-tier/smaller-sample concept for a fixed 3-market pull;
     `dev`/`tst`/`prd` all use the same three markets.
+- **ISO 3166 country/subdivision reference data** (Phase 3i) — the
+  smallest ingestion pattern in the project: two static CSVs from a
+  public, unauthenticated GitHub mirror
+  (`raw.githubusercontent.com/ipregistry/iso3166`, CC BY-SA 4.0), no
+  pagination, no WAF block, no per-environment URL split.
+  `src/common/iso3166.py`'s `fetch_iso3166_csv` is a plain
+  `requests.get()` + `csv.DictReader`. `bronze_iso.country_codes_raw`/
+  `subdivision_codes_raw` are Materialized Views; both stamp
+  `ingested_timestamp`. CC BY-SA 4.0 attribution is set as a Unity Catalog
+  table `comment` on both `_raw` tables (`@dp.materialized_view(comment=...)`),
+  not just a docs note — the first externally-*licensed* (not just
+  externally-sourced) dataset in this project.
+  - `subdivision_code_iso3166-2` is renamed to `subdivision_code` on
+    ingest — the source column name's hyphen isn't a valid identifier on
+    its own, and the schema name already implies "ISO 3166-2."
+  - **SCD2-only, no SCD1** — a scope decision (not a technical
+    necessity): low-change-frequency reference data doesn't need a
+    separate "latest value" table when SCD2's `WHERE __END_AT IS NULL`
+    gives the same thing. `country_codes_scd2`/`subdivision_codes_scd2`
+    both live in `bronze_iso_publish`, both via
+    `create_auto_cdc_from_snapshot_flow` against a
+    `@dp.temporary_view()`/private `@dp.materialized_view()` that stamps
+    `transformed_timestamp`, both excluding `ingested_timestamp`/
+    `transformed_timestamp` via `track_history_except_column_list` — same
+    reasoning as AirROI's pattern (NAMING.md's "Platform-added timestamp
+    columns").
+  - **`country_code_alpha2` is a clean SCD key** (249 distinct of 249
+    rows, confirmed via the real source data), but
+    **`subdivision_code` alone is not** — confirmed via a real pipeline
+    failure, not assumed from the CSV's column names. 6,260 rows but only
+    5,046 distinct `subdivision_code` values: a subdivision can carry more
+    than one localized name (e.g. `AF-BDS` has separate Dari/`fa` and
+    Pashto/`ps` names for the same Afghan province). Adding
+    `language_code` alone still leaves 175 collisions (different
+    transliterations of the same name in the same language). The real key
+    is `(subdivision_code, language_code, subdivision_name)` — confirmed
+    to fully partition the data with zero inconsistency in the remaining
+    columns per group. Same category of finding as NSW Spatial's
+    `addressstringoid`-vs-`propid` key correction.
+  - **Even the corrected 3-column key isn't quite enough** — a real
+    `create_auto_cdc_from_snapshot_flow` run hit
+    `DUPLICATE_KEY_VIOLATION` on `RU-DA`/`ru`/`Dagestan`: 10 of 6,260 rows
+    are genuine full-row duplicates in the source CSV itself (confirmed
+    byte-identical, not a values conflict). Auto CDC's snapshot flow
+    rejects more than one row per key outright, with zero tolerance for
+    identical duplicates.
+  - **Quarantine pattern, same shape as ACNC's**: rather than silently
+    dropping the 10 duplicate rows inside the SCD pipeline,
+    `subdivision_codes_deduped` (private, feeds Auto CDC) and
+    `bronze_iso.subdivision_codes_quarantine` (public, in the raw schema)
+    read the same `subdivision_codes_raw` with complementary logic — a
+    `row_number()` window over the SCD key keeps rank 1 in the deduped
+    path and rank > 1 in quarantine — so `raw = deduped_distinct_keys +
+    quarantine` exactly, checked by `verify_iso_country_reference_scd.py`.
 
 ## Development style
 
@@ -501,6 +561,19 @@ the decision record behind what's built.
   Check `databricks warehouses list` for a `RUNNING` warehouse sitting idle and
   `databricks warehouses stop <id>` it before retrying — that resolved it in
   practice, confirmed via a real retry.
+- **Run one pipeline/job at a time on Free Edition — never trigger two
+  `bundle run` / `databricks pipelines start-update` / `databricks jobs
+  run-now` calls concurrently**, including across unrelated pipelines. This
+  is the direct consequence of the shared, capacity-limited serverless pool
+  above: two concurrent runs compete for the same small pool and make
+  `RESOURCE_EXHAUSTED` far more likely, not just a theoretical race. Treat
+  each `bundle run` as blocking — wait for one to reach `COMPLETED`/`FAILED`
+  before starting the next — even when a background shell makes it tempting
+  to fire off several at once. This constraint is specific to Free Edition;
+  `demo-databricks-iac`'s reserved `deployment/single_workspace/` and
+  `deployment/multiple_workspaces/` placeholders (see its CLAUDE.md) are for
+  a future paid tier that may lift it via classic clusters or a larger
+  serverless budget — not yet verified, since neither is built.
 - **The CI/CD SP's `[dev svc_cicd_github] ...`-prefixed pipeline/job copies
   are the canonical, durable dev data going forward — the
   `[dev handsonessential] ...` (or whichever human deploys locally) copies are

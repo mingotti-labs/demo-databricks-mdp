@@ -75,3 +75,17 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_airroi_publish`): `market_metrics_all_scd2`,
   `market_summary_scd2` (no SCD1 variant exists for either)
 - **Consumed by Silver Landing**: yes — both → `silver_landing_airroi`
+
+### iso
+- **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,
+  public GitHub CSV mirror (CC BY-SA 4.0)
+- **Ingestion pattern**: small fetch helper (`src/common/iso3166.py`),
+  static CSV, no connector needed
+- **Bronze raw**: `bronze_iso.{country_codes,subdivision_codes}_raw`
+  (+ `subdivision_codes_quarantine`)
+- **Bronze Publish** (`bronze_iso_publish`): `country_codes_scd2`,
+  `subdivision_codes_scd2` (no SCD1 variant for either;
+  `subdivision_codes_deduped` is a private pipeline-scoped intermediate,
+  not published)
+- **Consumed by Silver Landing**: not yet — onboarded after
+  `phase4a-silver-landing`
