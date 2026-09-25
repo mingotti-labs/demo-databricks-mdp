@@ -3,6 +3,34 @@
 Workflow conventions for this repo — followed the same way whether a change is written
 by a person or an AI coding agent.
 
+## Software development lifecycle
+
+Every non-trivial change follows this sequence, whether driven by a person or an AI
+agent. Skipping or reordering steps is how work gets lost or lands broken:
+
+1. **Propose** — `openspec new change <name>` (or `/opsx:propose`), producing
+   `proposal.md`, `specs/`, `design.md`, `tasks.md`. Get the proposal agreed before
+   implementing against it.
+2. **Branch** — `feature/<short-kebab-case-description>` off `main` (see Branching
+   below).
+3. **Implement** — work through `tasks.md`, committing incrementally (see Commits
+   below). If a cross-repo dependency exists, record it in `proposal.md` now (see
+   Cross-repo dependencies below).
+4. **Validate and verify** — `databricks bundle validate` before every deploy; deploy
+   to `dev`; run the change's `verification/` job against real data (see Verification
+   vs validation below). Only mark a task complete once it's verified, not just
+   implemented.
+5. **Push and open a PR** — every change lands via PR (see Pull requests below).
+   Reference the openspec change, and any cross-repo PR it depends on.
+6. **Review and merge** — squash-merge only, once approved.
+7. **Archive the openspec change** — `openspec archive <name>` after merge, so
+   `openspec/specs/` reflects the new baseline.
+8. **Clean up local branches — only after the PR has actually merged.** A branch
+   being implemented, verified, and pushed is not the same as being merged —
+   deleting a local branch before its PR merges jumps ahead of a step a human still
+   needs to review and approve, even though the remote branch itself survives the
+   deletion. `git branch -d <branch>` belongs after merge, never before.
+
 ## Branching
 
 Create branches as `feature/<short-kebab-case-description>` (e.g.
