@@ -89,3 +89,15 @@ richer variant if it exists; fall back only when it doesn't. See
   not published)
 - **Consumed by Silver Landing**: not yet — onboarded after
   `phase4a-silver-landing`
+
+### geonames
+- **What it is**: GeoNames country/admin1/admin2/city gazetteer data,
+  public dump-file mirror (CC BY 4.0)
+- **Ingestion pattern**: two fetch helpers (`src/common/geonames.py`),
+  plain + zip-wrapped static dumps, no connector needed
+- **Bronze raw**: `bronze_geonames.{country_info,admin1_codes,admin2_codes,cities}_raw`
+- **Bronze Publish** (`bronze_geonames_publish`):
+  `{country_info,admin1_codes,admin2_codes,cities}_scd2` (no SCD1 variant
+  for any table; all four keys confirmed unique, no quarantine needed)
+- **Consumed by Silver Landing**: not yet — onboarded after
+  `phase4a-silver-landing`

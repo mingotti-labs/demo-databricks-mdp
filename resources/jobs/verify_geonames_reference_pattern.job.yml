@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    verify_geonames_reference_pattern:
+      name: verify--geonames--reference--${bundle.target}
+      tasks:
+        - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_geonames_reference_ingestion.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_scd
+          depends_on:
+            - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_geonames_reference_scd.py
+            base_parameters:
+              catalog: ${var.catalog}

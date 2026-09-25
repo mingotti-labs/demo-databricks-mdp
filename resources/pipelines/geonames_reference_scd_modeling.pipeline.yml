@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    geonames_reference_scd_modeling:
+      name: bronze--geonames--reference-scd--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_geonames_publish
+      serverless: true
+      continuous: false
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/geonames_publish/**

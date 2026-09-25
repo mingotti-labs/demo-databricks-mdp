@@ -1,0 +1,22 @@
+resources:
+  pipelines:
+    geonames_reference_ingestion:
+      name: bronze--geonames--reference-ingestion--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_geonames
+      serverless: true
+      continuous: false
+      configuration:
+        geonames_country_info_url: ${var.geonames_country_info_url}
+        geonames_admin1_codes_url: ${var.geonames_admin1_codes_url}
+        geonames_admin2_codes_url: ${var.geonames_admin2_codes_url}
+        geonames_cities_url: ${var.geonames_cities_url}
+        workspace_file_path: ${workspace.file_path}
+      environment:
+        dependencies:
+          - requests
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/geonames/**
+        - glob:
+            include: ../../src/common/**
