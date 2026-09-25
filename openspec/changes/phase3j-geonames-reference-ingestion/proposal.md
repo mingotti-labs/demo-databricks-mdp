@@ -48,3 +48,7 @@ on `phase3i-iso-schema` landing first — see that change's proposal.md).
 - Adds new pipeline resource(s), a verification job, and
   `src/common/geonames.py` to the bundle across `dev`/`tst`/`prd`
 - No changes to any existing source system's resources
+
+## Model
+
+Sonnet — same pattern as ISO's; switch to Opus if the zip-wrapped `cities500` pull or its size breaks the template.

@@ -47,3 +47,7 @@ Should not deploy until that one has landed.
 - Adds new pipeline resource(s), a verification job, and
   `src/common/iso3166.py` to the bundle across `dev`/`tst`/`prd`
 - No changes to any existing source system's resources
+
+## Model
+
+Sonnet — repeats the established fetch helper, `_raw` MV, snapshot SCD1/SCD2, verification job pattern.
