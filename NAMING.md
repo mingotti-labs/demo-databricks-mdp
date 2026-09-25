@@ -104,7 +104,9 @@ sourced from the upstream API/system):
   layer; apply the same pattern to them if/when they're revisited. Silver
   Landing (`phase4a-silver-landing`) is the first layer to apply
   `transformed_timestamp` universally, regardless of whether the bronze
-  layer for that source has been retrofitted yet.
+  layer for that source has been retrofitted yet. Every source onboarded
+  after AirROI applies the pattern from the start — ISO 3166 (Phase 3i)
+  is the first: see `country_codes_raw.py`/`country_codes_scd2.py`.
 
 ## Volume paths
 

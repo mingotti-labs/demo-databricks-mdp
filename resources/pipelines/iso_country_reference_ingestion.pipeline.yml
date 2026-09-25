@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    iso_country_reference_ingestion:
+      name: bronze--iso--country-reference-ingestion--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_iso
+      serverless: true
+      continuous: false
+      configuration:
+        iso3166_countries_url: ${var.iso3166_countries_url}
+        iso3166_subdivisions_url: ${var.iso3166_subdivisions_url}
+        workspace_file_path: ${workspace.file_path}
+      environment:
+        dependencies:
+          - requests
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/iso/**
+        - glob:
+            include: ../../src/common/**

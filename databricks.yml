@@ -37,6 +37,12 @@ variables:
   airroi_base_url:
     description: Base URL for AirROI's market intelligence API -- same for every target, no test/prod split exists for this source (no free sandbox at all).
     default: https://api.airroi.com
+  iso3166_countries_url:
+    description: URL for the ISO 3166-1 country codes CSV -- same for every target, no test/prod split exists for this source.
+    default: https://raw.githubusercontent.com/ipregistry/iso3166/master/countries.csv
+  iso3166_subdivisions_url:
+    description: URL for the ISO 3166-2 subdivision codes CSV -- same for every target, no test/prod split exists for this source.
+    default: https://raw.githubusercontent.com/ipregistry/iso3166/master/subdivisions.csv
 
 targets:
   dev:

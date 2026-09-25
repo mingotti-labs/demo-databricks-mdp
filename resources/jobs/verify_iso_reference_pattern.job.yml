@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    verify_iso_reference_pattern:
+      name: verify--iso--country-reference--${bundle.target}
+      tasks:
+        - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_iso_country_reference_ingestion.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: verify_scd
+          depends_on:
+            - task_key: verify_ingestion
+          notebook_task:
+            notebook_path: ../../verification/verify_iso_country_reference_scd.py
+            base_parameters:
+              catalog: ${var.catalog}
