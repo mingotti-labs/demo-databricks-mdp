@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    silver_landing_clickstream:
+      name: silver--landing--clickstream--${bundle.target}
+      catalog: ${var.catalog}
+      schema: silver_landing_clickstream
+      serverless: true
+      continuous: false
+      configuration:
+        workspace_file_path: ${workspace.file_path}
+      libraries:
+        - glob:
+            include: ../../src/layers/silver/landing/clickstream/**
+        - glob:
+            include: ../../src/common/**
