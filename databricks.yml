@@ -43,6 +43,18 @@ variables:
   iso3166_subdivisions_url:
     description: URL for the ISO 3166-2 subdivision codes CSV -- same for every target, no test/prod split exists for this source.
     default: https://raw.githubusercontent.com/ipregistry/iso3166/master/subdivisions.csv
+  geonames_country_info_url:
+    description: URL for GeoNames' countryInfo.txt dump -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/countryInfo.txt
+  geonames_admin1_codes_url:
+    description: URL for GeoNames' admin1CodesASCII.txt dump -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/admin1CodesASCII.txt
+  geonames_admin2_codes_url:
+    description: URL for GeoNames' admin2Codes.txt dump -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/admin2Codes.txt
+  geonames_cities_url:
+    description: URL for GeoNames' cities500.zip dump (all populated places with population > 500) -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/cities500.zip
 
 targets:
   dev:

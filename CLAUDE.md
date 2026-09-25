@@ -69,6 +69,12 @@ demo-databricks-mdp/
         iso_publish/        # country_codes_scd2.py, subdivision_codes_scd2.py,
                             # subdivision_codes_deduped.py (private) -- SCD2 only, no
                             # SCD1
+        geonames/           # country_info_raw.py, admin1_codes_raw.py,
+                            # admin2_codes_raw.py, cities_raw.py -- src/common/geonames.py
+                            # fetch helpers (plain + zip dump), no connector needed
+        geonames_publish/   # {country_info,admin1_codes,admin2_codes,cities}_scd2.py --
+                            # SCD2 only, no SCD1; all four keys confirmed unique against
+                            # real data, no quarantine table needed
       silver/
         <domain>/        # domains TBD, per Phase 4
       gold/
@@ -501,6 +507,32 @@ differentiated by catalog:
     `row_number()` window over the SCD key keeps rank 1 in the deduped
     path and rank > 1 in quarantine — so `raw = deduped_distinct_keys +
     quarantine` exactly, checked by `verify_iso_country_reference_scd.py`.
+- **GeoNames country/admin1/admin2/city gazetteer data** (Phase 3j) — the
+  city/locality half of the reference-data backbone under ISO 3166's
+  country/state half. Four static files from a public, unauthenticated
+  `download.geonames.org` mirror (CC BY 4.0): `countryInfo.txt` (252
+  rows), `admin1CodesASCII.txt` (3,865 rows), `admin2Codes.txt` (47,643
+  rows), and `cities500.zip` (235,878 rows — all populated places with
+  population > 500, the smallest of GeoNames' official variants).
+  `src/common/geonames.py` has two helpers: `fetch_geonames_dump` (plain
+  tab-delimited) and `fetch_geonames_zip_dump` (zip-wrapped). Neither ISO
+  file format gave DictReader a usable header row — three files have no
+  header at all, and `countryInfo.txt`'s real header is buried among
+  `#`-prefixed documentation lines, not reliably first or last — so both
+  helpers take `fieldnames` explicitly rather than trying to parse one out.
+  `cities500.zip` at ~14MB compressed is an order of magnitude larger than
+  UNGM's ~1.4MB fetch but still a single driver-side fetch, same reasoning
+  as UNGM's.
+  - **All four SCD keys (`iso_alpha2`, `code` for both admin tables,
+    `geonameid`) were confirmed unique against the real fetched data before
+    any pipeline code was written** — the proactive check ISO's
+    `subdivision_code` surprise motivated. All four held up; no quarantine
+    table exists for any GeoNames table.
+  - Same shape as ISO's otherwise: `ingested_timestamp` on each `_raw`
+    table, `transformed_timestamp` stamped at the SCD2 layer via a
+    `@dp.temporary_view()` per table, both excluded via
+    `track_history_except_column_list`, SCD2-only (no SCD1), CC BY 4.0
+    attribution as a Unity Catalog table comment on all four `_raw` tables.
 
 ## Development style
 

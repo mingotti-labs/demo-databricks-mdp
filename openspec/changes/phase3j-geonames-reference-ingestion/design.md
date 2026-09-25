@@ -75,11 +75,12 @@ SCD1 and dropping it later: SCD2's `WHERE __END_AT IS NULL` already gives
 the "latest value" view SCD1 would provide, for this kind of
 low-change-frequency reference data. Keyed by `iso_alpha2` for
 `country_info`, `code` for `admin1_codes` and `admin2_codes`, `geonameid`
-for `cities` — **not yet confirmed unique against the real files**; ISO
-3166-2's subdivision codes looked unique from the column name alone too,
-and a real pipeline run proved otherwise (5,046 distinct of 6,260 rows —
-see that change's design.md). Re-verify each of these four keys against
-real data during implementation, the same way, before trusting them.
+for `cities` — **confirmed unique against the real files before
+implementation relied on them** (252/252, 3,865/3,865, 47,643/47,643,
+235,878/235,878): the proactive check ISO's `subdivision_code` surprise
+motivated (5,046 distinct of 6,260 rows — see that change's design.md).
+Unlike ISO, all four held up — no deduplicating intermediate or quarantine
+table exists for any GeoNames table.
 
 **`ingested_timestamp`/`transformed_timestamp` stamped from the start** —
 applying NAMING.md's platform lineage pattern to every `_raw` table and
@@ -104,12 +105,12 @@ as ISO's, using GeoNames' CC BY 4.0 attribution requirement.
   actual justification for the future GenAI-normalization app the planning
   brainstorm describes, not a gap to quietly work around now.
 - [Any of the four SCD keys could turn out non-unique against the real
-  files, same as ISO's `subdivision_code` finding] → Mitigation: verify
+  files, same as ISO's `subdivision_code` finding] → Mitigation: verified
   each key's uniqueness against real data before wiring
-  `create_auto_cdc_from_snapshot_flow`, not after a `DUPLICATE_KEY_VIOLATION`;
-  if one collides, follow ISO's quarantine pattern
-  (`subdivision_codes_deduped`/`subdivision_codes_quarantine`) rather than
-  inventing a new approach.
+  `create_auto_cdc_from_snapshot_flow`, not after a
+  `DUPLICATE_KEY_VIOLATION`. **Resolved during implementation**: all four
+  keys are unique (252/252, 3,865/3,865, 47,643/47,643, 235,878/235,878) —
+  no quarantine table needed for any table.
 
 ## Migration Plan
 
