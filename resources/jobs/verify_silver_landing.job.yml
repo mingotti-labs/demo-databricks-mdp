@@ -1,0 +1,10 @@
+resources:
+  jobs:
+    verify_silver_landing:
+      name: verify--silver--landing--${bundle.target}
+      tasks:
+        - task_key: verify_silver_landing
+          notebook_task:
+            notebook_path: ../../verification/verify_silver_landing.py
+            base_parameters:
+              catalog: ${var.catalog}

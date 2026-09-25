@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    silver_landing_acnc:
+      name: silver--landing--acnc--${bundle.target}
+      catalog: ${var.catalog}
+      schema: silver_landing_acnc
+      serverless: true
+      continuous: false
+      configuration:
+        workspace_file_path: ${workspace.file_path}
+      libraries:
+        - glob:
+            include: ../../src/layers/silver/landing/acnc/**
+        - glob:
+            include: ../../src/common/**

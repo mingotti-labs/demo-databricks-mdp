@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    silver_landing_airroi:
+      name: silver--landing--airroi--${bundle.target}
+      catalog: ${var.catalog}
+      schema: silver_landing_airroi
+      serverless: true
+      continuous: false
+      configuration:
+        workspace_file_path: ${workspace.file_path}
+      libraries:
+        - glob:
+            include: ../../src/layers/silver/landing/airroi/**
+        - glob:
+            include: ../../src/common/**

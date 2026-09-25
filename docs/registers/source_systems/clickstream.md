@@ -33,5 +33,5 @@ system. File-drop source, not API-based.
 
 No platform-added `ingested_timestamp`/`transformed_timestamp` columns yet
 (introduced later with AirROI — see NAMING.md's "Platform-added timestamp
-columns" and `docs/source_systems/airroi.md`). Apply if this source is
+columns" and `docs/registers/source_systems/airroi.md`). Apply if this source is
 revisited.

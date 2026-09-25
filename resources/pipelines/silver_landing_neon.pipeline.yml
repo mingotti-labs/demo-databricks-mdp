@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    silver_landing_neon:
+      name: silver--landing--neon--${bundle.target}
+      catalog: ${var.catalog}
+      schema: silver_landing_neon
+      serverless: true
+      continuous: false
+      configuration:
+        workspace_file_path: ${workspace.file_path}
+      libraries:
+        - glob:
+            include: ../../src/layers/silver/landing/neon/**
+        - glob:
+            include: ../../src/common/**
