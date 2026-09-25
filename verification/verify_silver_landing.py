@@ -18,7 +18,18 @@ ENTITIES = [
     {"source": "nsw_spatial", "table": "property", "bronze_schema": "bronze_nsw_spatial_publish", "bronze_table": "property_scd2", "scd2": True},
     {"source": "airroi", "table": "market_metrics_all", "bronze_schema": "bronze_airroi_publish", "bronze_table": "market_metrics_all_scd2", "scd2": True},
     {"source": "airroi", "table": "market_summary", "bronze_schema": "bronze_airroi_publish", "bronze_table": "market_summary_scd2", "scd2": True},
+    {"source": "iso", "table": "country_codes", "bronze_schema": "bronze_iso_publish", "bronze_table": "country_codes_scd2", "scd2": True},
+    {"source": "iso", "table": "subdivision_codes", "bronze_schema": "bronze_iso_publish", "bronze_table": "subdivision_codes_scd2", "scd2": True},
+    {"source": "geonames", "table": "country_info", "bronze_schema": "bronze_geonames_publish", "bronze_table": "country_info_scd2", "scd2": True},
+    {"source": "geonames", "table": "admin1_codes", "bronze_schema": "bronze_geonames_publish", "bronze_table": "admin1_codes_scd2", "scd2": True},
+    {"source": "geonames", "table": "admin2_codes", "bronze_schema": "bronze_geonames_publish", "bronze_table": "admin2_codes_scd2", "scd2": True},
+    {"source": "geonames", "table": "cities", "bronze_schema": "bronze_geonames_publish", "bronze_table": "cities_scd2", "scd2": True},
 ]
+
+# Sources whose Bronze Publish SCD2 objects carry ingested_timestamp
+# (stamped at their own _raw layer) -- Silver Landing propagates it
+# unchanged, never stamps or overwrites it.
+SOURCES_WITH_INGESTED_TIMESTAMP = {"airroi", "iso", "geonames"}
 
 
 def count(fqn: str, where: str = "1=1") -> int:
@@ -49,10 +60,13 @@ for entity in ENTITIES:
         if bad_is_current:
             failures.append(f"{label}: {bad_is_current} rows with is_current not matching scd_valid_to_timestamp")
 
-    if entity["source"] == "airroi":
+    if entity["source"] in SOURCES_WITH_INGESTED_TIMESTAMP:
         null_ingested = count(silver_fqn, "ingested_timestamp IS NULL")
         if null_ingested:
-            failures.append(f"{label}: {null_ingested} rows with null ingested_timestamp (expected non-null for AirROI)")
+            failures.append(
+                f"{label}: {null_ingested} rows with null ingested_timestamp "
+                f"(expected non-null for {entity['source']})"
+            )
 
 assert not failures, "Silver Landing verification failed:\n" + "\n".join(failures)
 

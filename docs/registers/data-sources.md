@@ -87,8 +87,9 @@ richer variant if it exists; fall back only when it doesn't. See
   `subdivision_codes_scd2` (no SCD1 variant for either;
   `subdivision_codes_deduped` is a private pipeline-scoped intermediate,
   not published)
-- **Consumed by Silver Landing**: not yet — onboarded after
-  `phase4a-silver-landing`
+- **Consumed by Silver Landing**: yes — `country_codes_scd2`/
+  `subdivision_codes_scd2` → `silver_landing_iso` (`country_codes`,
+  `subdivision_codes`)
 
 ### geonames
 - **What it is**: GeoNames country/admin1/admin2/city gazetteer data,
@@ -99,5 +100,6 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_geonames_publish`):
   `{country_info,admin1_codes,admin2_codes,cities}_scd2` (no SCD1 variant
   for any table; all four keys confirmed unique, no quarantine needed)
-- **Consumed by Silver Landing**: not yet — onboarded after
-  `phase4a-silver-landing`
+- **Consumed by Silver Landing**: yes — all four `_scd2` objects →
+  `silver_landing_geonames` (`country_info`, `admin1_codes`,
+  `admin2_codes`, `cities`)
