@@ -51,14 +51,18 @@ with the current timestamp at Silver Landing's own refresh — Silver Landing
 SHALL NOT stamp or otherwise modify `ingested_timestamp`; if the selected
 Bronze Publish source object already carries one, it is propagated
 unchanged, and if it doesn't, the column is simply absent. `source_file_name`
-is populated only when the underlying Bronze ingestion is file-based;
-otherwise it is null.
+is populated only when the underlying Bronze Publish object carries a
+source file name column to propagate; otherwise it is null. As of this
+change, no Bronze Publish object carries one (including clickstream's,
+confirmed by inspecting its Auto Loader ingestion), so the column is null
+on all 10 tables today — populated automatically once/if a source's bronze
+layer starts capturing it.
 
 #### Scenario: Row lands in Silver Landing
 - **WHEN** a row is materialized into a Silver Landing table
 - **THEN** the row includes non-null `source_name` and `transformed_timestamp`
   values, and a `source_file_name` value that is non-null only if the
-  source's Bronze ingestion is file-based
+  selected Bronze Publish source object carries one to propagate
 
 #### Scenario: Bronze Publish source already has an ingested_timestamp
 - **WHEN** the selected Bronze Publish source object carries an

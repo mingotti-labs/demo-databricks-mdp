@@ -91,9 +91,15 @@ Publish object already has one (currently only AirROI's two entities, per
 sources); absent otherwise. Silver Landing does not backfill it — that is
 bronze-layer work, out of scope here per this change's non-goals.
 
-**`source_file_name` is null except for clickstream.**
-Only clickstream's Bronze ingestion (Auto Loader) is file-based; the other
-five sources are DB/API pulls with no source file to record.
+**`source_file_name` is null for all 10 tables in this change.**
+Checked `web_events_raw.py` before assuming otherwise: even clickstream's
+Auto Loader ingestion doesn't capture `_metadata.file_path` as a persisted
+column, so no Bronze Publish object — including clickstream's — currently
+carries a source file name to propagate. The column exists on every table
+per the spec (forward-looking: populated once/if a source's bronze layer
+captures it), but is null everywhere today. Not a Silver Landing bug —
+retrofitting bronze to capture it is out of scope here (this change's
+non-goals exclude bronze changes).
 
 **Six pipelines (one per source), not one shared pipeline or ten per-entity
 pipelines.**
@@ -131,9 +137,10 @@ Additive only — no existing Bronze Publish object or pipeline changes.
 Deploy the six new pipelines to `dev`, run each once, and verify per
 entity: (a) row count matches the selected Bronze Publish source object,
 (b) provenance columns are populated — non-null `source_name`/
-`transformed_timestamp` on all 10 tables, `source_file_name` non-null only
-for clickstream, and `ingested_timestamp` present and non-null only for
-AirROI's two entities (absent elsewhere, not a bug), (c) for the 7
+`transformed_timestamp` on all 10 tables, `source_file_name` null on all 10
+(no Bronze Publish object currently captures a source file name, not a
+bug), and `ingested_timestamp` present and non-null only for AirROI's two
+entities (absent elsewhere, not a bug), (c) for the 7
 SCD2-sourced tables, `is_current` correctly reflects the active version,
 (d) natural key(s) are the leading column(s) with no surrogate key column
 present, (e) schema/table names match `silver_landing_{source}.{entity}`.

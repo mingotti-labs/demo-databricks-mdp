@@ -14,10 +14,12 @@
 ## 2. Clickstream Silver Landing
 
 - [ ] 2.1 Create `src/layers/silver/landing/clickstream/` materialized view
-      for `web_events` (sourced from `web_events_scd1`), applying
-      provenance columns (including `source_file_name`, since this source
-      is file-based) and natural-key-leading column order; verify it
-      appears in the pipeline dataset graph
+      for `web_events` (sourced from `web_events_scd1`), applying provenance
+      columns (`source_file_name` is null — confirmed `web_events_raw`
+      doesn't capture `_metadata.file_path`, so there is nothing to
+      propagate here despite this being a file-based source) and
+      natural-key-leading column order; verify it appears in the pipeline
+      dataset graph
 - [ ] 2.2 Add `resources/pipelines/silver_landing_clickstream.pipeline.yml`
       (`silver--landing--clickstream--${bundle.target}`, schema
       `silver_landing_clickstream`); verify `databricks bundle validate`
@@ -70,11 +72,11 @@
       dev`) and run each once; verify all six complete successfully
 - [ ] 7.2 Add `verification/verify_silver_landing.py`, checking per entity:
       row-count parity against its selected Bronze Publish source object,
-      non-null `source_name`/`transformed_timestamp` (and `source_file_name`
-      non-null only for clickstream; `ingested_timestamp` present and
-      non-null only for AirROI's two entities, absent elsewhere), and — for
-      the 7 SCD2-sourced entities — `is_current` correctly reflecting the
-      active version; wire it into
+      non-null `source_name`/`transformed_timestamp` (`source_file_name` is
+      null on all 10 today — no Bronze Publish object captures one yet;
+      `ingested_timestamp` present and non-null only for AirROI's two
+      entities, absent elsewhere), and — for the 7 SCD2-sourced entities —
+      `is_current` correctly reflecting the active version; wire it into
       `resources/jobs/verify_silver_landing.job.yml`; verify the job run
       succeeds for all 10 entities
 - [ ] 7.3 Confirm, for each of the 10 tables, that natural key(s) are the
