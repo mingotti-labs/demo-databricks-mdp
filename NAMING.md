@@ -8,7 +8,9 @@ Catalogs: `mdp_dev`, `mdp_tst`, `mdp_prd`
 |---|---|---|
 | Bronze | `bronze_<source>` | Raw ingestion, append-only |
 | Bronze publish | `bronze_<source>_publish` | Validated bronze, safe for downstream reads — includes `<table>_scd1`/`<table>_scd2` tables |
-| Silver | `silver_<domain>` | Conformed, domain-modelled (domains TBD) |
+| Silver Landing | `silver_landing_<source>` | Source-aligned foundational data product, one schema per source — see `docs/medallion/silver.md` |
+| Silver Normalised | `silver_normalised_<source>` | Source-aligned, standardized (future — see `docs/medallion/silver.md`) |
+| Silver Domain/Marts | `silver_<domain>` | Conformed, domain-modelled (domains TBD — decide when the first one is actually built) |
 | Gold | `gold_analytics_gateway` | BI / reporting consumers |
 | Gold | `gold_integration_gateway` | Operational / API consumers |
 | Gold | `gold_ai_gateway` | ML and GenAI consumers |
@@ -72,21 +74,37 @@ sourced from the upstream API/system):
   inside the dataset's own query (e.g. `.withColumn("ingested_timestamp", current_timestamp())`
   on the returned DataFrame). For a Materialized View (full-refresh), this reflects
   the most recent run that (re)computed the row, not a true "first ever landed" time.
-- **`transformed_timestamp`** — on every `_scd1`/`_scd2` table, stamped the same way
-  in a `@dp.temporary_view()` that wraps the `_raw` source before feeding
-  `create_auto_cdc_from_snapshot_flow`/`create_auto_cdc_flow` (see the auto-cdc
-  reference's "pre-filtering via temp view" pattern — this reuses it for stamping,
-  not filtering).
+- **`transformed_timestamp`** — stamped with `current_timestamp()` at every
+  transformation layer downstream of `_raw`, not just `_scd1`/`_scd2` — any
+  layer that transforms already-ingested data (bronze SCD modeling, Silver
+  Landing, and beyond) restamps it to reflect its own most recent processing.
+  It is not "first transformed at"; it is "last transformed at." At the
+  bronze `_scd1`/`_scd2` layer this is stamped in a `@dp.temporary_view()`
+  that wraps the `_raw` source before feeding
+  `create_auto_cdc_from_snapshot_flow`/`create_auto_cdc_flow` (see the
+  auto-cdc reference's "pre-filtering via temp view" pattern — this reuses
+  it for stamping, not filtering).
   - **Both timestamp columns must be listed in `track_history_except_column_list`**
     (SCD2) — `current_timestamp()` differs on every single run, so without this,
     Auto CDC would treat every row as changed on every run and create a spurious
     new history version each time, regardless of whether the real source data
     changed. Confirmed via a real run producing the correct row count (no
-    inflation) only once this exclusion was added.
+    inflation) only once this exclusion was added. Only applies to a layer
+    that runs its own Auto CDC; a layer that's a plain materialized view
+    over an already-deduplicated/already-versioned source (e.g. Silver
+    Landing over Bronze Publish) isn't re-running CDC, so this exclusion
+    doesn't apply there.
+- `ingested_timestamp` is never re-stamped past `_raw` — every downstream
+  layer either propagates it unchanged (if the source already has it) or
+  leaves it absent (if it doesn't). Only `transformed_timestamp` changes as
+  data moves through further transformation layers.
 - First introduced with AirROI (Phase 3h) — see `market_summary_raw.py`/
   `market_summary_scd2.py` for the reference implementation. Not yet retrofitted
-  to earlier sources (ACNC, NSW Spatial, UNGM, Neon, clickstream); apply the same
-  pattern to them if/when they're revisited.
+  to earlier sources (ACNC, NSW Spatial, UNGM, Neon, clickstream) at the bronze
+  layer; apply the same pattern to them if/when they're revisited. Silver
+  Landing (`phase4a-silver-landing`) is the first layer to apply
+  `transformed_timestamp` universally, regardless of whether the bronze
+  layer for that source has been retrofitted yet.
 
 ## Volume paths
 
