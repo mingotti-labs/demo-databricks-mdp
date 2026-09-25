@@ -19,6 +19,10 @@ open PR that drifts against `main` while implementation is pending
    `/opsx:propose`) on that branch, producing `proposal.md`, `specs/`,
    `design.md`, `tasks.md`, committed as its own `propose:`-prefixed commit.
    Nothing lands directly on `main` — not even proposal-only artifacts.
+   Before proposing, confirm the model for this session (see Model selection
+   below), and record the model recommended for implementation in
+   `proposal.md` under a `## Model` heading — `Sonnet` or `Opus`, plus a
+   one-line reason.
 2. **Push, open a PR, get it agreed, merge** — this PR contains only the
    proposal. Once reviewed and agreed (in the PR or in chat), squash-merge
    it — the change now lives on `main` under `openspec/changes/<name>/`,
@@ -26,10 +30,12 @@ open PR that drifts against `main` while implementation is pending
    artifacts). Its branch is deleted per step 8, same as any merged PR.
 3. **Implement, whenever ready** — a **new** branch off the now-updated
    `main` (the original branch name is free again after step 2's cleanup —
-   reuse it, or add a suffix if it's still in flight for some reason). Work
-   through `tasks.md`, committing incrementally (see Commits below). If a
-   cross-repo dependency is discovered only now, update `proposal.md` in
-   this same branch (see Cross-repo dependencies below).
+   reuse it, or add a suffix if it's still in flight for some reason). Before
+   the first task, the agent states the model in `proposal.md`'s `## Model`
+   and the model it is running on, and asks the human to confirm or switch
+   (`/model`). Work through `tasks.md`, committing incrementally (see Commits
+   below). If a cross-repo dependency is discovered only now, update
+   `proposal.md` in this same branch (see Cross-repo dependencies below).
 4. **Validate and verify** — `databricks bundle validate` before every
    deploy; deploy to `dev`; run the change's `verification/` job against
    real data (see Verification vs validation below). Only mark a task
@@ -47,6 +53,26 @@ open PR that drifts against `main` while implementation is pending
    human still needs to review and approve, even though the remote branch
    itself survives the deletion. `git branch -d <branch>` belongs after
    merge, never before.
+
+## Model selection
+
+Claude Code sessions on this repo use one of two models, chosen per change:
+
+- **Sonnet** — the default for changes that repeat an established pattern: a new
+  source following the phase3c–3j ingestion shape (fetch helper, `_raw`,
+  snapshot-based SCD1/SCD2, verification job, matching schema/grants), mechanical
+  doc/naming fixes, applying an already-agreed `design.md`.
+- **Opus** — for changes that set a convention or need deep reasoning: new medallion
+  layers or sub-layers (Silver Normalised, Domain, Marts), a proposal/design with no
+  prior template, cross-repo design, debugging an unfamiliar runtime failure (e.g.
+  `phase3b-neon-scd-modeling`'s streaming-vs-upsert issue).
+
+When unsure, use Opus for propose and Sonnet for implement (`opusplan` in `/model`).
+Switch up to Opus mid-change if the work stops fitting its template — a source with
+no stable key, an unexpected file format, a failure the existing pattern doesn't
+explain.
+
+The agent cannot switch models itself; it asks, and the human runs `/model`.
 
 ## Branching
 
