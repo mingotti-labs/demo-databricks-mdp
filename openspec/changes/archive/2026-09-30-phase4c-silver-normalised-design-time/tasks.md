@@ -64,7 +64,7 @@
       for a source change's `design.md` (profile summary, entities, domains,
       splits with evidence, tolerances, ignored columns); verify every
       section maps to a step in the prompt template
-- [ ] 4.3 Write `.claude/skills/silver-normalised-propose/SKILL.md` as a
+- [x] 4.3 Write `.claude/skills/silver-normalised-propose/SKILL.md` as a
       thin wrapper that loads the prompt template and holds no instructions
       of its own; verify the skill is listed in a new Claude Code session
 - [x] 4.4 Add the new skill to `docs/skills/README.md`'s repo-local skills
