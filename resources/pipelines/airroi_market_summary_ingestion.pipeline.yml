@@ -15,5 +15,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/airroi/**
-        - glob:
-            include: ../../src/common/**
