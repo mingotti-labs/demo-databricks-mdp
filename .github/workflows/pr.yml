@@ -9,9 +9,22 @@ on:
       - "databricks.yml"
       - "resources/**"
       - "src/**"
+      - "tests/**"
+      - "docs/normalised-spec/**"
       - ".github/workflows/**"
 
 jobs:
+  normalised-specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Validate normalised specs against the schema
+        run: uvx check-jsonschema --schemafile docs/normalised-spec/schema.json src/layers/silver/normalised/specs/*.yml
+      - name: Unit tests
+        run: uv run pytest
+
+
   validate:
     runs-on: ubuntu-latest
     environment: dev
