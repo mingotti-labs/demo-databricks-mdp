@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "docs/normalised-spec/schema.json",
+  "title": "Silver Normalised spec",
+  "description": "Format of one source's normalised spec (src/layers/silver/normalised/specs/{source}.yml). Meaning of every attribute: docs/normalised-spec/README.md.",
+  "version": "0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_system", "base_entities", "ignored_columns"],
+  "properties": {
+    "source_system": {
+      "description": "Suffix of the silver_landing_{source} schema this spec reads from.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "base_entities": {
+      "description": "Base and bridge entities, keyed by table name in silver_normalised_{source}.",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/base_entity"}
+    },
+    "extracted_entities": {
+      "description": "Extracted entities, keyed by singular domain name (N7).",
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/extracted_entity"}
+    },
+    "dependency_tolerance": {
+      "description": "Per-case exceptions to N4's zero-exception rule; each needs a reason in the source change's design.md.",
+      "type": "array",
+      "items": {"$ref": "#/$defs/tolerance"}
+    },
+    "ignored_columns": {
+      "description": "Landing columns deliberately left out, as table.column; lets the drift check pass.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+\\.[A-Za-z0-9_]+$"}
+    }
+  },
+  "$defs": {
+    "base_entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from"],
+      "properties": {
+        "from": {
+          "description": "Landing table it is built from, as silver_landing_{source}.{table}.",
+          "type": "string",
+          "pattern": "^silver_landing_[a-z0-9_]+\\.[a-z0-9_]+$"
+        },
+        "natural_key": {
+          "description": "Natural key columns; become the first columns (N1). Not used on bridges, whose key is the parent's key plus the element.",
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "history": {
+          "description": "scd2 keeps the Landing validity columns (N6); omit for none.",
+          "enum": ["scd2"]
+        },
+        "columns": {
+          "description": "Attributes kept on the entity. Not used on bridges.",
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "extracted": {
+          "description": "Map of column to extracted entity (N10). On a bridge, the key is 'value' (explode) or 'attribute' (unpivot).",
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "parent": {
+          "description": "Parent entity; with explode or unpivot, marks this entry as a bridge (N2).",
+          "type": "string"
+        },
+        "explode": {
+          "description": "Flattens a delimited list column into one row per element (N2).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["column", "split"],
+          "properties": {
+            "column": {"description": "Landing column holding the list.", "type": "string"},
+            "split": {"description": "Literal delimiter between elements.", "type": "string", "minLength": 1}
+          }
+        },
+        "unpivot": {
+          "description": "Flattens a flag column family into one row per set flag (N2).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["columns_like", "keep_when"],
+          "properties": {
+            "columns_like": {"description": "SQL LIKE pattern selecting the column family.", "type": "string"},
+            "keep_when": {"description": "Flag value that produces a row.", "type": "string"}
+          }
+        }
+      },
+      "not": {"required": ["explode", "unpivot"]},
+      "if": {"anyOf": [{"required": ["explode"]}, {"required": ["unpivot"]}]},
+      "then": {"required": ["parent"]},
+      "else": {"required": ["natural_key", "columns"]}
+    },
+    "extracted_entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "parent": {
+          "description": "Parent level in a hierarchy (N5).",
+          "type": "string"
+        },
+        "attributes": {
+          "description": "Extra columns that depend on the entity's value, e.g. country_code (N7, N10).",
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "tolerance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity", "determinant", "dependent", "max_violations"],
+      "properties": {
+        "entity": {"description": "Base entity the dependency is checked on.", "type": "string"},
+        "determinant": {"description": "Column the dependent attribute depends on.", "type": "string"},
+        "dependent": {"description": "Column moved out despite exceptions.", "type": "string"},
+        "max_violations": {
+          "description": "Maximum violating determinant values accepted; their rows go to {entity}_quarantine.",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
