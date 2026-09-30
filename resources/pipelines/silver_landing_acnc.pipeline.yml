@@ -11,5 +11,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/silver/landing/acnc/**
-        - glob:
-            include: ../../src/common/**

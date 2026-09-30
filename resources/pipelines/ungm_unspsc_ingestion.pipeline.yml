@@ -15,5 +15,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/ungm/**
-        - glob:
-            include: ../../src/common/**

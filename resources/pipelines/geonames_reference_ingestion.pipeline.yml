@@ -18,5 +18,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/geonames/**
-        - glob:
-            include: ../../src/common/**

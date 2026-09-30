@@ -16,5 +16,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/iso/**
-        - glob:
-            include: ../../src/common/**

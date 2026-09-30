@@ -11,5 +11,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/silver/landing/nsw_spatial/**
-        - glob:
-            include: ../../src/common/**

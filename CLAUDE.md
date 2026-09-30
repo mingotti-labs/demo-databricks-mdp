@@ -247,7 +247,13 @@ differentiated by catalog:
     ${workspace.file_path}` shared-package pattern relies on, used directly
     here since that pattern needs setuptools/`pyproject.toml`
     package-discovery config this repo doesn't have yet. See
-    `unspsc_public_raw.py`'s header.
+    `unspsc_public_raw.py`'s header. **Never list `src/common/**` in a
+    pipeline's `libraries`**: it adds nothing to imports, but makes every
+    `common/` file run as pipeline source, so a `common/` module importing a
+    sibling (`from common import ...`) fails that pipeline at initialisation
+    — confirmed when it broke `silver_landing_airroi` in `dev` during
+    `phase4d-silver-normalised-framework`. Twelve pipelines carried the
+    leftover glob until it was removed.
   - **UNGM's WAF blocks `requests`' default User-Agent with a 403** —
     confirmed reproducible even from a local machine (identical URL: curl's
     default UA gets 200, `python-requests`' default UA gets 403). Not an

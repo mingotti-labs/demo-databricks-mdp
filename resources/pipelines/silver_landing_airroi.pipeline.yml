@@ -11,5 +11,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/silver/landing/airroi/**
-        - glob:
-            include: ../../src/common/**

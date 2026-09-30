@@ -11,5 +11,3 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/silver/landing/iso/**
-        - glob:
-            include: ../../src/common/**
