@@ -28,7 +28,8 @@
       table, each with a one-line `description`; verify design.md's acnc
       example validates against it (e.g. `uvx check-jsonschema`)
 - [x] 2.2 Write `docs/normalised-spec/README.md`: rationale, meaning of
-      every attribute, bridge detection (`parent` + `explode`/`unpivot`),
+      every attribute, one block per entity kind (`base_entities`,
+      `bridge_entities`, `extracted_entities`),
       extension rules (minor/major bumps, bridges revisitable), and "Adding
       a source" steps 0–8 incl. the `ingested_timestamp` precondition;
       verify every schema attribute is documented

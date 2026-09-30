@@ -162,10 +162,12 @@ parity with its Landing table.
 fail by design.
 
 **Decision**: Bridge is a third entity kind (`mdp.entity_kind = bridge`),
-checked by element count instead of row parity. Declared as a
-`base_entities` entry with `parent` plus `explode`/`unpivot`, so bridges
-can be removed from the format later (a major version bump) if they prove
-unnecessary.
+checked by element count instead of row parity, and declared in its own
+`bridge_entities` block of the normalised spec, one block per entity kind.
+Declaring bridges as `base_entities` entries marked by `explode`/`unpivot`
+was rejected: it mixes two kinds in one block and needs conditional
+validation. If bridges prove unnecessary, the block is removed (a major
+version bump).
 
 ---
 

@@ -14,11 +14,17 @@
       "pattern": "^[a-z][a-z0-9_]*$"
     },
     "base_entities": {
-      "description": "Base and bridge entities, keyed by table name in silver_normalised_{source}.",
+      "description": "Base entities, keyed by table name in silver_normalised_{source}; each keeps its Landing table's name and grain.",
       "type": "object",
       "minProperties": 1,
       "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
       "additionalProperties": {"$ref": "#/$defs/base_entity"}
+    },
+    "bridge_entities": {
+      "description": "Bridge entities (N2), keyed by table name {parent}_{attribute}; one row per element of a repeating group.",
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/bridge_entity"}
     },
     "extracted_entities": {
       "description": "Extracted entities, keyed by singular domain name (N7).",
@@ -39,18 +45,19 @@
     }
   },
   "$defs": {
+    "landing_table": {
+      "description": "Landing table, as silver_landing_{source}.{table}.",
+      "type": "string",
+      "pattern": "^silver_landing_[a-z0-9_]+\\.[a-z0-9_]+$"
+    },
     "base_entity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["from"],
+      "required": ["from", "natural_key", "columns"],
       "properties": {
-        "from": {
-          "description": "Landing table it is built from, as silver_landing_{source}.{table}.",
-          "type": "string",
-          "pattern": "^silver_landing_[a-z0-9_]+\\.[a-z0-9_]+$"
-        },
+        "from": {"$ref": "#/$defs/landing_table"},
         "natural_key": {
-          "description": "Natural key columns; become the first columns (N1). Not used on bridges, whose key is the parent's key plus the element.",
+          "description": "Natural key columns; become the first columns (N1).",
           "type": "array",
           "minItems": 1,
           "items": {"type": "string"}
@@ -60,21 +67,30 @@
           "enum": ["scd2"]
         },
         "columns": {
-          "description": "Attributes kept on the entity. Not used on bridges.",
+          "description": "Attributes kept on the entity.",
           "type": "array",
           "items": {"type": "string"}
         },
         "extracted": {
-          "description": "Map of column to extracted entity (N10). On a bridge, the key is 'value' (explode) or 'attribute' (unpivot).",
+          "description": "Map of column to extracted entity; the column stays as a foreign key (N10).",
           "type": "object",
           "additionalProperties": {"type": "string"}
-        },
+        }
+      }
+    },
+    "bridge_entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "parent"],
+      "oneOf": [{"required": ["explode"]}, {"required": ["unpivot"]}],
+      "properties": {
+        "from": {"$ref": "#/$defs/landing_table"},
         "parent": {
-          "description": "Parent entity; with explode or unpivot, marks this entry as a bridge (N2).",
+          "description": "Base entity whose natural key the bridge carries; must be a key of base_entities.",
           "type": "string"
         },
         "explode": {
-          "description": "Flattens a delimited list column into one row per element (N2).",
+          "description": "Flattens a delimited list column into one row per element.",
           "type": "object",
           "additionalProperties": false,
           "required": ["column", "split"],
@@ -84,7 +100,7 @@
           }
         },
         "unpivot": {
-          "description": "Flattens a flag column family into one row per set flag (N2).",
+          "description": "Flattens a flag column family into one row per set flag; the element is the column name.",
           "type": "object",
           "additionalProperties": false,
           "required": ["columns_like", "keep_when"],
@@ -92,12 +108,12 @@
             "columns_like": {"description": "SQL LIKE pattern selecting the column family.", "type": "string"},
             "keep_when": {"description": "Flag value that produces a row.", "type": "string"}
           }
+        },
+        "extracted": {
+          "description": "Extracted entity the element belongs to; the element stays as a foreign key (N10).",
+          "type": "string"
         }
-      },
-      "not": {"required": ["explode", "unpivot"]},
-      "if": {"anyOf": [{"required": ["explode"]}, {"required": ["unpivot"]}]},
-      "then": {"required": ["parent"]},
-      "else": {"required": ["natural_key", "columns"]}
+      }
     },
     "extracted_entity": {
       "type": "object",
