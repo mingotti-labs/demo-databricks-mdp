@@ -1,0 +1,47 @@
+# Normalised spec for airroi. Evidence and decisions:
+# openspec/changes/phase4d-silver-normalised-framework/ (profile.json, design.md).
+source_system: airroi
+base_entities:
+  market_summary:
+    from: silver_landing_airroi.market_summary
+    natural_key: [_country, _region, _locality, _district]
+    history: scd2
+    columns:
+      - active_listings_count
+      - average_daily_rate
+      - booking_lead_time
+      - length_of_stay
+      - min_nights
+      - occupancy
+      - rev_par
+      - revenue
+    extracted:
+      _country: country
+      _region: region
+      _locality: locality
+      _district: district
+  market_metrics_all:
+    from: silver_landing_airroi.market_metrics_all
+    natural_key: [_country, _region, _locality, _district, date]
+    history: scd2
+    columns:
+      - active_listings_count
+      - average_daily_rate
+      - booking_lead_time
+      - length_of_stay
+      - min_nights
+      - occupancy
+      - revenue
+      - revpar
+    extracted:
+      _country: country
+      _region: region
+      _locality: locality
+      _district: district
+extracted_entities:
+  country: {}
+  region: {parent: country}
+  locality: {parent: region}
+  district: {parent: locality}
+ignored_columns:
+  - market_summary.market

@@ -1,0 +1,953 @@
+{
+ "source": "airroi",
+ "pass": [
+  1,
+  2
+ ],
+ "overlap_max_distinct": 1000,
+ "tables": [
+  {
+   "table": "market_metrics_all",
+   "row_count": 48,
+   "columns": [
+    {
+     "column": "_country",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 2,
+     "max_length": 11,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Brazil",
+       "rows": 36
+      },
+      {
+       "value": "New Zealand",
+       "rows": 12
+      }
+     ]
+    },
+    {
+     "column": "_region",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 3,
+     "max_length": 14,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Bahia",
+       "rows": 24
+      },
+      {
+       "value": "Bay of Plenty",
+       "rows": 12
+      },
+      {
+       "value": "Santa Catarina",
+       "rows": 12
+      }
+     ]
+    },
+    {
+     "column": "_locality",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 20,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Prado",
+       "rows": 12
+      },
+      {
+       "value": "Tauranga",
+       "rows": 12
+      },
+      {
+       "value": "Urubici",
+       "rows": 12
+      },
+      {
+       "value": "Vitória da Conquista",
+       "rows": 12
+      }
+     ]
+    },
+    {
+     "column": "_district",
+     "type": "STRING",
+     "null_pct": 75.0,
+     "distinct_count": 1,
+     "max_length": 12,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Cumuruxatiba",
+       "rows": 12
+      }
+     ]
+    },
+    {
+     "column": "date",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 12,
+     "max_length": 10,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2025-09-01",
+       "rows": 4
+      },
+      {
+       "value": "2025-10-01",
+       "rows": 4
+      },
+      {
+       "value": "2025-11-01",
+       "rows": 4
+      },
+      {
+       "value": "2025-12-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-01-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-02-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-03-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-04-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-05-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-06-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-07-01",
+       "rows": 4
+      },
+      {
+       "value": "2026-08-01",
+       "rows": 4
+      }
+     ]
+    },
+    {
+     "column": "active_listings_count",
+     "type": "LONG",
+     "null_pct": 0.0,
+     "distinct_count": 44,
+     "max_length": 4,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "1543",
+       "rows": 2
+      },
+      {
+       "value": "343",
+       "rows": 2
+      },
+      {
+       "value": "348",
+       "rows": 2
+      },
+      {
+       "value": "349",
+       "rows": 2
+      },
+      {
+       "value": "1000",
+       "rows": 1
+      },
+      {
+       "value": "1007",
+       "rows": 1
+      },
+      {
+       "value": "1013",
+       "rows": 1
+      },
+      {
+       "value": "1020",
+       "rows": 1
+      },
+      {
+       "value": "1024",
+       "rows": 1
+      },
+      {
+       "value": "1078",
+       "rows": 1
+      },
+      {
+       "value": "1084",
+       "rows": 1
+      },
+      {
+       "value": "1086",
+       "rows": 1
+      },
+      {
+       "value": "1100",
+       "rows": 1
+      },
+      {
+       "value": "1227",
+       "rows": 1
+      },
+      {
+       "value": "1233",
+       "rows": 1
+      },
+      {
+       "value": "1234",
+       "rows": 1
+      },
+      {
+       "value": "1239",
+       "rows": 1
+      },
+      {
+       "value": "1247",
+       "rows": 1
+      },
+      {
+       "value": "1480",
+       "rows": 1
+      },
+      {
+       "value": "1507",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "average_daily_rate",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "booking_lead_time",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "length_of_stay",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "min_nights",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "occupancy",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "revenue",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "revpar",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "ingested_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 26,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2026-09-24 22:25:03.773479",
+       "rows": 48
+      }
+     ]
+    },
+    {
+     "column": "transformed_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 26,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2026-09-25 02:23:21.240527",
+       "rows": 48
+      }
+     ]
+    },
+    {
+     "column": "scd_valid_from_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 23,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2026-09-24 22:26:52.649",
+       "rows": 48
+      }
+     ]
+    },
+    {
+     "column": "scd_valid_to_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 100.0,
+     "distinct_count": 0,
+     "max_length": null,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": []
+    },
+    {
+     "column": "is_current",
+     "type": "BOOLEAN",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 4,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "true",
+       "rows": 48
+      }
+     ]
+    },
+    {
+     "column": "source_name",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 6,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "airroi",
+       "rows": 48
+      }
+     ]
+    },
+    {
+     "column": "source_file_name",
+     "type": "STRING",
+     "null_pct": 100.0,
+     "distinct_count": 0,
+     "max_length": null,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": []
+    }
+   ]
+  },
+  {
+   "table": "market_summary",
+   "row_count": 4,
+   "columns": [
+    {
+     "column": "_country",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 2,
+     "max_length": 11,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Brazil",
+       "rows": 3
+      },
+      {
+       "value": "New Zealand",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "_region",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 3,
+     "max_length": 14,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Bahia",
+       "rows": 2
+      },
+      {
+       "value": "Bay of Plenty",
+       "rows": 1
+      },
+      {
+       "value": "Santa Catarina",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "_locality",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 20,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Prado",
+       "rows": 1
+      },
+      {
+       "value": "Tauranga",
+       "rows": 1
+      },
+      {
+       "value": "Urubici",
+       "rows": 1
+      },
+      {
+       "value": "Vitória da Conquista",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "_district",
+     "type": "STRING",
+     "null_pct": 75.0,
+     "distinct_count": 1,
+     "max_length": 12,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "Cumuruxatiba",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "active_listings_count",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 6,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "1307.3",
+       "rows": 1
+      },
+      {
+       "value": "302.3",
+       "rows": 1
+      },
+      {
+       "value": "360.6",
+       "rows": 1
+      },
+      {
+       "value": "995.8",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "average_daily_rate",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 5,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "208.3",
+       "rows": 1
+      },
+      {
+       "value": "317.5",
+       "rows": 1
+      },
+      {
+       "value": "674.8",
+       "rows": 1
+      },
+      {
+       "value": "726.3",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "booking_lead_time",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 4,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "18.6",
+       "rows": 1
+      },
+      {
+       "value": "34.2",
+       "rows": 1
+      },
+      {
+       "value": "47.5",
+       "rows": 1
+      },
+      {
+       "value": "50.8",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "length_of_stay",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 3,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2.8",
+       "rows": 1
+      },
+      {
+       "value": "4.3",
+       "rows": 1
+      },
+      {
+       "value": "4.8",
+       "rows": 1
+      },
+      {
+       "value": "5.1",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "market",
+     "type": "MAP",
+     "null_pct": 0.0
+    },
+    {
+     "column": "min_nights",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 3,
+     "max_length": 3,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "1.5",
+       "rows": 2
+      },
+      {
+       "value": "2.3",
+       "rows": 1
+      },
+      {
+       "value": "2.6",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "occupancy",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 3,
+     "max_length": 4,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "0.28",
+       "rows": 2
+      },
+      {
+       "value": "0.32",
+       "rows": 1
+      },
+      {
+       "value": "0.41",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "rev_par",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 5,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "124.8",
+       "rows": 1
+      },
+      {
+       "value": "193.4",
+       "rows": 1
+      },
+      {
+       "value": "199.9",
+       "rows": 1
+      },
+      {
+       "value": "67.7",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "revenue",
+     "type": "DOUBLE",
+     "null_pct": 0.0,
+     "distinct_count": 4,
+     "max_length": 7,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "13761.3",
+       "rows": 1
+      },
+      {
+       "value": "25815.1",
+       "rows": 1
+      },
+      {
+       "value": "29543.1",
+       "rows": 1
+      },
+      {
+       "value": "47454.7",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "scd_valid_from_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 0.0,
+     "distinct_count": 2,
+     "max_length": 23,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2026-09-24 13:46:08.052",
+       "rows": 3
+      },
+      {
+       "value": "2026-09-24 22:04:21.368",
+       "rows": 1
+      }
+     ]
+    },
+    {
+     "column": "scd_valid_to_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 100.0,
+     "distinct_count": 0,
+     "max_length": null,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": []
+    },
+    {
+     "column": "ingested_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 26,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2026-09-24 22:25:03.767483",
+       "rows": 4
+      }
+     ]
+    },
+    {
+     "column": "transformed_timestamp",
+     "type": "TIMESTAMP",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 26,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "2026-09-25 02:23:21.269647",
+       "rows": 4
+      }
+     ]
+    },
+    {
+     "column": "is_current",
+     "type": "BOOLEAN",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 4,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "true",
+       "rows": 4
+      }
+     ]
+    },
+    {
+     "column": "source_name",
+     "type": "STRING",
+     "null_pct": 0.0,
+     "distinct_count": 1,
+     "max_length": 6,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": [
+      {
+       "value": "airroi",
+       "rows": 4
+      }
+     ]
+    },
+    {
+     "column": "source_file_name",
+     "type": "STRING",
+     "null_pct": 100.0,
+     "distinct_count": 0,
+     "max_length": null,
+     "delimiter_rows": {
+      ";": 0,
+      ",": 0,
+      "|": 0
+     },
+     "top_values": []
+    }
+   ]
+  }
+ ],
+ "value_overlaps": [
+  {
+   "table_a": "market_metrics_all",
+   "column_a": "_locality",
+   "table_b": "market_summary",
+   "column_b": "_locality",
+   "shared_values": 4
+  },
+  {
+   "table_a": "market_metrics_all",
+   "column_a": "_region",
+   "table_b": "market_summary",
+   "column_b": "_region",
+   "shared_values": 3
+  },
+  {
+   "table_a": "market_metrics_all",
+   "column_a": "_country",
+   "table_b": "market_summary",
+   "column_b": "_country",
+   "shared_values": 2
+  },
+  {
+   "table_a": "market_metrics_all",
+   "column_a": "_district",
+   "table_b": "market_summary",
+   "column_b": "_district",
+   "shared_values": 1
+  },
+  {
+   "table_a": "market_metrics_all",
+   "column_a": "source_name",
+   "table_b": "market_summary",
+   "column_b": "source_name",
+   "shared_values": 1
+  }
+ ],
+ "dependency_checks": [
+  {
+   "table": "market_summary",
+   "determinant": "_locality",
+   "dependent": "_region",
+   "violating_values": 0
+  },
+  {
+   "table": "market_summary",
+   "determinant": "_region",
+   "dependent": "_country",
+   "violating_values": 0
+  },
+  {
+   "table": "market_summary",
+   "determinant": "_district",
+   "dependent": "_locality",
+   "violating_values": 0
+  },
+  {
+   "table": "market_metrics_all",
+   "determinant": "_locality",
+   "dependent": "_region",
+   "violating_values": 0
+  },
+  {
+   "table": "market_metrics_all",
+   "determinant": "_region",
+   "dependent": "_country",
+   "violating_values": 0
+  },
+  {
+   "table": "market_metrics_all",
+   "determinant": "_district",
+   "dependent": "_locality",
+   "violating_values": 0
+  }
+ ]
+}
