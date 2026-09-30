@@ -322,11 +322,15 @@ Fixed inputs: `silver.md` (N1–N10), `NAMING.md`,
 
 `src/layers/silver/normalised/profile.py`, run by
 `resources/jobs/profile_silver_normalised.job.yml`
-(`profile--silver_normalised--${bundle.target}`), serverless.
+(`profile--silver--normalised--${bundle.target}`), serverless.
 
 - **Parameters**: `source` (required, the `silver_landing_{source}` schema
   suffix); `dependency_pairs` (optional, JSON list of
-  `{table, determinant, dependent}`).
+  `{table, determinant, dependent}`); `catalog` (defaults to the target's
+  catalog); `overlap_max_distinct` (default 1000: string columns with more
+  distinct values are left out of the overlap self-join, since domains are
+  low-cardinality and high-cardinality columns such as names would make the
+  join expensive).
 - **Pass 1** (no `dependency_pairs`): for every table in
   `silver_landing_{source}`, per column: type, null %, distinct count, top
   20 values with counts, max length, and whether a common delimiter
