@@ -143,8 +143,8 @@ authoritative, and nothing in this layer is.
   `{entity}_quarantine`, if any); bridges match the Landing element count;
   extracted entities keep value completeness (every non-null Landing value
   in a member column has a row)
-- Every entity tagged in Unity Catalog: `mdp.layer = silver_normalised`,
-  `mdp.source_system = {source}`, `mdp.entity_kind = base | bridge | extracted`
+- Every entity tagged in Unity Catalog: `mdp_layer = silver_normalised`,
+  `mdp_source_system = {source}`, `mdp_entity_kind = base | bridge | extracted`
 - Precondition: the source's Landing tables carry `ingested_timestamp`
   (see [NAMING.md](../../NAMING.md#platform-added-timestamp-columns))
 

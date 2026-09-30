@@ -198,13 +198,13 @@ spec and runs, per table:
 
 ```sql
 ALTER MATERIALIZED VIEW {catalog}.silver_normalised_{source}.{table}
-SET TAGS ('mdp.layer' = 'silver_normalised',
-          'mdp.source_system' = '{source}',
-          'mdp.entity_kind' = 'base' | 'bridge' | 'extracted')
+SET TAGS ('mdp_layer' = 'silver_normalised',
+          'mdp_source_system' = '{source}',
+          'mdp_entity_kind' = 'base' | 'bridge' | 'extracted')
 ```
 
-`value_lineage` and quarantine tables get `mdp.layer` and
-`mdp.source_system` only, since they are not an entity kind. The step is
+`value_lineage` and quarantine tables get `mdp_layer` and
+`mdp_source_system` only, since they are not an entity kind. The step is
 idempotent and runs after every refresh, so it does not depend on whether
 a refresh keeps tags (checked in implementation, recorded either way).
 The table owner is the pipeline's run-as identity, which also runs the

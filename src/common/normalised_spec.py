@@ -80,7 +80,7 @@ def base_output_columns(base: dict) -> list[str]:
 
 
 def tables(spec: dict) -> dict[str, str | None]:
-    """Every table the pipeline builds, mapped to its mdp.entity_kind.
+    """Every table the pipeline builds, mapped to its mdp_entity_kind tag.
 
     value_lineage and quarantine tables are not an entity kind (None).
     """

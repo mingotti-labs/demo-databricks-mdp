@@ -75,7 +75,7 @@ ignored_columns: []
 | `ignored_columns` | yes | Landing columns deliberately left out, as `table.column`. Every Landing column the spec reads is either used or listed here, which is what the drift check verifies |
 
 **One block per entity kind.** `base_entities`, `bridge_entities` and
-`extracted_entities` match the three `mdp.entity_kind` tag values. A
+`extracted_entities` match the three `mdp_entity_kind` tag values. A
 bridge's key is its parent's natural key plus the element; it declares
 exactly one of `explode` or `unpivot`. Bridges are explicitly revisitable:
 if they prove unnecessary, the `bridge_entities` block is removed (a major

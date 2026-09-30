@@ -97,8 +97,8 @@ pipeline, verification, CI), not by docs vs code.
 Governed tags (tag policies enforcing allowed values) would enforce them,
 but were not assessed for this workspace.
 
-**Decision**: Every entity carries plain tags `mdp.layer`,
-`mdp.source_system`, `mdp.entity_kind = base | bridge | extracted`.
+**Decision**: Every entity carries plain tags `mdp_layer`,
+`mdp_source_system`, `mdp_entity_kind = base | bridge | extracted`.
 Governed tags go to the `demo-databricks-planning` roadmap backlog, to
 discuss once Silver Normalised is finalised.
 
@@ -161,7 +161,7 @@ parity with its Landing table.
 **Discussion**: Treating it as a base entity would make the parity check
 fail by design.
 
-**Decision**: Bridge is a third entity kind (`mdp.entity_kind = bridge`),
+**Decision**: Bridge is a third entity kind (`mdp_entity_kind = bridge`),
 checked by element count instead of row parity, and declared in its own
 `bridge_entities` block of the normalised spec, one block per entity kind.
 Declaring bridges as `base_entities` entries marked by `explode`/`unpivot`

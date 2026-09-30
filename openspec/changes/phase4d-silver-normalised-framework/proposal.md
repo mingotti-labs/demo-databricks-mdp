@@ -31,7 +31,7 @@ first real run.
   rule, drift comparison) with pytest tests in `tests/common/`, and
   `src/common/silver_normalised.py` (the Spark transforms per entity kind).
 - New generic notebooks `src/layers/silver/normalised/tag.py` (applies the
-  `mdp.*` Unity Catalog tags with `ALTER MATERIALIZED VIEW … SET TAGS`
+  `mdp_*` Unity Catalog tags with `ALTER MATERIALIZED VIEW … SET TAGS`
   after each refresh) and `verification/verify_silver_normalised.py`
   (parity, element counts, value completeness, key uniqueness, FK
   integrity, lineage totals, tags, timestamps, drift), with
