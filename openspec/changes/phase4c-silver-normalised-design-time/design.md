@@ -240,16 +240,17 @@ base_entities:
     extracted:               # N10: column -> extracted entity
       address_country: country
       address_state: state
+bridge_entities:
   charity_register_operating_country:  # N2: delimited list -> bridge
     from: silver_landing_acnc.charity_register
     parent: charity_register
     explode: {column: operating_countries, split: ";"}
-    extracted: {value: country}
+    extracted: country
   charity_register_beneficiary:        # N2: flag column family -> bridge
     from: silver_landing_acnc.charity_register
     parent: charity_register
     unpivot: {columns_like: "beneficiary_%", keep_when: "Y"}
-    extracted: {attribute: beneficiary_type}
+    extracted: beneficiary_type
 extracted_entities:
   country:          {}
   state:            {parent: country}   # N5
@@ -257,10 +258,10 @@ extracted_entities:
 ignored_columns: []           # every Landing column is used or listed here
 ```
 
-An entry under `base_entities` with `parent` plus `explode` or `unpivot`
-is a bridge (tagged `mdp.entity_kind = bridge`); there is no separate
-block. No `rdm` block: the spec describes Silver only, and rdm finds
-extracted entities by tag.
+One block per entity kind (`base_entities`, `bridge_entities`,
+`extracted_entities`), matching the `mdp.entity_kind` tag values. No `rdm`
+block: the spec describes Silver only, and rdm finds extracted entities by
+tag.
 
 **Schema v0.1 attributes**
 
@@ -272,8 +273,10 @@ extracted entities by tag.
 | `base_entities.{name}.history` | no | `scd2` keeps validity columns (N6); default none |
 | `base_entities.{name}.columns` | yes | Attributes kept on the entity |
 | `base_entities.{name}.extracted` | no | Map of column → extracted entity (N10) |
-| `base_entities.{name}.parent` | no | Parent entity; with `explode`/`unpivot`, marks a bridge (N2) |
-| `base_entities.{name}.explode` / `unpivot` | no | How a repeating group is flattened (N2) |
+| `bridge_entities.{name}.from` | yes | Landing table holding the repeating group (N2) |
+| `bridge_entities.{name}.parent` | yes | Base entity whose natural key the bridge carries |
+| `bridge_entities.{name}.explode` / `unpivot` | exactly one | How the repeating group is flattened (N2) |
+| `bridge_entities.{name}.extracted` | no | Extracted entity the element belongs to (N10) |
 | `extracted_entities.{name}.parent` | no | Parent level in a hierarchy (N5) |
 | `extracted_entities.{name}.attributes` | no | Extra dependent columns, e.g. `country_code` (N7) |
 | `dependency_tolerance` | no | Per-case exception to N4's zero-exception rule; needs a reason in `design.md` |
@@ -282,9 +285,9 @@ extracted entities by tag.
 **Extending the format.** Add an attribute only when a real source needs
 it, as a schema minor version bump in its own change, with the README
 updated in the same PR. Removing or renaming an attribute is a major
-version bump and must migrate every existing spec. Bridge support
-(`parent` + `explode`/`unpivot`) is explicitly revisitable: if bridges
-prove unnecessary across the first sources, they may be removed this way.
+version bump and must migrate every existing spec. The `bridge_entities`
+block is explicitly revisitable: if bridges prove unnecessary across the
+first sources, it may be removed this way.
 
 ## The design-time agent
 
@@ -322,11 +325,15 @@ Fixed inputs: `silver.md` (N1–N10), `NAMING.md`,
 
 `src/layers/silver/normalised/profile.py`, run by
 `resources/jobs/profile_silver_normalised.job.yml`
-(`profile--silver_normalised--${bundle.target}`), serverless.
+(`profile--silver--normalised--${bundle.target}`), serverless.
 
 - **Parameters**: `source` (required, the `silver_landing_{source}` schema
   suffix); `dependency_pairs` (optional, JSON list of
-  `{table, determinant, dependent}`).
+  `{table, determinant, dependent}`); `catalog` (defaults to the target's
+  catalog); `overlap_max_distinct` (default 1000: string columns with more
+  distinct values are left out of the overlap self-join, since domains are
+  low-cardinality and high-cardinality columns such as names would make the
+  join expensive).
 - **Pass 1** (no `dependency_pairs`): for every table in
   `silver_landing_{source}`, per column: type, null %, distinct count, top
   20 values with counts, max length, and whether a common delimiter
@@ -347,6 +354,29 @@ Fixed inputs: `silver.md` (N1–N10), `NAMING.md`,
 - Verified in this change by running both passes against acnc in `dev`.
   The profile's field names are the contract the prompt template and the
   design.md skeleton refer to.
+
+**Findings from the acnc runs in `dev`** (implementation):
+- **Pipeline internals share the Landing schema.** `silver_landing_acnc`
+  also holds a `__materialization_mat_…` backing table and an `event_log_…`
+  table. The first run profiled them too: 596 s, 1.3 MB output, 5,178
+  overlaps (mostly `charity_register` against its own backing copy). In
+  every Landing schema, real entities are `MATERIALIZED_VIEW` and the
+  internals are `MANAGED`, so the job profiles only the table types
+  `silver.md` allows for Landing (MV, streaming table, view).
+- **Size and time after the fix**: pass 1 on `charity_register` (489 rows,
+  75 columns) took 322 s and returned 227 KB, `truncated = false`. Pass 2
+  returned the same violating counts as plain SQL (0 for
+  `ABN → Charity_Legal_Name`, 8 for `Town_City → Postcode`). The agent
+  checks `truncated` on every run.
+- **`bundle run --params` parses its value as CSV**, so pass 2's JSON
+  `dependency_pairs` fails to parse. The prompt template uses
+  `jobs run-now --json` for both passes.
+- **For `phase4e` (acnc), not this change**: acnc's beneficiary and purpose
+  flags (`Adults`, `Children`, `Youth`…) share no name prefix, so
+  `unpivot.columns_like` cannot select them; acnc's change needs an explicit
+  column list (a schema minor bump, per "Extending the format"). acnc's
+  Landing also lacks `ingested_timestamp`, confirming its retrofit comes
+  first.
 
 ## rdm: the downstream component
 
@@ -475,7 +505,11 @@ Each becomes a `docs/decision-register.md` entry.
   tolerances only via the spec with a reason, exceptions to
   `{entity}_quarantine` (widening NAMING.md's bronze-only `_quarantine`).
 - **Bridges as their own entity kind**, with an element-count check
-  instead of row parity; revisitable if bridges prove unnecessary.
+  instead of row parity, declared in their own `bridge_entities` block.
+  Alternative: bridges as `base_entities` entries marked by
+  `explode`/`unpivot` — rejected, it mixes two entity kinds in one block
+  and needs conditional validation. Revisitable if bridges prove
+  unnecessary.
 - **`ingested_timestamp`**: `max()` on aggregated entities; required in
   Landing as a precondition, retrofitted per source just in time.
   Alternatives: optional/absent handling in the pipeline (more code

@@ -1,19 +1,19 @@
 ## 1. Layer definition and naming
 
-- [ ] 1.1 Add the Silver Normalised section to `docs/medallion/silver.md`
+- [x] 1.1 Add the Silver Normalised section to `docs/medallion/silver.md`
       (purpose, terminology incl. bridge entity, characteristics, what fits
       / does not fit, materialisation, rules N1–N10 with the zero-exception
       example), linking to CONTRIBUTING.md and
       `docs/normalised-spec/README.md` instead of repeating the SDLC; verify
       every requirement in `specs/silver-normalised/spec.md` is reflected
-- [ ] 1.2 Add the labelled "Agent instructions — Silver Normalised"
+- [x] 1.2 Add the labelled "Agent instructions — Silver Normalised"
       subsection to `silver.md`, pointing to the prompt template and the
       schema; verify both links resolve
-- [ ] 1.3 Reword `silver.md`'s surrogate-key deferral (Silver Landing
+- [x] 1.3 Reword `silver.md`'s surrogate-key deferral (Silver Landing
       "Standards applied") to "deferred beyond Silver Normalised (Domain or
       later)"; verify no other `silver.md` line still implies Normalised
       generates surrogate keys
-- [ ] 1.4 Update `NAMING.md`: reword the Silver Normalised schema row
+- [x] 1.4 Update `NAMING.md`: reword the Silver Normalised schema row
       (restructured to 3NF, values unchanged); add Silver Normalised table
       naming (base = Landing table name, extracted = singular domain name,
       bridge = `{parent}_{attribute}`, `value_lineage`); widen `_quarantine`
@@ -23,68 +23,69 @@
 
 ## 2. Normalised spec format
 
-- [ ] 2.1 Write `docs/normalised-spec/schema.json` (JSON Schema, version
+- [x] 2.1 Write `docs/normalised-spec/schema.json` (JSON Schema, version
       0.1) covering every attribute in design.md's "Schema v0.1 attributes"
       table, each with a one-line `description`; verify design.md's acnc
       example validates against it (e.g. `uvx check-jsonschema`)
-- [ ] 2.2 Write `docs/normalised-spec/README.md`: rationale, meaning of
-      every attribute, bridge detection (`parent` + `explode`/`unpivot`),
+- [x] 2.2 Write `docs/normalised-spec/README.md`: rationale, meaning of
+      every attribute, one block per entity kind (`base_entities`,
+      `bridge_entities`, `extracted_entities`),
       extension rules (minor/major bumps, bridges revisitable), and "Adding
       a source" steps 0–8 incl. the `ingested_timestamp` precondition;
       verify every schema attribute is documented
 
 ## 3. Standard profiling job
 
-- [ ] 3.1 Write `src/layers/silver/normalised/profile.py` (pass 1: column
+- [x] 3.1 Write `src/layers/silver/normalised/profile.py` (pass 1: column
       stats + cross-table value overlaps over all SCD2 versions; pass 2:
       violating-value count per `dependency_pairs` entry; returns one JSON
       document via `dbutils.notebook.exit`, writes nothing); verify `ruff`
       passes
-- [ ] 3.2 Add `resources/jobs/profile_silver_normalised.job.yml`
+- [x] 3.2 Add `resources/jobs/profile_silver_normalised.job.yml`
       (serverless, parameters `source` and `dependency_pairs`); verify
       `databricks bundle validate -t dev --profile DEFAULT` passes
-- [ ] 3.3 Deploy to `dev` and run pass 1 for `acnc`, alone on the shared
+- [x] 3.3 Deploy to `dev` and run pass 1 for `acnc`, alone on the shared
       pool; fetch the output with `databricks jobs get-run-output` and
       verify it is valid JSON covering every `silver_landing_acnc` column,
       and record its size against the run-output limit in design.md
-- [ ] 3.4 Run pass 2 for `acnc` with one known-clean pair and one pair
+- [x] 3.4 Run pass 2 for `acnc` with one known-clean pair and one pair
       chosen to have violations; verify the reported counts match the same
       check run as plain SQL
 
 ## 4. Design-time agent
 
-- [ ] 4.1 Write `docs/templates/silver-normalised-propose.prompt.md`: fixed
+- [x] 4.1 Write `docs/templates/silver-normalised-propose.prompt.md`: fixed
       inputs, the two profiling passes (run the job, fetch its run output,
       save as `profile.json`), domain and dependency detection, output
       (spec + design.md from skeleton), stop for review; verify it cites
       rules N1–N10 by number rather than restating them, and that every
       profile field it names exists in the real output from task 3.3
-- [ ] 4.2 Write `docs/templates/silver-normalised-design.md`, the skeleton
+- [x] 4.2 Write `docs/templates/silver-normalised-design.md`, the skeleton
       for a source change's `design.md` (profile summary, entities, domains,
       splits with evidence, tolerances, ignored columns); verify every
       section maps to a step in the prompt template
 - [ ] 4.3 Write `.claude/skills/silver-normalised-propose/SKILL.md` as a
       thin wrapper that loads the prompt template and holds no instructions
       of its own; verify the skill is listed in a new Claude Code session
-- [ ] 4.4 Add the new skill to `docs/skills/README.md`'s repo-local skills
+- [x] 4.4 Add the new skill to `docs/skills/README.md`'s repo-local skills
       section, noting it is project-authored, not generated by OpenSpec;
       verify the section distinguishes the two
 
 ## 5. rdm seed and decisions
 
-- [ ] 5.1 Write `docs/component/rdm/README.md` from design.md's rdm section
+- [x] 5.1 Write `docs/component/rdm/README.md` from design.md's rdm section
       (dependency direction, what it consumes, two use cases, crosswalk
       columns), marked as not yet built; verify it names no Silver
       Normalised dependency on rdm
-- [ ] 5.2 Add one `docs/decision-register.md` entry per item in design.md's
+- [x] 5.2 Add one `docs/decision-register.md` entry per item in design.md's
       Decisions, newest at the top, in the register's existing
       Context / Discussion / Decision / Affected format; verify the count
       matches the Decisions list
 
 ## 6. Validate
 
-- [ ] 6.1 Run `openspec validate phase4c-silver-normalised-design-time --strict`
+- [x] 6.1 Run `openspec validate phase4c-silver-normalised-design-time --strict`
       and verify it passes
-- [ ] 6.2 Verify every relative link added in this change resolves to an
+- [x] 6.2 Verify every relative link added in this change resolves to an
       existing file, and that the only non-doc changes are the profiling
       notebook and job (`git diff --stat main`)
