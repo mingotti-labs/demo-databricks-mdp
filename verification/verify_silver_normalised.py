@@ -18,7 +18,7 @@ workspace_file_path = dbutils.widgets.get("workspace_file_path")
 
 sys.path.insert(0, f"{workspace_file_path}/src")
 from common import normalised_spec as ns  # noqa: E402
-from common.silver_normalised import landing_rows  # noqa: E402
+from layers.silver.normalised.transforms import landing_rows  # noqa: E402
 
 spec = ns.load_spec(
     f"{workspace_file_path}/src/layers/silver/normalised/specs/{source}.yml"
@@ -153,9 +153,9 @@ tags = {
     ).collect()
 }
 for name, kind in expected_tables.items():
-    wanted = {"mdp.layer": "silver_normalised", "mdp.source_system": source}
+    wanted = {"mdp_layer": "silver_normalised", "mdp_source_system": source}
     if kind:
-        wanted["mdp.entity_kind"] = kind
+        wanted["mdp_entity_kind"] = kind
     for tag, value in wanted.items():
         if tags.get((name, tag)) != value:
             failures.append(

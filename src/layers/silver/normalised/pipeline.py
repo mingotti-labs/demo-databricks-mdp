@@ -9,7 +9,7 @@ from pyspark import pipelines as dp
 
 workspace_file_path = spark.conf.get("workspace_file_path")
 sys.path.insert(0, f"{workspace_file_path}/src")
-from common import silver_normalised as sn  # noqa: E402
+from layers.silver.normalised import transforms as sn  # noqa: E402
 from common.normalised_spec import load_spec  # noqa: E402
 
 spec = load_spec(f"{workspace_file_path}/{spark.conf.get('normalised_spec')}")

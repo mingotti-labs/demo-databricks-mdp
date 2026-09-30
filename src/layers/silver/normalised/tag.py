@@ -22,9 +22,9 @@ spec = load_spec(
 # COMMAND ----------
 
 for table, kind in tables(spec).items():
-    tags = {"mdp.layer": "silver_normalised", "mdp.source_system": source}
+    tags = {"mdp_layer": "silver_normalised", "mdp_source_system": source}
     if kind:
-        tags["mdp.entity_kind"] = kind
+        tags["mdp_entity_kind"] = kind
     pairs = ", ".join(f"'{k}' = '{v}'" for k, v in tags.items())
     spark.sql(
         f"ALTER MATERIALIZED VIEW `{catalog}`.`silver_normalised_{source}`.`{table}` SET TAGS ({pairs})"
