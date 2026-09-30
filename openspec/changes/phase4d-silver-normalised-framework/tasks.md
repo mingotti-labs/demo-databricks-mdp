@@ -50,7 +50,7 @@
 
 ## 5. CI
 
-- [ ] 5.1 Add the `normalised-specs` job to `.github/workflows/pr.yml`
+- [x] 5.1 Add the `normalised-specs` job to `.github/workflows/pr.yml`
       (schema validation + `uv run pytest`) and widen its `paths`; verify
       it runs green on this change's implementation PR
 
