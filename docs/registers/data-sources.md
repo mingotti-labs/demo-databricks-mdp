@@ -75,6 +75,8 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_airroi_publish`): `market_metrics_all_scd2`,
   `market_summary_scd2` (no SCD1 variant exists for either)
 - **Consumed by Silver Landing**: yes — both → `silver_landing_airroi`
+- **Consumed by Silver Normalised**: yes — `silver_normalised_airroi` (spec
+  `src/layers/silver/normalised/specs/airroi.yml`, first normalised source)
 
 ### iso
 - **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,

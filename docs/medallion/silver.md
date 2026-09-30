@@ -91,19 +91,20 @@ Choice depends on whether the Bronze Publish source is append-only:
   layer's own refresh, on every table regardless of whether Bronze already
   had one — it reflects the most recent transformation, not the first.
 
-### Orchestration (forward-looking)
-Silver Normalised (`silver_normalised_{source}`) will be a second,
+### Orchestration
+Silver Normalised (`silver_normalised_{source}`) is a second,
 source-aligned pipeline per source, reading from that source's Silver
-Landing tables. Once it exists, a per-source job chains the two via
-`pipeline_task` + `depends_on` (the same dependency pattern already used
-for notebook tasks in `verify_unspsc_pattern.job.yml` and
-`neon_scd2_merge_sql.job.yml`), so Normalised never reads a stale/partial
-Landing refresh. No job exists yet — this section just reserves the naming
-convention:
+Landing tables. A per-source job chains them via `pipeline_task` +
+`depends_on`, so Normalised never reads a stale or partial Landing refresh,
+then applies the Silver Normalised tags:
 - Landing pipeline: `silver--landing--{source}--${bundle.target}`
-- Normalised pipeline (future): `silver--normalised--{source}--${bundle.target}`
-- Orchestrating job (future): `silver--{source}--${bundle.target}`, tasks
-  `landing` then `normalised` (`depends_on: [landing]`)
+- Normalised pipeline: `silver--normalised--{source}--${bundle.target}`
+- Orchestrating job: `silver--{source}--${bundle.target}`, tasks `landing`,
+  `normalised` (`depends_on: [landing]`) and `tag`
+  (`depends_on: [normalised]`)
+
+A source not yet normalised has no orchestrating job; its Landing pipeline
+is run directly.
 
 ### Agent instructions
 Look at the definition of this layer, propose changes based on the sources to be exposed and update the content on this sections if changes made are permanent and applied to future iterations.
@@ -175,7 +176,7 @@ N7–N10 are specific to this platform.
 | --- | --- | --- | --- |
 | N1 | No generated surrogate keys: every entity is identified by its natural key, first column(s), with Landing's natural-key comment convention. A surrogate key already carried by Landing is passed through as the first column | Landing natural keys | Surrogate keys stay deferred beyond this layer |
 | N2 | Repeating groups become bridge entities (1NF) | Delimited lists (`AU;NZ;FJ`), numbered or flag column families (`operates_in_nsw`, `operates_in_vic`…) | `{parent}_{attribute}` bridge |
-| N3 | Attributes depending on part of a composite key move out (2NF) | Dependency check on composite-key tables | New entity at the partial key |
+| N3 | Attributes depending on part of a composite key move out (2NF). A column of the Landing natural key is never moved out: dependencies among key columns are expressed by the extracted hierarchy (N5) | Dependency check on composite-key tables | New entity at the partial key |
 | N4 | Attributes depending on a non-key attribute move out (3NF), **only when the dependency holds with zero exceptions** | Does each `locality` always come with the same `region`? | New entity keyed by `locality`; parent keeps `locality` as FK |
 | N5 | Hierarchies become one entity per level, each pointing to its parent level | Chained dependencies, e.g. `_locality → _region → _country` | `country` ← `region` ← `locality` |
 | N6 | SCD2 history stays on the base entity that owns it; bridges inherit their parent row's validity; extracted entities are not versioned | Landing `scd_valid_from/to_timestamp`, `is_current` | Validity columns only on base entities |
@@ -214,6 +215,9 @@ runtime heuristic.
 - Every Landing column a source's normalised spec reads is either used or
   listed in its `ignored_columns`; a new Landing column fails the drift
   check until the spec is updated
+- Platform columns (validity, `source_name`, `source_file_name`, the two
+  timestamps) are carried by the generic pipeline, never listed in a spec;
+  see [the normalised spec README](../normalised-spec/README.md#platform-columns)
 
 ### Agent instructions — Silver Normalised
 When proposing a source for this layer, follow

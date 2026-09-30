@@ -86,6 +86,71 @@ listed in `extracted_entities` collects every value mapped to it through a
 base entity's `extracted` map or a bridge's `extracted`, across all tables
 and all SCD2 versions (N7).
 
+## Platform columns
+
+A spec never lists the platform columns, and the drift check never counts
+them; the generic pipeline carries them itself:
+`scd_valid_from_timestamp`, `scd_valid_to_timestamp`, `is_current`,
+`source_name`, `source_file_name`, `ingested_timestamp`,
+`transformed_timestamp`.
+
+| Table | Platform columns |
+| --- | --- |
+| Base | Validity columns when `history: scd2`; `source_name`, `source_file_name`, `ingested_timestamp` passed through; `transformed_timestamp` restamped |
+| Bridge | Parent's validity columns when the parent is `scd2` (N6); `ingested_timestamp` passed through; `transformed_timestamp` restamped |
+| Extracted, `value_lineage` | `ingested_timestamp` = `max()` of the aggregated rows; `transformed_timestamp` restamped |
+| `{entity}_quarantine` | Same columns as its base entity |
+
+A Landing table with validity columns needs `history: scd2` on its base
+entity, or the pipeline fails.
+
+## What the pipeline builds
+
+The generic pipeline, `src/layers/silver/normalised/pipeline.py`, builds one
+materialized view per entity:
+
+- **Base**: natural key, `columns`, then the `extracted` foreign keys not
+  already listed, then platform columns.
+- **Bridge**: parent natural key and validity, then one element column
+  named after the bridge's attribute (its name without `{parent}_`).
+  `explode` splits on the literal delimiter and keeps elements exactly as
+  split, with no trimming.
+- **Extracted**: `{entity}` (the value, unchanged), `{parent}` when set,
+  `attributes`, `rdm_proposed_match_key`, `row_count`, timestamps. Rows are
+  grouped by value, parent and attributes, never picked: if new data breaks
+  a dependency, the value gets two rows and verification fails.
+- **`value_lineage`**: `entity`, `value` (as string), `source_table`,
+  `source_column`, `row_count`, timestamps.
+- **`{entity}_quarantine`**: for a base entity with a `dependency_tolerance`,
+  the rows whose determinant value violates it.
+
+A parent or an attribute is read from the same Landing row as the member
+column: the parent from the one column of that base entity mapped to the
+parent entity.
+
+## Cross-reference checks
+
+The pipeline refuses to start, and the unit tests fail, when a spec breaks
+a rule the schema cannot express (`src/common/normalised_spec.py`):
+
+- every `from` is in `silver_landing_{source_system}`
+- entity names are unique across blocks; none is `value_lineage` or ends
+  in `_quarantine`
+- a bridge's `parent` is a base entity with the same `from`
+- every extracted target is declared, and every declared extracted entity
+  has a member column
+- `parent` exists and has no cycle
+- a base entity holding a member of an entity with a `parent` has exactly
+  one column mapped to that parent
+- an entity with a `parent` or `attributes` has no bridge members
+- a tolerance names a base entity that uses both its columns
+- no column is both used and ignored
+
+Three of these are **v0.1 limits**, relaxed by a minor version bump when a
+real source needs it: a bridge sharing its parent's `from`, exactly one
+parent column per base entity, and no bridge members for an entity with a
+`parent` or `attributes`.
+
 ## Extending the format
 
 - Add an attribute only when a real source needs it, as a **minor** version
