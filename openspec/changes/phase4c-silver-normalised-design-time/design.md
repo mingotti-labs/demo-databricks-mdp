@@ -443,7 +443,7 @@ source goes back to step 2.
 | Registry entry | `docs/registers/data-sources.md`, "Consumed by Silver Normalised" | Source, step 5 |
 
 **Rollout**
-1. `phase4c-silver-normalised-docs` (Opus): this change — every 4c row
+1. `phase4c-silver-normalised-design-time` (Opus): this change — every 4c row
    above, design time.
 2. `phase4d-silver-normalised-framework` (Opus): every 4d row above, run
    time.

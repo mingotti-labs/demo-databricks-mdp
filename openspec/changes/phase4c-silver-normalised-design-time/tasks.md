@@ -83,7 +83,7 @@
 
 ## 6. Validate
 
-- [ ] 6.1 Run `openspec validate phase4c-silver-normalised-docs --strict`
+- [ ] 6.1 Run `openspec validate phase4c-silver-normalised-design-time --strict`
       and verify it passes
 - [ ] 6.2 Verify every relative link added in this change resolves to an
       existing file, and that the only non-doc changes are the profiling
