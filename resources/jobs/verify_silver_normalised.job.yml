@@ -1,0 +1,15 @@
+resources:
+  jobs:
+    verify_silver_normalised:
+      name: verify--silver--normalised--${bundle.target}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: source
+          default: ""
+        - name: workspace_file_path
+          default: ${workspace.file_path}
+      tasks:
+        - task_key: verify_silver_normalised
+          notebook_task:
+            notebook_path: ../../verification/verify_silver_normalised.py

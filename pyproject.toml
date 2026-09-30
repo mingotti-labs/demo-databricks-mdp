@@ -3,7 +3,9 @@ name = "demo-databricks-mdp"
 version = "0.1.0"
 description = "Databricks demo platform: ingestion, modeling, Genie, ML, GenAI, and Apps"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0.3",
+]
 
 [dependency-groups]
 dev = [
@@ -12,3 +14,4 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests/common"]
+pythonpath = ["src"]
