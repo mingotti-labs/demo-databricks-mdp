@@ -13,8 +13,8 @@ into Silver Domain.
 
 ## What rdm consumes
 
-- Every table tagged `mdp.layer = silver_normalised` and
-  `mdp.entity_kind = extracted`, across all sources
+- Every table tagged `mdp_layer = silver_normalised` and
+  `mdp_entity_kind = extracted`, across all sources
 - `rdm_proposed_match_key` on those tables, so `AUSTRALIA`, `Australia` and
   `AuStRaLiA` become one matching decision instead of three
 - Each source's `value_lineage`, to show stewards where a value came from

@@ -48,7 +48,7 @@ Current state:
 | File | Role | Tested by |
 | --- | --- | --- |
 | `src/common/normalised_spec.py` | Pure Python: `load_spec(path)` (YAML + cross-reference checks), `match_key(value)`, `drift(spec, landing_columns)`, platform-column constants | pytest, `tests/common/test_normalised_spec.py` |
-| `src/common/silver_normalised.py` | Spark transforms: `base`, `bridge`, `extracted`, `value_lineage`, `quarantine` DataFrames from a spec | airroi run (base, extracted, lineage); bridge/quarantine first real run in acnc |
+| `src/layers/silver/normalised/transforms.py` | Spark transforms: `base`, `bridge`, `extracted`, `value_lineage`, `quarantine` DataFrames from a spec | airroi run (base, extracted, lineage); bridge/quarantine first real run in acnc |
 | `src/layers/silver/normalised/pipeline.py` | Thin: reads `workspace_file_path` + `normalised_spec` from the pipeline configuration, loads the spec, registers one `@dp.materialized_view` per table in a loop | airroi run |
 | `src/layers/silver/normalised/tag.py` | Notebook: `ALTER MATERIALIZED VIEW … SET TAGS` per table | airroi run |
 | `verification/verify_silver_normalised.py` | Notebook: every check below, for one `source` | airroi run |
@@ -148,8 +148,9 @@ are rdm's job). `unpivot` emits one row per column whose name matches
 `columns_like` and whose value equals `keep_when`; the element is the
 column name. Unique on parent key + validity + element.
 
-**Extracted entity** — built from the base and bridge entities (not from
-Landing), so quarantined rows are excluded consistently. One row per
+**Extracted entity** — built from the same non-quarantined Landing rows
+as its base entities (attribute columns exist only there) and from the
+bridge entities, so quarantined rows are excluded consistently. One row per
 distinct non-null member value across all members and all SCD2 versions
 (N7), columns:
 
@@ -198,13 +199,13 @@ spec and runs, per table:
 
 ```sql
 ALTER MATERIALIZED VIEW {catalog}.silver_normalised_{source}.{table}
-SET TAGS ('mdp.layer' = 'silver_normalised',
-          'mdp.source_system' = '{source}',
-          'mdp.entity_kind' = 'base' | 'bridge' | 'extracted')
+SET TAGS ('mdp_layer' = 'silver_normalised',
+          'mdp_source_system' = '{source}',
+          'mdp_entity_kind' = 'base' | 'bridge' | 'extracted')
 ```
 
-`value_lineage` and quarantine tables get `mdp.layer` and
-`mdp.source_system` only, since they are not an entity kind. The step is
+`value_lineage` and quarantine tables get `mdp_layer` and
+`mdp_source_system` only, since they are not an entity kind. The step is
 idempotent and runs after every refresh, so it does not depend on whether
 a refresh keeps tags (checked in implementation, recorded either way).
 The table owner is the pipeline's run-as identity, which also runs the
@@ -412,6 +413,44 @@ its `silver_normalised_airroi` tables (nothing downstream reads them yet).
 
 ## Open Questions
 
-- Whether serverless job notebooks ship PyYAML (implementation decides:
-  nothing, or an `environments` block).
-- Whether an explicit `APPLY TAG` grant is needed beyond ownership.
+None left; both were settled by the `dev` runs (Findings below).
+
+## Findings from the airroi runs in `dev` (implementation)
+
+- **`src/common/**` was glob-included as pipeline source by 12 pipelines**,
+  so a `common/` module importing a sibling (`from common import ...`)
+  failed `silver_landing_airroi` at initialisation with
+  `ModuleNotFoundError`. The glob was a phase3c leftover; removed in its own
+  PR (#47) after a validate-only update passed on 11 of the 12 pipelines
+  (`airroi_market_summary_ingestion` skipped: paid API). The Spark
+  transforms moved to `src/layers/silver/normalised/transforms.py`, since
+  they are specific to this layer.
+- **Unity Catalog rejects `.` in tag keys** (`INVALID_PARAMETER_VALUE: Tag
+  key contains reserved characters`). The 4c names `mdp.layer`,
+  `mdp.source_system`, `mdp.entity_kind` became `mdp_layer`,
+  `mdp_source_system`, `mdp_entity_kind` (MODIFIED requirement in this
+  change's spec delta).
+- **Spark set operations reject MAP columns**, and airroi has MAPs, so the
+  quarantine split uses joins on violating determinant values, not
+  `exceptAll`/`intersectAll`.
+- **Extracted entities read Landing rows, not base tables**: attribute
+  columns move out of the base entity, so only Landing still has them.
+- **PyYAML ships with serverless**: the tag and verification notebooks
+  loaded specs with no `environments` block. The pipeline still declares
+  `pyyaml` (guardrail: dependencies in bundle config).
+- **`register_pickle_by_value` works for pipeline UDFs on serverless**:
+  `Vitória da Conquista` got `VITORIA DA CONQUISTA`; no inline fallback.
+- **Table ownership suffices for `ALTER MATERIALIZED VIEW … SET TAGS`**: the
+  tag step ran as the pipeline's run-as identity with no `APPLY TAG` grant.
+- **Results**: `market_summary` 4, `market_metrics_all` 48, `country` 2,
+  `region` 3, `locality` 4, `district` 1, `value_lineage` 20; verification
+  passed. A rerun with Landing unchanged gave identical row counts and
+  row hashes (all columns but `transformed_timestamp`) on all 7 tables, and
+  verification passed again.
+- **Dev ran on human-identity copies first**, then those were deleted (with
+  the user's approval) so the CI/CD SP's `[dev svc_cicd_github]` copies own
+  the dev tables, per CLAUDE.md.
+- **`RESOURCE_EXHAUSTED` with nothing visibly running**: after a long day
+  of runs, every new cluster was refused and the Serverless Starter
+  Warehouse would not start. Resolved after the user started and stopped a
+  serverless compute from the UI; root cause not confirmed.

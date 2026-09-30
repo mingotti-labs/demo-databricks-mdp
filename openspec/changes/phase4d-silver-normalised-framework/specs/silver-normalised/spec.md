@@ -59,14 +59,14 @@ one of several values.
 
 ### Requirement: Tags applied after every refresh
 After each Silver Normalised pipeline refresh, a tag step SHALL set
-`mdp.layer`, `mdp.source_system` and, for base, bridge and extracted
-entities, `mdp.entity_kind` on every table the source's spec produces,
+`mdp_layer`, `mdp_source_system` and, for base, bridge and extracted
+entities, `mdp_entity_kind` on every table the source's spec produces,
 using `ALTER MATERIALIZED VIEW … SET TAGS`.
 
 #### Scenario: Orchestrated run
 - **WHEN** `silver--{source}--${bundle.target}` completes
 - **THEN** every entity table in `silver_normalised_{source}` carries all
-  three `mdp.*` tags with the values its spec implies
+  three `mdp_*` tags with the values its spec implies
 
 ### Requirement: Per-source orchestration
 Each normalised source SHALL have a job `silver--{source}--${bundle.target}`
@@ -105,6 +105,22 @@ Databricks credentials.
 - **THEN** the PR's spec validation job fails
 
 ## MODIFIED Requirements
+
+### Requirement: Entity kinds and Unity Catalog tags
+Every Silver Normalised table SHALL be exactly one of three entity kinds —
+base (restructured from one Landing table at that table's grain), bridge
+(one row per element of a repeating group), or extracted (one row per
+distinct value of a domain) — or the per-source `value_lineage` or a
+`{entity}_quarantine` table. Every entity table SHALL carry the Unity
+Catalog tags `mdp_layer = silver_normalised`,
+`mdp_source_system = {source_system}` and
+`mdp_entity_kind = base | bridge | extracted`. Tag keys SHALL NOT contain
+`.`, which Unity Catalog rejects as a reserved character.
+
+#### Scenario: Extracted entity discoverable by tag
+- **WHEN** a downstream consumer lists tables tagged
+  `mdp_layer = silver_normalised` and `mdp_entity_kind = extracted`
+- **THEN** every extracted entity of every normalised source is returned
 
 ### Requirement: Dependency splits need zero exceptions (N3, N4)
 An attribute SHALL be moved out of an entity because it depends on part of

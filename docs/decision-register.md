@@ -7,6 +7,124 @@ alternative" for. Newest entries at the top.
 
 ---
 
+The eleven 2026-09-30 entries below come from
+`phase4d-silver-normalised-framework`; its design.md has the full
+reasoning. **Affected** unless stated: `src/layers/silver/normalised/`,
+`src/common/normalised_spec.py`, `docs/medallion/silver.md`,
+`docs/normalised-spec/README.md`.
+
+---
+
+## 2026-09-30: airroi as the first source, inside the framework change
+
+**Context**: The run-time framework needed a real source to prove itself; acnc, the planned pilot, still needs its `ingested_timestamp` retrofit.
+
+**Discussion**: A synthetic fixture needs a throwaway schema; deferring every real run to acnc leaves the framework unverified until 4e.
+
+**Decision**: airroi, whose Landing already carries `ingested_timestamp`, is profiled and normalised inside `phase4d`. Bridges and tolerances get their first real run in acnc.
+
+---
+
+## 2026-09-30: Silver Normalised — pure spec logic apart from Spark transforms
+
+**Context**: Spec rules need unit tests; the repo's tests have no Spark or Java.
+
+**Discussion**: One module would make every test need a Spark session.
+
+**Decision**: `src/common/normalised_spec.py` (pure Python, pytest) and `src/layers/silver/normalised/transforms.py` (Spark, verified on real runs).
+
+---
+
+## 2026-09-30: Silver Normalised — cross-reference checks in code, schema stays structural
+
+**Context**: Some spec rules (a bridge's parent exists, a parent chain has no cycle) span several blocks.
+
+**Discussion**: Expressing them in JSON Schema is possible only partly and hard to read.
+
+**Decision**: `load_spec` checks them; the pipeline calls it before defining any table, and the tests cover one failing case per rule.
+
+---
+
+## 2026-09-30: Silver Normalised — platform columns handled by the framework
+
+**Context**: Validity, provenance and timestamp columns are on every Landing table.
+
+**Discussion**: Listing them in every spec repeats the same seven columns per entity.
+
+**Decision**: The pipeline carries them; specs never list them and the drift check never counts them.
+
+---
+
+## 2026-09-30: Silver Normalised — group, don't pick, on extracted entities
+
+**Context**: A dependency can break in later data (a second `Prado` in another region).
+
+**Discussion**: `max()`/`first()` would keep one row per value but silently choose a winner.
+
+**Decision**: Rows are grouped by value, parent and attributes; a break shows up as a duplicate key and fails verification.
+
+---
+
+## 2026-09-30: Silver Normalised — tags by a post-refresh step, keys without dots
+
+**Context**: `@dp.materialized_view` has no tags parameter, and Unity Catalog rejects `.` in tag keys.
+
+**Discussion**: Tagging in Terraform would need the tables to exist before the pipeline creates them.
+
+**Decision**: A `tag` task runs `ALTER MATERIALIZED VIEW … SET TAGS` after every refresh; keys are `mdp_layer`, `mdp_source_system`, `mdp_entity_kind`. Table ownership is enough; no `APPLY TAG` grant.
+
+---
+
+## 2026-09-30: Silver Normalised — match key as a UDF shipped by value
+
+**Context**: Workers lack the driver's `sys.path` entry for `src/`, as acnc's connector showed.
+
+**Discussion**: An inline copy in the pipeline would run code the tests don't cover.
+
+**Decision**: `cloudpickle.register_pickle_by_value` ships the tested `match_key`; confirmed on serverless (`Vitória da Conquista` → `VITORIA DA CONQUISTA`).
+
+---
+
+## 2026-09-30: Silver Normalised — N3 never splits a natural-key column
+
+**Context**: airroi's `_region`/`_country` depend on `_locality`, part of its key.
+
+**Discussion**: Strict 2NF would drop them from the key, making it depend on locality names being globally unique.
+
+**Decision**: Landing's natural key stays whole (N1); dependencies among key columns live in the extracted hierarchy (N5).
+
+---
+
+## 2026-09-30: airroi — distribution metrics stay as MAP columns
+
+**Context**: `market_metrics_all` has seven MAPs of fixed keys (`avg`, `p25` … `p90`).
+
+**Discussion**: Flattening to columns is arguably 1NF but needs a schema attribute v0.1 lacks; a bridge fits repeating groups, not fixed keys.
+
+**Decision**: Kept as MAPs; a `flatten` attribute is a candidate minor bump.
+
+---
+
+## 2026-09-30: Silver Normalised — pytest in PR CI
+
+**Context**: The spec logic now has unit tests; CI ran none.
+
+**Discussion**: Running them only locally lets a broken rule reach `main`.
+
+**Decision**: A credential-free `normalised-specs` job validates specs against the schema and runs `uv run pytest`.
+
+---
+
+## 2026-09-30: Pipelines never glob `src/common/**`
+
+**Context**: Twelve pipelines listed `src/common/**` in `libraries`, a phase3c leftover from before the `sys.path` import fix.
+
+**Discussion**: Keeping it is harmless only while no `common/` module imports a sibling.
+
+**Decision**: Removed (#47) after validate-only runs on 11 of the 12 pipelines; `common/` is imported via `sys.path` only.
+
+---
+
 The eighteen 2026-09-30 entries below come from
 `phase4c-silver-normalised-design-time`; its design.md has the full
 reasoning. They share one **Affected** set unless stated:
@@ -97,8 +215,8 @@ pipeline, verification, CI), not by docs vs code.
 Governed tags (tag policies enforcing allowed values) would enforce them,
 but were not assessed for this workspace.
 
-**Decision**: Every entity carries plain tags `mdp.layer`,
-`mdp.source_system`, `mdp.entity_kind = base | bridge | extracted`.
+**Decision**: Every entity carries plain tags `mdp_layer`,
+`mdp_source_system`, `mdp_entity_kind = base | bridge | extracted`.
 Governed tags go to the `demo-databricks-planning` roadmap backlog, to
 discuss once Silver Normalised is finalised.
 
@@ -161,7 +279,7 @@ parity with its Landing table.
 **Discussion**: Treating it as a base entity would make the parity check
 fail by design.
 
-**Decision**: Bridge is a third entity kind (`mdp.entity_kind = bridge`),
+**Decision**: Bridge is a third entity kind (`mdp_entity_kind = bridge`),
 checked by element count instead of row parity, and declared in its own
 `bridge_entities` block of the normalised spec, one block per entity kind.
 Declaring bridges as `base_entities` entries marked by `explode`/`unpivot`
