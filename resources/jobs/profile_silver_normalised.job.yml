@@ -1,0 +1,17 @@
+resources:
+  jobs:
+    profile_silver_normalised:
+      name: profile--silver--normalised--${bundle.target}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: source
+          default: ""
+        - name: dependency_pairs
+          default: ""
+        - name: overlap_max_distinct
+          default: "1000"
+      tasks:
+        - task_key: profile
+          notebook_task:
+            notebook_path: ../../src/layers/silver/normalised/profile.py
