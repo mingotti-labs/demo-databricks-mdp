@@ -9,7 +9,7 @@ Catalogs: `mdp_dev`, `mdp_tst`, `mdp_prd`
 | Bronze | `bronze_<source>` | Raw ingestion, append-only |
 | Bronze publish | `bronze_<source>_publish` | Validated bronze, safe for downstream reads — includes `<table>_scd1`/`<table>_scd2` tables |
 | Silver Landing | `silver_landing_<source>` | Source-aligned foundational data product, one schema per source — see `docs/medallion/silver.md` |
-| Silver Normalised | `silver_normalised_<source>` | Source-aligned, standardized (future — see `docs/medallion/silver.md`) |
+| Silver Normalised | `silver_normalised_<source>` | Source-aligned, restructured to 3NF with extracted entities; values unchanged — see `docs/medallion/silver.md` |
 | Silver Domain/Marts | `silver_<domain>` | Conformed, domain-modelled (domains TBD — decide when the first one is actually built) |
 | Gold | `gold_analytics_gateway` | BI / reporting consumers |
 | Gold | `gold_integration_gateway` | Operational / API consumers |
@@ -53,9 +53,12 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
   `unspsc_public_raw`, alongside a possible future restricted/authenticated
   variant) — not a general-purpose suffix, only used when a real
   distinction exists to make.
-- **`<table>_quarantine`** — rows a `_raw` table's downstream SCD modeling
-  can't process (e.g. a NULL SCD key), kept visible in a `bronze_<source>`
-  schema rather than silently dropped. Built as a Lakeflow expectations
+- **`<table>_quarantine`** — rows a downstream step can't process, kept
+  visible rather than silently dropped, in the same schema as the table
+  they were excluded from. At bronze: rows a `_raw` table's SCD modeling
+  can't process (e.g. a NULL SCD key), in a `bronze_<source>` schema. At
+  Silver Normalised: rows excepted from a declared dependency tolerance, as
+  `{entity}_quarantine` in `silver_normalised_<source>`. Built as a Lakeflow expectations
   pair: the quarantine table and its SCD-feeding counterpart both read the
   same `_raw` source with complementary `@dp.expect_or_drop` conditions,
   so every raw row lands somewhere. See ACNC's `charity_register_quarantine`
@@ -64,6 +67,25 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
   to sources that haven't shown the problem.
 - Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
   defined) — decide when the first one is actually built, not speculatively here.
+
+## Silver Normalised tables
+
+In `silver_normalised_<source>` (entity kinds defined in
+`docs/medallion/silver.md`):
+
+- **Base entity** — keeps its Silver Landing table's name exactly (e.g.
+  `charity_register`, `customers`), for one-to-one traceability to Landing.
+- **Extracted entity** — the domain name only, singular (e.g. `country`,
+  `order_status`); the schema already carries the source. Its natural-key
+  column has the same name as the entity.
+- **Bridge entity** — `<parent>_<attribute>`, singular attribute (e.g.
+  `charity_register_operating_country`).
+- **`value_lineage`** — exactly one per source schema, covering all its
+  extracted entities.
+- **`<entity>_quarantine`** — see Table naming above.
+- **`rdm_proposed_match_key`** — the match-hint column on every extracted
+  entity; the `rdm_` prefix marks it as a hint for rdm, never used inside
+  Silver.
 
 ## Platform-added timestamp columns
 
@@ -98,6 +120,16 @@ sourced from the upstream API/system):
   layer either propagates it unchanged (if the source already has it) or
   leaves it absent (if it doesn't). Only `transformed_timestamp` changes as
   data moves through further transformation layers.
+  - **Aggregating tables** (one output row from many input rows, e.g. a
+    Silver Normalised extracted entity or `value_lineage`) carry the
+    `max()` of the input rows' `ingested_timestamp`: "the newest ingest
+    that contributed to this row". Never `min()` — `_raw` MVs restamp the
+    column on every run, so `min()` would look like "first ingested"
+    without being that.
+  - **Silver Normalised requires it**: a source's Silver Landing tables
+    must carry `ingested_timestamp` before that source is normalised. A
+    source without it is retrofitted at bronze in its own change first,
+    only when it is about to be normalised.
 - First introduced with AirROI (Phase 3h) — see `market_summary_raw.py`/
   `market_summary_scd2.py` for the reference implementation. Not yet retrofitted
   to earlier sources (ACNC, NSW Spatial, UNGM, Neon, clickstream) at the bronze
