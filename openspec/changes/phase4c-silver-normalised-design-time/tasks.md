@@ -41,20 +41,20 @@
       violating-value count per `dependency_pairs` entry; returns one JSON
       document via `dbutils.notebook.exit`, writes nothing); verify `ruff`
       passes
-- [ ] 3.2 Add `resources/jobs/profile_silver_normalised.job.yml`
+- [x] 3.2 Add `resources/jobs/profile_silver_normalised.job.yml`
       (serverless, parameters `source` and `dependency_pairs`); verify
       `databricks bundle validate -t dev --profile DEFAULT` passes
-- [ ] 3.3 Deploy to `dev` and run pass 1 for `acnc`, alone on the shared
+- [x] 3.3 Deploy to `dev` and run pass 1 for `acnc`, alone on the shared
       pool; fetch the output with `databricks jobs get-run-output` and
       verify it is valid JSON covering every `silver_landing_acnc` column,
       and record its size against the run-output limit in design.md
-- [ ] 3.4 Run pass 2 for `acnc` with one known-clean pair and one pair
+- [x] 3.4 Run pass 2 for `acnc` with one known-clean pair and one pair
       chosen to have violations; verify the reported counts match the same
       check run as plain SQL
 
 ## 4. Design-time agent
 
-- [ ] 4.1 Write `docs/templates/silver-normalised-propose.prompt.md`: fixed
+- [x] 4.1 Write `docs/templates/silver-normalised-propose.prompt.md`: fixed
       inputs, the two profiling passes (run the job, fetch its run output,
       save as `profile.json`), domain and dependency detection, output
       (spec + design.md from skeleton), stop for review; verify it cites
@@ -84,7 +84,7 @@
 
 ## 6. Validate
 
-- [ ] 6.1 Run `openspec validate phase4c-silver-normalised-design-time --strict`
+- [x] 6.1 Run `openspec validate phase4c-silver-normalised-design-time --strict`
       and verify it passes
 - [x] 6.2 Verify every relative link added in this change resolves to an
       existing file, and that the only non-doc changes are the profiling

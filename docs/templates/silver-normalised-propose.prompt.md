@@ -28,13 +28,22 @@ first (README, "Adding a source", step 0).
 
 ### 1. Profile, pass 1
 
-Run the standard profiling job for the source on `dev`:
+Run the standard profiling job for the source on `dev`, alone on the
+shared serverless pool (no other run in flight). Use `jobs run-now --json`
+for both passes: `bundle run --params` parses its value as CSV, so pass 2's
+JSON `dependency_pairs` breaks it.
 
 ```bash
-databricks bundle run profile_silver_normalised -t dev --params source={source} --profile <PROFILE>
-databricks jobs get-run-output <task_run_id> --profile <PROFILE>
+JOB=$(databricks bundle summary -t dev --profile <PROFILE> --output json \
+  | python -c "import json,sys; print(json.load(sys.stdin)['resources']['jobs']['profile_silver_normalised']['id'])")
+databricks jobs run-now --profile <PROFILE> --output json \
+  --json "{\"job_id\": $JOB, \"job_parameters\": {\"source\": \"{source}\"}}"
+databricks jobs get-run-output <task_run_id> --profile <PROFILE> --output json
 ```
 
+`run-now` waits for the run to finish; `<task_run_id>` is `tasks[0].run_id`
+in its output. Check `notebook_output.truncated` is `false` before using
+the result; if it is `true`, stop and report — the profile is incomplete.
 The run output's `notebook_output.result` is a JSON document:
 
 - `tables[]`: `table`, `row_count`, `columns[]` with `column`, `type`,
@@ -50,8 +59,11 @@ Profiles cover all SCD2 versions, not only current rows.
 ### 2. Find repeating groups and domains
 
 - **Repeating groups (N2)**: columns with high `delimiter_rows` whose
-  `top_values` look like lists; families of columns with a shared prefix and
-  flag-like values (`Y`/`N`, `true`/`false`).
+  `top_values` look like lists; families of flag columns (`distinct_count`
+  of 1 or 2 with values like `Y`/`N`, `true`/`false`). Do not rely on a
+  shared name prefix: acnc's beneficiary flags (`Adults`, `Children`,
+  `Youth`…) have none. A flag family shows in `value_overlaps` as many
+  column pairs sharing the same single value; group them by meaning.
 - **Domains (N7)**: coded attributes — low `distinct_count` relative to
   `row_count`, short `max_length`, code-like `top_values`, names such as
   `country`, `ctry`, `state`, `status`, `category`, `currency`. Group
@@ -66,9 +78,16 @@ by a non-key attribute or by part of a composite key, and chains such as
 locality → region → country. Rerun the job with them:
 
 ```bash
-databricks bundle run profile_silver_normalised -t dev --profile <PROFILE> \
-  --params 'source={source},dependency_pairs=[{"table":"t","determinant":"a","dependent":"b"}]'
+databricks jobs run-now --profile <PROFILE> --output json --json '{
+  "job_id": <JOB>,
+  "job_parameters": {
+    "source": "{source}",
+    "dependency_pairs": "[{\"table\":\"t\",\"determinant\":\"a\",\"dependent\":\"b\"}]"
+  }
+}'
 ```
+
+`dependency_pairs` is a JSON list passed as a string parameter.
 
 Output: `dependency_checks[]`, each pair plus `violating_values`. A split
 is only proposed at `violating_values = 0` (N4). A non-zero result stays

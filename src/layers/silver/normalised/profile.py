@@ -22,6 +22,10 @@ schema = f"silver_landing_{source}"
 TOP_N = 20
 DELIMITERS = [";", ",", "|"]
 COMPLEX_TYPES = {"STRUCT", "ARRAY", "MAP", "VARIANT"}
+# Landing entities are MVs (rarely streaming tables or views, per silver.md);
+# the pipeline's own internal tables in the same schema (materialization
+# backing tables, event log) are MANAGED and must not be profiled.
+LANDING_TABLE_TYPES = ("MATERIALIZED_VIEW", "STREAMING_TABLE", "VIEW")
 
 # COMMAND ----------
 
@@ -37,13 +41,16 @@ def fqn(table: str) -> str:
 
 
 def landing_columns() -> dict[str, list[dict]]:
-    """Columns of every table in the source's Landing schema, in order."""
+    """Columns of every Landing entity in the source's schema, in order."""
+    types = ", ".join(f"'{t}'" for t in LANDING_TABLE_TYPES)
     rows = spark.sql(
         f"""
-        SELECT table_name, column_name, data_type
-        FROM {q(catalog)}.information_schema.columns
-        WHERE table_schema = '{schema}'
-        ORDER BY table_name, ordinal_position
+        SELECT c.table_name, c.column_name, c.data_type
+        FROM {q(catalog)}.information_schema.columns c
+        JOIN {q(catalog)}.information_schema.tables t
+          ON t.table_schema = c.table_schema AND t.table_name = c.table_name
+        WHERE c.table_schema = '{schema}' AND t.table_type IN ({types})
+        ORDER BY c.table_name, c.ordinal_position
         """
     ).collect()
     tables: dict[str, list[dict]] = {}

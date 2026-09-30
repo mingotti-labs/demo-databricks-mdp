@@ -355,6 +355,29 @@ Fixed inputs: `silver.md` (N1–N10), `NAMING.md`,
   The profile's field names are the contract the prompt template and the
   design.md skeleton refer to.
 
+**Findings from the acnc runs in `dev`** (implementation):
+- **Pipeline internals share the Landing schema.** `silver_landing_acnc`
+  also holds a `__materialization_mat_…` backing table and an `event_log_…`
+  table. The first run profiled them too: 596 s, 1.3 MB output, 5,178
+  overlaps (mostly `charity_register` against its own backing copy). In
+  every Landing schema, real entities are `MATERIALIZED_VIEW` and the
+  internals are `MANAGED`, so the job profiles only the table types
+  `silver.md` allows for Landing (MV, streaming table, view).
+- **Size and time after the fix**: pass 1 on `charity_register` (489 rows,
+  75 columns) took 322 s and returned 227 KB, `truncated = false`. Pass 2
+  returned the same violating counts as plain SQL (0 for
+  `ABN → Charity_Legal_Name`, 8 for `Town_City → Postcode`). The agent
+  checks `truncated` on every run.
+- **`bundle run --params` parses its value as CSV**, so pass 2's JSON
+  `dependency_pairs` fails to parse. The prompt template uses
+  `jobs run-now --json` for both passes.
+- **For `phase4e` (acnc), not this change**: acnc's beneficiary and purpose
+  flags (`Adults`, `Children`, `Youth`…) share no name prefix, so
+  `unpivot.columns_like` cannot select them; acnc's change needs an explicit
+  column list (a schema minor bump, per "Extending the format"). acnc's
+  Landing also lacks `ingested_timestamp`, confirming its retrofit comes
+  first.
+
 ## rdm: the downstream component
 
 Context only, seeding `docs/component/rdm/README.md`; not built here. rdm
