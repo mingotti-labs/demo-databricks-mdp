@@ -206,3 +206,24 @@ SHALL appear in the spec, either used or listed in `ignored_columns`.
   neither uses nor lists in `ignored_columns`
 - **THEN** the source's drift check fails and the source returns to
   profiling and proposal
+
+### Requirement: Standard profiling evidence
+A standard profiling job SHALL profile one source's Silver Landing tables,
+across all SCD2 versions, and return the result as a single JSON document
+without writing to any table or volume. Without dependency pairs it SHALL
+return, per column, type, null %, distinct count, top 20 values with
+counts, max length and delimiter presence, plus distinct-value overlap
+counts between string columns across the source's tables. Given a list of
+dependency pairs, it SHALL return the number of violating determinant
+values per pair.
+
+#### Scenario: First profiling pass
+- **WHEN** the profiling job runs for `acnc` with no dependency pairs
+- **THEN** it returns JSON with column statistics for every column of every
+  `silver_landing_acnc` table and the cross-table value overlaps, and no
+  table or volume is written
+
+#### Scenario: Dependency pass
+- **WHEN** the profiling job runs with a dependency pair whose determinant
+  maps to more than one dependent value for 3 determinant values
+- **THEN** it reports 3 violating values for that pair

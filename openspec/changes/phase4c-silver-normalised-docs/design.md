@@ -27,11 +27,15 @@ covers the approach, formats, artefacts and decisions behind them.
   propose a source's normalised spec and a reviewer can check it.
 - Define the normalised spec format (v0.1) and the design-time agent's
   instructions, in one place each.
-- Let the agent be tried on acnc before any pipeline code exists.
+- Provide the standard profiling job, so the agent's evidence has one
+  fixed shape from the first source onwards.
+- Let the agent be tried on acnc before the generic pipeline exists.
 
 **Non-Goals:**
-- The generic pipeline, profiling job, verification and CI step
+- The generic pipeline, verification and CI step
   (`phase4d-silver-normalised-framework`).
+- Governed tags (tag policies); plain Unity Catalog tags only. Deferred to
+  the `demo-databricks-planning` roadmap backlog.
 - Normalising any source (`phase4e-silver-normalised-acnc` onwards).
 - Building rdm, or deciding its internals beyond the interface below.
 - Retrofitting `ingested_timestamp` to older sources.
@@ -293,14 +297,13 @@ Split across three files so the instructions exist in exactly one place:
 | `docs/templates/silver-normalised-design.md` | Skeleton for a source change's `design.md` (plain md, since the openspec version in use has no custom templates) |
 
 What the template tells the agent to do, on Opus:
-1. **Profile** every `silver_landing_{source}` table: per column type,
-   null %, distinct count, top 20 values, max length, delimiter presence.
-   Until 4d ships the standard profiling job, the agent gathers the same
-   fields with ad-hoc SQL and saves them as the change's evidence.
-2. **Find domains**: distinct-value overlap between string columns across
-   tables; name semantics (`country`, `ctry`, `state`, `status`,
+1. **Profile, pass 1**: run the standard profiling job for the source
+   (below) and read its column stats and value overlaps.
+2. **Find domains**: from the value overlaps between string columns across
+   tables, plus name semantics (`country`, `ctry`, `state`, `status`,
    `category`, `currency`).
-3. **Find dependencies**: zero-exception checks on candidate pairs, e.g.
+3. **Find dependencies, pass 2**: rerun the job with the candidate pairs
+   the agent picked; it returns a zero-exception check per pair, e.g.
    ```sql
    SELECT count(*) AS violating_keys
    FROM (SELECT _locality FROM t GROUP BY _locality
@@ -314,6 +317,36 @@ What the template tells the agent to do, on Opus:
 
 Fixed inputs: `silver.md` (N1–N10), `NAMING.md`,
 `docs/registers/data-sources.md`, the schema and its README.
+
+### Standard profiling job
+
+`src/layers/silver/normalised/profile.py`, run by
+`resources/jobs/profile_silver_normalised.job.yml`
+(`profile--silver_normalised--${bundle.target}`), serverless.
+
+- **Parameters**: `source` (required, the `silver_landing_{source}` schema
+  suffix); `dependency_pairs` (optional, JSON list of
+  `{table, determinant, dependent}`).
+- **Pass 1** (no `dependency_pairs`): for every table in
+  `silver_landing_{source}`, per column: type, null %, distinct count, top
+  20 values with counts, max length, and whether a common delimiter
+  (`;`, `,`, `|`) appears; plus distinct-value overlap counts between
+  string columns across the source's tables.
+- **Pass 2** (with `dependency_pairs`): the number of violating
+  determinant values per pair (the zero-exception query above).
+  All-pairs checking is not done: on a wide table it is quadratic in
+  column count, too heavy for Free Edition's shared serverless pool.
+- **Output**: one JSON document returned as the notebook's run output
+  (`dbutils.notebook.exit`), fetched by the agent with
+  `databricks jobs get-run-output` and saved as `profile.json` in the
+  source's openspec change folder, which is the durable copy. Nothing is
+  written to a table or volume, so the job needs no new schema, volume or
+  Terraform change.
+- Reads only `silver_landing_{source}`; profiles all SCD2 versions, not
+  only `is_current`, matching N7.
+- Verified in this change by running both passes against acnc in `dev`.
+  The profile's field names are the contract the prompt template and the
+  design.md skeleton refer to.
 
 ## rdm: the downstream component
 
@@ -357,7 +390,8 @@ the agent confirms or discards each.
 
 ## SDLC and artefacts
 
-A **framework change**, done once (4c docs + 4d code), builds the
+A **framework change**, done once (4c design time: rules, spec format,
+agent, profiling; 4d run time: pipeline, verification, CI), builds the
 machinery; each **source change** then adds little more than one spec
 file. Both follow CONTRIBUTING's propose PR → implement PR flow.
 
@@ -366,8 +400,9 @@ source"):
 0. **Precondition**: if the source's Landing tables lack
    `ingested_timestamp`, retrofit bronze in its own change first.
 1. **Branch** `feature/silver-normalised-{source}`.
-2. **Profile** on dev; the evidence (JSON) is copied into the openspec
-   change folder as `profile.json`.
+2. **Profile** on dev with the standard profiling job (both passes); the
+   JSON run output is saved into the openspec change folder as
+   `profile.json`.
 3. **Propose**: run the agent skill on Opus; it writes the normalised spec
    and the openspec change (`proposal.md`, `design.md` from the skeleton,
    `tasks.md`).
@@ -397,19 +432,21 @@ source goes back to step 2.
 | Agent skill (thin wrapper) + skills README entry | `.claude/skills/silver-normalised-propose/SKILL.md`, `docs/skills/README.md` | 4c |
 | rdm component doc (seed) | `docs/component/rdm/README.md` | 4c |
 | Decision register entries | `docs/decision-register.md` | 4c |
+| Profiling notebook + job | `src/layers/silver/normalised/profile.py`, `resources/jobs/profile_silver_normalised.job.yml` | 4c |
 | Generic pipeline | `src/layers/silver/normalised/pipeline.py` | 4d |
-| Profiling notebook + job | `src/layers/silver/normalised/profile.py`, `resources/jobs/profile_silver_normalised.job.yml` | 4d |
 | Generic verification incl. drift check | `verification/verify_silver_normalised.py`, `resources/jobs/verify_silver_normalised.job.yml` | 4d |
 | CI step validating every normalised spec against the schema | `.github/workflows/pr.yml` | 4d |
-| Profile evidence | `openspec/changes/<change>/profile.json` | Source, step 2 |
+| Profile evidence | `openspec/changes/<change>/profile.json` (the job's run output) | Source, step 2 |
 | Normalised spec | `src/layers/silver/normalised/specs/{source}.yml` | Source, step 3 |
 | Bundle resources | `resources/pipelines/silver_normalised_{source}.pipeline.yml`, `resources/jobs/silver_{source}.job.yml` | Source, step 5 |
 | Schema and grants | `silver_normalised_{source}` in `demo-databricks-iac` | Source, before step 5 |
 | Registry entry | `docs/registers/data-sources.md`, "Consumed by Silver Normalised" | Source, step 5 |
 
 **Rollout**
-1. `phase4c-silver-normalised-docs` (Opus): this change.
-2. `phase4d-silver-normalised-framework` (Opus): every 4d row above.
+1. `phase4c-silver-normalised-docs` (Opus): this change — every 4c row
+   above, design time.
+2. `phase4d-silver-normalised-framework` (Opus): every 4d row above, run
+   time.
 3. `phase4e-silver-normalised-acnc` (Opus propose, Sonnet implement),
    preceded by acnc's `ingested_timestamp` retrofit.
 4. One source at a time after that; Sonnet once the pattern holds.
@@ -447,8 +484,21 @@ Each becomes a `docs/decision-register.md` entry.
 - **No first/last-seen columns in v0.1** (no reliable source today).
 - **Dependency direction**: rdm consumes Silver Normalised, never the
   reverse; the spec has no `rdm` block.
-- **Tags**: `mdp.layer`, `mdp.source_system`,
-  `mdp.entity_kind = base | bridge | extracted`.
+- **Tags**: plain Unity Catalog tags `mdp.layer`, `mdp.source_system`,
+  `mdp.entity_kind = base | bridge | extracted`. Governed tags (tag
+  policies enforcing allowed values) deferred to the planning roadmap
+  backlog, to discuss once Silver Normalised is finalised.
+- **Profiling job in 4c, not 4d**: the framework is split by design time
+  (4c: what the agent needs to propose) vs run time (4d: what executes a
+  spec), not docs vs code. Alternative: ad-hoc SQL until 4d — rejected,
+  it gives the acnc trial evidence in a different shape from every later
+  source.
+- **Profile returned as run output, not written to a volume**: avoids a
+  Terraform-owned volume and a cross-repo dependency; the durable copy is
+  `profile.json` in the openspec change. Alternative: JSON files on a UC
+  volume, as the planning draft suggested.
+- **Two-pass profiling**: dependency checks only for agent-chosen pairs.
+  Alternative: all column pairs — quadratic, too heavy for Free Edition.
 - **Drift check** runs in the verification job, not CI; CI only validates
   specs against the schema.
 - **Change IDs** renumbered from the planning session's `phase4b1`/`4b2`
@@ -460,9 +510,13 @@ Each becomes a `docs/decision-register.md` entry.
 - [Rules only enforced by review until 4d] → acceptable: nothing is
   deployed from a spec before 4d exists; 4d adds schema validation in CI
   and the drift check in verification.
-- [Agent profiling with ad-hoc SQL before 4d's job] → the prompt template
-  defines the profile fields, so the ad-hoc evidence has the same shape the
-  job will produce.
+- [Profile JSON exceeds the notebook run-output size limit on a wide or
+  high-cardinality source] → confirm the limit when building the job;
+  top-N values are already capped at 20. If a real source exceeds it, the
+  fallback is a volume, as its own change with the Terraform dependency.
+- [Profiling competes for Free Edition's shared serverless pool] → run it
+  alone, per this repo's one-run-at-a-time rule; pass 2 checks only chosen
+  pairs.
 - [Zero-exception rule keeps some attributes denormalised] → intended:
   spelling variants are rdm's job; a tolerance can be declared per case.
 - [Precondition delays sources lacking `ingested_timestamp`] → one small
@@ -473,12 +527,15 @@ Each becomes a `docs/decision-register.md` entry.
 
 ## Migration Plan
 
-Docs only; nothing deployed. Rollback is reverting the implementation PR.
+One new job, deployed to `dev` by the implementation PR and to `tst`/`prd`
+by CI/CD on merge, per this repo's operational notes. It reads only and
+writes no data, so rollback is reverting the PR and letting the next
+deploy remove the job.
 
 ## Open Questions
 
-- How Unity Catalog tags are applied to pipeline-managed tables (in the
-  dataset definition vs. a post-refresh step) — decided in 4d; the tag
+- How plain Unity Catalog tags are applied to pipeline-managed tables (in
+  the dataset definition vs. a post-refresh step) — decided in 4d; the tag
   names above do not change.
 - Where neon's `ingested_timestamp` is stamped, given Lakeflow Connect owns
   its `_raw` tables — decided in neon's retrofit change.

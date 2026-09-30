@@ -17,10 +17,11 @@ deterministically. Fuzzy value matching (`AuStRaLiA` → `AU`) is out of
 this layer entirely: it belongs to rdm, a future downstream app, with a
 human approving matches.
 
-This change is the first half of the framework: the documentation, rules,
-spec format and agent instructions. It is docs-only on purpose, so the
-agent can be tried on acnc before any pipeline code exists. The generic
-pipeline, profiling job, verification and CI follow in
+This change is the design-time half of the framework: everything the
+agent needs to propose a source — rules, spec format, agent instructions
+and the standard profiling job — so the agent can be tried on acnc with
+real profile evidence before the generic pipeline exists. The run-time
+half (generic pipeline, verification, CI) follows in
 `phase4d-silver-normalised-framework`.
 
 Alternatives considered (full comparison in design.md):
@@ -52,8 +53,14 @@ Alternatives considered (full comparison in design.md):
   that loads the prompt template; `docs/skills/README.md` updated to list it.
 - New `docs/component/rdm/README.md`, seeded from design.md's rdm section
   (context only; rdm is not built here).
+- New standard profiling notebook and job
+  (`src/layers/silver/normalised/profile.py`,
+  `resources/jobs/profile_silver_normalised.job.yml`): profiles one
+  source's Silver Landing tables and returns the evidence as JSON run
+  output, which the agent saves into the source's openspec change.
 - `docs/decision-register.md`: one entry per decision in design.md.
-- No pipeline, job, bundle resource or Terraform change.
+- No pipeline or Terraform change; the profiling job is the only new
+  bundle resource.
 
 ## Capabilities
 
@@ -88,7 +95,13 @@ later source change follows.
 - New docs: `docs/normalised-spec/`, `docs/templates/`,
   `docs/component/rdm/`.
 - New repo-local skill: `.claude/skills/silver-normalised-propose/`.
-- No deployed resources change; no data is read or written.
+- New code and bundle resource: the profiling notebook and job, deployed to
+  `dev` and run once against acnc to verify. It only reads
+  `silver_landing_{source}` tables and writes nothing to any table.
+- Governed tags (tag policies enforcing allowed values) are out of scope;
+  plain Unity Catalog tags are used, and governed tags go to the
+  `demo-databricks-planning` roadmap backlog for discussion once Silver
+  Normalised is finalised.
 - Introduces a precondition for later source changes: a source's Landing
   tables must carry `ingested_timestamp` before it is normalised. Five
   sources (neon, clickstream, ungm, acnc, nsw_spatial) do not yet; each is
