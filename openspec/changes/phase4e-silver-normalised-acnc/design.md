@@ -145,8 +145,20 @@ Found while proposing acnc; each changes the framework for every source.
 - Silver Landing needs no code change (`land()` keeps every column);
   `verify_silver_landing.py` adds `acnc` to the sources expected to carry it.
 - Adding a column to an existing snapshot-CDC target: verified in `dev`
-  first. If it needs a full refresh, nothing is lost in `tst`/`prd` (0
-  closed versions); `dev` loses its 10 closed versions, accepted.
+  first. **No full refresh happened** — `charity_register_scd2`'s earliest
+  `__START_AT` is unchanged (2026-09-22, predating the retrofit run), and
+  its 10 pre-existing closed versions are intact, now with a null
+  `ingested_timestamp` as designed. Every current row (65,792 of 65,802)
+  got the column populated; `current_without_ts = 0`.
+- Silver Landing propagated the retrofit unchanged, confirmed by direct
+  query (same 65,802/10/0 split as bronze): row count parity, provenance,
+  `is_current` derivation and the narrowed `ingested_timestamp` check all
+  pass for acnc. The shared `verify_silver_landing.py` job could not be
+  run end-to-end in `dev` as the SP — it also checks `neon`, whose dev
+  table (`silver_landing_neon.customers`) is still human-owned, the same
+  class of issue found for airroi in `phase4d` and acnc itself at this
+  change's step 0. Not fixed here (out of scope); acnc's own checks were
+  confirmed directly instead.
 
 ## Risks / Trade-offs
 

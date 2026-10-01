@@ -3,7 +3,15 @@ from pathlib import Path
 
 import pytest
 
-from common.normalised_spec import SpecError, check, drift, load_spec, match_key, tables
+from common.normalised_spec import (
+    SpecError,
+    check,
+    drift,
+    load_spec,
+    match_key,
+    tables,
+    unpivot_columns,
+)
 
 SPECS = Path(__file__).parents[2] / "src/layers/silver/normalised/specs"
 
@@ -208,4 +216,51 @@ def test_drift_missing_column():
     landing = {"customers": [c for c in LANDING["customers"] if c != "name"]}
     assert drift(SPEC, landing) == [
         "customers.name: used by the spec but missing in Landing"
+    ]
+
+
+# unpivot.columns (v0.2): an explicit list, for a flag family sharing no
+# name prefix (acnc's purpose/beneficiary flags, see phase4e's design.md).
+SPEC_WITH_COLUMNS_UNPIVOT = spec_with(
+    lambda s: s["bridge_entities"].update(
+        {
+            "customers_purpose": {
+                "from": "silver_landing_acme.customers",
+                "parent": "customers",
+                "unpivot": {"columns": ["is_retail", "wholesale"], "keep_when": "Y"},
+            }
+        }
+    )
+)
+
+
+def test_unpivot_columns_explicit_list_ignores_landing_columns():
+    unpivot = {"columns": ["is_retail", "wholesale"], "keep_when": "Y"}
+    assert unpivot_columns(unpivot, ["is_retail", "other_column"]) == [
+        "is_retail",
+        "wholesale",
+    ]
+
+
+def test_unpivot_columns_like_pattern_matches_landing_columns():
+    unpivot = {"columns_like": "via_%", "keep_when": "Y"}
+    assert unpivot_columns(unpivot, ["via_web", "via_phone", "other"]) == [
+        "via_web",
+        "via_phone",
+    ]
+
+
+def test_check_allows_columns_unpivot():
+    assert check(SPEC_WITH_COLUMNS_UNPIVOT) == []
+
+
+def test_drift_columns_unpivot_no_shared_prefix():
+    landing = {"customers": LANDING["customers"] + ["is_retail", "wholesale"]}
+    assert drift(SPEC_WITH_COLUMNS_UNPIVOT, landing) == []
+
+
+def test_drift_columns_unpivot_missing_landing_column():
+    landing = {"customers": LANDING["customers"] + ["is_retail"]}
+    assert drift(SPEC_WITH_COLUMNS_UNPIVOT, landing) == [
+        "customers.wholesale: used by the spec but missing in Landing"
     ]

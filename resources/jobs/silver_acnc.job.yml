@@ -1,0 +1,22 @@
+resources:
+  jobs:
+    silver_acnc:
+      name: silver--acnc--${bundle.target}
+      tasks:
+        - task_key: landing
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_landing_acnc.id}
+        - task_key: normalised
+          depends_on:
+            - task_key: landing
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_normalised_acnc.id}
+        - task_key: tag
+          depends_on:
+            - task_key: normalised
+          notebook_task:
+            notebook_path: ../../src/layers/silver/normalised/tag.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: acnc
+              workspace_file_path: ${workspace.file_path}

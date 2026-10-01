@@ -7,20 +7,24 @@
 
 ## 1. Retrofit acnc `ingested_timestamp`
 
-- [ ] 1.1 `charity_register_raw` stamps `ingested_timestamp`;
+- [x] 1.1 `charity_register_raw` stamps `ingested_timestamp`;
       `charity_register_valid` stamps `transformed_timestamp`;
       `charity_register_scd2` lists both in
       `track_history_except_column_list`
-- [ ] 1.2 Add `acnc` to `verify_silver_landing.py`'s sources expected to
+- [x] 1.2 Add `acnc` to `verify_silver_landing.py`'s sources expected to
       carry `ingested_timestamp`; NAMING.md notes acnc is retrofitted
-- [ ] 1.3 Deploy to `dev` (PR CI), run the SP chain (ingestion → SCD →
+- [x] 1.3 Deploy to `dev` (PR CI), run the SP chain (ingestion → SCD →
       Landing); verify every current Landing row has a non-null
       `ingested_timestamp`, record whether the SCD2 target needed a full
-      refresh, and verify Silver Landing verification still passes
+      refresh, and verify Silver Landing verification still passes — no
+      full refresh; acnc's own checks confirmed directly by query, since
+      `verify_silver_landing.py`'s shared job fails on an unrelated
+      pre-existing issue (neon's dev table is still human-owned); see
+      design.md
 
 ## 2. Framework corrections
 
-- [ ] 2.1 `unpivot.columns` in `normalised_spec.used_columns`/`drift`,
+- [x] 2.1 `unpivot.columns` in `normalised_spec.used_columns`/`drift`,
       `transforms.bridge` and verification's bridge count; unit tests for a
       `columns` family and its drift
 - [ ] 2.2 Null is not a value for parents: extracted entities use the one
@@ -34,7 +38,7 @@
 
 ## 3. acnc resources
 
-- [ ] 3.1 `resources/pipelines/silver_normalised_acnc.pipeline.yml` and
+- [x] 3.1 `resources/pipelines/silver_normalised_acnc.pipeline.yml` and
       `resources/jobs/silver_acnc.job.yml` (landing → normalised → tag);
       verify `bundle validate`
 
