@@ -128,17 +128,26 @@ sourced from the upstream API/system):
     without being that.
   - **Silver Normalised requires it**: a source's Silver Landing tables
     must carry `ingested_timestamp` before that source is normalised. A
-    source without it is retrofitted at bronze in its own change first,
-    only when it is about to be normalised.
+    source without it is retrofitted at bronze just in time, only when it
+    is about to be normalised — either in its own change first, or as the
+    first task group of that source's Silver Normalised change (acnc's
+    choice, `phase4e-silver-normalised-acnc`).
 - First introduced with AirROI (Phase 3h) — see `market_summary_raw.py`/
-  `market_summary_scd2.py` for the reference implementation. Not yet retrofitted
-  to earlier sources (ACNC, NSW Spatial, UNGM, Neon, clickstream) at the bronze
-  layer; apply the same pattern to them if/when they're revisited. Silver
-  Landing (`phase4a-silver-landing`) is the first layer to apply
-  `transformed_timestamp` universally, regardless of whether the bronze
-  layer for that source has been retrofitted yet. Every source onboarded
-  after AirROI applies the pattern from the start — ISO 3166 (Phase 3i)
-  is the first: see `country_codes_raw.py`/`country_codes_scd2.py`.
+  `market_summary_scd2.py` for the reference implementation. Retrofitted
+  to ACNC (Phase 4e) — see `charity_register_raw.py`/`charity_register_scd2.py`.
+  Not yet retrofitted to the remaining earlier sources (NSW Spatial, UNGM,
+  Neon, clickstream) at the bronze layer; apply the same pattern to them if/
+  when they're revisited. Silver Landing (`phase4a-silver-landing`) is the
+  first layer to apply `transformed_timestamp` universally, regardless of
+  whether the bronze layer for that source has been retrofitted yet. Every
+  source onboarded after AirROI applies the pattern from the start — ISO
+  3166 (Phase 3i) is the first: see `country_codes_raw.py`/
+  `country_codes_scd2.py`.
+  - **A closed SCD2 version from before a source's retrofit keeps a null
+    `ingested_timestamp`** — Auto CDC does not rewrite closed versions.
+    Accepted (acnc's decision): downstream `max()` aggregation already
+    ignores nulls, and Silver Normalised verification checks current rows
+    only (see `phase4e-silver-normalised-acnc`'s design.md).
 
 ## Volume paths
 
