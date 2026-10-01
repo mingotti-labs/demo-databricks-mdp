@@ -1,0 +1,106 @@
+# Normalised spec for acnc. Evidence and decisions:
+# openspec/changes/phase4e-silver-normalised-acnc/ (profile.json, design.md).
+source_system: acnc
+base_entities:
+  charity_register:
+    from: silver_landing_acnc.charity_register
+    natural_key: [ABN]
+    history: scd2
+    columns:
+      - Charity_Legal_Name
+      - Other_Organisation_Names
+      - Address_Line_1
+      - Address_Line_2
+      - Address_Line_3
+      - Charity_Website
+      - Registration_Date
+      - Date_Organisation_Established
+      - Number_of_Responsible_Persons
+      - PBI
+      - HPC
+    extracted:
+      Address_Type: address_type
+      Town_City: locality
+      State: state
+      Postcode: postcode
+      Country: country
+      Charity_Size: charity_size
+      Financial_Year_End: financial_year_end
+bridge_entities:
+  charity_register_operating_state:
+    from: silver_landing_acnc.charity_register
+    parent: charity_register
+    unpivot: {columns_like: "Operates_in_%", keep_when: "Y"}
+    extracted: operating_state
+  charity_register_operating_country:
+    from: silver_landing_acnc.charity_register
+    parent: charity_register
+    explode: {column: Operating_Countries, split: ", "}
+    extracted: country
+  charity_register_purpose:
+    from: silver_landing_acnc.charity_register
+    parent: charity_register
+    unpivot:
+      keep_when: "Y"
+      columns:
+        - Preventing_or_relieving_suffering_of_animals
+        - Advancing_Culture
+        - Advancing_Education
+        - Advancing_Health
+        - Promote_or_oppose_a_change_to_law__government_poll_or_prac
+        - Advancing_natual_environment
+        - Promoting_or_protecting_human_rights
+        - Purposes_beneficial_to_ther_general_public_and_other_analogous
+        - Promoting_reconciliation__mutual_respect_and_tolerance
+        - Advancing_Religion
+        - Advancing_social_or_public_welfare
+        - Advancing_security_or_safety_of_Australia_or_Australian_public
+    extracted: purpose
+  charity_register_beneficiary:
+    from: silver_landing_acnc.charity_register
+    parent: charity_register
+    unpivot:
+      keep_when: "Y"
+      columns:
+        - Aboriginal_or_TSI
+        - Adults
+        - Aged_Persons
+        - Children
+        - Communities_Overseas
+        - Early_Childhood
+        - Ethnic_Groups
+        - Families
+        - Females
+        - Financially_Disadvantaged
+        - LGBTIQA+
+        - General_Community_in_Australia
+        - Males
+        - Migrants_Refugees_or_Asylum_Seekers
+        - Other_Beneficiaries
+        - Other_Charities
+        - People_at_risk_of_homelessness
+        - People_with_Chronic_Illness
+        - People_with_Disabilities
+        - Pre_Post_Release_Offenders
+        - Rural_Regional_Remote_Communities
+        - Unemployed_Person
+        - Veterans_or_their_families
+        - Victims_of_crime
+        - Victims_of_Disasters
+        - Youth
+        - animals
+        - environment
+        - other_gender_identities
+    extracted: beneficiary
+extracted_entities:
+  address_type: {}
+  locality: {}
+  state: {}
+  postcode: {}
+  country: {}
+  charity_size: {}
+  financial_year_end: {}
+  operating_state: {}
+  purpose: {}
+  beneficiary: {}
+ignored_columns: []

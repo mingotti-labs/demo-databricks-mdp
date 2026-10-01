@@ -8,13 +8,13 @@
  "tables": [
   {
    "table": "charity_register",
-   "row_count": 489,
+   "row_count": 65802,
    "columns": [
     {
      "column": "ABN",
      "type": "STRING",
      "null_pct": 0.0,
-     "distinct_count": 489,
+     "distinct_count": 65793,
      "max_length": 11,
      "delimiter_rows": {
       ";": 0,
@@ -23,83 +23,83 @@
      },
      "top_values": [
       {
-       "value": "11403984944",
+       "value": "35638023542",
+       "rows": 2
+      },
+      {
+       "value": "36650322197",
+       "rows": 2
+      },
+      {
+       "value": "59646743375",
+       "rows": 2
+      },
+      {
+       "value": "62543502722",
+       "rows": 2
+      },
+      {
+       "value": "64650891645",
+       "rows": 2
+      },
+      {
+       "value": "70831799545",
+       "rows": 2
+      },
+      {
+       "value": "89155120614",
+       "rows": 2
+      },
+      {
+       "value": "94684150774",
+       "rows": 2
+      },
+      {
+       "value": "98648048444",
+       "rows": 2
+      },
+      {
+       "value": "11000047950",
        "rows": 1
       },
       {
-       "value": "11685400793",
+       "value": "11000073870",
        "rows": 1
       },
       {
-       "value": "12496048480",
+       "value": "11000761571",
        "rows": 1
       },
       {
-       "value": "12649118025",
+       "value": "11001209490",
        "rows": 1
       },
       {
-       "value": "12650045453",
+       "value": "11001233790",
        "rows": 1
       },
       {
-       "value": "12653756597",
+       "value": "11001241005",
        "rows": 1
       },
       {
-       "value": "13000864077",
+       "value": "11001350867",
        "rows": 1
       },
       {
-       "value": "13650100020",
+       "value": "11001794396",
        "rows": 1
       },
       {
-       "value": "13848247231",
+       "value": "11001832828",
        "rows": 1
       },
       {
-       "value": "13953672133",
+       "value": "11002058127",
        "rows": 1
       },
       {
-       "value": "14137645904",
-       "rows": 1
-      },
-      {
-       "value": "14374431714",
-       "rows": 1
-      },
-      {
-       "value": "14419207126",
-       "rows": 1
-      },
-      {
-       "value": "14564455327",
-       "rows": 1
-      },
-      {
-       "value": "14869538247",
-       "rows": 1
-      },
-      {
-       "value": "15411396197",
-       "rows": 1
-      },
-      {
-       "value": "15544060860",
-       "rows": 1
-      },
-      {
-       "value": "15628753088",
-       "rows": 1
-      },
-      {
-       "value": "15648683149",
-       "rows": 1
-      },
-      {
-       "value": "15649364796",
+       "value": "11002389746",
        "rows": 1
       }
      ]
@@ -108,187 +108,187 @@
      "column": "Charity_Legal_Name",
      "type": "STRING",
      "null_pct": 0.0,
-     "distinct_count": 489,
-     "max_length": 89,
+     "distinct_count": 65384,
+     "max_length": 171,
      "delimiter_rows": {
-      ";": 0,
-      ",": 3,
-      "|": 0
+      ";": 15,
+      ",": 265,
+      "|": 1
      },
      "top_values": [
       {
-       "value": "3081 HOPE LTD",
-       "rows": 1
+       "value": "The Corporation Of The Synod Of The Diocese Of Brisbane",
+       "rows": 127
       },
       {
-       "value": "ACACIA - FAMILY & DOMESTIC VIOLENCE SUPPORT INCORPORATED",
-       "rows": 1
+       "value": "The Corporation Of The Diocesan Synod Of North Queensland",
+       "rows": 50
       },
       {
-       "value": "ACHINTYA THE INCONCEIVABLE INCORPORATED",
-       "rows": 1
+       "value": "Anglican Trusts Corporation Of The Diocese Of Gippsland",
+       "rows": 30
       },
       {
-       "value": "ACUTE STROKE NURSES EDUCATION NETWORK LTD",
-       "rows": 1
+       "value": "Bendigo Diocesan Trusts Corporation",
+       "rows": 30
       },
       {
-       "value": "AFRICAN YOUTH INITIATIVE CENTRES LIMITED",
-       "rows": 1
+       "value": "Lutheran Church Of Australia Queensland District",
+       "rows": 19
       },
       {
-       "value": "AL-HIRA INSTITUTE INCORPORATED",
-       "rows": 1
+       "value": "The Corporation Of The Synod Of The Diocese Of Rockhampton",
+       "rows": 16
       },
       {
-       "value": "AL-NAJASHI CENTER INCORPORATED",
-       "rows": 1
+       "value": "Lutheran Church of Australia Queensland District",
+       "rows": 9
       },
       {
-       "value": "ALEFF LAM MEEM LTD.",
-       "rows": 1
+       "value": "Roman Catholic Trust Corporation For The Diocese Of Townsville",
+       "rows": 8
       },
       {
-       "value": "ALLERGY LIFE LTD",
-       "rows": 1
+       "value": "Lutheran Church Of Australia Queensland District (Lutheran Community Care)",
+       "rows": 6
       },
       {
-       "value": "ALPHA EARLY LEARNING CENTRE LIMITED",
-       "rows": 1
+       "value": "The Augustinians",
+       "rows": 6
       },
       {
-       "value": "AMANI'S SHELTER LTD",
-       "rows": 1
+       "value": "ACPT - St Andrew's Cathedral Trust",
+       "rows": 4
       },
       {
-       "value": "ARAM SEI LIMITED",
-       "rows": 1
+       "value": "Grace Baptist Church",
+       "rows": 4
       },
       {
-       "value": "ASHLEIGH GARDNER FOUNDATION LIMITED",
-       "rows": 1
+       "value": "St Johns Anglican Church",
+       "rows": 4
       },
       {
-       "value": "AUSTRALASIAN TAIWAN STUDIES ASSOCIATION INCORPORATED",
-       "rows": 1
+       "value": "The Corporation of the Synod of the Diocese of Brisbane",
+       "rows": 4
       },
       {
-       "value": "AUSTRALASIAN YOUTH CUBESAT INITIATIVE LIMITED",
-       "rows": 1
+       "value": "Trinity Lutheran Church",
+       "rows": 4
       },
       {
-       "value": "AUSTRALIA HONG KONG LINK PTY LTD",
-       "rows": 1
+       "value": "Faith Baptist Church",
+       "rows": 3
       },
       {
-       "value": "AUSTRALIA TELUGU NRI ASSOCIATION INC.",
-       "rows": 1
+       "value": "Hare Krishna Food For Life Inc",
+       "rows": 3
       },
       {
-       "value": "AUSTRALIAN FORUM TO SUPPORT ORPHANS AND NEEDY INCORPORATED",
-       "rows": 1
+       "value": "Peace Lutheran Church Gatton",
+       "rows": 3
       },
       {
-       "value": "AUSTRALIAN JEWISH ASSOCIATION TZEDAKAH INCORPORATED",
-       "rows": 1
+       "value": "Redeemer Lutheran Church",
+       "rows": 3
       },
       {
-       "value": "AUSTRALIAN SELF-CARE ALLIANCE LTD",
-       "rows": 1
+       "value": "Scots Presbyterian Church",
+       "rows": 3
       }
      ]
     },
     {
      "column": "Other_Organisation_Names",
      "type": "STRING",
-     "null_pct": 90.18,
-     "distinct_count": 48,
-     "max_length": 122,
+     "null_pct": 89.25,
+     "distinct_count": 6997,
+     "max_length": 7457,
      "delimiter_rows": {
-      ";": 0,
-      ",": 11,
-      "|": 0
+      ";": 116,
+      ",": 1276,
+      "|": 2
      },
      "top_values": [
       {
-       "value": "ALM",
-       "rows": 1
+       "value": "Andrea Van Dorssen, Stephen Agius",
+       "rows": 11
       },
       {
-       "value": "Allergy Life, Allergy Life Australia",
-       "rows": 1
+       "value": "St Joseph's Primary School",
+       "rows": 11
       },
       {
-       "value": "Australasian Society for Developmental Paediatrics",
-       "rows": 1
+       "value": "Manogaran Ranggasamy",
+       "rows": 4
       },
       {
-       "value": "Avanoa Group",
-       "rows": 1
+       "value": "St Mary's Primary School",
+       "rows": 4
       },
       {
-       "value": "BJSM, BJSM NSW, BJSM Sydney",
-       "rows": 1
+       "value": "Admin",
+       "rows": 3
       },
       {
-       "value": "Biafra Radio, BTV (Biafra TV), IPOB Community Radio, Radio Biafra, Radio Biafra Homeland, Radio Biafra London",
-       "rows": 1
+       "value": "GREEK ORTHODOX PARISH OF ST. NICHOLAS",
+       "rows": 3
       },
       {
-       "value": "Brown Plumb Foundation",
-       "rows": 1
+       "value": "Secretary",
+       "rows": 3
       },
       {
-       "value": "C.O.A.S.T. Rescue, COAST Inc",
-       "rows": 1
+       "value": "Sisters of St Joseph",
+       "rows": 3
       },
       {
-       "value": "Chanaka Jayatillake",
-       "rows": 1
+       "value": ".",
+       "rows": 2
+      },
+      {
+       "value": "ASAR",
+       "rows": 2
+      },
+      {
+       "value": "Ali Fahour",
+       "rows": 2
+      },
+      {
+       "value": "Bernadette Bateman",
+       "rows": 2
+      },
+      {
+       "value": "Catholic Parish of Bunbury",
+       "rows": 2
+      },
+      {
+       "value": "Change of Address",
+       "rows": 2
       },
       {
        "value": "Christadelphian Refugee Assistance Council Inc, CRAC Inc",
-       "rows": 1
+       "rows": 2
       },
       {
-       "value": "Circular Head Landcare Group",
-       "rows": 1
+       "value": "Company Secretary",
+       "rows": 2
       },
       {
-       "value": "Decjuba Foundation",
-       "rows": 1
+       "value": "Connect Housing Group",
+       "rows": 2
       },
       {
-       "value": "Defend the Wild",
-       "rows": 1
+       "value": "David Smith",
+       "rows": 2
       },
       {
-       "value": "Donnybrook Men's Shed Inc.",
-       "rows": 1
+       "value": "GREEK ORTHODOX PARISH OF ST. ANDREW",
+       "rows": 2
       },
       {
-       "value": "From the grass roots up",
-       "rows": 1
-      },
-      {
-       "value": "Fudul, HAFA",
-       "rows": 1
-      },
-      {
-       "value": "Geofrey Osawa",
-       "rows": 1
-      },
-      {
-       "value": "Georges Riverkeeper",
-       "rows": 1
-      },
-      {
-       "value": "Gippsland Community Foundation",
-       "rows": 1
-      },
-      {
-       "value": "Girgarre Salinity Study Group Inc",
-       "rows": 1
+       "value": "GREEK ORTHODOX PARISH OF ST. ANDREW PHILOPTOHOS",
+       "rows": 2
       }
      ]
     },
@@ -306,332 +306,392 @@
      "top_values": [
       {
        "value": "Business",
-       "rows": 489
+       "rows": 65802
       }
      ]
     },
     {
      "column": "Address_Line_1",
      "type": "STRING",
-     "null_pct": 11.86,
-     "distinct_count": 416,
-     "max_length": 73,
+     "null_pct": 9.63,
+     "distinct_count": 46250,
+     "max_length": 141,
      "delimiter_rows": {
       ";": 0,
-      ",": 20,
-      "|": 0
+      ",": 2151,
+      "|": 2
      },
      "top_values": [
       {
-       "value": "19 Thompson Street",
-       "rows": 5
+       "value": "123 Pitt Street",
+       "rows": 573
       },
       {
-       "value": "C/O Australian Philanthropic Services",
-       "rows": 3
+       "value": "GPO Box 2307",
+       "rows": 510
+      },
+      {
+       "value": "Level 2, St Andrew's House",
+       "rows": 356
+      },
+      {
+       "value": "ANZAC House 4 Collins Street",
+       "rows": 219
+      },
+      {
+       "value": "373 Ann St",
+       "rows": 146
+      },
+      {
+       "value": "209 Flinders Lane",
+       "rows": 134
+      },
+      {
+       "value": "Level 1",
+       "rows": 126
+      },
+      {
+       "value": "44 Pirie Street",
+       "rows": 119
+      },
+      {
+       "value": "PO Box 510",
+       "rows": 84
       },
       {
        "value": "Level 4",
-       "rows": 3
+       "rows": 78
       },
       {
-       "value": "1 Mcnab Ave",
-       "rows": 2
+       "value": "Level 2",
+       "rows": 67
       },
       {
-       "value": "141 Central Rd",
-       "rows": 2
+       "value": "GPO Box 4172",
+       "rows": 65
       },
       {
-       "value": "144 Nelson Street",
-       "rows": 2
+       "value": "St Christopher's Pastoral Centre",
+       "rows": 62
       },
       {
-       "value": "148 Fox Valley Rd",
-       "rows": 2
+       "value": "GPO Box 1461",
+       "rows": 61
       },
       {
-       "value": "2 Railway Street",
-       "rows": 2
+       "value": "Level 3",
+       "rows": 57
       },
       {
-       "value": "400 Boundary St",
-       "rows": 2
+       "value": "GPO Box 1981",
+       "rows": 56
       },
       {
-       "value": "78 St Leonards Road",
-       "rows": 2
+       "value": "C/- 39 Wakefield Street",
+       "rows": 55
       },
       {
-       "value": "1 Challis Ave",
-       "rows": 1
+       "value": "PO Box 1244",
+       "rows": 55
       },
       {
-       "value": "1 Homer Avenue",
-       "rows": 1
+       "value": "21 Chancellors Walk",
+       "rows": 53
       },
       {
-       "value": "1 Lassiter Ave",
-       "rows": 1
-      },
-      {
-       "value": "1 Mcclymont Way",
-       "rows": 1
-      },
-      {
-       "value": "1 Orion St",
-       "rows": 1
-      },
-      {
-       "value": "1 Prince St",
-       "rows": 1
-      },
-      {
-       "value": "1 beachside cresent",
-       "rows": 1
-      },
-      {
-       "value": "10 Alluvium Way",
-       "rows": 1
-      },
-      {
-       "value": "10 Rowe Street",
-       "rows": 1
-      },
-      {
-       "value": "10 Wilga Crescent",
-       "rows": 1
+       "value": "GPO Box 1338",
+       "rows": 50
       }
      ]
     },
     {
      "column": "Address_Line_2",
      "type": "STRING",
-     "null_pct": 88.75,
-     "distinct_count": 53,
-     "max_length": 46,
+     "null_pct": 91.16,
+     "distinct_count": 4319,
+     "max_length": 73,
      "delimiter_rows": {
       ";": 0,
-      ",": 8,
-      "|": 0
+      ",": 377,
+      "|": 1
      },
      "top_values": [
       {
+       "value": "Sydney Square",
+       "rows": 353
+      },
+      {
+       "value": "55 Franklin St",
+       "rows": 62
+      },
+      {
+       "value": "NSW",
+       "rows": 56
+      },
+      {
+       "value": "VIC",
+       "rows": 33
+      },
+      {
        "value": "Level 7, 130 Pitt Street",
-       "rows": 3
+       "rows": 30
       },
       {
-       "value": "1 Caswell Terrace",
-       "rows": 1
+       "value": "C/- PO BOX 2795",
+       "rows": 23
       },
       {
-       "value": "1 Duncans Road",
-       "rows": 1
+       "value": "PO Box 775",
+       "rows": 21
+      },
+      {
+       "value": "345 George Street",
+       "rows": 18
+      },
+      {
+       "value": "New South Wales",
+       "rows": 18
+      },
+      {
+       "value": "via",
+       "rows": 17
+      },
+      {
+       "value": "Victoria",
+       "rows": 16
+      },
+      {
+       "value": "QLD",
+       "rows": 15
+      },
+      {
+       "value": "Great Northern Highway",
+       "rows": 14
+      },
+      {
+       "value": "Level 1",
+       "rows": 14
       },
       {
        "value": "1 Eagle Street",
-       "rows": 1
+       "rows": 12
       },
       {
-       "value": "109 Pitt Street",
-       "rows": 1
+       "value": "WA",
+       "rows": 12
       },
       {
-       "value": "12 Creek Street",
-       "rows": 1
+       "value": "Western Australia",
+       "rows": 12
       },
       {
-       "value": "15 PARRY STREET",
-       "rows": 1
+       "value": "1001 Nepean Highway",
+       "rows": 9
       },
       {
-       "value": "154 Elizabeth Street",
-       "rows": 1
+       "value": "21 Chancellors Walk",
+       "rows": 9
       },
       {
-       "value": "16 Bedford Street",
-       "rows": 1
-      },
-      {
-       "value": "17 Wally's Walk",
-       "rows": 1
-      },
-      {
-       "value": "180 George Street",
-       "rows": 1
-      },
-      {
-       "value": "180-186 Campbell Parade",
-       "rows": 1
-      },
-      {
-       "value": "18484 VICTORIA HWY",
-       "rows": 1
-      },
-      {
-       "value": "2-40 Clunies Ross Street",
-       "rows": 1
-      },
-      {
-       "value": "2/5 Arnold Street",
-       "rows": 1
-      },
-      {
-       "value": "20 Albert Street",
-       "rows": 1
-      },
-      {
-       "value": "25 Trinity Drive",
-       "rows": 1
-      },
-      {
-       "value": "29 Kiora Rd",
-       "rows": 1
-      },
-      {
-       "value": "3 Fourth Avenue",
-       "rows": 1
-      },
-      {
-       "value": "377 Hannan Street",
-       "rows": 1
+       "value": "50 Scott St",
+       "rows": 9
       }
      ]
     },
     {
      "column": "Address_Line_3",
      "type": "STRING",
-     "null_pct": 98.77,
-     "distinct_count": 5,
-     "max_length": 25,
+     "null_pct": 98.92,
+     "distinct_count": 586,
+     "max_length": 127,
      "delimiter_rows": {
-      ";": 0,
-      ",": 0,
+      ";": 1,
+      ",": 21,
       "|": 0
      },
      "top_values": [
       {
        "value": "via",
+       "rows": 50
+      },
+      {
+       "value": "Via",
+       "rows": 18
+      },
+      {
+       "value": "Australia",
+       "rows": 11
+      },
+      {
+       "value": "31 Alfred Street",
+       "rows": 5
+      },
+      {
+       "value": "Street",
+       "rows": 5
+      },
+      {
+       "value": "Road",
+       "rows": 4
+      },
+      {
+       "value": "Sydney",
+       "rows": 4
+      },
+      {
+       "value": "1 Giffnock Avenue",
+       "rows": 3
+      },
+      {
+       "value": "19 Smith Street",
+       "rows": 3
+      },
+      {
+       "value": "52 Alfred St S",
+       "rows": 3
+      },
+      {
+       "value": "Melbourne",
+       "rows": 3
+      },
+      {
+       "value": "1 Homebush Bay Drive",
        "rows": 2
       },
       {
-       "value": "1 -59 Quay Street",
-       "rows": 1
+       "value": "1 Short Street",
+       "rows": 2
       },
       {
-       "value": "405 Liverpool St",
-       "rows": 1
+       "value": "104 Mulgrave Road",
+       "rows": 2
       },
       {
-       "value": "58 Street Georges Terrace",
-       "rows": 1
+       "value": "11 Palmerston Lane",
+       "rows": 2
       },
       {
-       "value": "NT Portion 7278",
-       "rows": 1
+       "value": "200 Barangaroo Avenue",
+       "rows": 2
+      },
+      {
+       "value": "24 Lonsdale Street",
+       "rows": 2
+      },
+      {
+       "value": "27 Currie Street",
+       "rows": 2
+      },
+      {
+       "value": "299 Toorak Road",
+       "rows": 2
+      },
+      {
+       "value": "30 English Street",
+       "rows": 2
       }
      ]
     },
     {
      "column": "Town_City",
      "type": "STRING",
-     "null_pct": 11.66,
-     "distinct_count": 349,
-     "max_length": 22,
+     "null_pct": 9.54,
+     "distinct_count": 8050,
+     "max_length": 35,
      "delimiter_rows": {
-      ";": 0,
-      ",": 0,
+      ";": 2,
+      ",": 37,
       "|": 0
      },
      "top_values": [
       {
        "value": "Sydney",
-       "rows": 17
+       "rows": 2089
       },
       {
        "value": "Melbourne",
-       "rows": 12
-      },
-      {
-       "value": "Kensington",
-       "rows": 7
-      },
-      {
-       "value": "Brisbane City",
-       "rows": 5
+       "rows": 1841
       },
       {
        "value": "Adelaide",
-       "rows": 4
+       "rows": 709
       },
       {
-       "value": "Chatswood",
-       "rows": 3
-      },
-      {
-       "value": "Footscray",
-       "rows": 3
-      },
-      {
-       "value": "Parramatta",
-       "rows": 3
+       "value": "Brisbane City",
+       "rows": 276
       },
       {
        "value": "Perth",
-       "rows": 3
+       "rows": 275
       },
       {
-       "value": "Armadale",
-       "rows": 2
+       "value": "MELBOURNE",
+       "rows": 237
       },
       {
-       "value": "Ascot Vale",
-       "rows": 2
+       "value": "Hobart",
+       "rows": 224
       },
       {
-       "value": "Box Hill",
-       "rows": 2
+       "value": "Parramatta",
+       "rows": 192
+      },
+      {
+       "value": "Canberra",
+       "rows": 184
       },
       {
        "value": "Brisbane",
-       "rows": 2
+       "rows": 175
       },
       {
-       "value": "Busselton",
-       "rows": 2
+       "value": "Surry Hills",
+       "rows": 161
       },
       {
-       "value": "Camberwell",
-       "rows": 2
+       "value": "Bendigo",
+       "rows": 160
+      },
+      {
+       "value": "Armidale",
+       "rows": 157
+      },
+      {
+       "value": "Richmond",
+       "rows": 153
+      },
+      {
+       "value": "Carlton",
+       "rows": 143
+      },
+      {
+       "value": "Hawthorn",
+       "rows": 139
+      },
+      {
+       "value": "North Sydney",
+       "rows": 139
+      },
+      {
+       "value": "Wagga Wagga",
+       "rows": 129
+      },
+      {
+       "value": "East Melbourne",
+       "rows": 128
       },
       {
        "value": "Clayton",
-       "rows": 2
-      },
-      {
-       "value": "Docklands",
-       "rows": 2
-      },
-      {
-       "value": "East Perth",
-       "rows": 2
-      },
-      {
-       "value": "Forest Lake",
-       "rows": 2
-      },
-      {
-       "value": "Frankston",
-       "rows": 2
+       "rows": 126
       }
      ]
     },
     {
      "column": "State",
      "type": "STRING",
-     "null_pct": 11.25,
-     "distinct_count": 8,
-     "max_length": 3,
+     "null_pct": 9.59,
+     "distinct_count": 22,
+     "max_length": 34,
      "delimiter_rows": {
       ";": 0,
       ",": 0,
@@ -640,138 +700,186 @@
      "top_values": [
       {
        "value": "NSW",
-       "rows": 150
+       "rows": 20495
       },
       {
        "value": "VIC",
-       "rows": 127
+       "rows": 15177
       },
       {
        "value": "QLD",
-       "rows": 63
+       "rows": 9604
       },
       {
        "value": "WA",
-       "rows": 46
+       "rows": 6009
       },
       {
        "value": "SA",
-       "rows": 24
-      },
-      {
-       "value": "NT",
-       "rows": 9
+       "rows": 4283
       },
       {
        "value": "TAS",
-       "rows": 8
+       "rows": 1429
       },
       {
        "value": "ACT",
-       "rows": 7
+       "rows": 1367
+      },
+      {
+       "value": "NT",
+       "rows": 890
+      },
+      {
+       "value": "Qld",
+       "rows": 151
+      },
+      {
+       "value": "Vic",
+       "rows": 64
+      },
+      {
+       "value": "nsw",
+       "rows": 5
+      },
+      {
+       "value": "vic",
+       "rows": 3
+      },
+      {
+       "value": "Wa",
+       "rows": 2
+      },
+      {
+       "value": "wa",
+       "rows": 2
+      },
+      {
+       "value": "4344",
+       "rows": 1
+      },
+      {
+       "value": "Australia Capital Territory",
+       "rows": 1
+      },
+      {
+       "value": "Australia Indian Ocean Territories",
+       "rows": 1
+      },
+      {
+       "value": "Bali",
+       "rows": 1
+      },
+      {
+       "value": "DC Western Australia",
+       "rows": 1
+      },
+      {
+       "value": "Mentone",
+       "rows": 1
       }
      ]
     },
     {
      "column": "Postcode",
      "type": "STRING",
-     "null_pct": 11.25,
-     "distinct_count": 324,
-     "max_length": 4,
+     "null_pct": 9.45,
+     "distinct_count": 2566,
+     "max_length": 19,
      "delimiter_rows": {
       ";": 0,
-      ",": 0,
+      ",": 2,
       "|": 0
      },
      "top_values": [
       {
        "value": "2000",
-       "rows": 20
+       "rows": 1506
       },
       {
        "value": "3000",
-       "rows": 12
-      },
-      {
-       "value": "4000",
-       "rows": 9
-      },
-      {
-       "value": "3031",
-       "rows": 5
-      },
-      {
-       "value": "2170",
-       "rows": 4
+       "rows": 1265
       },
       {
        "value": "5000",
-       "rows": 4
+       "rows": 667
       },
       {
-       "value": "0820",
-       "rows": 3
+       "value": "2034",
+       "rows": 598
       },
       {
-       "value": "2067",
-       "rows": 3
+       "value": "3001",
+       "rows": 587
       },
       {
-       "value": "2147",
-       "rows": 3
+       "value": "4000",
+       "rows": 460
       },
       {
-       "value": "2150",
-       "rows": 3
+       "value": "4870",
+       "rows": 290
       },
       {
-       "value": "3011",
-       "rows": 3
-      },
-      {
-       "value": "3168",
-       "rows": 3
-      },
-      {
-       "value": "3216",
-       "rows": 3
-      },
-      {
-       "value": "3550",
-       "rows": 3
+       "value": "2010",
+       "rows": 278
       },
       {
        "value": "6000",
-       "rows": 3
+       "rows": 266
       },
       {
-       "value": "6005",
-       "rows": 3
+       "value": "4350",
+       "rows": 257
       },
       {
-       "value": "2011",
-       "rows": 2
+       "value": "2480",
+       "rows": 232
       },
       {
-       "value": "2031",
-       "rows": 2
+       "value": "2650",
+       "rows": 213
       },
       {
-       "value": "2065",
-       "rows": 2
+       "value": "2601",
+       "rows": 210
       },
       {
-       "value": "2069",
-       "rows": 2
+       "value": "2150",
+       "rows": 205
+      },
+      {
+       "value": "7000",
+       "rows": 205
+      },
+      {
+       "value": "2250",
+       "rows": 182
+      },
+      {
+       "value": "2060",
+       "rows": 181
+      },
+      {
+       "value": "2350",
+       "rows": 170
+      },
+      {
+       "value": "3004",
+       "rows": 169
+      },
+      {
+       "value": "2153",
+       "rows": 168
       }
      ]
     },
     {
      "column": "Country",
      "type": "STRING",
-     "null_pct": 12.47,
-     "distinct_count": 2,
-     "max_length": 9,
+     "null_pct": 11.08,
+     "distinct_count": 21,
+     "max_length": 46,
      "delimiter_rows": {
       ";": 0,
       ",": 0,
@@ -780,10 +888,82 @@
      "top_values": [
       {
        "value": "Australia",
-       "rows": 427
+       "rows": 55361
       },
       {
        "value": "AUSTRALIA",
+       "rows": 3129
+      },
+      {
+       "value": "Austria",
+       "rows": 3
+      },
+      {
+       "value": "Australia.",
+       "rows": 2
+      },
+      {
+       "value": "0419032014",
+       "rows": 1
+      },
+      {
+       "value": "AUSRALIA",
+       "rows": 1
+      },
+      {
+       "value": "AUSTRALIA + NZ + UK + TSI + DENMARK (DK) + USA",
+       "rows": 1
+      },
+      {
+       "value": "AUSTRALIAN",
+       "rows": 1
+      },
+      {
+       "value": "Aruba",
+       "rows": 1
+      },
+      {
+       "value": "Aus",
+       "rows": 1
+      },
+      {
+       "value": "Austalia",
+       "rows": 1
+      },
+      {
+       "value": "Indonesia",
+       "rows": 1
+      },
+      {
+       "value": "NSW",
+       "rows": 1
+      },
+      {
+       "value": "Queensland",
+       "rows": 1
+      },
+      {
+       "value": "Singapore",
+       "rows": 1
+      },
+      {
+       "value": "Tasmania",
+       "rows": 1
+      },
+      {
+       "value": "United Kingdom",
+       "rows": 1
+      },
+      {
+       "value": "WA",
+       "rows": 1
+      },
+      {
+       "value": "WA 6105",
+       "rows": 1
+      },
+      {
+       "value": "australia",
        "rows": 1
       }
      ]
@@ -791,102 +971,102 @@
     {
      "column": "Charity_Website",
      "type": "STRING",
-     "null_pct": 35.58,
-     "distinct_count": 314,
-     "max_length": 124,
+     "null_pct": 33.48,
+     "distinct_count": 40683,
+     "max_length": 200,
      "delimiter_rows": {
-      ";": 0,
-      ",": 0,
+      ";": 2,
+      ",": 17,
       "|": 0
      },
      "top_values": [
       {
-       "value": "https://www.socialflourishing.com.au",
-       "rows": 2
+       "value": "www.pcq.org.au",
+       "rows": 89
       },
       {
-       "value": "adventistchurch.com",
-       "rows": 1
+       "value": "www.cgcatholic.org.au",
+       "rows": 61
       },
       {
-       "value": "austrokealliance.org.au",
-       "rows": 1
+       "value": "https://www.anglicannq.org/",
+       "rows": 54
       },
       {
-       "value": "caresumatra.com",
-       "rows": 1
+       "value": "www.bahai.org.au",
+       "rows": 53
       },
       {
-       "value": "climateaction.foundation",
-       "rows": 1
+       "value": "https://www.calvarycare.org.au",
+       "rows": 44
       },
       {
-       "value": "cracouncil.org",
-       "rows": 1
+       "value": "www.anglicantas.org.au",
+       "rows": 43
       },
       {
-       "value": "dragonsabreast.com.au/group/hobart",
-       "rows": 1
+       "value": "www.wesleyan.org.au",
+       "rows": 41
       },
       {
-       "value": "dwdnsw.org.au",
-       "rows": 1
+       "value": "www.catholic.org.au",
+       "rows": 34
       },
       {
-       "value": "everydayjustice.com.au",
-       "rows": 1
+       "value": "www.armidaleanglicandiocese.com/our-churches/",
+       "rows": 33
       },
       {
-       "value": "friendsbgobg.org.au",
-       "rows": 1
+       "value": "ww.catholic.edu.au",
+       "rows": 31
       },
       {
-       "value": "ghlee.org",
-       "rows": 1
+       "value": "gippslandanglicans.org.au",
+       "rows": 30
       },
       {
-       "value": "ghyc.com.au",
-       "rows": 1
+       "value": "www.anglicanriverina.com",
+       "rows": 26
       },
       {
-       "value": "greenkarma.org.au",
-       "rows": 1
+       "value": "www.cdsale.org.au",
+       "rows": 26
       },
       {
-       "value": "honig.org.au",
-       "rows": 1
+       "value": "www.bathurst.catholic.org.au",
+       "rows": 23
       },
       {
-       "value": "http://allergylife.com.au/",
-       "rows": 1
+       "value": "www.ballaratanglican.org.au",
+       "rows": 21
       },
       {
-       "value": "http://keo.charity",
-       "rows": 1
+       "value": "www.rocor.org.au",
+       "rows": 21
       },
       {
-       "value": "http://many-nations.org",
-       "rows": 1
+       "value": "https://www.wf.catholic.org.au/parishes/",
+       "rows": 20
       },
       {
-       "value": "http://veerfoundation.org.au/",
-       "rows": 1
+       "value": "www.facebook.com",
+       "rows": 20
       },
       {
-       "value": "http://www.abaarorphanage-bortown.org.au/",
-       "rows": 1
+       "value": "https://www.housingchoices.org.au",
+       "rows": 19
       },
       {
-       "value": "http://www.assemble.com.au",
-       "rows": 1
+       "value": "www.rdansw.org.au",
+       "rows": 19
       }
      ]
     },
     {
      "column": "Registration_Date",
      "type": "STRING",
-     "null_pct": 0.2,
-     "distinct_count": 278,
+     "null_pct": 0.11,
+     "distinct_count": 4541,
      "max_length": 10,
      "delimiter_rows": {
       ";": 0,
@@ -895,92 +1075,92 @@
      },
      "top_values": [
       {
-       "value": "01/01/2021",
-       "rows": 16
+       "value": "03/12/2012",
+       "rows": 37163
       },
       {
        "value": "01/07/2023",
-       "rows": 13
+       "rows": 739
       },
       {
-       "value": "03/12/2012",
-       "rows": 13
+       "value": "01/01/2014",
+       "rows": 420
       },
       {
-       "value": "21/05/2021",
-       "rows": 10
+       "value": "01/07/2022",
+       "rows": 236
+      },
+      {
+       "value": "01/07/2017",
+       "rows": 215
+      },
+      {
+       "value": "01/07/2018",
+       "rows": 193
       },
       {
        "value": "01/07/2021",
-       "rows": 8
+       "rows": 186
       },
       {
-       "value": "13/05/2021",
-       "rows": 8
+       "value": "01/07/2019",
+       "rows": 184
+      },
+      {
+       "value": "01/07/2016",
+       "rows": 181
       },
       {
        "value": "01/07/2020",
-       "rows": 7
+       "rows": 179
       },
       {
-       "value": "04/05/2021",
-       "rows": 7
+       "value": "01/07/2015",
+       "rows": 166
       },
       {
-       "value": "07/05/2021",
-       "rows": 7
+       "value": "01/07/2014",
+       "rows": 147
       },
       {
-       "value": "14/05/2021",
-       "rows": 7
-      },
-      {
-       "value": "18/05/2021",
-       "rows": 6
-      },
-      {
-       "value": "24/05/2021",
-       "rows": 6
-      },
-      {
-       "value": "30/04/2021",
-       "rows": 6
+       "value": "01/07/2013",
+       "rows": 135
       },
       {
        "value": "01/07/2024",
-       "rows": 5
+       "rows": 133
       },
       {
-       "value": "03/05/2021",
-       "rows": 5
+       "value": "01/07/2025",
+       "rows": 114
       },
       {
-       "value": "05/05/2021",
-       "rows": 5
+       "value": "01/01/2021",
+       "rows": 103
       },
       {
-       "value": "10/05/2021",
-       "rows": 5
+       "value": "01/01/2018",
+       "rows": 101
       },
       {
-       "value": "11/05/2021",
-       "rows": 5
+       "value": "01/01/2023",
+       "rows": 93
       },
       {
-       "value": "19/05/2021",
-       "rows": 5
+       "value": "01/01/2017",
+       "rows": 88
       },
       {
-       "value": "20/08/2021",
-       "rows": 5
+       "value": "01/01/2019",
+       "rows": 78
       }
      ]
     },
     {
      "column": "Date_Organisation_Established",
      "type": "STRING",
-     "null_pct": 0.0,
-     "distinct_count": 357,
+     "null_pct": 4.22,
+     "distinct_count": 9695,
      "max_length": 10,
      "delimiter_rows": {
       ";": 0,
@@ -989,91 +1169,91 @@
      },
      "top_values": [
       {
-       "value": "04/05/2021",
-       "rows": 7
+       "value": "01/01/1977",
+       "rows": 1278
       },
       {
-       "value": "05/05/2021",
-       "rows": 7
+       "value": "01/01/1999",
+       "rows": 974
       },
       {
-       "value": "14/05/2021",
-       "rows": 7
+       "value": "01/01/2000",
+       "rows": 967
       },
       {
-       "value": "11/05/2021",
-       "rows": 6
+       "value": "01/01/1989",
+       "rows": 809
       },
       {
-       "value": "21/05/2021",
-       "rows": 6
+       "value": "01/01/2011",
+       "rows": 700
       },
       {
-       "value": "24/05/2021",
-       "rows": 6
+       "value": "01/01/2007",
+       "rows": 699
       },
       {
-       "value": "07/05/2021",
-       "rows": 5
+       "value": "01/01/2010",
+       "rows": 669
       },
       {
-       "value": "13/05/2021",
-       "rows": 5
+       "value": "01/01/2008",
+       "rows": 665
       },
       {
-       "value": "17/05/2021",
-       "rows": 5
+       "value": "01/01/2009",
+       "rows": 622
       },
       {
-       "value": "18/05/2021",
-       "rows": 5
+       "value": "01/01/1998",
+       "rows": 616
       },
       {
-       "value": "20/05/2021",
-       "rows": 5
+       "value": "01/01/1995",
+       "rows": 612
       },
       {
-       "value": "20/08/2021",
-       "rows": 5
+       "value": "01/01/2006",
+       "rows": 611
       },
       {
-       "value": "27/05/2021",
-       "rows": 5
+       "value": "01/01/1993",
+       "rows": 609
       },
       {
-       "value": "31/03/2021",
-       "rows": 4
+       "value": "01/01/1986",
+       "rows": 603
       },
       {
-       "value": "01/07/2024",
-       "rows": 3
+       "value": "01/01/1990",
+       "rows": 599
       },
       {
-       "value": "01/11/1999",
-       "rows": 3
+       "value": "01/01/2005",
+       "rows": 597
       },
       {
-       "value": "03/11/2003",
-       "rows": 3
+       "value": "01/01/1992",
+       "rows": 596
       },
       {
-       "value": "04/03/2021",
-       "rows": 3
+       "value": "01/01/1987",
+       "rows": 574
       },
       {
-       "value": "08/04/2021",
-       "rows": 3
+       "value": "01/01/1994",
+       "rows": 574
       },
       {
-       "value": "15/02/2021",
-       "rows": 3
+       "value": "01/01/1996",
+       "rows": 571
       }
      ]
     },
     {
      "column": "Charity_Size",
      "type": "STRING",
-     "null_pct": 15.54,
+     "null_pct": 10.99,
      "distinct_count": 3,
      "max_length": 6,
      "delimiter_rows": {
@@ -1084,15 +1264,15 @@
      "top_values": [
       {
        "value": "Small",
-       "rows": 341
-      },
-      {
-       "value": "Large",
-       "rows": 36
+       "rows": 42979
       },
       {
        "value": "Medium",
-       "rows": 36
+       "rows": 9168
+      },
+      {
+       "value": "Large",
+       "rows": 6425
       }
      ]
     },
@@ -1100,7 +1280,7 @@
      "column": "Number_of_Responsible_Persons",
      "type": "STRING",
      "null_pct": 0.0,
-     "distinct_count": 17,
+     "distinct_count": 41,
      "max_length": 2,
      "delimiter_rows": {
       ";": 0,
@@ -1110,79 +1290,91 @@
      "top_values": [
       {
        "value": "3",
-       "rows": 99
-      },
-      {
-       "value": "5",
-       "rows": 78
+       "rows": 12474
       },
       {
        "value": "4",
-       "rows": 74
+       "rows": 9185
+      },
+      {
+       "value": "5",
+       "rows": 8238
       },
       {
        "value": "6",
-       "rows": 60
-      },
-      {
-       "value": "7",
-       "rows": 49
+       "rows": 6189
       },
       {
        "value": "2",
-       "rows": 31
+       "rows": 5983
+      },
+      {
+       "value": "7",
+       "rows": 5474
       },
       {
        "value": "8",
-       "rows": 28
-      },
-      {
-       "value": "9",
-       "rows": 19
-      },
-      {
-       "value": "10",
-       "rows": 17
+       "rows": 4384
       },
       {
        "value": "1",
-       "rows": 11
+       "rows": 4098
+      },
+      {
+       "value": "9",
+       "rows": 3122
+      },
+      {
+       "value": "10",
+       "rows": 2155
       },
       {
        "value": "11",
-       "rows": 7
-      },
-      {
-       "value": "13",
-       "rows": 7
+       "rows": 1585
       },
       {
        "value": "12",
-       "rows": 5
+       "rows": 1049
+      },
+      {
+       "value": "13",
+       "rows": 512
       },
       {
        "value": "14",
-       "rows": 1
+       "rows": 331
+      },
+      {
+       "value": "0",
+       "rows": 284
       },
       {
        "value": "15",
-       "rows": 1
-      },
-      {
-       "value": "17",
-       "rows": 1
+       "rows": 187
       },
       {
        "value": "18",
-       "rows": 1
+       "rows": 170
+      },
+      {
+       "value": "16",
+       "rows": 122
+      },
+      {
+       "value": "17",
+       "rows": 116
+      },
+      {
+       "value": "19",
+       "rows": 30
       }
      ]
     },
     {
      "column": "Financial_Year_End",
      "type": "STRING",
-     "null_pct": 0.0,
-     "distinct_count": 10,
+     "null_pct": 0.02,
+     "distinct_count": 90,
      "max_length": 6,
      "delimiter_rows": {
       ";": 0,
@@ -1192,50 +1384,90 @@
      "top_values": [
       {
        "value": "30-Jun",
-       "rows": 400
+       "rows": 44936
       },
       {
        "value": "31-Dec",
-       "rows": 75
+       "rows": 16635
       },
       {
        "value": "30-Sep",
-       "rows": 3
-      },
-      {
-       "value": "31-Mar",
-       "rows": 3
-      },
-      {
-       "value": "30-Apr",
-       "rows": 2
+       "rows": 1061
       },
       {
        "value": "31-Aug",
-       "rows": 2
+       "rows": 855
       },
       {
-       "value": "23-Aug",
-       "rows": 1
+       "value": "31-Mar",
+       "rows": 585
       },
       {
-       "value": "28-Feb",
-       "rows": 1
-      },
-      {
-       "value": "31-Jul",
-       "rows": 1
+       "value": "30-Apr",
+       "rows": 470
       },
       {
        "value": "31-Oct",
-       "rows": 1
+       "rows": 372
+      },
+      {
+       "value": "31-Jan",
+       "rows": 167
+      },
+      {
+       "value": "28-Feb",
+       "rows": 163
+      },
+      {
+       "value": "30-Nov",
+       "rows": 124
+      },
+      {
+       "value": "31-May",
+       "rows": 96
+      },
+      {
+       "value": "31-Jul",
+       "rows": 84
+      },
+      {
+       "value": "30-Dec",
+       "rows": 69
+      },
+      {
+       "value": "30-Aug",
+       "rows": 39
+      },
+      {
+       "value": "30-Oct",
+       "rows": 18
+      },
+      {
+       "value": "30-Mar",
+       "rows": 8
+      },
+      {
+       "value": "01-Mar",
+       "rows": 6
+      },
+      {
+       "value": "30-May",
+       "rows": 6
+      },
+      {
+       "value": "-Dec",
+       "rows": 4
+      },
+      {
+       "value": "01-Jan",
+       "rows": 4
       }
      ]
     },
     {
      "column": "Operates_in_ACT",
      "type": "STRING",
-     "null_pct": 94.68,
+     "null_pct": 95.4,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1246,14 +1478,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 26
+       "rows": 3028
       }
      ]
     },
     {
      "column": "Operates_in_NSW",
      "type": "STRING",
-     "null_pct": 70.76,
+     "null_pct": 70.19,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1264,14 +1496,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 143
+       "rows": 19616
       }
      ]
     },
     {
      "column": "Operates_in_NT",
      "type": "STRING",
-     "null_pct": 95.3,
+     "null_pct": 95.94,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1282,14 +1514,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 23
+       "rows": 2670
       }
      ]
     },
     {
      "column": "Operates_in_QLD",
      "type": "STRING",
-     "null_pct": 85.28,
+     "null_pct": 82.72,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1300,14 +1532,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 72
+       "rows": 11369
       }
      ]
     },
     {
      "column": "Operates_in_SA",
      "type": "STRING",
-     "null_pct": 92.43,
+     "null_pct": 90.6,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1318,14 +1550,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 37
+       "rows": 6187
       }
      ]
     },
     {
      "column": "Operates_in_TAS",
      "type": "STRING",
-     "null_pct": 96.73,
+     "null_pct": 95.09,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1336,14 +1568,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 16
+       "rows": 3228
       }
      ]
     },
     {
      "column": "Operates_in_VIC",
      "type": "STRING",
-     "null_pct": 74.23,
+     "null_pct": 76.29,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1354,14 +1586,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 126
+       "rows": 15602
       }
      ]
     },
     {
      "column": "Operates_in_WA",
      "type": "STRING",
-     "null_pct": 88.34,
+     "null_pct": 88.18,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1372,108 +1604,108 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 57
+       "rows": 7778
       }
      ]
     },
     {
      "column": "Operating_Countries",
      "type": "STRING",
-     "null_pct": 32.92,
-     "distinct_count": 24,
-     "max_length": 48,
+     "null_pct": 31.83,
+     "distinct_count": 1367,
+     "max_length": 683,
      "delimiter_rows": {
       ";": 0,
-      ",": 15,
+      ",": 2100,
       "|": 0
      },
      "top_values": [
       {
        "value": "AUS",
-       "rows": 302
-      },
-      {
-       "value": "IDN",
-       "rows": 2
-      },
-      {
-       "value": "KEN",
-       "rows": 2
-      },
-      {
-       "value": "KHM",
-       "rows": 2
-      },
-      {
-       "value": "AFG, BGD, BTN, IDN, LAO, LKA, MYS, NPL, VNM",
-       "rows": 1
-      },
-      {
-       "value": "AFG, LKA, PAK",
-       "rows": 1
-      },
-      {
-       "value": "AGO, AUS, BDI, BRA, ECU, IDN, LSO, MOZ, SSD, UGA",
-       "rows": 1
-      },
-      {
-       "value": "AUS, BGD",
-       "rows": 1
-      },
-      {
-       "value": "AUS, BGD, FJI, KHM, NPL",
-       "rows": 1
-      },
-      {
-       "value": "AUS, COK, FJI, KIR, SLB, TON, TUV",
-       "rows": 1
-      },
-      {
-       "value": "AUS, IRQ",
-       "rows": 1
-      },
-      {
-       "value": "AUS, KHM",
-       "rows": 1
-      },
-      {
-       "value": "AUS, KHM, PNG, TLS",
-       "rows": 1
-      },
-      {
-       "value": "AUS, MMR",
-       "rows": 1
+       "rows": 41722
       },
       {
        "value": "AUS, NZL",
-       "rows": 1
+       "rows": 95
       },
       {
-       "value": "KEN, UGA",
-       "rows": 1
+       "value": "IND",
+       "rows": 90
       },
       {
-       "value": "KIR, TLS, TON",
-       "rows": 1
+       "value": "KHM",
+       "rows": 61
       },
       {
-       "value": "LBN",
-       "rows": 1
+       "value": "KEN",
+       "rows": 56
+      },
+      {
+       "value": "IDN",
+       "rows": 55
       },
       {
        "value": "LKA",
-       "rows": 1
+       "rows": 50
       },
       {
-       "value": "PAK, ZMB",
-       "rows": 1
+       "value": "NZL",
+       "rows": 44
+      },
+      {
+       "value": "AUS, IND",
+       "rows": 42
+      },
+      {
+       "value": "AUS, KHM",
+       "rows": 42
+      },
+      {
+       "value": "UGA",
+       "rows": 41
+      },
+      {
+       "value": "AUS, PHL",
+       "rows": 39
+      },
+      {
+       "value": "PHL",
+       "rows": 39
+      },
+      {
+       "value": "AUS, IDN",
+       "rows": 38
+      },
+      {
+       "value": "NPL",
+       "rows": 33
+      },
+      {
+       "value": "AUS, PNG",
+       "rows": 32
+      },
+      {
+       "value": "AUS, LKA",
+       "rows": 30
+      },
+      {
+       "value": "PNG",
+       "rows": 30
+      },
+      {
+       "value": "TLS",
+       "rows": 30
+      },
+      {
+       "value": "AUS, FJI",
+       "rows": 27
       }
      ]
     },
     {
      "column": "PBI",
      "type": "STRING",
-     "null_pct": 78.73,
+     "null_pct": 80.0,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1484,14 +1716,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 104
+       "rows": 13163
       }
      ]
     },
     {
      "column": "HPC",
      "type": "STRING",
-     "null_pct": 93.46,
+     "null_pct": 95.87,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1502,14 +1734,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 32
+       "rows": 2720
       }
      ]
     },
     {
      "column": "Preventing_or_relieving_suffering_of_animals",
      "type": "STRING",
-     "null_pct": 97.75,
+     "null_pct": 98.12,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1520,14 +1752,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 11
+       "rows": 1239
       }
      ]
     },
     {
      "column": "Advancing_Culture",
      "type": "STRING",
-     "null_pct": 84.87,
+     "null_pct": 90.49,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1538,14 +1770,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 74
+       "rows": 6257
       }
      ]
     },
     {
      "column": "Advancing_Education",
      "type": "STRING",
-     "null_pct": 79.96,
+     "null_pct": 79.32,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1556,14 +1788,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 98
+       "rows": 13605
       }
      ]
     },
     {
      "column": "Advancing_Health",
      "type": "STRING",
-     "null_pct": 86.3,
+     "null_pct": 89.32,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1574,14 +1806,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 67
+       "rows": 7027
       }
      ]
     },
     {
      "column": "Promote_or_oppose_a_change_to_law__government_poll_or_prac",
      "type": "STRING",
-     "null_pct": 98.36,
+     "null_pct": 99.02,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1592,14 +1824,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 8
+       "rows": 645
       }
      ]
     },
     {
      "column": "Advancing_natual_environment",
      "type": "STRING",
-     "null_pct": 91.41,
+     "null_pct": 95.66,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1610,14 +1842,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 42
+       "rows": 2856
       }
      ]
     },
     {
      "column": "Promoting_or_protecting_human_rights",
      "type": "STRING",
-     "null_pct": 98.77,
+     "null_pct": 98.71,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1628,14 +1860,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 6
+       "rows": 851
       }
      ]
     },
     {
      "column": "Purposes_beneficial_to_ther_general_public_and_other_analogous",
      "type": "STRING",
-     "null_pct": 85.48,
+     "null_pct": 88.79,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1646,14 +1878,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 71
+       "rows": 7377
       }
      ]
     },
     {
      "column": "Promoting_reconciliation__mutual_respect_and_tolerance",
      "type": "STRING",
-     "null_pct": 96.52,
+     "null_pct": 97.49,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1664,14 +1896,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 17
+       "rows": 1649
       }
      ]
     },
     {
      "column": "Advancing_Religion",
      "type": "STRING",
-     "null_pct": 84.46,
+     "null_pct": 72.38,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1682,14 +1914,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 76
+       "rows": 18174
       }
      ]
     },
     {
      "column": "Advancing_social_or_public_welfare",
      "type": "STRING",
-     "null_pct": 67.28,
+     "null_pct": 77.97,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1700,14 +1932,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 160
+       "rows": 14495
       }
      ]
     },
     {
      "column": "Advancing_security_or_safety_of_Australia_or_Australian_public",
      "type": "STRING",
-     "null_pct": 98.16,
+     "null_pct": 98.27,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1718,14 +1950,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 9
+       "rows": 1140
       }
      ]
     },
     {
      "column": "Aboriginal_or_TSI",
      "type": "STRING",
-     "null_pct": 74.23,
+     "null_pct": 74.78,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1736,14 +1968,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 126
+       "rows": 16595
       }
      ]
     },
     {
      "column": "Adults",
      "type": "STRING",
-     "null_pct": 54.4,
+     "null_pct": 56.19,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1754,14 +1986,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 223
+       "rows": 28829
       }
      ]
     },
     {
      "column": "Aged_Persons",
      "type": "STRING",
-     "null_pct": 60.53,
+     "null_pct": 60.13,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1772,14 +2004,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 193
+       "rows": 26233
       }
      ]
     },
     {
      "column": "Children",
      "type": "STRING",
-     "null_pct": 62.37,
+     "null_pct": 60.62,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1790,14 +2022,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 184
+       "rows": 25913
       }
      ]
     },
     {
      "column": "Communities_Overseas",
      "type": "STRING",
-     "null_pct": 89.57,
+     "null_pct": 91.47,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1808,14 +2040,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 51
+       "rows": 5611
       }
      ]
     },
     {
      "column": "Early_Childhood",
      "type": "STRING",
-     "null_pct": 76.07,
+     "null_pct": 72.62,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1826,14 +2058,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 117
+       "rows": 18015
       }
      ]
     },
     {
      "column": "Ethnic_Groups",
      "type": "STRING",
-     "null_pct": 73.62,
+     "null_pct": 72.89,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1844,14 +2076,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 129
+       "rows": 17841
       }
      ]
     },
     {
      "column": "Families",
      "type": "STRING",
-     "null_pct": 60.74,
+     "null_pct": 58.2,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1862,14 +2094,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 192
+       "rows": 27508
       }
      ]
     },
     {
      "column": "Females",
      "type": "STRING",
-     "null_pct": 66.26,
+     "null_pct": 65.52,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1880,14 +2112,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 165
+       "rows": 22689
       }
      ]
     },
     {
      "column": "Financially_Disadvantaged",
      "type": "STRING",
-     "null_pct": 65.03,
+     "null_pct": 70.79,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1898,14 +2130,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 171
+       "rows": 19223
       }
      ]
     },
     {
      "column": "LGBTIQA+",
      "type": "STRING",
-     "null_pct": 96.73,
+     "null_pct": 97.99,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1916,14 +2148,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 16
+       "rows": 1320
       }
      ]
     },
     {
      "column": "General_Community_in_Australia",
      "type": "STRING",
-     "null_pct": 65.44,
+     "null_pct": 61.2,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1934,14 +2166,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 169
+       "rows": 25534
       }
      ]
     },
     {
      "column": "Males",
      "type": "STRING",
-     "null_pct": 66.67,
+     "null_pct": 67.49,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1952,14 +2184,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 163
+       "rows": 21392
       }
      ]
     },
     {
      "column": "Migrants_Refugees_or_Asylum_Seekers",
      "type": "STRING",
-     "null_pct": 92.02,
+     "null_pct": 92.42,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1970,14 +2202,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 39
+       "rows": 4989
       }
      ]
     },
     {
      "column": "Other_Beneficiaries",
      "type": "STRING",
-     "null_pct": 93.05,
+     "null_pct": 94.55,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -1988,14 +2220,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 34
+       "rows": 3588
       }
      ]
     },
     {
      "column": "Other_Charities",
      "type": "STRING",
-     "null_pct": 88.34,
+     "null_pct": 87.5,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2006,14 +2238,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 57
+       "rows": 8224
       }
      ]
     },
     {
      "column": "People_at_risk_of_homelessness",
      "type": "STRING",
-     "null_pct": 78.53,
+     "null_pct": 82.19,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2024,14 +2256,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 105
+       "rows": 11717
       }
      ]
     },
     {
      "column": "People_with_Chronic_Illness",
      "type": "STRING",
-     "null_pct": 82.41,
+     "null_pct": 84.84,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2042,14 +2274,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 86
+       "rows": 9973
       }
      ]
     },
     {
      "column": "People_with_Disabilities",
      "type": "STRING",
-     "null_pct": 78.73,
+     "null_pct": 75.43,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2060,14 +2292,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 104
+       "rows": 16166
       }
      ]
     },
     {
      "column": "Pre_Post_Release_Offenders",
      "type": "STRING",
-     "null_pct": 93.46,
+     "null_pct": 92.9,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2078,14 +2310,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 32
+       "rows": 4669
       }
      ]
     },
     {
      "column": "Rural_Regional_Remote_Communities",
      "type": "STRING",
-     "null_pct": 69.53,
+     "null_pct": 72.44,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2096,14 +2328,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 149
+       "rows": 18136
       }
      ]
     },
     {
      "column": "Unemployed_Person",
      "type": "STRING",
-     "null_pct": 82.21,
+     "null_pct": 82.42,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2114,14 +2346,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 87
+       "rows": 11571
       }
      ]
     },
     {
      "column": "Veterans_or_their_families",
      "type": "STRING",
-     "null_pct": 91.21,
+     "null_pct": 89.38,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2132,14 +2364,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 43
+       "rows": 6988
       }
      ]
     },
     {
      "column": "Victims_of_crime",
      "type": "STRING",
-     "null_pct": 87.93,
+     "null_pct": 89.66,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2150,14 +2382,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 59
+       "rows": 6801
       }
      ]
     },
     {
      "column": "Victims_of_Disasters",
      "type": "STRING",
-     "null_pct": 89.16,
+     "null_pct": 90.8,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2168,14 +2400,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 53
+       "rows": 6054
       }
      ]
     },
     {
      "column": "Youth",
      "type": "STRING",
-     "null_pct": 54.81,
+     "null_pct": 55.45,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2186,14 +2418,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 221
+       "rows": 29315
       }
      ]
     },
     {
      "column": "animals",
      "type": "STRING",
-     "null_pct": 94.48,
+     "null_pct": 95.58,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2204,14 +2436,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 27
+       "rows": 2906
       }
      ]
     },
     {
      "column": "environment",
      "type": "STRING",
-     "null_pct": 91.41,
+     "null_pct": 93.98,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2222,14 +2454,14 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 42
+       "rows": 3958
       }
      ]
     },
     {
      "column": "other_gender_identities",
      "type": "STRING",
-     "null_pct": 91.0,
+     "null_pct": 92.53,
      "distinct_count": 1,
      "max_length": 1,
      "delimiter_rows": {
@@ -2240,7 +2472,7 @@
      "top_values": [
       {
        "value": "Y",
-       "rows": 44
+       "rows": 4918
       }
      ]
     },
@@ -2248,7 +2480,7 @@
      "column": "scd_valid_from_timestamp",
      "type": "TIMESTAMP",
      "null_pct": 0.0,
-     "distinct_count": 1,
+     "distinct_count": 2,
      "max_length": 23,
      "delimiter_rows": {
       ";": 0,
@@ -2256,6 +2488,10 @@
       "|": 0
      },
      "top_values": [
+      {
+       "value": "2026-10-01 08:33:49.92",
+       "rows": 65313
+      },
       {
        "value": "2026-09-22 10:57:13.061",
        "rows": 489
@@ -2265,22 +2501,27 @@
     {
      "column": "scd_valid_to_timestamp",
      "type": "TIMESTAMP",
-     "null_pct": 100.0,
-     "distinct_count": 0,
-     "max_length": null,
+     "null_pct": 99.98,
+     "distinct_count": 1,
+     "max_length": 22,
      "delimiter_rows": {
       ";": 0,
       ",": 0,
       "|": 0
      },
-     "top_values": []
+     "top_values": [
+      {
+       "value": "2026-10-01 08:33:49.92",
+       "rows": 10
+      }
+     ]
     },
     {
      "column": "is_current",
      "type": "BOOLEAN",
      "null_pct": 0.0,
-     "distinct_count": 1,
-     "max_length": 4,
+     "distinct_count": 2,
+     "max_length": 5,
      "delimiter_rows": {
       ";": 0,
       ",": 0,
@@ -2289,7 +2530,11 @@
      "top_values": [
       {
        "value": "true",
-       "rows": 489
+       "rows": 65792
+      },
+      {
+       "value": "false",
+       "rows": 10
       }
      ]
     },
@@ -2307,7 +2552,7 @@
      "top_values": [
       {
        "value": "acnc",
-       "rows": 489
+       "rows": 65802
       }
      ]
     },
@@ -2329,7 +2574,7 @@
      "type": "TIMESTAMP",
      "null_pct": 0.0,
      "distinct_count": 1,
-     "max_length": 25,
+     "max_length": 26,
      "delimiter_rows": {
       ";": 0,
       ",": 0,
@@ -2337,8 +2582,8 @@
      },
      "top_values": [
       {
-       "value": "2026-10-01 07:56:09.46459",
-       "rows": 489
+       "value": "2026-10-01 08:35:38.159172",
+       "rows": 65802
       }
      ]
     }
@@ -2348,10 +2593,17 @@
  "value_overlaps": [
   {
    "table_a": "charity_register",
-   "column_a": "Date_Organisation_Established",
+   "column_a": "Address_Line_3",
    "table_b": "charity_register",
-   "column_b": "Registration_Date",
-   "shared_values": 160
+   "column_b": "Country",
+   "shared_values": 3
+  },
+  {
+   "table_a": "charity_register",
+   "column_a": "Country",
+   "table_b": "charity_register",
+   "column_b": "State",
+   "shared_values": 2
   },
   {
    "table_a": "charity_register",
@@ -2705,6 +2957,20 @@
   },
   {
    "table_a": "charity_register",
+   "column_a": "Address_Line_3",
+   "table_b": "charity_register",
+   "column_b": "Number_of_Responsible_Persons",
+   "shared_values": 1
+  },
+  {
+   "table_a": "charity_register",
+   "column_a": "Address_Line_3",
+   "table_b": "charity_register",
+   "column_b": "State",
+   "shared_values": 1
+  },
+  {
+   "table_a": "charity_register",
    "column_a": "Adults",
    "table_b": "charity_register",
    "column_b": "Advancing_Culture",
@@ -5536,13 +5802,6 @@
    "column_a": "Aged_Persons",
    "table_b": "charity_register",
    "column_b": "other_gender_identities",
-   "shared_values": 1
-  },
-  {
-   "table_a": "charity_register",
-   "column_a": "Charity_Legal_Name",
-   "table_b": "charity_register",
-   "column_b": "Other_Organisation_Names",
    "shared_values": 1
   },
   {
@@ -11291,56 +11550,47 @@
    "table": "charity_register",
    "determinant": "State",
    "dependent": "Country",
-   "violating_values": 1
+   "violating_values": 10
   },
   {
    "table": "charity_register",
    "determinant": "Postcode",
    "dependent": "State",
-   "violating_values": 0
+   "violating_values": 157
   },
   {
    "table": "charity_register",
    "determinant": "Town_City",
    "dependent": "State",
-   "violating_values": 5
+   "violating_values": 481
   },
   {
    "table": "charity_register",
    "determinant": "Postcode",
    "dependent": "Town_City",
-   "violating_values": 29
+   "violating_values": 1723
   },
   {
    "table": "charity_register",
    "determinant": "Town_City",
    "dependent": "Postcode",
-   "violating_values": 8
+   "violating_values": 786
   },
   {
    "table": "charity_register",
    "determinant": "Postcode",
    "dependent": "Country",
-   "violating_values": 1
+   "violating_values": 732
   },
   {
    "table": "charity_register",
    "determinant": "Town_City",
    "dependent": "Country",
-   "violating_values": 1
+   "violating_values": 754
   }
  ],
- "prd_dependency_checks": {
-  "note": "Run 2026-10-01 as read-only SQL against mdp_prd.bronze_acnc_publish.charity_register_scd2 (65,758 rows, 0 closed SCD2 versions), because mdp_prd.silver_landing_acnc.charity_register had never been built. Same query as pass 2; Silver Landing holds the same values.",
-  "violating_values": {
-   "State -> Country": 10,
-   "Postcode -> State": 157,
-   "Town_City -> State": 482,
-   "Postcode -> Town_City": 1721,
-   "Town_City -> Postcode": 787,
-   "Postcode -> Country": 732,
-   "Town_City -> Country": 753
-  },
-  "postcode_state_ignoring_case_and_spaces": 26
- }
+ "notes": [
+  "Profiled 2026-10-01 on the full acnc dataset in dev (acnc_row_limit '' since phase4e), 65,802 Landing rows incl. 10 closed SCD2 versions.",
+  "Cross-check: the same 7 checks run as read-only SQL on mdp_prd.bronze_acnc_publish.charity_register_scd2 (65,758 rows) gave 10, 157, 482, 1721, 787, 732, 753 violating values."
+ ]
 }
