@@ -3,7 +3,7 @@
   "$id": "docs/normalised-spec/schema.json",
   "title": "Silver Normalised spec",
   "description": "Format of one source's normalised spec (src/layers/silver/normalised/specs/{source}.yml). Meaning of every attribute: docs/normalised-spec/README.md.",
-  "version": "0.1",
+  "version": "0.2",
   "type": "object",
   "additionalProperties": false,
   "required": ["source_system", "base_entities", "ignored_columns"],
@@ -103,9 +103,17 @@
           "description": "Flattens a flag column family into one row per set flag; the element is the column name.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["columns_like", "keep_when"],
+          "required": ["keep_when"],
+          "oneOf": [{"required": ["columns_like"]}, {"required": ["columns"]}],
           "properties": {
-            "columns_like": {"description": "SQL LIKE pattern selecting the column family.", "type": "string"},
+            "columns_like": {"description": "SQL LIKE pattern selecting the column family, for families sharing a name prefix.", "type": "string"},
+            "columns": {
+              "description": "Explicit list of the family's columns, for families with no shared name pattern (v0.2).",
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string"}
+            },
             "keep_when": {"description": "Flag value that produces a row.", "type": "string"}
           }
         },
