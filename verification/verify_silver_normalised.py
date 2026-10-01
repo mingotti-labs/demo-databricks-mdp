@@ -77,9 +77,8 @@ for name, entity in spec.get("bridge_entities", {}).items():
             or 0
         )
     else:
-        pattern = ns.like_to_regex(entity["unpivot"]["columns_like"])
+        flags = ns.unpivot_columns(entity["unpivot"], rows.columns)
         keep = entity["unpivot"]["keep_when"]
-        flags = [c for c in rows.columns if pattern.fullmatch(c)]
         expected = sum(
             rows.where(F.col(c).cast("string") == keep).count() for c in flags
         )
@@ -145,6 +144,23 @@ for name, entity in spec.get("extracted_entities", {}).items():
 
 # Tags and timestamps on every table.
 expected_tables = ns.tables(spec)
+# SCD2 base/bridge/quarantine tables carry an is_current column; a version
+# closed before a source's ingested_timestamp retrofit keeps it null
+# (acnc's design.md), so that check is scoped to current rows there. An
+# extracted/value_lineage row can legitimately get a null max() when every
+# contributing Landing row predates the retrofit (rare, accepted) -- its
+# ingested_timestamp is not checked; transformed_timestamp always is.
+scd2_base = {n for n, e in spec["base_entities"].items() if e.get("history") == "scd2"}
+scd2_tables = (
+    scd2_base
+    | {
+        n
+        for n, e in spec.get("bridge_entities", {}).items()
+        if e["parent"] in scd2_base
+    }
+    | {f"{n}_quarantine" for n in scd2_base}
+)
+no_ingested_check = set(spec.get("extracted_entities", {})) | {"value_lineage"}
 tags = {
     (r.table_name, r.tag_name): r.tag_value
     for r in spark.sql(
@@ -161,14 +177,20 @@ for name, kind in expected_tables.items():
             failures.append(
                 f"{name}: tag {tag} is {tags.get((name, tag))!r}, expected {value!r}"
             )
-    nulls = (
-        table(name)
-        .where("ingested_timestamp IS NULL OR transformed_timestamp IS NULL")
-        .count()
-    )
-    if nulls:
+    bad_transformed = table(name).where("transformed_timestamp IS NULL").count()
+    if bad_transformed:
         failures.append(
-            f"{name}: {nulls} rows with null ingested_timestamp/transformed_timestamp"
+            f"{name}: {bad_transformed} rows with null transformed_timestamp"
+        )
+    if name in no_ingested_check:
+        continue
+    current_clause = "is_current AND " if name in scd2_tables else ""
+    bad_ingested = (
+        table(name).where(f"{current_clause}ingested_timestamp IS NULL").count()
+    )
+    if bad_ingested:
+        failures.append(
+            f"{name}: {bad_ingested} current rows with null ingested_timestamp"
         )
 
 # COMMAND ----------

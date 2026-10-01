@@ -1,0 +1,17 @@
+resources:
+  pipelines:
+    silver_normalised_acnc:
+      name: silver--normalised--acnc--${bundle.target}
+      catalog: ${var.catalog}
+      schema: silver_normalised_acnc
+      serverless: true
+      continuous: false
+      configuration:
+        workspace_file_path: ${workspace.file_path}
+        normalised_spec: src/layers/silver/normalised/specs/acnc.yml
+      environment:
+        dependencies:
+          - pyyaml
+      libraries:
+        - file:
+            path: ../../src/layers/silver/normalised/pipeline.py

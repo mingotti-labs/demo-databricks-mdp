@@ -5,11 +5,17 @@
 # stable identity for ABN-keyed SCD tracking. Unlike the removed
 # `*_snapshot` wrapper views (phase3b-scd-snapshot-cleanup), this
 # intermediate dataset does real filtering work, so it's justified rather
-# than an unnecessary passthrough.
+# than an unnecessary passthrough -- also why transformed_timestamp is
+# stamped directly here (phase4e) rather than in a separate wrapper view
+# the way AirROI's market_summary_transformed does it: this view isn't a
+# plain passthrough, so one more dataset would be redundant.
 from pyspark import pipelines as dp
+from pyspark.sql.functions import current_timestamp
 
 
 @dp.materialized_view(private=True)
 @dp.expect_or_drop("has_abn", "ABN IS NOT NULL")
 def charity_register_valid():
-    return spark.read.table("bronze_acnc.charity_register_raw")
+    return spark.read.table("bronze_acnc.charity_register_raw").withColumn(
+        "transformed_timestamp", current_timestamp()
+    )

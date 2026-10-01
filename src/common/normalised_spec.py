@@ -105,6 +105,17 @@ def like_to_regex(pattern: str) -> re.Pattern:
     return re.compile("".join(parts), re.IGNORECASE)
 
 
+def unpivot_columns(unpivot: dict, landing_columns: list[str]) -> list[str]:
+    """A bridge's flag family: an explicit list (v0.2), or `landing_columns`
+    matching a LIKE pattern -- for a family sharing no name prefix (e.g.
+    acnc's purpose/beneficiary flags), `columns` is the only option.
+    """
+    if "columns" in unpivot:
+        return list(unpivot["columns"])
+    pattern = like_to_regex(unpivot["columns_like"])
+    return [c for c in landing_columns if pattern.fullmatch(c)]
+
+
 def check(spec: dict) -> list[str]:
     """Cross-reference problems in a schema-valid spec; empty when none."""
     problems: list[str] = []
@@ -220,8 +231,7 @@ def used_columns(spec: dict, table: str, landing_columns: list[str]) -> set[str]
         if "explode" in bridge:
             used.add(bridge["explode"]["column"])
         else:
-            pattern = like_to_regex(bridge["unpivot"]["columns_like"])
-            used.update(c for c in landing_columns if pattern.fullmatch(c))
+            used.update(unpivot_columns(bridge["unpivot"], landing_columns))
     return used
 
 

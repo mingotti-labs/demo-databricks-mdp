@@ -23,8 +23,20 @@ against; do not restate them in your output, cite them.
 ### 0. Check the precondition
 
 Every `silver_landing_{source}` table must have an `ingested_timestamp`
-column. If any lacks it, stop: the source needs its bronze retrofit change
-first (README, "Adding a source", step 0).
+column. If any lacks it, the source needs a bronze retrofit before
+profiling: either its own change first, or as the first task group of this
+source's change, closing with the same verification either way (README,
+"Adding a source", step 0). Ask which, if it isn't already decided.
+
+Also check `dev` ownership: `databricks pipelines list-pipelines` for the
+source's bronze and Silver Landing pipelines, compare each
+`creator_user_name`/owner to the CI/CD service principal's client ID. A
+human-owned copy that is not also the owner of its tables is a disposable
+leftover; a human-owned copy that does own tables needs moving to the
+service principal first (delete the human copy, with explicit approval —
+deleting a pipeline drops its tables; the next PR's `deploy-dev` recreates
+it under the SP), so profiling and later verification read SP-owned data,
+consistent with every other source.
 
 ### 1. Profile, pass 1
 
@@ -75,7 +87,20 @@ Profiles cover all SCD2 versions, not only current rows.
 
 List candidate dependencies (N3, N4, N5): attributes that look determined
 by a non-key attribute or by part of a composite key, and chains such as
-locality → region → country. Rerun the job with them:
+locality → region → country.
+
+**If `dev` holds a row-limited sample of the source** (e.g. a
+`{source}_row_limit` bundle variable capped below prd's), a dependency
+that holds on the sample can still break on the full data — acnc's
+Postcode → State had 0 violations on a 500-row sample and 157 on the full
+~66k rows. Get dependency evidence from the full dataset: lift the `dev`
+limit for this change if the source allows it (the standard profiling job
+then runs against full `dev` data, same as every other step), or, if that
+is not practical, run the same dependency-pair queries as read-only SQL
+against `prd` and record that cross-check in `profile.json` alongside the
+`dev` run.
+
+Rerun the job with the candidate pairs:
 
 ```bash
 databricks jobs run-now --profile <PROFILE> --output json --json '{

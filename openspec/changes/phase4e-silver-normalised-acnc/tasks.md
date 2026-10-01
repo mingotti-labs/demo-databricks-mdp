@@ -1,55 +1,73 @@
 ## 0. Cross-repo
 
-- [ ] 0.1 In `demo-databricks-iac`, propose and implement
+- [x] 0.1 In `demo-databricks-iac`, propose and implement
       `phase4e-silver-normalised-acnc-schema` (`silver_normalised_acnc`,
       grants as `silver_normalised_airroi`); verify the schema exists in
-      `mdp_dev` before task 4.1
+      `mdp_dev` before task 4.1 — iac #43 (propose) and #44 (implement,
+      applied: 6 added, 0 changed, 0 destroyed) merged; schema confirmed
+      present in `mdp_dev`/`mdp_tst`/`mdp_prd`
 
 ## 1. Retrofit acnc `ingested_timestamp`
 
-- [ ] 1.1 `charity_register_raw` stamps `ingested_timestamp`;
+- [x] 1.1 `charity_register_raw` stamps `ingested_timestamp`;
       `charity_register_valid` stamps `transformed_timestamp`;
       `charity_register_scd2` lists both in
       `track_history_except_column_list`
-- [ ] 1.2 Add `acnc` to `verify_silver_landing.py`'s sources expected to
+- [x] 1.2 Add `acnc` to `verify_silver_landing.py`'s sources expected to
       carry `ingested_timestamp`; NAMING.md notes acnc is retrofitted
-- [ ] 1.3 Deploy to `dev` (PR CI), run the SP chain (ingestion → SCD →
+- [x] 1.3 Deploy to `dev` (PR CI), run the SP chain (ingestion → SCD →
       Landing); verify every current Landing row has a non-null
       `ingested_timestamp`, record whether the SCD2 target needed a full
-      refresh, and verify Silver Landing verification still passes
+      refresh, and verify Silver Landing verification still passes — no
+      full refresh; acnc's own checks confirmed directly by query, since
+      `verify_silver_landing.py`'s shared job fails on an unrelated
+      pre-existing issue (neon's dev table is still human-owned); see
+      design.md
 
 ## 2. Framework corrections
 
-- [ ] 2.1 `unpivot.columns` in `normalised_spec.used_columns`/`drift`,
+- [x] 2.1 `unpivot.columns` in `normalised_spec.used_columns`/`drift`,
       `transforms.bridge` and verification's bridge count; unit tests for a
       `columns` family and its drift
-- [ ] 2.2 Null is not a value for parents: extracted entities use the one
+- [x] 2.2 Null is not a value for parents: extracted entities use the one
       non-null parent; unit-testable rule stated in the README; verify on
-      airroi that results are unchanged
-- [ ] 2.3 Verification checks `ingested_timestamp` on current rows of SCD2
+      airroi that results are unchanged — reran
+      `verify_silver_normalised` for airroi in `dev`: "Silver Normalised
+      OK -- airroi, 7 tables verified", identical to before (airroi has no
+      null parent occurrences, so this is a no-op for it, as expected)
+- [x] 2.3 Verification checks `ingested_timestamp` on current rows of SCD2
       base entities only
-- [ ] 2.4 Prompt template and README: step 0 (retrofit in its own change
+- [x] 2.4 Prompt template and README: step 0 (retrofit in its own change
       or as the source change's first tasks), pass 2 on full data for
       row-limited sources, current-rows timestamp rule
 
 ## 3. acnc resources
 
-- [ ] 3.1 `resources/pipelines/silver_normalised_acnc.pipeline.yml` and
+- [x] 3.1 `resources/pipelines/silver_normalised_acnc.pipeline.yml` and
       `resources/jobs/silver_acnc.job.yml` (landing → normalised → tag);
       verify `bundle validate`
 
 ## 4. Run on acnc in dev (SP-owned, one run at a time)
 
-- [ ] 4.1 Run `silver_acnc`, then `verify_silver_normalised` for acnc;
+- [x] 4.1 Run `silver_acnc`, then `verify_silver_normalised` for acnc;
       verify both pass, with bridge row counts equal to the profile's flag
-      and list-element counts
-- [ ] 4.2 Rerun `verify_silver_normalised` for airroi; verify it still
-      passes after the framework corrections
+      and list-element counts — all 3 tasks (landing, normalised, tag)
+      succeeded; verification: "Silver Normalised OK -- acnc, 16 tables
+      verified" (1 base + 4 bridges + 10 extracted + value_lineage).
+      Spot-checked: `country` holds `AUSTRALIA`/`Australia`/`australia` as
+      3 separate rows, all `rdm_proposed_match_key = 'AUSTRALIA'` (N8);
+      `operating_state` and `purpose` (built from `unpivot.columns`, no
+      shared prefix) hold the raw column names correctly; all three `mdp_*`
+      tags present on every table, no `APPLY TAG` grant needed (confirmed,
+      not just expected)
+- [x] 4.2 Rerun `verify_silver_normalised` for airroi; verify it still
+      passes after the framework corrections — done under task 2.2, same
+      check; "Silver Normalised OK -- airroi, 7 tables verified"
 
 ## 5. Docs
 
-- [ ] 5.1 `docs/registers/data-sources.md` (acnc "Consumed by Silver
+- [x] 5.1 `docs/registers/data-sources.md` (acnc "Consumed by Silver
       Normalised"), `docs/decision-register.md` (one entry per design.md
       decision and correction), CLAUDE.md (acnc dev loads the full dataset)
-- [ ] 5.2 `openspec validate phase4e-silver-normalised-acnc --strict`;
+- [x] 5.2 `openspec validate phase4e-silver-normalised-acnc --strict`;
       relative links resolve

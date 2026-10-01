@@ -169,13 +169,20 @@ Each source follows CONTRIBUTING.md's two-PR flow (propose, then
 implement); these are the Silver Normalised specifics.
 
 0. **Precondition.** If the source's Silver Landing tables lack
-   `ingested_timestamp`, retrofit bronze in its own change first (see
-   NAMING.md, "Platform-added timestamp columns").
+   `ingested_timestamp`, retrofit bronze first — either its own change, or
+   the first task group of this source's change (acnc's choice; see
+   NAMING.md, "Platform-added timestamp columns"). Also check `dev`
+   ownership: a human-owned copy that owns its tables is moved to the
+   CI/CD service principal before profiling (same reasoning as CLAUDE.md's
+   "the CI/CD SP's dev-prefixed pipeline/job copies are the canonical,
+   durable dev data").
 1. **Branch** `feature/silver-normalised-{source}`.
 2. **Profile** on `dev` with the standard profiling job,
    `profile_silver_normalised` (pass 1, then pass 2 with the candidate
    dependency pairs); save the run outputs as `profile.json` in the openspec
-   change folder.
+   change folder. If `dev` is row-limited, get pass 2's dependency evidence
+   from the full dataset — lift the limit for `dev` if the source allows
+   it, otherwise run the same checks read-only against `prd`.
 3. **Propose** with the `silver-normalised-propose` skill on Opus. It
    follows [the prompt template](../templates/silver-normalised-propose.prompt.md)
    and writes the normalised spec plus the openspec change, with `design.md`

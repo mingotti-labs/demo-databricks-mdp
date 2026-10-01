@@ -300,8 +300,12 @@ differentiated by catalog:
   - **`acnc_row_limit`, not a separate test endpoint, controls dev/tst
     blast radius** — ACNC/data.gov.au is a single public production
     dataset, no sandbox exists the way UNGM's test endpoint provided.
-    `dev`/`tst` pull 500 rows; `prd` pulls the full dataset (~66k rows,
-    confirmed via the CKAN API before this was built).
+    `tst` pulls 500 rows; `prd` pulls the full dataset (~66k rows,
+    confirmed via the CKAN API before this was built). **`dev` also pulls
+    the full dataset since `phase4e-silver-normalised-acnc`** — the
+    500-row sample hid real data-quality conflicts (Postcode → State: 0
+    violations sampled, 157 at full scale) from Silver Normalised
+    profiling; free CKAN API, no cost to pulling the full set.
   - data.gov.au runs the same class of WAF as UNGM's API — blocks
     `requests`' default User-Agent with a 403, confirmed via a real
     request before any code was written. Fixed the same way, proactively
@@ -322,6 +326,16 @@ differentiated by catalog:
     real filtering work, so an intermediate dataset is justified here, not
     a leftover. Verification checks `raw = scd_count + quarantine_count`,
     not raw-equals-SCD exactly.
+  - **`ingested_timestamp` retrofitted** (`phase4e-silver-normalised-acnc`,
+    folded into that change rather than its own, per NAMING.md): stamped
+    in `charity_register_raw`; `transformed_timestamp` stamped directly in
+    `charity_register_valid` (already a real filtering view, so no extra
+    wrapper dataset needed, unlike AirROI's `market_summary_transformed`);
+    both excluded from `charity_register_scd2`'s history tracking.
+    Confirmed via a real `dev` run: no full refresh of the existing SCD2
+    target — its 10 pre-existing closed versions survived intact, now with
+    a null `ingested_timestamp` (Auto CDC doesn't rewrite closed versions;
+    accepted, downstream `max()` aggregation ignores nulls).
 - **NSW Spatial Services** (Phase 3f) — a second reusable custom Spark
   data source connector (`ArcGisFeatureServerDataSource`/`...Reader`),
   generic over any Esri ArcGIS REST FeatureServer layer, alongside 3d's

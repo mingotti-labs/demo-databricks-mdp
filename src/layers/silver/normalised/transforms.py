@@ -101,9 +101,8 @@ def bridge(spark: SparkSession, spec: dict, name: str) -> DataFrame:
         column, split = entity["explode"]["column"], entity["explode"]["split"]
         values = F.split(F.col(column), re.escape(split))
     else:
-        pattern = ns.like_to_regex(entity["unpivot"]["columns_like"])
+        flags = ns.unpivot_columns(entity["unpivot"], df.columns)
         keep = entity["unpivot"]["keep_when"]
-        flags = [c for c in df.columns if pattern.fullmatch(c)]
         values = F.array(
             *[F.when(F.col(c).cast("string") == keep, F.lit(c)) for c in flags]
         )
@@ -162,18 +161,45 @@ def _member_values(
     return result
 
 
+def _resolve_null_parents(df: DataFrame, parent: str) -> DataFrame:
+    """A null parent is not a value (N5 clarification, phase4e).
+
+    A `value` recorded with exactly one distinct non-null parent gets that
+    parent on every row, including rows where this particular occurrence's
+    parent was null -- a missing address field should not fork a postcode
+    into a `(postcode, state)` row and a `(postcode, NULL)` row when only
+    one real state was ever recorded for it. A `value` recorded with two or
+    more distinct non-null parents is left untouched: each row keeps its
+    own parent, so the genuine conflict still produces one group per
+    parent, caught by verification's extracted-key uniqueness check.
+    """
+    resolved = (
+        df.where(F.col(parent).isNotNull())
+        .select("value", F.col(parent).alias("_resolved"))
+        .distinct()
+        .groupBy("value")
+        .agg(F.count("*").alias("_n"), F.first("_resolved").alias("_resolved"))
+        .where("_n = 1")
+        .select("value", "_resolved")
+    )
+    return (
+        df.join(resolved, "value", "left")
+        .withColumn(parent, F.coalesce(F.col(parent), F.col("_resolved")))
+        .drop("_resolved")
+    )
+
+
 def extracted(spark: SparkSession, spec: dict, name: str) -> DataFrame:
     """Extracted entity: one row per distinct value (+ parent and attributes)."""
     entity = spec["extracted_entities"][name]
-    group = (
-        ["value"]
-        + ([entity["parent"]] if entity.get("parent") else [])
-        + entity.get("attributes", [])
-    )
+    parent = entity.get("parent")
+    group = ["value"] + ([parent] if parent else []) + entity.get("attributes", [])
     frames = [df.drop("source_column") for _, df in _member_values(spark, spec, name)]
+    df = reduce(DataFrame.unionByName, frames)
+    if parent:
+        df = _resolve_null_parents(df, parent)
     df = (
-        reduce(DataFrame.unionByName, frames)
-        .groupBy(*group)
+        df.groupBy(*group)
         .agg(
             F.count("*").alias("row_count"),
             F.max("ingested_timestamp").alias("ingested_timestamp"),

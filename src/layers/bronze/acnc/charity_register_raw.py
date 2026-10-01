@@ -5,9 +5,15 @@
 # The source has no incremental cursor -- data.gov.au republishes the
 # complete current register weekly -- so a Materialized View that re-fetches
 # on each run is the correct dataset type, not a Streaming Table. row_limit
-# is empty/unset for prd (full ~66k rows) and capped at 500 for dev/tst --
-# ACNC has no separate sandbox dataset to isolate lower environments against
-# the way UNGM's test endpoint did.
+# is empty/unset for prd and dev (full ~66k rows, since phase4e -- the
+# 500-row dev sample hid real data-quality conflicts from Silver Normalised
+# profiling, see its design.md) and capped at 500 for tst -- ACNC has no
+# separate sandbox dataset to isolate lower environments against the way
+# UNGM's test endpoint did.
+#
+# ingested_timestamp is stamped here (phase4e retrofit, the standard
+# platform lineage column -- see NAMING.md); passed through unchanged by
+# every downstream layer.
 #
 # The connector classes are defined inline here, not imported from
 # src/common -- confirmed via a real ModuleNotFoundError that custom Spark
@@ -21,6 +27,7 @@
 import requests
 from pyspark import pipelines as dp
 from pyspark.sql.datasource import DataSource, DataSourceReader, InputPartition
+from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import (
     BooleanType,
     DoubleType,
@@ -48,7 +55,9 @@ _CKAN_TYPE_MAP = {
 }
 
 
-def _datastore_search(base_url: str, resource_id: str, limit: int, offset: int = 0) -> dict:
+def _datastore_search(
+    base_url: str, resource_id: str, limit: int, offset: int = 0
+) -> dict:
     response = requests.get(
         f"{base_url}/data/api/3/action/datastore_search",
         params={"resource_id": resource_id, "limit": limit, "offset": offset},
@@ -79,7 +88,9 @@ class CkanDataSourceReader(DataSourceReader):
 
     def read(self, partition):
         offset, limit = partition.value
-        records = _datastore_search(self.base_url, self.resource_id, limit=limit, offset=offset)["records"]
+        records = _datastore_search(
+            self.base_url, self.resource_id, limit=limit, offset=offset
+        )["records"]
         field_names = [f.name for f in self.schema.fields]
         for record in records:
             yield tuple(record.get(name) for name in field_names)
@@ -91,12 +102,17 @@ class CkanDataSource(DataSource):
         return "ckan"
 
     def schema(self):
-        fields = _datastore_search(self.options["base_url"], self.options["resource_id"], limit=1)["fields"]
+        fields = _datastore_search(
+            self.options["base_url"], self.options["resource_id"], limit=1
+        )["fields"]
         return StructType(
             [
-                StructField(field["id"], _CKAN_TYPE_MAP.get(field["type"], StringType()))
+                StructField(
+                    field["id"], _CKAN_TYPE_MAP.get(field["type"], StringType())
+                )
                 for field in fields
-                if field["id"] != "_id"  # CKAN's own internal row id, not a real dataset field
+                if field["id"]
+                != "_id"  # CKAN's own internal row id, not a real dataset field
             ]
         )
 
@@ -115,4 +131,5 @@ def charity_register_raw():
         .option("resource_id", spark.conf.get("acnc_resource_id"))
         .option("row_limit", spark.conf.get("acnc_row_limit"))
         .load()
+        .withColumn("ingested_timestamp", current_timestamp())
     )
