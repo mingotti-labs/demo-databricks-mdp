@@ -27,12 +27,15 @@
 - [x] 2.1 `unpivot.columns` in `normalised_spec.used_columns`/`drift`,
       `transforms.bridge` and verification's bridge count; unit tests for a
       `columns` family and its drift
-- [ ] 2.2 Null is not a value for parents: extracted entities use the one
+- [x] 2.2 Null is not a value for parents: extracted entities use the one
       non-null parent; unit-testable rule stated in the README; verify on
-      airroi that results are unchanged
-- [ ] 2.3 Verification checks `ingested_timestamp` on current rows of SCD2
+      airroi that results are unchanged — reran
+      `verify_silver_normalised` for airroi in `dev`: "Silver Normalised
+      OK -- airroi, 7 tables verified", identical to before (airroi has no
+      null parent occurrences, so this is a no-op for it, as expected)
+- [x] 2.3 Verification checks `ingested_timestamp` on current rows of SCD2
       base entities only
-- [ ] 2.4 Prompt template and README: step 0 (retrofit in its own change
+- [x] 2.4 Prompt template and README: step 0 (retrofit in its own change
       or as the source change's first tasks), pass 2 on full data for
       row-limited sources, current-rows timestamp rule
 
@@ -52,8 +55,8 @@
 
 ## 5. Docs
 
-- [ ] 5.1 `docs/registers/data-sources.md` (acnc "Consumed by Silver
+- [x] 5.1 `docs/registers/data-sources.md` (acnc "Consumed by Silver
       Normalised"), `docs/decision-register.md` (one entry per design.md
       decision and correction), CLAUDE.md (acnc dev loads the full dataset)
-- [ ] 5.2 `openspec validate phase4e-silver-normalised-acnc --strict`;
+- [x] 5.2 `openspec validate phase4e-silver-normalised-acnc --strict`;
       relative links resolve

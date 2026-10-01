@@ -56,6 +56,9 @@ richer variant if it exists; fall back only when it doesn't. See
   pipeline-scoped intermediate, not published)
 - **Consumed by Silver Landing**: yes — `charity_register_scd2` →
   `silver_landing_acnc`
+- **Consumed by Silver Normalised**: yes — `silver_normalised_acnc` (spec
+  `src/layers/silver/normalised/specs/acnc.yml`; base `charity_register`,
+  4 bridges, 10 extracted entities, no address hierarchy)
 
 ### nsw_spatial
 - **What it is**: NSW "Land Parcel and Property Theme", Esri ArcGIS REST

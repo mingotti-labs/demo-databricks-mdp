@@ -7,11 +7,111 @@ alternative" for. Newest entries at the top.
 
 ---
 
-The eleven 2026-09-30 entries below come from
-`phase4d-silver-normalised-framework`; its design.md has the full
-reasoning. **Affected** unless stated: `src/layers/silver/normalised/`,
+The ten 2026-10-01 entries below come from
+`phase4e-silver-normalised-acnc`; its design.md has the full reasoning.
+**Affected** unless stated: `src/layers/silver/normalised/`,
 `src/common/normalised_spec.py`, `docs/medallion/silver.md`,
-`docs/normalised-spec/README.md`.
+`docs/normalised-spec/README.md`, `docs/templates/silver-normalised-propose.prompt.md`.
+
+---
+
+## 2026-10-01: acnc — no address hierarchy
+
+**Context**: Postcode, Town_City, State and Country looked like a candidate hierarchy; profiled on acnc's full ~66k-row dataset in `dev` (cross-checked read-only against `prd`), every pairwise dependency among them breaks (10 to 1,723 violating values).
+
+**Discussion**: A tolerance with quarantine was considered; rejected, since the violations are hundreds of values, mostly spelling variants (`NSW`/`nsw`) plus genuine cross-border postcodes (`0872`, `2620`) — rdm's job, not Silver's.
+
+**Decision**: All four stay independent extracted entities, each a foreign key on `charity_register`; no parent/child relationship among them.
+
+---
+
+## 2026-10-01: acnc — flag-family elements are column names, not values
+
+**Context**: The 8 `Operates_in_*` flags look like they belong to the same domain as `State`.
+
+**Discussion**: Merging them would need a schema attribute to strip the `Operates_in_` prefix before the element becomes the extracted value; v0.2 has none.
+
+**Decision**: A separate `operating_state` extracted entity holds the raw column names (`Operates_in_NSW`…). A prefix-strip attribute is a candidate for a later minor bump if a second source needs it.
+
+---
+
+## 2026-10-01: acnc — kept on the base entity, not bridged
+
+**Context**: `Address_Line_1..3`, `Other_Organisation_Names`, `PBI` and `HPC` could each look like repeating-group candidates.
+
+**Discussion**: Address lines are ordered parts of one address, not a set; `Other_Organisation_Names` mixes `,`/`;` delimiters and contains names with embedded commas, so splitting would corrupt values; `PBI`/`HPC` are two independent flags, not a family.
+
+**Decision**: All four stay as plain columns on `charity_register`.
+
+---
+
+## 2026-10-01: Silver Normalised — schema v0.2, `unpivot.columns`
+
+**Context**: acnc's purpose (12 columns) and beneficiary (29 columns) flag families share no name prefix `columns_like` could select.
+
+**Discussion**: Planned in `phase4c`'s findings as the first expected minor bump.
+
+**Decision**: `unpivot` accepts `columns` (an explicit list) as an alternative to `columns_like`; the pipeline, drift check and verification read either.
+
+---
+
+## 2026-10-01: Silver Normalised — null is not a value when resolving a parent
+
+**Context**: Profiling's dependency check already ignores nulls (`count(DISTINCT dependent)`); the pipeline's `groupBy` did not, so a value with one recorded parent and some blank occurrences got two rows instead of one, a mismatch found while reviewing acnc's postcode→state evidence (though acnc's spec ends up with no parent relationships at all).
+
+**Discussion**: The alternative was to make profiling count null as a value instead, so a blank parent would count as a real exception and the dependency would never split; rejected as the less natural reading — a blank is missing information, not a different value.
+
+**Decision**: A value recorded with exactly one distinct non-null parent gets that parent on every row, including its null-parent occurrences. A value recorded with two or more distinct non-null parents is left untouched, so the genuine conflict still produces one row per parent, caught by verification's extracted-key uniqueness check.
+
+---
+
+## 2026-10-01: Silver Normalised — `ingested_timestamp` verified on current rows only
+
+**Context**: Auto CDC never rewrites a closed SCD2 version, so a version closed before a source's retrofit keeps a null `ingested_timestamp` forever (acnc has 10 such rows in `dev`).
+
+**Discussion**: Retrofitting every source's full history was rejected (touches sources that may never be normalised); so was treating the nulls as a verification failure (would block every retrofitted source indefinitely).
+
+**Decision**: Verification checks `ingested_timestamp` non-null only on current rows of SCD2 base/bridge/quarantine tables (and on every row elsewhere); `transformed_timestamp` is still checked everywhere. An extracted/`value_lineage` row aggregated only from pre-retrofit history can legitimately get a null `max()` — rare, accepted, not checked.
+
+---
+
+## 2026-10-01: Silver Normalised — dependency evidence from full data for row-limited sources
+
+**Context**: acnc's `dev`/`tst` sampled 500 of ~66k rows; Postcode → State had 0 violations on the sample and 157 on the full data (and in `prd`, cross-checked).
+
+**Discussion**: Proposing a split on sampled evidence risks a deploy-time failure in `prd`, found far later than design-time review.
+
+**Decision**: A row-limited source's dependency checks (N3–N5) must come from the full dataset — lift the `dev` limit for the change if the source allows it (acnc: free CKAN API), otherwise run the same checks read-only against `prd`.
+
+---
+
+## 2026-10-01: acnc's `ingested_timestamp` retrofit folded into its Silver Normalised change
+
+**Context**: `phase4c`/`phase4d` assumed a source's bronze retrofit is always its own change, ahead of normalising it.
+
+**Discussion**: A separate change is cleaner to review per layer, but costs two more PRs and makes `phase4e`'s profiling wait on it; the user chose to fold it in.
+
+**Decision**: The retrofit is the normalising change's first implementation task group, verified in `dev` before the Normalised pipeline is deployed. The README and prompt template's step 0 now allow either shape.
+
+---
+
+## 2026-10-01: acnc's `dev` loads the full dataset going forward
+
+**Context**: The 500-row sample hid real conflicts from profiling (see above); acnc's CKAN API pull is free.
+
+**Discussion**: Keeping the sample and relying only on the `prd` cross-check was considered; rejected — every later acnc change (not just this one) would otherwise profile and verify against unrepresentative `dev` data.
+
+**Decision**: `acnc_row_limit` is unset for `dev` as well as `prd`; only `tst` keeps the 500-row sample. **Affected**: `databricks.yml`.
+
+---
+
+## 2026-10-01: Dev ownership check added to the per-source workflow
+
+**Context**: acnc's `silver_landing_acnc` (and, found later, `neon`'s dev tables) were still owned by a human identity, not the CI/CD service principal, the same class of issue `phase4d` found for airroi.
+
+**Discussion**: A repo-wide sweep was considered and rejected (cost without an immediate need; most sources aren't scheduled for normalising soon).
+
+**Decision**: Each source's Silver Normalised change checks and fixes its own `dev` ownership at step 0, just in time, rather than a sweep. **Affected**: `docs/normalised-spec/README.md`, the prompt template.
 
 ---
 
