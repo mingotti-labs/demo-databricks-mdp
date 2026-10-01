@@ -50,8 +50,9 @@
 - [ ] 4.1 Run `silver_acnc`, then `verify_silver_normalised` for acnc;
       verify both pass, with bridge row counts equal to the profile's flag
       and list-element counts
-- [ ] 4.2 Rerun `verify_silver_normalised` for airroi; verify it still
-      passes after the framework corrections
+- [x] 4.2 Rerun `verify_silver_normalised` for airroi; verify it still
+      passes after the framework corrections — done under task 2.2, same
+      check; "Silver Normalised OK -- airroi, 7 tables verified"
 
 ## 5. Docs
 
