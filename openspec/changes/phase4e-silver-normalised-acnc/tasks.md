@@ -1,9 +1,11 @@
 ## 0. Cross-repo
 
-- [ ] 0.1 In `demo-databricks-iac`, propose and implement
+- [x] 0.1 In `demo-databricks-iac`, propose and implement
       `phase4e-silver-normalised-acnc-schema` (`silver_normalised_acnc`,
       grants as `silver_normalised_airroi`); verify the schema exists in
-      `mdp_dev` before task 4.1
+      `mdp_dev` before task 4.1 — iac #43 (propose) and #44 (implement,
+      applied: 6 added, 0 changed, 0 destroyed) merged; schema confirmed
+      present in `mdp_dev`/`mdp_tst`/`mdp_prd`
 
 ## 1. Retrofit acnc `ingested_timestamp`
 
@@ -47,9 +49,17 @@
 
 ## 4. Run on acnc in dev (SP-owned, one run at a time)
 
-- [ ] 4.1 Run `silver_acnc`, then `verify_silver_normalised` for acnc;
+- [x] 4.1 Run `silver_acnc`, then `verify_silver_normalised` for acnc;
       verify both pass, with bridge row counts equal to the profile's flag
-      and list-element counts
+      and list-element counts — all 3 tasks (landing, normalised, tag)
+      succeeded; verification: "Silver Normalised OK -- acnc, 16 tables
+      verified" (1 base + 4 bridges + 10 extracted + value_lineage).
+      Spot-checked: `country` holds `AUSTRALIA`/`Australia`/`australia` as
+      3 separate rows, all `rdm_proposed_match_key = 'AUSTRALIA'` (N8);
+      `operating_state` and `purpose` (built from `unpivot.columns`, no
+      shared prefix) hold the raw column names correctly; all three `mdp_*`
+      tags present on every table, no `APPLY TAG` grant needed (confirmed,
+      not just expected)
 - [x] 4.2 Rerun `verify_silver_normalised` for airroi; verify it still
       passes after the framework corrections — done under task 2.2, same
       check; "Silver Normalised OK -- airroi, 7 tables verified"

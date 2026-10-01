@@ -163,8 +163,14 @@ Found while proposing acnc; each changes the framework for every source.
 ## Risks / Trade-offs
 
 - [Bridges, `unpivot` and the null-parent rule get their first real run
-  here] → that is this change's purpose; verification covers bridge element
-  counts and extracted uniqueness.
+  here] → confirmed in `dev`: all 16 tables built, "Silver Normalised OK --
+  acnc, 16 tables verified", bridge row counts (69,478 operating-state;
+  52,344 operating-country; 75,315 purpose; 406,676 beneficiary) matched
+  verification's own element-count check; the two `unpivot.columns`
+  bridges (purpose, beneficiary — no shared name prefix) built correctly.
+  acnc's spec has no parent relationships, so the null-parent rule itself
+  is still unexercised on real data; airroi's rerun (task 2.2) confirmed
+  only that the rule is a no-op where no nulls exist.
 - [`operating_state` duplicates `state`'s meaning] → accepted for v0.2; a
   prefix-strip attribute can merge them later.
 - [prd Landing for acnc has never been built] → the `silver_acnc` job runs
