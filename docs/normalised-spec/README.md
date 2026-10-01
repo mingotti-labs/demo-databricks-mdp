@@ -4,7 +4,7 @@ A **normalised spec** is one YAML file per source,
 `src/layers/silver/normalised/specs/{source}.yml`, describing that source's
 Silver Normalised entities. It is the only per-source artefact the generic
 Silver Normalised pipeline executes. Its format is defined by the
-**normalised spec schema**, [`schema.json`](schema.json) (v0.1). Layer
+**normalised spec schema**, [`schema.json`](schema.json) (v0.2). Layer
 definition and rules N1–N10: [`silver.md`](../medallion/silver.md#silver-normalised).
 
 "Spec" is always qualified as "normalised spec", since openspec has its
@@ -67,7 +67,7 @@ ignored_columns: []
 | `bridge_entities.{name}.from` | yes | Landing table holding the repeating group |
 | `bridge_entities.{name}.parent` | yes | Base entity (a key of `base_entities`) whose natural key the bridge carries |
 | `bridge_entities.{name}.explode` | one of | `{column, split}`: one row per element of a delimited list |
-| `bridge_entities.{name}.unpivot` | one of | `{columns_like, keep_when}`: one row per column in the family whose value equals `keep_when`; the element is the column name |
+| `bridge_entities.{name}.unpivot` | one of | `{columns_like \| columns, keep_when}`: one row per column in the family whose value equals `keep_when`; the element is the column name. The family is selected by a SQL LIKE pattern (`columns_like`) or, when its columns share no name pattern, an explicit list (`columns`, v0.2) |
 | `bridge_entities.{name}.extracted` | no | Extracted entity the element belongs to; the element stays as a foreign key (N10) |
 | `extracted_entities.{name}.parent` | no | Parent level in a hierarchy (N5); the entity carries the parent's key as a foreign key |
 | `extracted_entities.{name}.attributes` | no | Extra columns that depend on the value, e.g. `country_code` (N7, N10) |
@@ -154,8 +154,10 @@ parent column per base entity, and no bridge members for an entity with a
 ## Extending the format
 
 - Add an attribute only when a real source needs it, as a **minor** version
-  bump (`0.1` → `0.2`) of `schema.json`, in its own openspec change, with
-  this README updated in the same PR.
+  bump (e.g. `0.1` → `0.2`) of `schema.json`, in the openspec change of the
+  source that needs it, with this README updated in the same PR.
+- History: v0.2 added `unpivot.columns` (acnc's purpose and beneficiary
+  flags share no name prefix).
 - Removing or renaming an attribute is a **major** version bump and must
   migrate every existing spec in the same change.
 - The `bridge_entities` block is explicitly revisitable after the first

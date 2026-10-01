@@ -65,7 +65,9 @@ targets:
     variables:
       catalog: mdp_dev
       ungm_base_url: https://wwwtest3.ungm.org
-      acnc_row_limit: "500"
+      # Full dataset in dev since phase4e: a sample hid real data-quality
+      # conflicts from Silver Normalised profiling (see its design.md).
+      acnc_row_limit: ""
       nsw_property_row_limit: "500"
 
   tst:
