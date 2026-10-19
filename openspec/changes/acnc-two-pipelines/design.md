@@ -125,8 +125,14 @@ instead of failing: more properties to keep in step, for a rare operation.
   Observed 2026-10-19 before any probe: deleting the earlier FQN probe
   pipeline left its three tables registered, readable (5 rows) and still
   pointing at the deleted pipeline id. That contradicts CLAUDE.md ("deleting
-  a pipeline drops its managed tables"); P3 also records how the delete was
-  made (UI or CLI, options) and whether the tables are dropped later.
+  a pipeline drops its managed tables"). The delete was
+  `databricks pipelines delete <id>` (CLI, no options), and the tables were
+  still there ~1.5 h later. CLAUDE.md's evidence is a Lakeflow Connect
+  managed ingestion pipeline (`neon_ecommerce_ingestion`), a different
+  pipeline type, so neither result generalises yet. PR-B removes pipelines
+  by dropping them from the bundle (the deploy deletes them), so P3 tests
+  that exact path: a scratch pipeline in a scratch bundle target, emptied by
+  a move, then removed from the bundle and deployed.
 - **P4** One pipeline: two-part `name=` resolution, and an in-pipeline
   `spark.read.table("<schema>.<t>")` read resolving to the dataset.
 - **P5** On the merged-shape probe: full refresh refused, normal update
