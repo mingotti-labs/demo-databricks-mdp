@@ -5,11 +5,11 @@
 - [x] 1.3 P3: delete the emptied source pipeline (user runs the delete); verify the moved table keeps its rows
 - [x] 1.4 P4: in one pipeline, a two-part `name=` lands in the right catalog and schema, and a dataset reading it with `spark.read.table("<schema>.<t>")` resolves in-graph and runs after it
 - [x] 1.5 P5: on the merged shape, a full refresh is refused and a normal update runs
-- [ ] 1.6 Record results in design.md; if any contradicts D1-D6, stop and update design/specs with the user before group 2; delete scratch pipelines (user)
+- [x] 1.6 Record results in design.md; if any contradicts D1-D6, stop and update design/specs with the user before group 2; delete scratch pipelines (user)
 
 ## 2. PR-A: migration job
 
-- [ ] 2.1 Add `migrations/acnc_two_pipelines.py` (stop sources, idempotent ALTERs, report owner per table, then delete the two emptied source pipelines once every moved table reports its destination; design D4 amended) and `resources/jobs/migrate_acnc_two_pipelines.job.yml`; verify `bundle validate` and `ci/affected_units.py --base origin/main` reports no unit
+- [x] 2.1 Add `migrations/acnc_two_pipelines.py` (stop sources, idempotent ALTERs, report owner per table, then delete the two emptied source pipelines once every moved table reports its destination; design D4 amended) and `resources/jobs/migrate_acnc_two_pipelines.job.yml`; verify `bundle validate` and `ci/affected_units.py --base origin/main` reports no unit
 - [ ] 2.2 Open PR-A; after merge verify `main.yml` deployed it to tst/prd and ran no unit
 
 ## 3. Migration runs
