@@ -175,6 +175,13 @@ instead of failing: more properties to keep in step, for a rare operation.
   pipelines.zz_d", exit 0). Tables moved out of a CLI-deleted pipeline
   survive (`zz_p3_mv`, 3 rows, owner unchanged).
 
+- **Found in the dev migration run (2026-10-19).** After `ALTER MATERIALIZED
+  VIEW ... SET TBLPROPERTIES('pipelines.pipelineId'=...)`, `SHOW
+  TBLPROPERTIES` on the view keeps returning the old pipeline id, while
+  Unity Catalog's table metadata (`tables get`) has the new one; for a
+  streaming table both agree. The engine follows Unity Catalog (P2, P3), so
+  the migration reads ownership through the Tables API.
+
 ### D4 amended: the migration job also deletes the emptied pipelines
 `bundle deploy` will not delete a pipeline non-interactively (P3), so PR-B
 must find the old pipelines already gone. The migration job, which runs as

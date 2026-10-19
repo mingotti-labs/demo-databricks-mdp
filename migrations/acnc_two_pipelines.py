@@ -47,11 +47,13 @@ w = WorkspaceClient()
 
 
 def owner(table: str) -> str:
-    """Return the id of the pipeline that owns a table."""
-    rows = spark.sql(
-        f"SHOW TBLPROPERTIES {catalog}.{table} ('pipelines.pipelineId')"
-    ).collect()
-    return rows[0]["value"]
+    """Return the id of the pipeline that owns a table, from Unity Catalog.
+
+    Not SHOW TBLPROPERTIES: after the move it still returns the old pipeline
+    for a materialized view (confirmed in dev), while Unity Catalog and the
+    pipeline engine already use the new one.
+    """
+    return w.tables.get(f"{catalog}.{table}").properties["pipelines.pipelineId"]
 
 
 def counts(table: str) -> tuple[int, int]:
