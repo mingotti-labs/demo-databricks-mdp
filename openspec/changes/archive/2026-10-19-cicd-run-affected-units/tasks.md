@@ -28,4 +28,4 @@
 
 ## 6. Post-merge verification
 
-- [ ] 6.1 After merge, verify `deploy-tst` ran `run_acnc` and succeeded, and the step summary shows base `2025e75`; after prd approval, the same for `deploy-prd`
+- [x] 6.1 After merge, verify `deploy-tst` ran `run_acnc` and succeeded, and the step summary shows base `2025e75`; after prd approval, the same for `deploy-prd`
