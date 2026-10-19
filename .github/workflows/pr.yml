@@ -10,6 +10,7 @@ on:
       - "resources/**"
       - "src/**"
       - "tests/**"
+      - "ci/**"
       - "docs/normalised-spec/**"
       - ".github/workflows/**"
 

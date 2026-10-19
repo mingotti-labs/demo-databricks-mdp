@@ -87,6 +87,8 @@ demo-databricks-mdp/
     seed_data/            # one-off synthetic-data generators, not part of any medallion layer
   tests/
     common/               # mirrors src/common/ only — NOT src/layers/
+    ci/                   # unit tests for ci/ (offline, no Databricks)
+  ci/                     # CI tooling, not deployed: affected_units.py picks the run_<unit> jobs a merge affects
   verification/           # live-environment functional checks — see "Verification vs validation"
 ```
 
@@ -95,6 +97,7 @@ demo-databricks-mdp/
 - `src/common/`: the only part of `src/` that is plainly importable, wheel-packaged Python.
 - `src/seed_data/`: synthetic-data generation notebooks — not a medallion layer, not deployed data, just a way to populate a source system for demo/dev purposes. Two shapes so far: truncate-and-reseed for a database source (`seed_neon_ecommerce.py`) vs. append-a-new-batch for a file-drop source (`generate_clickstream_events.py`) — pick the shape that matches how the real source would behave, not one convention for both.
 - `tests/` mirrors `src/common/` 1:1 (standard `databricks bundle init` convention). It does not mirror `src/layers/` — pipeline transformation correctness is validated with inline data-quality expectations and `bundle run --refresh`, not pytest.
+- `ci/`: CI-only scripts (never uploaded with the bundle, unlike `src/`). `affected_units.py` decides which `run_<unit>` jobs `main.yml` runs after a `tst`/`prd` deploy — see CONTRIBUTING.md's "Adding a runnable unit".
 - `verification/`: Databricks notebooks that check a *deployed* feature actually works against real/synthetic data (connection liveness, row-count parity, referential integrity), chained into a job per pattern. See CONTRIBUTING.md's "Verification vs validation" section — deliberately distinct from `tests/`.
 
 ### Resource type ownership: this repo vs. Terraform
