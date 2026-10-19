@@ -1,7 +1,7 @@
 resources:
   jobs:
     verify_nsw_property_pattern:
-      name: verify--nsw-spatial--property--${bundle.target}
+      name: verify--nsw_spatial--property--${bundle.target}
       tasks:
         - task_key: verify_ingestion
           notebook_task:

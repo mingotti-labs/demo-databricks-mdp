@@ -1,7 +1,7 @@
 resources:
   pipelines:
     nsw_property_scd_modeling:
-      name: bronze--nsw-spatial--property-scd--${bundle.target}
+      name: bronze--nsw_spatial--scd--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_nsw_spatial_publish
       serverless: true
