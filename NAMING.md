@@ -186,6 +186,8 @@ ever needed, add a sibling folder via Auto Loader's own
   `bronze--acnc--charity-register-ingestion--dev`). Double-dash (`--`)
   between every segment, including before `${bundle.target}` — e.g.
   `seed--neon--ecommerce--dev`, `verify--clickstream--autoloader--tst`,
-  `bronze--neon--lakeflow--prd`. Distinguishes the same resource key across
+  `bronze--neon--lakeflow--prd`. Unit jobs (`run_<unit>`, resource key
+  prefix `run_`) are named `run--<unit>--${bundle.target}`; their optional
+  `ci_auto_run: "false"` tag excludes them from CI runs. Distinguishes the same resource key across
   `dev`/`tst`/`prd` and reads cleanly as segments in the UI, unlike a flat
   single-dash string.

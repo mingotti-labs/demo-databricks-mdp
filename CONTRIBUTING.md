@@ -100,6 +100,17 @@ direction the dependency runs (e.g. "Depends on `phase3a-neon-uc-connection` in
 `demo-databricks-iac` — this change's ingestion pipeline references the `neon_dev`
 UC Connection that one creates"). Plain text, not tooling — grep-able is the goal.
 
+## Adding a runnable unit
+
+After every `tst`/`prd` deploy, CI runs the units the merge affected and
+nothing else (`ci/affected_units.py`, whose docstring explains the lookup
+in full). A unit is a bundle job whose key starts with `run_`
+(`resources/jobs/run_<unit>.job.yml`) chaining everything that unit
+produces: pipelines, then the verification and silver jobs. A new source or
+domain needs that one file and no map to update. Add
+`tags: {ci_auto_run: "false"}` to keep CI from ever running it (paid APIs).
+Until a source has a run job, changes to it run nothing.
+
 ## Verification vs validation
 
 These two words mean different things in this repo — don't use them

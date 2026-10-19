@@ -12,19 +12,40 @@ on:
       - "src/**"
       - ".github/workflows/**"
 
+# One deploy-and-run at a time: Free Edition runs a single pipeline/job at a
+# time. A queued run replaces older queued ones, which is safe because each run
+# diffs against the last *successful* deployment and so covers their changes.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
 jobs:
   deploy-tst:
     runs-on: ubuntu-latest
     environment: tst
+    permissions:
+      contents: read
+      deployments: read
     env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
       DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: databricks/setup-cli@v1.17.0
       - name: Deploy bundle (tst)
         run: databricks bundle deploy --target tst
+      - name: Run affected units (tst)
+        run: |
+          failed=0
+          for unit in $(python3 ci/affected_units.py --target tst); do
+            databricks bundle run "run_$unit" --target tst || failed=1
+          done
+          exit $failed
       - name: Summarize tst deployment
         if: always()
         run: |
@@ -46,12 +67,26 @@ jobs:
     # Removing that rule in the UI would make this job deploy immediately, with no
     # change needed to this file.
     environment: prd
+    permissions:
+      contents: read
+      deployments: read
     env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
       DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: databricks/setup-cli@v1.17.0
       - name: Deploy bundle (prd)
         run: databricks bundle deploy --target prd
+      - name: Run affected units (prd)
+        run: |
+          failed=0
+          for unit in $(python3 ci/affected_units.py --target prd); do
+            databricks bundle run "run_$unit" --target prd || failed=1
+          done
+          exit $failed
