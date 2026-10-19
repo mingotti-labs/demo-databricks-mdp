@@ -138,6 +138,58 @@ instead of failing: more properties to keep in step, for a rare operation.
 - **P5** On the merged-shape probe: full refresh refused, normal update
   runs.
 
+### Probe results (2026-10-19, dev, scratch bundle `zz-probe-two-pipelines`)
+
+- **P1 pass.** An Auto CDC snapshot SCD2 target with one closed version was
+  moved by `ALTER STREAMING TABLE ... SET
+  TBLPROPERTIES('pipelines.pipelineId'=...)`, run by the owner and run-as
+  of both pipelines. Rows and closed versions unchanged; the destination's
+  first run on unchanged data added no version; one changed key then added
+  exactly one (old row closed at the same instant the new one opened).
+- **P2 pass (safe failure).** Running the old pipeline after the ALTER,
+  with its code still defining the table, fails with `DLTAnalysisException:
+  Table ... is already managed by pipeline <destination>`; ownership and
+  data unchanged. The migration-to-PR-B window is therefore safe: a stray
+  run fails loudly and harms nothing.
+- **P3 pass, with a constraint.** Removing an emptied pipeline from the
+  bundle deletes it and keeps the moved tables. But `bundle deploy` refuses
+  to delete a pipeline without an interactive confirmation or
+  `--auto-approve`, so CI's non-interactive deploys would fail on PR-B as
+  first designed. `bundle deployment unbind <key>` also avoids the prompt
+  (the deploy then reports "0 deleted"), but was not chosen; see option C
+  and D4 amended below.
+- **P4 pass.** A two-part `name="bronze_acnc_publish.<t>"` resolves to the
+  pipeline's catalog (no catalog configuration needed), and an in-graph
+  `spark.read.table("bronze_acnc.<t>")` read resolves to the dataset.
+- **P5 pass.** With `pipelines.reset.allowed=false` on the SCD2 target
+  only, a full refresh is refused (`DLTAnalysisException` naming the
+  resettable upstreams); the next normal update completes; history kept.
+  Development-mode pipelines do not auto-retry the refused update.
+- Free Edition: a running SQL warehouse or a just-stopped pipeline can make
+  the next pipeline start fail with `RESOURCE_EXHAUSTED`; stopping the
+  warehouse and retrying after ~90 s cleared it every time.
+
+- **Option C pass (chosen).** A pipeline deleted with `databricks pipelines
+  delete` before its removal from the config deploys with no prompt and no
+  `--auto-approve`: the deploy only drops it from state ("Deleted
+  pipelines.zz_d", exit 0). Tables moved out of a CLI-deleted pipeline
+  survive (`zz_p3_mv`, 3 rows, owner unchanged).
+
+### D4 amended: the migration job also deletes the emptied pipelines
+`bundle deploy` will not delete a pipeline non-interactively (P3), so PR-B
+must find the old pipelines already gone. The migration job, which runs as
+the service principal that owns them, therefore ends by deleting
+`acnc_charity_register_scd_modeling` and `silver_landing_acnc` once their
+tables report the destination as owner. PR-B's deploys then drop them from
+state with nothing to confirm, in every environment, with CI's safety check
+intact. Unbinding was rejected: dev's deployment state is per identity
+(the service principal's), and unbind needs the resource still in the
+config, so neither a local run nor PR-B's CI could do it.
+Window: between a migration run and PR-B's deploy, a deploy from `main` in
+that environment would recreate the deleted pipelines (still in config);
+their runs would then fail on ownership (P2) without touching data. No
+acnc-affecting merge goes in between.
+
 A failed probe stops the change: design and specs are updated (and agreed)
 before any acnc resource changes.
 
