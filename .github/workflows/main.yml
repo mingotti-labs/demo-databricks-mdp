@@ -10,6 +10,8 @@ on:
       - "databricks.yml"
       - "resources/**"
       - "src/**"
+      - "verification/**"
+      - "migrations/**"
       - ".github/workflows/**"
 
 # One deploy-and-run at a time: Free Edition runs a single pipeline/job at a

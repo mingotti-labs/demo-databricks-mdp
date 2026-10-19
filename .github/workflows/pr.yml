@@ -9,6 +9,8 @@ on:
       - "databricks.yml"
       - "resources/**"
       - "src/**"
+      - "verification/**"
+      - "migrations/**"
       - "tests/**"
       - "ci/**"
       - "docs/normalised-spec/**"
