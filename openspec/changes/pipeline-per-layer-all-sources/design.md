@@ -41,9 +41,8 @@ part of clickstream's flow; the Auto Loader pipeline that feeds
 Auto Loader variant: it writes to `bronze_clickstream_publish` from the
 canonical `web_events_raw`, so it keeps `clickstream` and stays exempt. The rename is display-name only:
 resource keys stay (NAMING.md: never rename a deployed pipeline key), and
-their tables stay in `bronze_clickstream`/`bronze_clickstream_publish`,
-where their names already carry the variant (`web_events_rescue`,
-`web_events_scd1_sql`, ...); moving them to a new schema would need the
+their tables stay in `bronze_clickstream`, where their names already carry
+the variant (`web_events_rescue`, `web_events_none_sql`, ...); moving them to a new schema would need the
 iac repo and a table recreate for unused reference data. neon's reference
 variants keep their names: the user's rename applied to clickstream only
 (assumption, flagged for review).
