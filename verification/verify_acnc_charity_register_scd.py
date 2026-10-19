@@ -6,19 +6,23 @@
 dbutils.widgets.text("catalog", "")
 catalog = dbutils.widgets.get("catalog")
 
-raw_count = spark.sql(f"SELECT count(*) AS n FROM {catalog}.bronze_acnc.charity_register_raw").collect()[
-    0
-]["n"]
+raw_count = spark.sql(
+    f"SELECT count(*) AS n FROM {catalog}.bronze_acnc.charity_register_raw"
+).collect()[0]["n"]
 quarantine_count = spark.sql(
     f"SELECT count(*) AS n FROM {catalog}.bronze_acnc.charity_register_quarantine"
 ).collect()[0]["n"]
 expected_count = raw_count - quarantine_count
 
 mismatches = []
-for table in ["charity_register_scd1", "charity_register_scd2"]:
-    count = spark.sql(f"SELECT count(*) AS n FROM {catalog}.bronze_acnc_publish.{table}").collect()[0][
-        "n"
-    ]
+# scd2 keeps closed historical versions, so only its current rows compare to raw
+for table, current_only in [
+    ("charity_register_scd1", ""),
+    ("charity_register_scd2", " WHERE __END_AT IS NULL"),
+]:
+    count = spark.sql(
+        f"SELECT count(*) AS n FROM {catalog}.bronze_acnc_publish.{table}{current_only}"
+    ).collect()[0]["n"]
     if count != expected_count:
         mismatches.append(f"{table}: expected={expected_count} actual={count}")
 
