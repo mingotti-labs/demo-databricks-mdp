@@ -20,7 +20,7 @@
 ## 4. Workflow
 
 - [x] 4.1 Update `main.yml`: `concurrency`, `fetch-depth: 0`, `permissions: deployments: read`, run step in `deploy-tst` and `deploy-prd` (D8); verify `bundle validate` on the PR and the YAML passes `actionlint` (`uvx` or `docker`, whichever runs)
-- [ ] 4.2 After the PR's dev deploy, run `run_acnc` in `dev` by its SP-owned job ID; verify it completes and that `bundle run`-style waiting reports the outer job's result (design risk 4)
+- [x] 4.2 After the PR's dev deploy, run `run_acnc` in `dev` by its SP-owned job ID; verify it completes and that `bundle run`-style waiting reports the outer job's result (design risk 4)
 
 ## 5. Docs
 
