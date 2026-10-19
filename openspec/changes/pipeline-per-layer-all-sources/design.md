@@ -30,12 +30,16 @@ Its ingestion is a managed Lakeflow Connect pipeline (`ingestion_definition`
 in the bundle), which accepts no transformation code, so SCD stays in
 `neon_scd_modeling_python`. (User decision, 2026-10-20.)
 
-### D3. Reference variants are exempt; clickstream's are named `template`
+### D3. Reference variants are exempt; clickstream's Auto Loader ones are named `template`
 Exempt: clickstream's seven non-canonical Auto Loader pipelines and
 `clickstream_scd_modeling_sql`; neon's `neon_scd_modeling_sql` and
-`neon_scd2_merge_sql`. Clickstream's variants are displayed with the
-source system `template` so the workspace no longer suggests they are part
-of clickstream's flow (user decision). The rename is display-name only:
+`neon_scd2_merge_sql`. The seven Auto Loader variants are displayed with
+the source system `template` so the workspace no longer suggests they are
+part of clickstream's flow; the Auto Loader pipeline that feeds
+`bronze_clickstream_publish` (`clickstream_autoloader`) keeps
+`clickstream` (user decision). `clickstream_scd_modeling_sql` is not an
+Auto Loader variant: it writes to `bronze_clickstream_publish` from the
+canonical `web_events_raw`, so it keeps `clickstream` and stays exempt. The rename is display-name only:
 resource keys stay (NAMING.md: never rename a deployed pipeline key), and
 their tables stay in `bronze_clickstream`/`bronze_clickstream_publish`,
 where their names already carry the variant (`web_events_rescue`,
@@ -43,8 +47,7 @@ where their names already carry the variant (`web_events_rescue`,
 iac repo and a table recreate for unused reference data. neon's reference
 variants keep their names: the user's rename applied to clickstream only
 (assumption, flagged for review).
-Template display names: `bronze--template--autoloader--<language>--<mode>--<target>`
-and `bronze--template--scd--sql--<target>`.
+Template display names: `bronze--template--autoloader--<language>--<mode>--<target>`.
 
 ## Risks / Trade-offs
 

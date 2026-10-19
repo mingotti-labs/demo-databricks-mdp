@@ -22,10 +22,11 @@ agreed exceptions, so the specs carry no ambiguity.
   - **Sources pending refactor**, listed per requirement: airroi, ungm,
     iso, geonames, nsw_spatial, clickstream, neon (silver display names,
     bronze merges, airroi's wrapper job, verify job names).
-- **Clickstream reference variants renamed `template`** (display names
-  only): e.g. `bronze--template--autoloader--python--rescue--<target>`.
-  Only the canonical flow (`clickstream_autoloader` →
-  `clickstream_scd_modeling_python` → Silver Landing) stays `clickstream`.
+- **Clickstream's seven non-canonical Auto Loader pipelines renamed
+  `template`** (display names only): e.g.
+  `bronze--template--autoloader--python--rescue--<target>`. The Auto Loader
+  pipeline feeding `bronze_clickstream_publish` (`clickstream_autoloader`)
+  and both SCD pipelines keep `clickstream`.
 - **`silver-normalised`**: the generic pipeline runs inside the source's
   silver pipeline; tags are a task of `run_<source>`; Landing and
   Normalised share one pipeline graph instead of a chaining job. airroi is
@@ -51,11 +52,11 @@ agreed exceptions, so the specs carry no ambiguity.
 ## Model
 
 Opus to propose (it fixes a gap in the previous proposal and records
-exceptions); Sonnet to implement (docs and eight display-name changes).
+exceptions); Sonnet to implement (docs and seven display-name changes).
 
 ## Impact
 
-- Specs and docs only, plus display names of eight clickstream reference
+- Specs and docs only, plus display names of seven clickstream reference
   pipelines (in-place rename, no resource key, table or schema change).
 - No data, schema, grant or iac change. The refactors themselves are
   follow-up changes, one per source, each removing its entries from the

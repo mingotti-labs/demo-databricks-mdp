@@ -21,11 +21,15 @@ so its SCD tables are built by one separate pipeline
 
 **Exempt reference variants.** Resources kept only as documented reference
 material, never part of a source's official flow, are outside this rule:
-clickstream's seven non-canonical Auto Loader variants and its SQL SCD
-pipeline (displayed with the source system `template`, e.g.
-`bronze--template--autoloader--python--rescue--<target>`, tables
-unchanged in `bronze_clickstream`/`bronze_clickstream_publish`), and
-neon's SQL SCD pipeline and SQL SCD2 merge job.
+clickstream's seven non-canonical Auto Loader variants (displayed with
+the source system `template`, e.g.
+`bronze--template--autoloader--python--rescue--<target>`, tables unchanged
+in `bronze_clickstream`), clickstream's SQL SCD pipeline, and neon's SQL
+SCD pipeline and SQL SCD2 merge job. Only the Auto Loader pipeline that
+feeds `bronze_clickstream_publish` (`clickstream_autoloader`) keeps the
+source system `clickstream` among the Auto Loader pipelines; the SQL SCD
+pipeline, which itself writes to `bronze_clickstream_publish`, keeps it
+too.
 
 **Sources pending refactor** (each change that refactors a source removes
 it from this list):
@@ -50,8 +54,8 @@ it from this list):
 - **THEN** the layout is a defect, not known pending work
 
 #### Scenario: Reference variant
-- **WHEN** a clickstream reference variant pipeline is listed in the
-  workspace
+- **WHEN** one of clickstream's seven non-canonical Auto Loader pipelines
+  is listed in the workspace
 - **THEN** its display name carries `template`, not `clickstream`, and it
   does not count against clickstream's one pipeline per layer
 
