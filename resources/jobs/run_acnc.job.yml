@@ -3,27 +3,31 @@ resources:
     run_acnc:
       name: run--acnc--${bundle.target}
       tasks:
-        - task_key: bronze_ingestion
+        - task_key: bronze
           pipeline_task:
             pipeline_id: ${resources.pipelines.acnc_charity_register_ingestion.id}
-        - task_key: bronze_scd
-          depends_on:
-            - task_key: bronze_ingestion
-          pipeline_task:
-            pipeline_id: ${resources.pipelines.acnc_charity_register_scd_modeling.id}
         - task_key: verify_bronze
           depends_on:
-            - task_key: bronze_scd
+            - task_key: bronze
           run_job_task:
             job_id: ${resources.jobs.verify_acnc_charity_register.id}
         - task_key: silver
           depends_on:
             - task_key: verify_bronze
-          run_job_task:
-            job_id: ${resources.jobs.silver_acnc.id}
-        - task_key: verify_silver
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_normalised_acnc.id}
+        - task_key: tag
           depends_on:
             - task_key: silver
+          notebook_task:
+            notebook_path: ../../src/layers/silver/normalised/tag.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: acnc
+              workspace_file_path: ${workspace.file_path}
+        - task_key: verify_silver
+          depends_on:
+            - task_key: tag
           run_job_task:
             job_id: ${resources.jobs.verify_silver_normalised.id}
             job_parameters:

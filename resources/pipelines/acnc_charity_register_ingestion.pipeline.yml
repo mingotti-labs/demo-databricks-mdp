@@ -1,7 +1,7 @@
 resources:
   pipelines:
     acnc_charity_register_ingestion:
-      name: bronze--acnc--ingestion--${bundle.target}
+      name: bronze--acnc--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_acnc
       serverless: true
@@ -16,3 +16,5 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/acnc/**
+        - glob:
+            include: ../../src/layers/bronze/acnc_publish/**

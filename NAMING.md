@@ -175,6 +175,16 @@ ever needed, add a sibling folder via Auto Loader's own
   default (confirmed the hard way — see `demo-databricks-iac`'s CLAUDE.md,
   "CI/CD service principal pipeline execution"). Add a new resource under a
   new key instead of renaming an existing one.
+- **Removing a pipeline**: only once it owns no tables. Move each table to
+  the pipeline that keeps it (`ALTER STREAMING TABLE|MATERIALIZED VIEW <t>
+  SET TBLPROPERTIES('pipelines.pipelineId'='<id>')`, run as the owner and
+  run-as of both pipelines, i.e. the CI/CD service principal), then delete
+  the emptied pipeline *before* the PR that drops it from the bundle merges:
+  `bundle deploy` refuses to delete a pipeline without an interactive
+  confirmation or `--auto-approve`, which CI never passes. Read ownership
+  from Unity Catalog (`tables get`), not `SHOW TBLPROPERTIES`, which keeps
+  the old id for a materialized view. acnc's `acnc-two-pipelines` change is
+  the worked example (probes, migration job, results in its design.md).
 - **Deployed `name:`** (the display name shown in the UI/API — safe to change
   freely, an in-place rename, not a recreate): `<verb>--<source>--<detail>--${bundle.target}`
   for jobs, `bronze--<source>--<pattern>[--<variant>]--${bundle.target}` for
@@ -188,6 +198,13 @@ ever needed, add a sibling folder via Auto Loader's own
   `seed--neon--ecommerce--dev`, `verify--clickstream--autoloader--tst`,
   `bronze--neon--lakeflow--prd`. Unit jobs (`run_<unit>`, resource key
   prefix `run_`) are named `run--<unit>--${bundle.target}`; their optional
-  `ci_auto_run: "false"` tag excludes them from CI runs. Distinguishes the same resource key across
+  `ci_auto_run: "false"` tag excludes them from CI runs. A source on one
+  pipeline per layer (acnc so far) has `bronze--<source>--${bundle.target}`
+  and `silver--<source>--${bundle.target}`, with no pattern segment.
+  Verification jobs are named by layer: `verify--<layer>--<source>--${bundle.target}`
+  (e.g. `verify--bronze--acnc--dev`), or `verify--<layer>--<check>--${bundle.target}`
+  for a check shared by sources, which takes the source as a parameter
+  (`verify--silver--normalised--dev`); add one only when it checks something
+  no other job does. Distinguishes the same resource key across
   `dev`/`tst`/`prd` and reads cleanly as segments in the UI, unlike a flat
   single-dash string.

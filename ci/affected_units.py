@@ -54,8 +54,8 @@ nothing. Step 2: ``silver_normalised_acnc`` uses ``pipeline.py`` (its
 ``libraries``), which imports ``layers.silver.normalised.transforms``, which
 imports ``common.normalised_spec``; both changed, so the pipeline is
 affected. The same holds for ``silver_normalised_airroi`` and for every job
-running ``tag.py``. Step 3: ``run_acnc`` reaches ``silver_acnc``'s tasks,
-and so ``silver_normalised_acnc``. Step 4: ``acnc`` is selected;
+running ``tag.py``. Step 3: ``run_acnc`` runs ``silver_normalised_acnc``
+(a ``pipeline_task``) and ``tag.py``. Step 4: ``acnc`` is selected;
 ``airroi`` is affected but opted out, so it is reported as skipped.
 
 What is not detected (by design)
