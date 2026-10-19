@@ -1,7 +1,7 @@
 resources:
   pipelines:
     nsw_property_ingestion:
-      name: bronze--nsw-spatial--property-ingestion--${bundle.target}
+      name: bronze--nsw_spatial--ingestion--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_nsw_spatial
       serverless: true

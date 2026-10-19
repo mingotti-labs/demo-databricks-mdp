@@ -177,9 +177,13 @@ ever needed, add a sibling folder via Auto Loader's own
   new key instead of renaming an existing one.
 - **Deployed `name:`** (the display name shown in the UI/API — safe to change
   freely, an in-place rename, not a recreate): `<verb>--<source>--<detail>--${bundle.target}`
-  for jobs, `bronze--<source>--<pattern>--${bundle.target}` for pipelines
-  (pipelines are bronze-layer data assets; jobs are utility/verification
-  actions on a source, hence the different first segment). Double-dash (`--`)
+  for jobs, `bronze--<source>--<pattern>[--<variant>]--${bundle.target}` for
+  pipelines (pipelines are bronze-layer data assets; jobs are
+  utility/verification actions on a source, hence the different first
+  segment). `<source>` is the source system exactly as in its schema suffix
+  (`nsw_spatial`, not `nsw-spatial`); pipeline names stay at source-system
+  level and never name the dataset (`bronze--acnc--ingestion--dev`, not
+  `bronze--acnc--charity-register-ingestion--dev`). Double-dash (`--`)
   between every segment, including before `${bundle.target}` — e.g.
   `seed--neon--ecommerce--dev`, `verify--clickstream--autoloader--tst`,
   `bronze--neon--lakeflow--prd`. Distinguishes the same resource key across

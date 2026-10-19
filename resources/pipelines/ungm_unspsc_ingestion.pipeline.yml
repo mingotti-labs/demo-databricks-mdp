@@ -1,7 +1,7 @@
 resources:
   pipelines:
     ungm_unspsc_ingestion:
-      name: bronze--ungm--unspsc-ingestion--${bundle.target}
+      name: bronze--ungm--ingestion--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_ungm
       serverless: true
