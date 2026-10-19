@@ -15,5 +15,7 @@ resources:
       libraries:
         - file:
             path: ../../src/layers/silver/normalised/pipeline.py
-        - glob:
-            include: ../../src/layers/silver/landing/acnc/**
+        # A pipeline's libraries cannot mix `file` and `glob` entries (the
+        # API rejects it), so the Landing file is listed as a file too.
+        - file:
+            path: ../../src/layers/silver/landing/acnc/charity_register.py
