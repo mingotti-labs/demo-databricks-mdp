@@ -402,6 +402,7 @@ def main() -> None:
             f"no successful {args.target} deployment to compare against: running nothing"
         )
         return
+    base_sha = run("git", "rev-parse", base_sha).strip()
     head_sha = run("git", "rev-parse", args.head).strip()
     changed = set(run("git", "diff", "--name-only", base_sha, head_sha).split())
     repo_files = run("git", "ls-files").split()
