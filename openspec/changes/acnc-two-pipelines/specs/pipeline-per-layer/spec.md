@@ -49,14 +49,18 @@ has been moved to another pipeline, so that deleting it drops no data.
 ### Requirement: No wrapper jobs
 A job whose only purpose is to chain a unit's pipelines and steps for its
 `run_<unit>` job SHALL NOT exist; `run_<unit>` SHALL hold those tasks
-itself. Verification jobs SHALL remain, so a layer can be re-checked on
-demand, and SHALL be named by layer.
+itself. A verification job SHALL exist only when it checks something no
+other job checks; a check shared by sources SHALL be one job taking the
+source as a parameter. Verification jobs SHALL be displayed as
+`verify--<layer>--<source>--<target>` (or `verify--<layer>--<check>--<target>`
+for a shared one).
 
 #### Scenario: acnc jobs after migration
 - **WHEN** the bundle is validated for any target
-- **THEN** there is no `silver_acnc` job, and acnc's jobs are `run_acnc`,
-  `verify_bronze_acnc` (`verify--bronze--acnc--<target>`) and
-  `verify_silver_acnc` (`verify--silver--acnc--<target>`)
+- **THEN** there is no `silver_acnc` job, acnc's own jobs are `run_acnc`
+  and `verify_acnc_charity_register` (`verify--bronze--acnc--<target>`),
+  and `run_acnc` verifies silver through the shared
+  `verify_silver_normalised` job with `source: acnc`
 
 ### Requirement: A full refresh cannot discard SCD2 history
 A full refresh of a bronze pipeline SHALL NOT truncate an SCD2 table.

@@ -96,13 +96,15 @@ pipelines (no merge touches acnc). Probe P2 shows what would happen if one
 did, so the risk of that window is known, not assumed.
 
 ### D5. Jobs
-`run_acnc` becomes: bronze pipeline → `run_job verify_bronze_acnc` →
-silver pipeline → `tag.py` (notebook task, moved from `silver_acnc`) →
-`run_job verify_silver_acnc`. `verify_acnc_charity_register` is re-keyed
-`verify_bronze_acnc` (a job owns no data, so delete-and-create only loses
-run history; accepted); `verify_silver_acnc` is new and runs
-`verify_silver_normalised.py` with `source: acnc`. `silver_acnc` is
-deleted.
+`run_acnc` becomes: bronze pipeline → `run_job verify_acnc_charity_register`
+→ silver pipeline → `tag.py` (notebook task, moved from `silver_acnc`) →
+`run_job verify_silver_normalised` (`source: acnc`, as today). `silver_acnc`
+is deleted. A verify job exists only when it checks something of its own:
+acnc's bronze checks are acnc-specific, so that job stays, displayed
+`verify--bronze--acnc` with its key unchanged (no recreate, run history
+kept). A per-source silver job would only wrap the shared
+`verify_silver_normalised`, which already takes `source`, so none is
+added.
 
 ### D6. Full-refresh protection by refusal
 `pipelines.reset.allowed=false` on `charity_register_scd2` only. A full
@@ -120,6 +122,11 @@ instead of failing: more properties to keep in step, for a rare operation.
 - **P2** ALTER while the source still defines the table, then run the
   source: record what happens.
 - **P3** Delete the emptied source pipeline: the moved table keeps its rows.
+  Observed 2026-10-19 before any probe: deleting the earlier FQN probe
+  pipeline left its three tables registered, readable (5 rows) and still
+  pointing at the deleted pipeline id. That contradicts CLAUDE.md ("deleting
+  a pipeline drops its managed tables"); P3 also records how the delete was
+  made (UI or CLI, options) and whether the tables are dropped later.
 - **P4** One pipeline: two-part `name=` resolution, and an in-pipeline
   `spark.read.table("<schema>.<t>")` read resolving to the dataset.
 - **P5** On the merged-shape probe: full refresh refused, normal update

@@ -20,7 +20,7 @@
 
 - [ ] 4.1 Bronze: ingestion pipeline includes `acnc_publish/**`, SCD datasets get qualified names, `reset.allowed=false` on scd2, display name `bronze--acnc--`; remove `acnc_charity_register_scd_modeling`; verify `bundle validate`
 - [ ] 4.2 Silver: normalised pipeline includes the landing file with a qualified name, display name `silver--acnc--`; remove `silver_landing_acnc`; verify `bundle validate`
-- [ ] 4.3 Jobs: delete `silver_acnc` and the migration job, re-key `verify_bronze_acnc`, add `verify_silver_acnc`, flatten `run_acnc` (D5); verify `bundle validate` and `uv run python -m pytest` pass
+- [ ] 4.3 Jobs: delete `silver_acnc` and the migration job, display `verify_acnc_charity_register` as `verify--bronze--acnc`, flatten `run_acnc` (D5); verify `bundle validate` and `uv run python -m pytest` pass
 - [ ] 4.4 Open PR-B; after its dev deploy run `run--acnc--dev` by job id; verify SUCCESS, closed-version count unchanged, removed pipelines gone, tables intact
 
 ## 5. Docs

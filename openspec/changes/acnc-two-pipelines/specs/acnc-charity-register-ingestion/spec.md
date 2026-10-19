@@ -20,11 +20,12 @@ first), keyed by `ABN`. No SQL equivalent SHALL be built for this pattern.
 A `verification/` suite SHALL exist checking (at minimum) that
 `charity_register_raw` is populated and that `charity_register_scd1` and the
 current rows of `charity_register_scd2` match `charity_register_raw` minus
-`charity_register_quarantine`, chained into one job (`verify_bronze_acnc`,
-displayed as `verify--bronze--acnc--<target>`) so the pattern can be
-re-checked on demand.
+`charity_register_quarantine`, chained into one job
+(`verify_acnc_charity_register`, displayed as
+`verify--bronze--acnc--<target>`) so the pattern can be re-checked on
+demand.
 
 #### Scenario: Verification job proves the pattern still works
-- **WHEN** `verify_bronze_acnc` is run
+- **WHEN** `verify_acnc_charity_register` is run
 - **THEN** all its tasks complete successfully, or the job fails clearly at
   the specific task that found a problem

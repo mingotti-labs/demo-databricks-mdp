@@ -28,11 +28,12 @@ intact. acnc goes first; other sources follow the same pattern later.
   `acnc_charity_register_scd_modeling` and `silver_landing_acnc`.
 - **Unnecessary jobs are deleted**: `silver_acnc` (its pipeline and tag
   tasks move into `run_acnc`, which becomes one flat job).
-- **Verify jobs are named by layer**: `verify--<layer>--<source>`.
-  `verify_acnc_charity_register` becomes `verify_bronze_acnc`
-  (`verify--bronze--acnc`); a new `verify_silver_acnc`
-  (`verify--silver--acnc`) replaces acnc's use of the shared
-  `verify_silver_normalised` (kept for airroi until it migrates).
+- **Verify jobs only where they check something of their own, named by
+  layer** (`verify--<layer>--<source>`): acnc's bronze checks stay in
+  `verify_acnc_charity_register`, displayed `verify--bronze--acnc` (key
+  unchanged, so not recreated). No acnc silver verify job is added: the
+  shared `verify_silver_normalised` already takes the source as a
+  parameter, and `run_acnc` keeps calling it with `source: acnc`.
 - **Probes first**: the first tasks prove, in dev with scratch pipelines,
   what the docs leave open (history across a move, reads inside one graph,
   deleting an emptied pipeline, full-refresh protection). The design is
@@ -49,8 +50,8 @@ intact. acnc goes first; other sources follow the same pattern later.
 
 ### Modified Capabilities
 - `acnc-charity-register-ingestion`: the SCD tables are built by the bronze
-  pipeline, not a separate SCD pipeline; the verification job is
-  `verify_bronze_acnc`.
+  pipeline, not a separate SCD pipeline; the verification job is displayed
+  `verify--bronze--acnc` and checks scd2's current rows.
 
 ## Model
 
@@ -61,8 +62,8 @@ docs do not cover).
 ## Impact
 
 - acnc resources in all three environments: two pipelines removed, two
-  changed, one job removed, one job renamed (recreated), one job added, one
-  temporary migration job added then removed.
+  changed, one job removed, one job's display name changed, one temporary
+  migration job added then removed.
 - Three tables re-homed per environment: `bronze_acnc_publish`
   `charity_register_scd1`/`_scd2`, `silver_landing_acnc.charity_register`.
 - Implementation lands as two PRs (migration job, then the consolidation),
