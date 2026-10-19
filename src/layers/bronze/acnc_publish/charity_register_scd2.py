@@ -8,9 +8,14 @@
 # market_summary_scd2.py, the reference implementation for this pattern).
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="charity_register_scd2")
+# pipelines.reset.allowed=false: a full refresh of the bronze pipeline is
+# refused instead of truncating the history (openspec acnc-two-pipelines D6).
+dp.create_streaming_table(
+    name="bronze_acnc_publish.charity_register_scd2",
+    table_properties={"pipelines.reset.allowed": "false"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
-    target="charity_register_scd2",
+    target="bronze_acnc_publish.charity_register_scd2",
     source="charity_register_valid",
     keys=["ABN"],
     stored_as_scd_type=2,

@@ -339,6 +339,18 @@ differentiated by catalog:
     target — its 10 pre-existing closed versions survived intact, now with
     a null `ingested_timestamp` (Auto CDC doesn't rewrite closed versions;
     accepted, downstream `max()` aggregation ignores nulls).
+  - **One pipeline per layer** (`acnc-two-pipelines`, 2026-10): the bronze
+    pipeline `acnc_charity_register_ingestion` (`bronze--acnc--<target>`)
+    builds `bronze_acnc.*` and, by qualified name, `bronze_acnc_publish.*`;
+    the silver pipeline `silver_normalised_acnc` (`silver--acnc--<target>`)
+    builds Silver Normalised and, by qualified name,
+    `silver_landing_acnc.charity_register`. The SCD and Landing pipelines
+    were removed after their tables were moved (SCD2 history intact in all
+    three environments). `charity_register_scd2` has
+    `pipelines.reset.allowed=false`: a full refresh of the bronze pipeline
+    is refused with a `DLTAnalysisException` (by design; outside
+    development mode Databricks auto-retries the failed update a few
+    times). Refresh a single upstream table selectively if ever needed.
 - **NSW Spatial Services** (Phase 3f) — a second reusable custom Spark
   data source connector (`ArcGisFeatureServerDataSource`/`...Reader`),
   generic over any Esri ArcGIS REST FeatureServer layer, alongside 3d's

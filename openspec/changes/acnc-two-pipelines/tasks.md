@@ -10,22 +10,22 @@
 ## 2. PR-A: migration job
 
 - [x] 2.1 Add `migrations/acnc_two_pipelines.py` (stop sources, idempotent ALTERs, report owner per table, then delete the two emptied source pipelines once every moved table reports its destination; design D4 amended) and `resources/jobs/migrate_acnc_two_pipelines.job.yml`; verify `bundle validate` and `ci/affected_units.py --base origin/main` reports no unit
-- [ ] 2.2 Open PR-A; after merge verify `main.yml` deployed it to tst/prd and ran no unit
+- [x] 2.2 Open PR-A; after merge verify `main.yml` deployed it to tst/prd and ran no unit
 
 ## 3. Migration runs
 
-- [ ] 3.1 Per environment (dev, then tst, then prd): record row and closed-version counts of the three tables, run the migration job by id, verify each table's `pipelines.pipelineId` is its destination, the counts are unchanged and the two old pipelines are gone
+- [x] 3.1 Per environment (dev, then tst, then prd): record row and closed-version counts of the three tables, run the migration job by id, verify each table's `pipelines.pipelineId` is its destination, the counts are unchanged and the two old pipelines are gone
 
 ## 4. PR-B: consolidation
 
-- [ ] 4.1 Bronze: ingestion pipeline includes `acnc_publish/**`, SCD datasets get qualified names, `reset.allowed=false` on scd2, display name `bronze--acnc--`; remove `acnc_charity_register_scd_modeling`; verify `bundle validate`
-- [ ] 4.2 Silver: normalised pipeline includes the landing file with a qualified name, display name `silver--acnc--`; remove `silver_landing_acnc`; verify `bundle validate`
-- [ ] 4.3 Jobs: delete `silver_acnc` and the migration job, display `verify_acnc_charity_register` as `verify--bronze--acnc`, flatten `run_acnc` (D5); verify `bundle validate` and `uv run python -m pytest` pass
+- [x] 4.1 Bronze: ingestion pipeline includes `acnc_publish/**`, SCD datasets get qualified names, `reset.allowed=false` on scd2, display name `bronze--acnc--`; remove `acnc_charity_register_scd_modeling`; verify `bundle validate`
+- [x] 4.2 Silver: normalised pipeline includes the landing file with a qualified name, display name `silver--acnc--`; remove `silver_landing_acnc`; verify `bundle validate`
+- [x] 4.3 Jobs: delete `silver_acnc` and the migration job, display `verify_acnc_charity_register` as `verify--bronze--acnc`, flatten `run_acnc` (D5); verify `bundle validate` and `uv run python -m pytest` pass
 - [ ] 4.4 Open PR-B; after its dev deploy run `run--acnc--dev` by job id; verify SUCCESS, closed-version count unchanged, removed pipelines gone, tables intact
 
 ## 5. Docs
 
-- [ ] 5.1 NAMING.md (one pipeline per layer, display names, removing a pipeline, `verify--<layer>--<source>`), CLAUDE.md acnc entry (layout, reset property and refused full refresh), `ci/affected_units.py` docstring example; verify by reading the diff
+- [x] 5.1 NAMING.md (one pipeline per layer, display names, removing a pipeline, `verify--<layer>--<source>`), CLAUDE.md acnc entry (layout, reset property and refused full refresh), `ci/affected_units.py` docstring example; verify by reading the diff
 
 ## 6. Post-merge verification
 
