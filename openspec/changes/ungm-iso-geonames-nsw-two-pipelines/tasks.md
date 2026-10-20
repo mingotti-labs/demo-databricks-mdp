@@ -1,6 +1,6 @@
 ## 1. PR-A: generic migration job
 
-- [ ] 1.1 Add `migrations/two_pipelines.py` (D2) and `resources/jobs/migrate_four_sources_two_pipelines.job.yml` (one task per source, `depends_on` + `run_if: ALL_DONE`); verify `bundle validate` and `ci/affected_units.py --base origin/main` reports no unit
+- [x] 1.1 Add `migrations/two_pipelines.py` (D2) and `resources/jobs/migrate_four_sources_two_pipelines.job.yml` (one task per source, `depends_on` + `run_if: ALL_DONE`); verify `bundle validate` and `ci/affected_units.py --base origin/main` reports no unit
 - [ ] 1.2 Open PR-A; after merge verify tst/prd deployed it and ran no unit
 
 ## 2. Migration runs

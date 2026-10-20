@@ -1,0 +1,46 @@
+resources:
+  jobs:
+    migrate_four_sources_two_pipelines:
+      name: migrate--four-sources--two-pipelines--${bundle.target}
+      tasks:
+        - task_key: ungm
+          notebook_task:
+            notebook_path: ../../migrations/two_pipelines.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source_pipeline_id: ${resources.pipelines.ungm_unspsc_scd_modeling.id}
+              destination_pipeline_id: ${resources.pipelines.ungm_unspsc_ingestion.id}
+              tables: bronze_ungm_publish.unspsc_public_scd1,bronze_ungm_publish.unspsc_public_scd2
+        - task_key: iso
+          depends_on:
+            - task_key: ungm
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ../../migrations/two_pipelines.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source_pipeline_id: ${resources.pipelines.iso_country_reference_scd_modeling.id}
+              destination_pipeline_id: ${resources.pipelines.iso_country_reference_ingestion.id}
+              tables: bronze_iso_publish.country_codes_scd2,bronze_iso_publish.subdivision_codes_scd2
+        - task_key: geonames
+          depends_on:
+            - task_key: iso
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ../../migrations/two_pipelines.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source_pipeline_id: ${resources.pipelines.geonames_reference_scd_modeling.id}
+              destination_pipeline_id: ${resources.pipelines.geonames_reference_ingestion.id}
+              tables: bronze_geonames_publish.country_info_scd2,bronze_geonames_publish.admin1_codes_scd2,bronze_geonames_publish.admin2_codes_scd2,bronze_geonames_publish.cities_scd2
+        - task_key: nsw_spatial
+          depends_on:
+            - task_key: geonames
+          run_if: ALL_DONE
+          notebook_task:
+            notebook_path: ../../migrations/two_pipelines.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source_pipeline_id: ${resources.pipelines.nsw_property_scd_modeling.id}
+              destination_pipeline_id: ${resources.pipelines.nsw_property_ingestion.id}
+              tables: bronze_nsw_spatial_publish.property_scd1,bronze_nsw_spatial_publish.property_scd2
