@@ -254,11 +254,18 @@ or the dependency checks run read-only against `prd`.
 
 ### Requirement: One generic pipeline executes every normalised spec
 Every normalised source SHALL be built by the same pipeline source file,
-`src/layers/silver/normalised/pipeline.py`, instanced as one pipeline
-resource per source named `silver--normalised--{source}--${bundle.target}`
-that writes to `silver_normalised_{source}` and receives the source's
-normalised spec path through its configuration. No per-source
-transformation code SHALL exist.
+`src/layers/silver/normalised/pipeline.py`, included in that source's
+silver pipeline (`silver--{source}--${bundle.target}`, see
+`pipeline-per-layer`), which writes the normalised tables to
+`silver_normalised_{source}` and receives the source's normalised spec
+path through its configuration. No per-source transformation code SHALL
+exist.
+
+**Sources pending refactor** (each change that refactors a source removes
+it from this list):
+- airroi: `pipeline.py` runs in a separate pipeline,
+  `silver--normalised--airroi--${bundle.target}`, next to its Landing
+  pipeline.
 
 #### Scenario: Adding a second source
 - **WHEN** a second source is normalised
@@ -319,25 +326,37 @@ only with null parents SHALL get one row with a null parent.
   a `row_count` of 3
 
 ### Requirement: Tags applied after every refresh
-After each Silver Normalised pipeline refresh, a tag step SHALL set
-`mdp_layer`, `mdp_source_system` and, for base, bridge and extracted
-entities, `mdp_entity_kind` on every table the source's spec produces,
-using `ALTER MATERIALIZED VIEW … SET TAGS`.
+After each Silver Normalised refresh, a tag step SHALL set `mdp_layer`,
+`mdp_source_system` and, for base, bridge and extracted entities,
+`mdp_entity_kind` on every table the source's spec produces, using
+`ALTER MATERIALIZED VIEW … SET TAGS`. The tag step is a task of the
+source's `run_<source>` job that depends on the silver pipeline task.
+
+**Sources pending refactor** (each change that refactors a source removes
+it from this list):
+- airroi: the tag step is a task of the wrapper job `silver_airroi`.
 
 #### Scenario: Orchestrated run
-- **WHEN** `silver--{source}--${bundle.target}` completes
+- **WHEN** the `tag` task of `run_{source}` completes
 - **THEN** every entity table in `silver_normalised_{source}` carries all
   three `mdp_*` tags with the values its spec implies
 
 ### Requirement: Per-source orchestration
-Each normalised source SHALL have a job `silver--{source}--${bundle.target}`
-with tasks `landing` (the source's Silver Landing pipeline), `normalised`
-(depends on `landing`) and `tag` (depends on `normalised`), so Silver
-Normalised never reads a partial Landing refresh.
+A normalised source's Silver Landing and Silver Normalised datasets SHALL
+be built in the same silver pipeline, so the pipeline's own dependency
+graph orders Normalised after Landing and Normalised never reads a partial
+Landing refresh. The source's `run_<source>` job SHALL run the silver
+pipeline, then the tag step.
+
+**Sources pending refactor** (each change that refactors a source removes
+it from this list):
+- airroi: Landing and Normalised are separate pipelines chained by the
+  wrapper job `silver_airroi` (`landing` → `normalised` → `tag`).
 
 #### Scenario: Landing refresh fails
-- **WHEN** the `landing` task fails
-- **THEN** neither `normalised` nor `tag` runs
+- **WHEN** a Landing dataset fails during the silver pipeline update
+- **THEN** the update fails, the Normalised datasets that read it are not
+  refreshed, and the `tag` task does not run
 
 ### Requirement: Generic verification
 A verification job, `verify--silver--normalised--${bundle.target}`, SHALL

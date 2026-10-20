@@ -11,4 +11,4 @@
 
 ## 3. Post-merge
 
-- [ ] 3.1 After merge, verify tst/prd deploys succeed with the renamed display names and no unit run
+- [x] 3.1 After merge, verify tst/prd deploys succeed with the renamed display names and no unit run
