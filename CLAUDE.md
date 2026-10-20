@@ -20,7 +20,8 @@ Decided in the `phase2-dab-cicd` OpenSpec change (see its design.md for full rat
 
 ```
 demo-databricks-mdp/
-  databricks.yml
+  config.json             # edition (free|standard) and its environments
+  databricks.yml          # GENERATED from cicd/databricks/<edition>.yml -- do not edit
   resources/
     jobs/
     pipelines/
@@ -114,12 +115,16 @@ The Databricks Asset Bundle resource schema (`databricks bundle schema`, CLI v1.
 
 ## DAB targets
 
-Three targets in `databricks.yml`, all pointing to the same workspace,
-differentiated by catalog:
+Targets come from `config.json`'s edition (`cicd/databricks/<edition>.yml`),
+all pointing to the same workspace, differentiated by catalog:
 
 - `dev` → `mdp_dev`
-- `tst` → `mdp_tst`
+- `tst` → `mdp_tst` (standard edition only)
 - `prd` → `mdp_prd`
+
+The committed edition is `free` (dev and prd only): a metastore is capped at
+500 tables and each environment multiplies every table. The root
+`databricks.yml` and `.github/workflows/` are generated; see CONTRIBUTING.md.
 
 ## Sources
 

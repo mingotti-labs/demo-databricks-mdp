@@ -1,0 +1,85 @@
+bundle:
+  name: demo-databricks-mdp
+
+include:
+  - resources/**/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog this target writes into.
+    default: mdp_dev
+  ungm_base_url:
+    description: Base URL for the UNGM API -- test endpoint for dev/tst, production for prd.
+    default: https://wwwtest3.ungm.org
+  acnc_base_url:
+    description: Base URL for data.gov.au's CKAN Data API -- same for every target, no test/prod split exists for this source.
+    default: https://data.gov.au
+  acnc_resource_id:
+    description: CKAN resource_id for the ACNC Charity Register CSV resource on data.gov.au.
+    default: 8fb32972-24e9-4c95-885e-7140be51be8a
+  acnc_row_limit:
+    description: Row cap for the ACNC Charity Register pull -- empty means no cap (full dataset).
+    default: "500"
+  nsw_property_service_url:
+    description: Esri ArcGIS REST FeatureServer base URL for NSW Spatial Services' Land Parcel and Property Theme -- same for every target, no test/prod split exists for this source.
+    default: https://portal.spatial.nsw.gov.au/server/rest/services/NSW_Land_Parcel_Property_Theme_multiCRS/FeatureServer
+  nsw_property_layer_id:
+    description: FeatureServer layer id for the "Property" layer within the NSW Land Parcel and Property Theme service.
+    default: "12"
+  nsw_property_row_limit:
+    description: >-
+      Row cap for the NSW property pull. Not a full-dataset pull anywhere,
+      including prd -- the source's own maxRecordCount (100) means a full
+      ~4.2M-row pull would need ~42,259 requests, confirmed too many for
+      routine use. prd caps at 10000 (100 requests, matching ACNC's prd
+      request volume) rather than pulling everything.
+    default: "500"
+  airroi_base_url:
+    description: Base URL for AirROI's market intelligence API -- same for every target, no test/prod split exists for this source (no free sandbox at all).
+    default: https://api.airroi.com
+  iso3166_countries_url:
+    description: URL for the ISO 3166-1 country codes CSV -- same for every target, no test/prod split exists for this source.
+    default: https://raw.githubusercontent.com/ipregistry/iso3166/master/countries.csv
+  iso3166_subdivisions_url:
+    description: URL for the ISO 3166-2 subdivision codes CSV -- same for every target, no test/prod split exists for this source.
+    default: https://raw.githubusercontent.com/ipregistry/iso3166/master/subdivisions.csv
+  geonames_country_info_url:
+    description: URL for GeoNames' countryInfo.txt dump -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/countryInfo.txt
+  geonames_admin1_codes_url:
+    description: URL for GeoNames' admin1CodesASCII.txt dump -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/admin1CodesASCII.txt
+  geonames_admin2_codes_url:
+    description: URL for GeoNames' admin2Codes.txt dump -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/admin2Codes.txt
+  geonames_cities_url:
+    description: URL for GeoNames' cities500.zip dump (all populated places with population > 500) -- same for every target, no test/prod split exists for this source.
+    default: https://download.geonames.org/export/dump/cities500.zip
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://dbc-e3197e2d-933b.cloud.databricks.com
+    variables:
+      catalog: mdp_dev
+      ungm_base_url: https://wwwtest3.ungm.org
+      # Full dataset in dev since phase4e: a sample hid real data-quality
+      # conflicts from Silver Normalised profiling (see its design.md).
+      acnc_row_limit: ""
+      nsw_property_row_limit: "500"
+
+  prd:
+    mode: production
+    workspace:
+      host: https://dbc-e3197e2d-933b.cloud.databricks.com
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: mdp_prd
+      ungm_base_url: https://www.ungm.org
+      acnc_row_limit: ""
+      nsw_property_row_limit: "10000"
+    permissions:
+      - group_name: users
+        level: CAN_MANAGE

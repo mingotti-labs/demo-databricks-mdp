@@ -1,0 +1,59 @@
+name: PR
+
+on:
+  pull_request:
+    branches: [main]
+    # Same rationale as main.yml: skip validate/deploy for PRs that don't touch
+    # anything the deployed bundle actually contains.
+    paths:
+      - "databricks.yml"
+      - "config.json"
+      - "resources/**"
+      - "src/**"
+      - "verification/**"
+      - "migrations/**"
+      - "tests/**"
+      - "cicd/**"
+      - "docs/normalised-spec/**"
+      - ".github/workflows/**"
+
+jobs:
+  normalised-specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Validate normalised specs against the schema
+        run: uvx check-jsonschema --schemafile docs/normalised-spec/schema.json src/layers/silver/normalised/specs/*.yml
+      - name: Unit tests
+        run: uv run pytest
+      - name: Generated files match config.json edition
+        run: uv run python cicd/apply_edition.py --check
+
+
+  validate:
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@v1.17.0
+      - name: Validate bundle (dev)
+        run: databricks bundle validate --target dev
+
+  deploy-dev:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@v1.17.0
+      - name: Deploy bundle (dev)
+        run: databricks bundle deploy --target dev
