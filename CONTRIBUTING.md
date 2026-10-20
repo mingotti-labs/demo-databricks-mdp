@@ -103,7 +103,7 @@ UC Connection that one creates"). Plain text, not tooling — grep-able is the g
 ## Adding a runnable unit
 
 After every `tst`/`prd` deploy, CI runs the units the merge affected and
-nothing else (`ci/affected_units.py`, whose docstring explains the lookup
+nothing else (`cicd/affected_units.py`, whose docstring explains the lookup
 in full). A unit is a bundle job whose key starts with `run_`
 (`resources/jobs/run_<unit>.job.yml`) chaining everything that unit
 produces: pipelines, then the verification and silver jobs. A new source or

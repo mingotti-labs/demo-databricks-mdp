@@ -77,8 +77,8 @@ there is no map to update.
 
 Command line (CI)::
 
-    python ci/affected_units.py --target tst            # base = last success
-    python ci/affected_units.py --target dev --base <sha> --head <sha>
+    python cicd/affected_units.py --target tst            # base = last success
+    python cicd/affected_units.py --target dev --base <sha> --head <sha>
 
 stdout: selected unit names, one per line. stderr / ``$GITHUB_STEP_SUMMARY``:
 the base used, affected resources, skipped units, unattributed files.
