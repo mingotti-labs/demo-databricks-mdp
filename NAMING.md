@@ -195,7 +195,7 @@ ever needed, add a sibling folder via Auto Loader's own
   level and never name the dataset (`bronze--acnc--ingestion--dev`, not
   `bronze--acnc--charity-register-ingestion--dev`). Double-dash (`--`)
   between every segment, including before `${bundle.target}` — e.g.
-  `seed--neon--ecommerce--dev`, `verify--clickstream--autoloader--tst`,
+  `seed--neon--ecommerce--dev`, `verify--bronze--clickstream--tst`,
   `bronze--neon--lakeflow--prd`. Unit jobs (`run_<unit>`, resource key
   prefix `run_`) are named `run--<unit>--${bundle.target}`; their optional
   `ci_auto_run: "false"` tag excludes them from CI runs. A source on one

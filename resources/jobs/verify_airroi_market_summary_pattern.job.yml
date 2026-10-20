@@ -1,7 +1,7 @@
 resources:
   jobs:
     verify_airroi_market_summary_pattern:
-      name: verify--airroi--pattern--${bundle.target}
+      name: verify--bronze--airroi--${bundle.target}
       tasks:
         - task_key: verify_ingestion
           notebook_task:

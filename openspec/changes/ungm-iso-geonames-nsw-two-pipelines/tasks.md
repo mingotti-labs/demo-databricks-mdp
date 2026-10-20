@@ -15,7 +15,7 @@
 ## 4. PR-B: silver, verification, jobs
 
 - [x] 4.1 Landing pipelines display `silver--<source>--`; verify `bundle validate`
-- [x] 4.2 ungm and nsw_spatial SCD checks compare SCD2 current rows; verify jobs display `verify--bronze--<source>--`
+- [x] 4.2 ungm and nsw_spatial SCD checks compare SCD2 current rows; every bronze verify job displays `verify--bronze--<source>--` (also airroi, clickstream and neon, display names only, added at the user's request)
 - [x] 4.3 `verify_silver_landing` takes `catalog`/`source` job parameters and filters by source when given; verify `bundle validate`
 - [x] 4.4 Add `run_ungm`, `run_iso`, `run_geonames`, `run_nsw_spatial` (D5); remove the migration job and notebook; verify `bundle validate`, `uv run python -m pytest`, and the lookup selects the four units
 - [ ] 4.5 Open PR-B; after its dev deploy run each `run--<source>--dev` by id, one at a time; verify SUCCESS and SCD2 closed-version counts unchanged

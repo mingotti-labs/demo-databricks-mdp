@@ -1,7 +1,7 @@
 resources:
   jobs:
     verify_clickstream_pattern:
-      name: verify--clickstream--autoloader--${bundle.target}
+      name: verify--bronze--clickstream--${bundle.target}
       tasks:
         - task_key: verify_files
           notebook_task:
