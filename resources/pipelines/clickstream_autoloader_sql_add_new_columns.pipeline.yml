@@ -1,7 +1,7 @@
 resources:
   pipelines:
     clickstream_autoloader_sql_add_new_columns:
-      name: bronze--clickstream--autoloader--sql--add-new-columns--${bundle.target}
+      name: bronze--template--autoloader--sql--add-new-columns--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true

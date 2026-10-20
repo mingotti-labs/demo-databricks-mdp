@@ -1,7 +1,7 @@
 resources:
   pipelines:
     clickstream_autoloader_sql_rescue:
-      name: bronze--clickstream--autoloader--sql--rescue--${bundle.target}
+      name: bronze--template--autoloader--sql--rescue--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true

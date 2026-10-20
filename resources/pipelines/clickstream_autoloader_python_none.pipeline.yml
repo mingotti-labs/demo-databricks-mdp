@@ -1,7 +1,7 @@
 resources:
   pipelines:
     clickstream_autoloader_python_none:
-      name: bronze--clickstream--autoloader--python--none--${bundle.target}
+      name: bronze--template--autoloader--python--none--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true

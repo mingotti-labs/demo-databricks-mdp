@@ -191,9 +191,11 @@ implement); these are the Silver Normalised specifics.
    splits, tolerances. Edit the spec in the PR if needed.
 5. **Implement** on Sonnet: the `silver_normalised_{source}` schema and
    grants in `demo-databricks-iac` first (cross-repo dependency), then the
-   bundle resources pointing the generic pipeline at the spec, the
-   orchestrating `silver--{source}` job, verification, and the source's
-   "Consumed by Silver Normalised" line in `docs/registers/data-sources.md`.
+   bundle resources adding the generic pipeline and the spec to the
+   source's silver pipeline (`silver--{source}`, which also holds its
+   Landing datasets), the tag and verification tasks in `run_{source}`,
+   and the source's "Consumed by Silver Normalised" line in
+   `docs/registers/data-sources.md`.
 6. **Validate, deploy to `dev`, verify**: base row parity (with
    quarantine), bridge element counts, extracted value completeness, FK
    integrity, no Landing drift.

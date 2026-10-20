@@ -201,6 +201,12 @@ ever needed, add a sibling folder via Auto Loader's own
   `ci_auto_run: "false"` tag excludes them from CI runs. A source on one
   pipeline per layer (acnc so far) has `bronze--<source>--${bundle.target}`
   and `silver--<source>--${bundle.target}`, with no pattern segment.
+  Reference variants outside a source's official flow use the source system
+  `template` (`bronze--template--autoloader--python--rescue--<target>`):
+  clickstream's seven non-canonical Auto Loader pipelines. neon's bronze
+  layer keeps two pipelines, as an exception: its ingestion is a managed
+  Lakeflow Connect pipeline, which cannot hold the SCD code. The
+  `pipeline-per-layer` spec lists every source still pending refactor.
   Verification jobs are named by layer: `verify--<layer>--<source>--${bundle.target}`
   (e.g. `verify--bronze--acnc--dev`), or `verify--<layer>--<check>--${bundle.target}`
   for a check shared by sources, which takes the source as a parameter

@@ -92,19 +92,22 @@ Choice depends on whether the Bronze Publish source is append-only:
   had one — it reflects the most recent transformation, not the first.
 
 ### Orchestration
-Silver Normalised (`silver_normalised_{source}`) is a second,
-source-aligned pipeline per source, reading from that source's Silver
-Landing tables. A per-source job chains them via `pipeline_task` +
-`depends_on`, so Normalised never reads a stale or partial Landing refresh,
-then applies the Silver Normalised tags:
-- Landing pipeline: `silver--landing--{source}--${bundle.target}`
-- Normalised pipeline: `silver--normalised--{source}--${bundle.target}`
-- Orchestrating job: `silver--{source}--${bundle.target}`, tasks `landing`,
-  `normalised` (`depends_on: [landing]`) and `tag`
-  (`depends_on: [normalised]`)
+A source has one silver pipeline, `silver--{source}--${bundle.target}`,
+holding its Silver Landing datasets (published to `silver_landing_{source}`)
+and, once the source is normalised, its Silver Normalised datasets
+(published to `silver_normalised_{source}`) by qualified name. The
+pipeline's own dependency graph orders Normalised after Landing, so
+Normalised never reads a stale or partial Landing refresh. The source's
+`run_{source}` job runs the silver pipeline, then the Silver Normalised tag
+step (`depends_on` the pipeline task), then verification. There is no
+silver-only wrapper job.
 
-A source not yet normalised has no orchestrating job; its Landing pipeline
-is run directly.
+acnc is built this way. Sources still on a separate Landing pipeline
+(`silver--landing--{source}--${bundle.target}`), a separate Normalised
+pipeline and a `silver--{source}` chaining job are listed as pending
+refactor in the `pipeline-per-layer` and `silver-normalised` specs (airroi
+today); a source not yet normalised has just the Landing datasets in its
+silver pipeline.
 
 ### Agent instructions
 Look at the definition of this layer, propose changes based on the sources to be exposed and update the content on this sections if changes made are permanent and applied to future iterations.
@@ -164,8 +167,8 @@ authoritative, and nothing in this layer is.
 
 ### Materialisation when Databricks Native
 Materialized Views, since every input is an upsert-maintained Landing MV.
-One generic pipeline, instanced once per source under the names reserved
-in Silver Landing's Orchestration section above.
+One generic `pipeline.py`, included in each normalised source's silver
+pipeline (see Silver Landing's Orchestration section above).
 
 ### Normalisation rules
 Binding for every source. The agent applies them when proposing a
