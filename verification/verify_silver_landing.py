@@ -5,7 +5,9 @@
 # scd_valid_to_timestamp. See docs/medallion/silver.md and
 # openspec/changes/phase4a-silver-landing/design.md for the full contract.
 dbutils.widgets.text("catalog", "")
+dbutils.widgets.text("source", "")
 catalog = dbutils.widgets.get("catalog")
+source = dbutils.widgets.get("source")
 
 ENTITIES = [
     {
@@ -121,6 +123,9 @@ ENTITIES = [
         "scd2": True,
     },
 ]
+if source:
+    ENTITIES = [e for e in ENTITIES if e["source"] == source]
+    assert ENTITIES, f"no Silver Landing entities for source {source!r}"
 
 # Sources whose Bronze Publish SCD2 objects carry ingested_timestamp
 # (stamped at their own _raw layer) -- Silver Landing propagates it

@@ -18,9 +18,13 @@ assert distinct_key_count == raw_count, (
 )
 
 mismatches = []
-for table in ["property_scd1", "property_scd2"]:
+# scd2 keeps closed historical versions, so only its current rows compare to raw
+for table, current_only in [
+    ("property_scd1", ""),
+    ("property_scd2", " WHERE __END_AT IS NULL"),
+]:
     count = spark.sql(
-        f"SELECT count(*) AS n FROM {catalog}.bronze_nsw_spatial_publish.{table}"
+        f"SELECT count(*) AS n FROM {catalog}.bronze_nsw_spatial_publish.{table}{current_only}"
     ).collect()[0]["n"]
     if count != raw_count:
         mismatches.append(f"{table}: raw={raw_count} scd={count}")

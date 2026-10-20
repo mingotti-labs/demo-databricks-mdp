@@ -1,7 +1,7 @@
 resources:
   jobs:
     verify_unspsc_pattern:
-      name: verify--ungm--unspsc--${bundle.target}
+      name: verify--bronze--ungm--${bundle.target}
       tasks:
         - task_key: verify_ingestion
           notebook_task:

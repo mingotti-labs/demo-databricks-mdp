@@ -69,11 +69,7 @@ for a shared one).
 
 **Sources pending refactor** (each change that refactors a source removes
 it from this list):
-- airroi: wrapper job `silver_airroi` to remove; verification job
-  displayed `verify--airroi--pattern` to display as `verify--bronze--airroi`.
-- clickstream, neon: verification job to display as
-  `verify--bronze--<source>--<target>` (today
-  `verify--clickstream--autoloader`, `verify--neon--lakeflow`).
+- airroi: wrapper job `silver_airroi` to remove.
 
 #### Scenario: acnc jobs after migration
 - **WHEN** the bundle is validated for any target

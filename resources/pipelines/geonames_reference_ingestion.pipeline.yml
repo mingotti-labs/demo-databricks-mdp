@@ -1,7 +1,7 @@
 resources:
   pipelines:
     geonames_reference_ingestion:
-      name: bronze--geonames--ingestion--${bundle.target}
+      name: bronze--geonames--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_geonames
       serverless: true
@@ -18,3 +18,5 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/geonames/**
+        - glob:
+            include: ../../src/layers/bronze/geonames_publish/**

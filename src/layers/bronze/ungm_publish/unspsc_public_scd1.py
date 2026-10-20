@@ -7,9 +7,9 @@
 # phase3b-scd-snapshot-cleanup's design.md.
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="unspsc_public_scd1")
+dp.create_streaming_table(name="bronze_ungm_publish.unspsc_public_scd1")
 dp.create_auto_cdc_from_snapshot_flow(
-    target="unspsc_public_scd1",
+    target="bronze_ungm_publish.unspsc_public_scd1",
     source="bronze_ungm.unspsc_public_raw",
     keys=["Id"],
     stored_as_scd_type=1,

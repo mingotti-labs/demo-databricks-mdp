@@ -1,0 +1,25 @@
+resources:
+  jobs:
+    run_geonames:
+      name: run--geonames--${bundle.target}
+      tasks:
+        - task_key: bronze
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.geonames_reference_ingestion.id}
+        - task_key: verify_bronze
+          depends_on:
+            - task_key: bronze
+          run_job_task:
+            job_id: ${resources.jobs.verify_geonames_reference_pattern.id}
+        - task_key: silver
+          depends_on:
+            - task_key: verify_bronze
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_landing_geonames.id}
+        - task_key: verify_silver
+          depends_on:
+            - task_key: silver
+          run_job_task:
+            job_id: ${resources.jobs.verify_silver_landing.id}
+            job_parameters:
+              source: geonames

@@ -15,9 +15,12 @@ def admin1_codes_transformed():
     )
 
 
-dp.create_streaming_table(name="admin1_codes_scd2")
+dp.create_streaming_table(
+    name="bronze_geonames_publish.admin1_codes_scd2",
+    table_properties={"pipelines.reset.allowed": "false"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
-    target="admin1_codes_scd2",
+    target="bronze_geonames_publish.admin1_codes_scd2",
     source="admin1_codes_transformed",
     keys=["code"],
     stored_as_scd_type=2,

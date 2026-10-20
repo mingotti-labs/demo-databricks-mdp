@@ -1,7 +1,7 @@
 resources:
   pipelines:
     iso_country_reference_ingestion:
-      name: bronze--iso--ingestion--${bundle.target}
+      name: bronze--iso--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_iso
       serverless: true
@@ -16,3 +16,5 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/iso/**
+        - glob:
+            include: ../../src/layers/bronze/iso_publish/**

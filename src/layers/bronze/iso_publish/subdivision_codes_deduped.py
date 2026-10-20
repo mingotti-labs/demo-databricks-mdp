@@ -31,5 +31,7 @@ KEY_COLUMNS = ["subdivision_code", "language_code", "subdivision_name"]
 
 @dp.materialized_view(private=True)
 def subdivision_codes_deduped():
-    deduped = spark.read.table("bronze_iso.subdivision_codes_raw").dropDuplicates(KEY_COLUMNS)
+    deduped = spark.read.table("bronze_iso.subdivision_codes_raw").dropDuplicates(
+        KEY_COLUMNS
+    )
     return deduped.withColumn("transformed_timestamp", current_timestamp())

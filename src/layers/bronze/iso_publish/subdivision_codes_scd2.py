@@ -27,9 +27,12 @@
 # every run. See country_codes_scd2.py and NAMING.md for the full pattern.
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="subdivision_codes_scd2")
+dp.create_streaming_table(
+    name="bronze_iso_publish.subdivision_codes_scd2",
+    table_properties={"pipelines.reset.allowed": "false"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
-    target="subdivision_codes_scd2",
+    target="bronze_iso_publish.subdivision_codes_scd2",
     source="subdivision_codes_deduped",
     keys=["subdivision_code", "language_code", "subdivision_name"],
     stored_as_scd_type=2,

@@ -1,7 +1,7 @@
 resources:
   jobs:
     verify_geonames_reference_pattern:
-      name: verify--geonames--reference--${bundle.target}
+      name: verify--bronze--geonames--${bundle.target}
       tasks:
         - task_key: verify_ingestion
           notebook_task:

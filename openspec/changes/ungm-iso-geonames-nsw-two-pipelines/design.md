@@ -84,7 +84,7 @@ which resolves to the same dataset through the pipeline's default schema.
 They already are the source's only silver pipeline.
 
 ### D5. Jobs
-- Verify jobs keep their keys, display as `verify--bronze--<source>--<target>`.
+- Verify jobs keep their keys, display as `verify--bronze--<source>--<target>`: the four sources here, and also airroi, clickstream and neon (display names only, so no source is left on the old naming).
 - `verify_silver_landing` gets job parameters `catalog` and `source`
   (default empty: all sources, today's behaviour); with a source, it checks
   only that source's entities.

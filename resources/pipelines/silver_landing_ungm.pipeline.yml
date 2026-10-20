@@ -1,7 +1,7 @@
 resources:
   pipelines:
     silver_landing_ungm:
-      name: silver--landing--ungm--${bundle.target}
+      name: silver--ungm--${bundle.target}
       catalog: ${var.catalog}
       schema: silver_landing_ungm
       serverless: true

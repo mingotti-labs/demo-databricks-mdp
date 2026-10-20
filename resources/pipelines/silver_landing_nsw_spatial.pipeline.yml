@@ -1,7 +1,7 @@
 resources:
   pipelines:
     silver_landing_nsw_spatial:
-      name: silver--landing--nsw_spatial--${bundle.target}
+      name: silver--nsw_spatial--${bundle.target}
       catalog: ${var.catalog}
       schema: silver_landing_nsw_spatial
       serverless: true
