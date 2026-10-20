@@ -12,7 +12,12 @@ See proposal.md - Why. The procedure and its evidence are in
 | geonames | `geonames_reference_ingestion` | `geonames_reference_scd_modeling` | `country_info_scd2`, `admin1_codes_scd2`, `admin2_codes_scd2`, `cities_scd2` |
 | nsw_spatial | `nsw_property_ingestion` | `nsw_property_scd_modeling` | `property_scd1`, `_scd2` |
 
-All ten are streaming tables (Auto CDC snapshot targets). The SCD pipelines
+All ten are streaming tables (Auto CDC snapshot targets). **As found when
+the dev migration ran (2026-10-20), this inventory only holds where the
+tables exist:** in tst and prd only nsw_spatial's tables exist (ungm, iso
+and geonames were deployed there but never run); in dev all ten exist but
+belong to the user's identity and to `[dev handsonessential]` pipelines,
+not to the service principal's. See D7. The SCD pipelines
 have no configuration and glob libraries only; no dataset name collides
 with an ingestion dataset. Pipeline-scoped datasets (iso's private
 `subdivision_codes_deduped`, the `*_transformed` temporary views) are not
@@ -45,6 +50,25 @@ unchanged, then deletes the emptied source pipeline. The job
 `depends_on` and `run_if: ALL_DONE`: sequential (Free Edition runs one
 workload at a time) and a failed source does not block the others.
 *Alternative*: copy acnc's notebook four times: four places to fix.
+
+### D7. Environment state found at migration time (amends D2)
+- **tst and prd:** the migration notebook skips a listed table that does
+  not exist ("nothing to move") and still deletes the emptied SCD pipeline,
+  so ungm, iso and geonames only lose their empty SCD pipeline; nsw_spatial
+  moves two tables. The first `run_<source>` after PR-B creates the missing
+  tables directly in the merged pipeline.
+- **dev:** the dev tables of all four sources (bronze raw, SCD, Silver
+  Landing) are owned by the user and attached to eight `[dev
+  handsonessential]` pipelines, so the SP-run job cannot read them (first
+  dev run failed on its first statement, `INSUFFICIENT_PERMISSIONS`, with
+  nothing changed). Per the standing rule (human-identity copies are
+  disposable) dev is not migrated: the user deletes the eight human
+  pipelines, the stale dev tables are dropped (every table has 0 closed
+  SCD2 versions, sources are free and re-fetchable), the migration job then
+  only deletes the SP's empty SCD pipelines, and the first `run_<source>`
+  run in dev creates all tables in the merged layout under the SP.
+- A table owned by a pipeline other than the source or the destination
+  still fails the run.
 
 ### D3. Qualified names and full-refresh protection
 SCD streaming tables get `name`/`target` `bronze_<source>_publish.<table>`;
