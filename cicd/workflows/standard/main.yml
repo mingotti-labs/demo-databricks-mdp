@@ -1,0 +1,94 @@
+name: Main
+
+on:
+  push:
+    branches: [main]
+    # Only re-deploy when something that actually ends up in the deployed bundle
+    # changes. Without this, doc-only / openspec-only commits still trigger a
+    # (no-op) tst deploy and a prd approval prompt.
+    paths:
+      - "databricks.yml"
+      - "resources/**"
+      - "src/**"
+      - "verification/**"
+      - "migrations/**"
+      - ".github/workflows/**"
+
+# One deploy-and-run at a time: Free Edition runs a single pipeline/job at a
+# time. A queued run replaces older queued ones, which is safe because each run
+# diffs against the last *successful* deployment and so covers their changes.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-tst:
+    runs-on: ubuntu-latest
+    environment: tst
+    permissions:
+      contents: read
+      deployments: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: databricks/setup-cli@v1.17.0
+      - name: Deploy bundle (tst)
+        run: databricks bundle deploy --target tst
+      - name: Run affected units (tst)
+        run: |
+          failed=0
+          for unit in $(python3 cicd/affected_units.py --target tst); do
+            databricks bundle run "run_$unit" --target tst || failed=1
+          done
+          exit $failed
+      - name: Summarize tst deployment
+        if: always()
+        run: |
+          {
+            echo "## tst deployment summary"
+            echo ""
+            echo "Review this before approving the \`deploy-prd\` job below."
+            echo ""
+            databricks bundle summary --target tst || echo "(bundle summary unavailable -- check the deploy step's log above)"
+            echo ""
+            echo "Full log: [this run, \"deploy-tst\" job](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-prd:
+    needs: deploy-tst
+    runs-on: ubuntu-latest
+    # `environment: prd` is what pauses this job for approval -- but the required-
+    # reviewer rule itself lives in repo Settings > Environments > prd, not here.
+    # Removing that rule in the UI would make this job deploy immediately, with no
+    # change needed to this file.
+    environment: prd
+    permissions:
+      contents: read
+      deployments: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: databricks/setup-cli@v1.17.0
+      - name: Deploy bundle (prd)
+        run: databricks bundle deploy --target prd
+      - name: Run affected units (prd)
+        run: |
+          failed=0
+          for unit in $(python3 cicd/affected_units.py --target prd); do
+            databricks bundle run "run_$unit" --target prd || failed=1
+          done
+          exit $failed

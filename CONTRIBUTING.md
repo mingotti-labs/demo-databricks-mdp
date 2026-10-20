@@ -100,10 +100,20 @@ direction the dependency runs (e.g. "Depends on `phase3a-neon-uc-connection` in
 `demo-databricks-iac` — this change's ingestion pipeline references the `neon_dev`
 UC Connection that one creates"). Plain text, not tooling — grep-able is the goal.
 
+## Editions and generated files
+
+`config.json` names the edition (`free` or `standard`) and its environments.
+The root `databricks.yml` and everything in `.github/workflows/` are
+**generated** from `cicd/databricks/<edition>.yml` and
+`cicd/workflows/<edition>/`. Edit those sources, then run
+`uv run python cicd/apply_edition.py` and commit the result; a PR check
+(`apply_edition.py --check`) fails if a generated file was edited directly.
+A change meant for both editions goes in both sources.
+
 ## Adding a runnable unit
 
 After every `tst`/`prd` deploy, CI runs the units the merge affected and
-nothing else (`ci/affected_units.py`, whose docstring explains the lookup
+nothing else (`cicd/affected_units.py`, whose docstring explains the lookup
 in full). A unit is a bundle job whose key starts with `run_`
 (`resources/jobs/run_<unit>.job.yml`) chaining everything that unit
 produces: pipelines, then the verification and silver jobs. A new source or

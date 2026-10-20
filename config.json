@@ -1,0 +1,4 @@
+{
+  "edition": "free",
+  "environments": ["dev", "prd"]
+}

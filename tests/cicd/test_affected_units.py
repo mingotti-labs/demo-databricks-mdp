@@ -1,4 +1,4 @@
-"""Tests for ci/affected_units.py, one group per scenario of the ci-affected-units spec.
+"""Tests for cicd/affected_units.py, one group per scenario of the ci-affected-units spec.
 
 The fixture is a miniature repo: two sources (acnc, airroi) that share
 ``src/common/shared.py`` through an intermediate module, a spec file named only
