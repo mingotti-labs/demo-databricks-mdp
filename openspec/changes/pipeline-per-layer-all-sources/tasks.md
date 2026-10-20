@@ -7,7 +7,7 @@
 ## 2. Template display names
 
 - [x] 2.1 Rename the display names of clickstream's seven non-canonical Auto Loader pipelines to `bronze--template--autoloader--...` (D3); `clickstream_autoloader` and both SCD pipelines keep `clickstream`; verify `bundle validate` and that resource keys and table names are unchanged
-- [ ] 2.2 After the PR's dev deploy, verify the seven pipelines show the `template` names in dev with the same pipeline ids (in-place rename), and `ci/affected_units.py` reports no unit for this change
+- [x] 2.2 After the PR's dev deploy, verify the seven pipelines show the `template` names in dev with the same pipeline ids (in-place rename), and `ci/affected_units.py` reports no unit for this change
 
 ## 3. Post-merge
 
