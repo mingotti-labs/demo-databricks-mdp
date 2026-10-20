@@ -14,9 +14,9 @@ lookup SHALL NOT depend on whether a unit is a source or a domain.
 
 #### Scenario: Unit discovered from the bundle
 - **WHEN** the bundle defines jobs `run_acnc`, `run_airroi`, and
-  `silver_acnc`
-- **THEN** the units are `acnc` and `airroi`, and `silver_acnc` is not a
-  unit
+  `verify_silver_normalised`
+- **THEN** the units are `acnc` and `airroi`, and
+  `verify_silver_normalised` is not a unit
 
 ### Requirement: Units opt out of automatic runs by tag
 A run job tagged `ci_auto_run: "false"` SHALL never be reported for an
@@ -68,8 +68,8 @@ directly or through `run_job_task` chains, or when the run job itself is
 affected.
 
 #### Scenario: Reached through a nested job
-- **WHEN** `silver_normalised_acnc` is affected and `run_acnc` reaches it
-  through a `run_job_task` to `silver_acnc`
+- **WHEN** `verify_silver_normalised` is affected and `run_acnc` reaches it
+  through a `run_job_task`
 - **THEN** `acnc` is reported
 
 ### Requirement: Unmatched changes run nothing
