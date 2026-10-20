@@ -38,7 +38,8 @@ cursor. All four SHALL stamp a platform `ingested_timestamp` column.
 
 ### Requirement: SCD2 modeling, Python only, SCD2-only
 `<table>_scd2` SHALL exist in `bronze_geonames_publish` for all four
-tables, built via `create_auto_cdc_from_snapshot_flow` against each
+tables, built by the source's bronze pipeline (`bronze--geonames--<target>`, the same pipeline that builds its `_raw` tables) via
+`create_auto_cdc_from_snapshot_flow` against each
 `_raw` table (directly, or via a deduplicating private intermediate if the
 key is found not to be unique — see the next requirement). No `_scd1`
 variant SHALL be built for any table (a scope decision: low-change-frequency
@@ -60,7 +61,7 @@ dataset immediately upstream of Auto CDC, and SHALL exclude both
 `track_history_except_column_list`.
 
 #### Scenario: SCD2 tables match source row count on initial load
-- **WHEN** the SCD pipeline is run after all four `_raw` tables are
+- **WHEN** the bronze pipeline is run after all four `_raw` tables are
   populated
 - **THEN** each `<table>_scd2`'s current-row count (`__END_AT IS NULL`)
   matches its expected source count (its `_raw` counterpart's row count,
@@ -92,7 +93,8 @@ A `verification/` suite SHALL exist checking (at minimum) that all four
 `_raw` tables are populated with their expected row counts and carry
 `ingested_timestamp`, and that every table's `_scd2` current-row count
 matches its expected source count — chained into one job
-(`verify_geonames_reference_pattern`).
+(`verify_geonames_reference_pattern`, displayed as
+`verify--bronze--geonames--<target>`).
 
 #### Scenario: Verification job proves the pattern still works
 - **WHEN** `verify_geonames_reference_pattern` is run

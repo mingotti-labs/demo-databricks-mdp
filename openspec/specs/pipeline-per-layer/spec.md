@@ -38,8 +38,6 @@ too.
 it from this list):
 - airroi: bronze ingestion + SCD pipelines to merge; Silver Landing +
   Silver Normalised pipelines to merge.
-- ungm, iso, geonames, nsw_spatial: bronze ingestion + SCD pipelines to
-  merge; silver pipeline to display as `silver--<source>--<target>`.
 - clickstream: the canonical Auto Loader pipeline and the Python SCD
   pipeline to merge; silver pipeline to display as
   `silver--clickstream--<target>`.
@@ -50,6 +48,12 @@ it from this list):
 - **THEN** acnc has two pipelines, `bronze--acnc--<target>` and
   `silver--acnc--<target>`, and every acnc table exists in the same schema
   under the same name as before its refactor
+
+#### Scenario: ungm, iso, geonames and nsw_spatial after refactor
+- **WHEN** the bundle is validated for any target
+- **THEN** each of them has exactly `bronze--<source>--<target>` and
+  `silver--<source>--<target>`, and every one of their tables exists in
+  the same schema under the same name as before its refactor
 
 #### Scenario: Source not on the pending list
 - **WHEN** a source other than neon has more than one bronze or silver
@@ -99,13 +103,7 @@ for a shared one).
 
 **Sources pending refactor** (each change that refactors a source removes
 it from this list):
-- airroi: wrapper job `silver_airroi` to remove; verification job
-  displayed `verify--airroi--pattern` to display as `verify--bronze--airroi`.
-- ungm, iso, geonames, nsw_spatial, clickstream, neon: verification job
-  to display as `verify--bronze--<source>--<target>` (today
-  `verify--ungm--unspsc`, `verify--iso--country-reference`,
-  `verify--geonames--reference`, `verify--nsw_spatial--property`,
-  `verify--clickstream--autoloader`, `verify--neon--lakeflow`).
+- airroi: wrapper job `silver_airroi` to remove.
 
 #### Scenario: acnc jobs after migration
 - **WHEN** the bundle is validated for any target
