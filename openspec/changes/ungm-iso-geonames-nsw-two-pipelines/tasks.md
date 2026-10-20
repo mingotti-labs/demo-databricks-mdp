@@ -5,7 +5,8 @@
 
 ## 2. Migration runs
 
-- [ ] 2.1 Per environment (dev, then tst, then prd): run the job by id; verify every task succeeded, each of the ten tables reports its ingestion pipeline as owner with counts unchanged (row and closed versions recounted after the deletes), and the four SCD pipelines are gone
+- [ ] 2.0 Fix the notebook to skip tables that do not exist (PR-A2); dev ownership cleanup (D7): user deletes the eight `[dev handsonessential]` pipelines of the four sources, the stale dev tables of the four sources (bronze raw, SCD, Silver Landing) are dropped with the user's approval; verify no table of these sources remains in `mdp_dev` and no human-owned pipeline remains
+- [ ] 2.1 Per environment (dev, then tst, then prd; in dev and for ungm/iso/geonames in tst/prd only the emptied SCD pipeline is deleted, D7): run the job by id; verify every task succeeded, each of the ten tables reports its ingestion pipeline as owner with counts unchanged (row and closed versions recounted after the deletes), and the four SCD pipelines are gone
 
 ## 3. PR-B: bronze
 

@@ -8,8 +8,10 @@
 #
 # Must run as the owner and run-as of both pipelines: the CI/CD service
 # principal, i.e. trigger the job by id, never from a notebook session.
-# Idempotent: a table already owned by the destination is skipped, an
-# already-deleted source pipeline is not stopped or deleted again. Owner is
+# Idempotent: a table that does not exist yet (the source never ran in this
+# environment) is skipped, a table already owned by the destination is
+# skipped, an already-deleted source pipeline is not stopped or deleted
+# again. A table owned by any other pipeline fails the run. Owner is
 # read from Unity Catalog, not SHOW TBLPROPERTIES (stale after a move for a
 # materialized view). Row and closed-version counts are checked unchanged
 # before the source pipeline is deleted.
@@ -21,7 +23,7 @@ for name in ("catalog", "source_pipeline_id", "destination_pipeline_id", "tables
 catalog = dbutils.widgets.get("catalog")
 source = dbutils.widgets.get("source_pipeline_id")
 destination = dbutils.widgets.get("destination_pipeline_id")
-tables = [t.strip() for t in dbutils.widgets.get("tables").split(",") if t.strip()]
+listed = [t.strip() for t in dbutils.widgets.get("tables").split(",") if t.strip()]
 w = WorkspaceClient()
 
 
@@ -50,6 +52,15 @@ def counts(table: str) -> tuple[int, int]:
     return row["n"], row["c"]
 
 
+def table_exists(table: str) -> bool:
+    """Return whether a table exists in Unity Catalog."""
+    try:
+        uc_table(table)
+        return True
+    except NotFound:
+        return False
+
+
 def exists(pipeline_id: str) -> bool:
     """Return whether a pipeline still exists."""
     try:
@@ -59,6 +70,9 @@ def exists(pipeline_id: str) -> bool:
         return False
 
 
+tables = [table for table in listed if table_exists(table)]
+for table in set(listed) - set(tables):
+    print(f"{table}: does not exist, nothing to move")
 before = {table: counts(table) for table in tables}
 
 if exists(source):
