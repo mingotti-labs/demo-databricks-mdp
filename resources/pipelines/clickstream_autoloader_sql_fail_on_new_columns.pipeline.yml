@@ -1,7 +1,7 @@
 resources:
   pipelines:
     clickstream_autoloader_sql_fail_on_new_columns:
-      name: bronze--clickstream--autoloader--sql--fail-on-new-columns--${bundle.target}
+      name: bronze--template--autoloader--sql--fail-on-new-columns--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true

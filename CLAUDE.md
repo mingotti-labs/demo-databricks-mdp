@@ -206,7 +206,12 @@ differentiated by catalog:
     mode's behavior and error/recovery workflow. Only `addNewColumns`
     (Python, the canonical resource above) is ever actually run — the other
     7 are documented from Databricks' own docs, not independently
-    re-verified here. See `src/layers/bronze/clickstream/` and
+    re-verified here. Those 7 are displayed with the source system
+    `template` (`bronze--template--autoloader--<language>--<mode>--<target>`),
+    since they are reference material, not part of clickstream's flow; the
+    canonical pipeline and both SCD pipelines (the Python one feeds Silver
+    Landing) keep `clickstream`. Display names only: resource keys, tables
+    and schemas are unchanged. See `src/layers/bronze/clickstream/` and
     `phase3b-clickstream-schema-evolution-variants`'s design.md. Production-
     hardening pattern (practitioner-sourced, not official docs — see the
     canonical `python_add_new_columns/web_events_raw.py`'s header for the
