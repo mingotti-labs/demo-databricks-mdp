@@ -2,9 +2,12 @@ resources:
   jobs:
     verify_silver_landing:
       name: verify--silver--landing--${bundle.target}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: source
+          default: ""
       tasks:
         - task_key: verify_silver_landing
           notebook_task:
             notebook_path: ../../verification/verify_silver_landing.py
-            base_parameters:
-              catalog: ${var.catalog}

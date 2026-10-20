@@ -32,9 +32,12 @@ def country_codes_transformed():
     )
 
 
-dp.create_streaming_table(name="country_codes_scd2")
+dp.create_streaming_table(
+    name="bronze_iso_publish.country_codes_scd2",
+    table_properties={"pipelines.reset.allowed": "false"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
-    target="country_codes_scd2",
+    target="bronze_iso_publish.country_codes_scd2",
     source="country_codes_transformed",
     keys=["country_code_alpha2"],
     stored_as_scd_type=2,

@@ -26,9 +26,12 @@ def country_info_transformed():
     )
 
 
-dp.create_streaming_table(name="country_info_scd2")
+dp.create_streaming_table(
+    name="bronze_geonames_publish.country_info_scd2",
+    table_properties={"pipelines.reset.allowed": "false"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
-    target="country_info_scd2",
+    target="bronze_geonames_publish.country_info_scd2",
     source="country_info_transformed",
     keys=["iso_alpha2"],
     stored_as_scd_type=2,

@@ -4,9 +4,9 @@
 # write-up on why `addressstringoid`, not `propid`, is the key).
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="property_scd1")
+dp.create_streaming_table(name="bronze_nsw_spatial_publish.property_scd1")
 dp.create_auto_cdc_from_snapshot_flow(
-    target="property_scd1",
+    target="bronze_nsw_spatial_publish.property_scd1",
     source="bronze_nsw_spatial.property_raw",
     keys=["addressstringoid"],
     stored_as_scd_type=1,

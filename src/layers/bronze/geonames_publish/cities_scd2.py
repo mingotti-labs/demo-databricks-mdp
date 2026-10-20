@@ -15,9 +15,12 @@ def cities_transformed():
     )
 
 
-dp.create_streaming_table(name="cities_scd2")
+dp.create_streaming_table(
+    name="bronze_geonames_publish.cities_scd2",
+    table_properties={"pipelines.reset.allowed": "false"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
-    target="cities_scd2",
+    target="bronze_geonames_publish.cities_scd2",
     source="cities_transformed",
     keys=["geonameid"],
     stored_as_scd_type=2,

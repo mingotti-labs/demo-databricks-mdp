@@ -1,7 +1,7 @@
 resources:
   jobs:
     verify_iso_reference_pattern:
-      name: verify--iso--country-reference--${bundle.target}
+      name: verify--bronze--iso--${bundle.target}
       tasks:
         - task_key: verify_ingestion
           notebook_task:

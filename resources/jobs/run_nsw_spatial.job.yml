@@ -1,0 +1,25 @@
+resources:
+  jobs:
+    run_nsw_spatial:
+      name: run--nsw_spatial--${bundle.target}
+      tasks:
+        - task_key: bronze
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.nsw_property_ingestion.id}
+        - task_key: verify_bronze
+          depends_on:
+            - task_key: bronze
+          run_job_task:
+            job_id: ${resources.jobs.verify_nsw_property_pattern.id}
+        - task_key: silver
+          depends_on:
+            - task_key: verify_bronze
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_landing_nsw_spatial.id}
+        - task_key: verify_silver
+          depends_on:
+            - task_key: silver
+          run_job_task:
+            job_id: ${resources.jobs.verify_silver_landing.id}
+            job_parameters:
+              source: nsw_spatial
