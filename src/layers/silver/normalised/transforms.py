@@ -1,7 +1,7 @@
 # Spark transforms of the generic Silver Normalised pipeline: one function
 # per table kind, each returning the DataFrame for one materialized view of
 # a source's normalised spec. Rules and column layout:
-# docs/medallion/silver.md ("Silver Normalised") and
+# reference/docs/medallion/silver.md ("Silver Normalised") and
 # openspec phase4d-silver-normalised-framework's design.md.
 import re
 from functools import reduce

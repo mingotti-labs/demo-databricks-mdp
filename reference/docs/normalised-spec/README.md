@@ -195,7 +195,7 @@ implement); these are the Silver Normalised specifics.
    source's silver pipeline (`silver--{source}`, which also holds its
    Landing datasets), the tag and verification tasks in `run_{source}`,
    and the source's "Consumed by Silver Normalised" line in
-   `docs/registers/data-sources.md`.
+   `reference/docs/registers/data-sources.md`.
 6. **Validate, deploy to `dev`, verify**: base row parity (with
    quarantine), bridge element counts, extracted value completeness, FK
    integrity, no Landing drift.

@@ -8,8 +8,8 @@ Catalogs: `mdp_dev`, `mdp_tst`, `mdp_prd`
 |---|---|---|
 | Bronze | `bronze_<source>` | Raw ingestion, append-only |
 | Bronze publish | `bronze_<source>_publish` | Validated bronze, safe for downstream reads — includes `<table>_scd1`/`<table>_scd2` tables |
-| Silver Landing | `silver_landing_<source>` | Source-aligned foundational data product, one schema per source — see `docs/medallion/silver.md` |
-| Silver Normalised | `silver_normalised_<source>` | Source-aligned, restructured to 3NF with extracted entities; values unchanged — see `docs/medallion/silver.md` |
+| Silver Landing | `silver_landing_<source>` | Source-aligned foundational data product, one schema per source — see `reference/docs/medallion/silver.md` |
+| Silver Normalised | `silver_normalised_<source>` | Source-aligned, restructured to 3NF with extracted entities; values unchanged — see `reference/docs/medallion/silver.md` |
 | Silver Domain/Marts | `silver_<domain>` | Conformed, domain-modelled (domains TBD — decide when the first one is actually built) |
 | Gold | `gold_analytics_gateway` | BI / reporting consumers |
 | Gold | `gold_integration_gateway` | Operational / API consumers |
@@ -71,7 +71,7 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
 ## Silver Normalised tables
 
 In `silver_normalised_<source>` (entity kinds defined in
-`docs/medallion/silver.md`):
+`reference/docs/medallion/silver.md`):
 
 - **Base entity** — keeps its Silver Landing table's name exactly (e.g.
   `charity_register`, `customers`), for one-to-one traceability to Landing.

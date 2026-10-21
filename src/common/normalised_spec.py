@@ -1,5 +1,5 @@
 # Silver Normalised spec logic with no Spark dependency: loading a
-# normalised spec, the cross-reference rules docs/normalised-spec/schema.json
+# normalised spec, the cross-reference rules reference/docs/normalised-spec/schema.json
 # cannot express, the rdm_proposed_match_key rule (N8) and the drift check.
 # Shared by the generic pipeline, the tag step, verification and the tests.
 import re

@@ -3,7 +3,7 @@
 # source's Silver Landing tables (all SCD2 versions, since Landing keeps
 # every version) and returns the evidence as one JSON document via
 # dbutils.notebook.exit -- nothing is written to any table or volume. The
-# output field names are the contract docs/templates/silver-normalised-*.md
+# output field names are the contract reference/docs/templates/silver-normalised-*.md
 # refer to. Pass 1 (no dependency_pairs): column stats + value overlaps.
 # Pass 2 (dependency_pairs set): violating determinant values per pair.
 import json

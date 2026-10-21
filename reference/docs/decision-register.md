@@ -10,8 +10,8 @@ alternative" for. Newest entries at the top.
 The ten 2026-10-01 entries below come from
 `phase4e-silver-normalised-acnc`; its design.md has the full reasoning.
 **Affected** unless stated: `src/layers/silver/normalised/`,
-`src/common/normalised_spec.py`, `docs/medallion/silver.md`,
-`docs/normalised-spec/README.md`, `docs/templates/silver-normalised-propose.prompt.md`.
+`src/common/normalised_spec.py`, `reference/docs/medallion/silver.md`,
+`reference/docs/normalised-spec/README.md`, `reference/docs/templates/silver-normalised-propose.prompt.md`.
 
 ---
 
@@ -111,7 +111,7 @@ The ten 2026-10-01 entries below come from
 
 **Discussion**: A repo-wide sweep was considered and rejected (cost without an immediate need; most sources aren't scheduled for normalising soon).
 
-**Decision**: Each source's Silver Normalised change checks and fixes its own `dev` ownership at step 0, just in time, rather than a sweep. **Affected**: `docs/normalised-spec/README.md`, the prompt template.
+**Decision**: Each source's Silver Normalised change checks and fixes its own `dev` ownership at step 0, just in time, rather than a sweep. **Affected**: `reference/docs/normalised-spec/README.md`, the prompt template.
 
 ---
 
@@ -228,8 +228,8 @@ The ten 2026-10-01 entries below come from
 The eighteen 2026-09-30 entries below come from
 `phase4c-silver-normalised-design-time`; its design.md has the full
 reasoning. They share one **Affected** set unless stated:
-`docs/medallion/silver.md` ("Silver Normalised"), `NAMING.md`,
-`docs/normalised-spec/`, `docs/templates/`.
+`reference/docs/medallion/silver.md` ("Silver Normalised"), `NAMING.md`,
+`reference/docs/normalised-spec/`, `reference/docs/templates/`.
 
 ---
 
@@ -334,7 +334,7 @@ steward activity and break determinism.
 rdm, and the normalised spec has no `rdm` block. Approved matches reach
 the data in Domain.
 
-**Affected**: also `docs/component/rdm/README.md`.
+**Affected**: also `reference/docs/component/rdm/README.md`.
 
 ---
 
@@ -504,7 +504,7 @@ any spec deterministically. No LLM runs at pipeline run time.
 
 ## 2026-09-25: Silver Landing provenance timestamp column name
 
-**Context**: `docs/medallion/silver.md`'s original "Provenance metadata"
+**Context**: `reference/docs/medallion/silver.md`'s original "Provenance metadata"
 line (written before `phase4a-silver-landing`) listed `ingested_timestamp`
 as a column Silver Landing adds. `NAMING.md`'s "Platform-added timestamp
 columns" section already defines `ingested_timestamp` as stamped exactly
@@ -528,7 +528,7 @@ absent otherwise — Silver Landing does not backfill it. `NAMING.md`'s
 since this is no longer a bronze-only concept.
 
 **Affected**: `NAMING.md` ("Platform-added timestamp columns"),
-`docs/medallion/silver.md` (Provenance metadata, Standards applied),
+`reference/docs/medallion/silver.md` (Provenance metadata, Standards applied),
 `openspec/changes/phase4a-silver-landing/` (spec, design, proposal, tasks
 corrected to match).
 
@@ -537,7 +537,7 @@ corrected to match).
 ## 2026-09-25: Silver Landing table naming — keep or drop the Bronze SCD suffix
 
 **Context**: While proposing Silver Landing (`phase4a-silver-landing`),
-`docs/medallion/silver.md`'s naming convention read "tables or models:
+`reference/docs/medallion/silver.md`'s naming convention read "tables or models:
 `{datasource}` - same name as bronze publish". This was ambiguous: does
 "same name" mean the literal Bronze Publish object name including its SCD
 suffix (e.g. `customers_scd2`), or the entity's logical datasource name
@@ -565,6 +565,6 @@ logical datasource name only (e.g. `silver_landing_neon.customers`, not
 `silver_landing_neon.customers_scd2`), regardless of which Bronze Publish
 SCD variant is currently selected.
 
-**Affected**: `docs/medallion/silver.md` (Naming Conventions section);
+**Affected**: `reference/docs/medallion/silver.md` (Naming Conventions section);
 `openspec/changes/phase4a-silver-landing/` (spec, design, and tasks were
 authored with this decision already applied).

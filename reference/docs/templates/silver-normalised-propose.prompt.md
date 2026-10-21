@@ -11,11 +11,11 @@ else. Run on Opus.
 Read these first, in full. They are the rules every source is judged
 against; do not restate them in your output, cite them.
 
-- `docs/medallion/silver.md`, section "Silver Normalised" — rules N1–N10
+- `reference/docs/medallion/silver.md`, section "Silver Normalised" — rules N1–N10
 - `NAMING.md` — "Silver Normalised tables" and "Platform-added timestamp
   columns"
-- `docs/registers/data-sources.md` — the source's entry
-- `docs/normalised-spec/schema.json` and `docs/normalised-spec/README.md`
+- `reference/docs/registers/data-sources.md` — the source's entry
+- `reference/docs/normalised-spec/schema.json` and `reference/docs/normalised-spec/README.md`
 - `CONTRIBUTING.md` — the two-PR flow and model selection
 
 ## Steps
@@ -127,7 +127,7 @@ change `phase4x-silver-normalised-{source}` per CONTRIBUTING.md and write:
 
 - `src/layers/silver/normalised/specs/{source}.yml` — valid against
   `schema.json`; every Landing column either used or in `ignored_columns`
-- `design.md` from `docs/templates/silver-normalised-design.md`, citing
+- `design.md` from `reference/docs/templates/silver-normalised-design.md`, citing
   `profile.json` numbers for every entity, domain, split and tolerance
 - `proposal.md` (`## Model`: Opus to propose, Sonnet to implement;
   `## Cross-repo dependencies`: the `silver_normalised_{source}` schema and
@@ -136,7 +136,7 @@ change `phase4x-silver-normalised-{source}` per CONTRIBUTING.md and write:
 Validate before finishing:
 
 ```bash
-uvx check-jsonschema --schemafile docs/normalised-spec/schema.json src/layers/silver/normalised/specs/{source}.yml
+uvx check-jsonschema --schemafile reference/docs/normalised-spec/schema.json src/layers/silver/normalised/specs/{source}.yml
 openspec validate phase4x-silver-normalised-{source} --strict
 ```
 
