@@ -17,8 +17,8 @@ separate from what actually runs.
   canonical `python_add_new_columns` pipeline stays in the main bundle.
 - **Named and grouped by pattern, not by source system.** Resource keys become
   `pattern_<register ID>` (for example `pattern_bronze_autoloader_rescue_python`),
-  and the source is grouped by layer:
-  `references/patterns/src/bronze/autoloader_<mode>_<language>/` (later
+  and the source is grouped by layer, one file per pattern:
+  `references/patterns/src/bronze/autoloader_<mode>_<language>.{py,sql}` (later
   `bronze_publish/` and so on). The pipelines demonstrate a pattern; clickstream
   is only the data they happen to read.
 - **Root bundle stops syncing `references/`**: `sync.exclude: ["references/**"]`

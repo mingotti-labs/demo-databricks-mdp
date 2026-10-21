@@ -24,7 +24,7 @@ LANDING_PATH = f"/Volumes/{catalog}/bronze_clickstream/s3_clickstream_raw/web_ev
 
 
 @dp.table()
-def web_events_none():
+def autoloader_none_python():
     return (
         spark.readStream.format("cloudFiles")
         .option("cloudFiles.format", "json")

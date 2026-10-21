@@ -36,6 +36,9 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
     destination name, so name it `<source_table>_raw` directly (e.g.
     `web_events_raw`); there's no separate `destination_table` setting to set it
     through the way Lakeflow Connect has.
+  - Exception: tables in the patterns bundle (`references/patterns/`) are not
+    source landings; they are named after their pattern ID without `_raw`
+    (`autoloader_rescue_python`).
 - **`<table>_scd1`** / **`<table>_scd2`** — modeled tables in a
   `bronze_<source>_publish` schema, built from that source's `_raw` table.
   Replaces the retired `bronze_<source>_history` pattern — see

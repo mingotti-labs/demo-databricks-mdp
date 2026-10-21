@@ -25,8 +25,13 @@ Surveyed (read-only):
   never renamed, but these are new resources in a new bundle that was never
   deployed, so there is no identity to preserve. The key carries the pattern
   (`pattern_bronze_autoloader_rescue_python`), not the source system.
-- **Group the pattern source by layer** (`src/bronze/`, later `bronze_publish/`
-  and so on), each folder named after the register ID without the layer prefix.
+- **Group the pattern source by layer, one file per pattern** (`src/bronze/`,
+  later `bronze_publish/` and so on), each file named after the register ID
+  without the layer prefix (`autoloader_rescue_python.py`), and each pipeline
+  lists its one file (`libraries: - file: path:`), so no per-pattern folder is
+  needed to keep a sibling file out. Table names match the file and pipeline
+  name (`autoloader_rescue_python`, no `_raw`, since these are not source
+  landings).
 - **Keep targeting `bronze_clickstream` for now.** The pattern schemas arrive
   in change 3; re-pointing is then a one-line change per pipeline with no data
   to migrate. Until then the variants are deployed but never run.

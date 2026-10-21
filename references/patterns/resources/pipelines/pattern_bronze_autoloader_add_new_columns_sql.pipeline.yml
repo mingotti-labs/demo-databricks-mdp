@@ -9,5 +9,5 @@ resources:
       configuration:
         clickstream_catalog: ${var.catalog}
       libraries:
-        - glob:
-            include: ../../src/bronze/autoloader_add_new_columns_sql/**
+        - file:
+            path: ../../src/bronze/autoloader_add_new_columns_sql.sql

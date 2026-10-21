@@ -1,6 +1,6 @@
 ## 1. Patterns bundle
 - [x] 1.1 Create `references/patterns/databricks.yml` (bundle `demo-databricks-mdp-patterns`, `catalog` variable, `include: resources/**/*.yml`, `dev` target only, same host as the main bundle)
-- [x] 1.2 `git mv` the seven variant resource files to `references/patterns/resources/pipelines/` and their `src/layers/bronze/clickstream/<variant>/` folders to `references/patterns/src/bronze/autoloader_<mode>_<language>/`; rename each resource key and file to `pattern_bronze_autoloader_<mode>_<language>`; fix each `libraries` glob; change the display name segment `template` to `pattern`
+- [x] 1.2 `git mv` the seven variant resource files to `references/patterns/resources/pipelines/` and their `src/layers/bronze/clickstream/<variant>/` folders to `references/patterns/src/bronze/autoloader_<mode>_<language>.{py,sql}`; rename each resource key and file to `pattern_bronze_autoloader_<mode>_<language>`; fix each `libraries` glob; change the display name segment `template` to `pattern`
 - [x] 1.3 `databricks bundle validate -t dev` from `references/patterns/`
 
 ## 2. Main bundle

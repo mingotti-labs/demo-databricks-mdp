@@ -11,7 +11,7 @@
 # -- new fields simply accumulate inside `_rescued_data` (a JSON string) for
 # as long as this mode runs. To actually use a rescued field, a human
 # inspects `_rescued_data` at their own convenience (e.g.
-# `SELECT get_json_object(_rescued_data, '$.device_type') FROM web_events_rescue`)
+# `SELECT get_json_object(_rescued_data, '$.device_type') FROM autoloader_rescue_python`)
 # and decides whether it's worth promoting to a real column -- which means
 # switching this pipeline to addNewColumns (or manually adding the column),
 # not something this mode does on its own. Best suited when schema stability
@@ -26,7 +26,7 @@ LANDING_PATH = f"/Volumes/{catalog}/bronze_clickstream/s3_clickstream_raw/web_ev
 
 
 @dp.table()
-def web_events_rescue():
+def autoloader_rescue_python():
     return (
         spark.readStream.format("cloudFiles")
         .option("cloudFiles.format", "json")
