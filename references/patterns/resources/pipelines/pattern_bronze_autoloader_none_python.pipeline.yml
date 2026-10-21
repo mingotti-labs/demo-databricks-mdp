@@ -3,7 +3,7 @@ resources:
     pattern_bronze_autoloader_none_python:
       name: bronze--pattern--autoloader--python--none--${bundle.target}
       catalog: ${var.catalog}
-      schema: bronze_clickstream
+      schema: pattern_bronze
       serverless: true
       continuous: false
       configuration:
