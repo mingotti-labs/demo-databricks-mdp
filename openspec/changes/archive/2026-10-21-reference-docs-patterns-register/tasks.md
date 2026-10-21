@@ -12,4 +12,4 @@
 
 ## 4. Verify
 - [x] 4.1 `uvx check-jsonschema` against `references/docs/normalised-spec/schema.json`, `uv run python -m pytest`, `apply_edition.py --check`, `databricks bundle validate -t dev`
-- [ ] 4.2 Open the implementation PR; confirm its checks pass
+- [x] 4.2 Open the implementation PR; confirm its checks pass
