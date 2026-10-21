@@ -13,4 +13,4 @@
 - [x] 4.1 Confirm the seven pipelines own no tables in dev and prd, then delete them in dev and prd (they are SP-owned; see NAMING.md "Removing a pipeline")
 
 ## 5. Verify
-- [ ] 5.1 Deploy the patterns bundle to `dev` by hand and confirm seven pipelines exist; open the PR and confirm its checks pass, including the dev deploy with no deletion prompt
+- [x] 5.1 Deploy the patterns bundle to `dev` by hand and confirm seven pipelines exist; open the PR and confirm its checks pass, including the dev deploy with no deletion prompt
