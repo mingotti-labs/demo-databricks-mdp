@@ -47,7 +47,7 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ### acnc
 - **What it is**: ACNC Charity Register, data.gov.au CKAN Data API
-- **Design patterns**: [`bronze_custom_datasource_ckan_python`](design-patterns.md#bronze_custom_datasource_ckan_python), [`bronze_quarantine_null_key_python`](design-patterns.md#bronze_quarantine_null_key_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Design patterns**: [`bronze_custom_ckan_python`](design-patterns.md#bronze_custom_ckan_python), [`bronze_quarantine_null_key_python`](design-patterns.md#bronze_quarantine_null_key_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_acnc.charity_register_raw` (+ `charity_register_quarantine`)
 - **Bronze Publish** (`bronze_acnc_publish`): `charity_register_scd1`,
   `charity_register_scd2` (`charity_register_valid` is a private
@@ -61,7 +61,7 @@ richer variant if it exists; fall back only when it doesn't. See
 ### nsw_spatial
 - **What it is**: NSW "Land Parcel and Property Theme", Esri ArcGIS REST
   FeatureServer
-- **Design patterns**: [`bronze_custom_datasource_arcgis_python`](design-patterns.md#bronze_custom_datasource_arcgis_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Design patterns**: [`bronze_custom_arcgis_python`](design-patterns.md#bronze_custom_arcgis_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_nsw_spatial.property_raw`
 - **Bronze Publish** (`bronze_nsw_spatial_publish`): `property_scd1`,
   `property_scd2`
@@ -82,7 +82,7 @@ richer variant if it exists; fall back only when it doesn't. See
 ### iso
 - **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,
   public GitHub CSV mirror (CC BY-SA 4.0)
-- **Design patterns**: [`bronze_static_file_materialized_view_python`](design-patterns.md#bronze_static_file_materialized_view_python), [`bronze_quarantine_duplicate_key_python`](design-patterns.md#bronze_quarantine_duplicate_key_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Design patterns**: [`bronze_file_materialized_view_python`](design-patterns.md#bronze_file_materialized_view_python), [`bronze_quarantine_duplicate_key_python`](design-patterns.md#bronze_quarantine_duplicate_key_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_iso.{country_codes,subdivision_codes}_raw`
   (+ `subdivision_codes_quarantine`)
 - **Bronze Publish** (`bronze_iso_publish`): `country_codes_scd2`,
@@ -96,7 +96,7 @@ richer variant if it exists; fall back only when it doesn't. See
 ### geonames
 - **What it is**: GeoNames country/admin1/admin2/city gazetteer data,
   public dump-file mirror (CC BY 4.0)
-- **Design patterns**: [`bronze_static_file_materialized_view_python`](design-patterns.md#bronze_static_file_materialized_view_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Design patterns**: [`bronze_file_materialized_view_python`](design-patterns.md#bronze_file_materialized_view_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_geonames.{country_info,admin1_codes,admin2_codes,cities}_raw`
 - **Bronze Publish** (`bronze_geonames_publish`):
   `{country_info,admin1_codes,admin2_codes,cities}_scd2` (no SCD1 variant

@@ -32,7 +32,7 @@ an in-code write-up of its behaviour and recovery workflow.
 Code: the other `src/layers/bronze/clickstream/*/` folders.
 Used by: none (reference). Evidence: `documented only`.
 
-### bronze_custom_datasource_ckan_python
+### bronze_custom_ckan_python
 Reusable PySpark custom data source over any CKAN `datastore_search` API: schema
 from CKAN field metadata, offset-range partitions, `row_limit` for non-prd
 volume. The classes stay inline in the pipeline file because they are pickled to
@@ -40,7 +40,7 @@ a worker process that does not inherit `sys.path`.
 Code: `src/layers/bronze/acnc/charity_register_raw.py`.
 Used by: [acnc](data-sources.md#acnc). Evidence: `prd`.
 
-### bronze_custom_datasource_arcgis_python
+### bronze_custom_arcgis_python
 Reusable PySpark custom data source over an Esri ArcGIS REST FeatureServer
 layer: schema from layer metadata, partitions by `resultOffset`, page size
 capped to the server's own `maxRecordCount`.
@@ -56,7 +56,7 @@ cursor. Code: `src/layers/bronze/ungm/`, `src/layers/bronze/airroi/`,
 Used by: [ungm](data-sources.md#ungm), [airroi](data-sources.md#airroi) (paid
 API). Evidence: `prd`.
 
-### bronze_static_file_materialized_view_python
+### bronze_file_materialized_view_python
 A Materialized View over a static public CSV or text dump fetched by a helper in
 `src/common/`, with a licence note as a table comment. Code:
 `src/layers/bronze/iso/`, `src/layers/bronze/geonames/`,
