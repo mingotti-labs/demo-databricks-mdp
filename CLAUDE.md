@@ -37,14 +37,7 @@ demo-databricks-mdp/
           scd2_merge/       # hand-rolled two-phase MERGE, SQL SCD2's real home
         atlas/
         clickstream/
-          python_add_new_columns/   # canonical, only variant ever run
-          python_rescue/
-          python_fail_on_new_columns/
-          python_none/
-          sql_add_new_columns/
-          sql_rescue/
-          sql_fail_on_new_columns/
-          sql_none/
+          python_add_new_columns/   # canonical; the other 7 variants live in references/patterns/
         clickstream_publish/
           python/           # SCD1 (mechanical passthrough)
           sql/
@@ -93,10 +86,11 @@ demo-databricks-mdp/
   verification/           # live-environment functional checks — see "Verification vs validation"
   references/
     docs/                 # all documentation; registers/design-patterns.md lists every implemented design pattern
+    patterns/             # separate dev-only bundle (own databricks.yml) for pattern-only implementations; the main bundle excludes references/** from sync
 ```
 
 - `resources/<type>/`: grouped by resource kind (job/pipeline/dashboard/app), not one flat directory.
-- `src/layers/{bronze,silver,gold}/<source-or-domain-or-gateway>/`: mirrors the catalog/schema naming below, not the ingestion pattern or use case. Exception: `bronze/clickstream/`'s subfolders are one per schema-evolution-mode variant (`python_add_new_columns/`, `sql_rescue/`, etc.) — deliberate, isolating each pipeline's `libraries` glob so pipelines never pick up a sibling variant's source file (see `phase3b-clickstream-schema-evolution-variants`'s design.md). Only `python_add_new_columns` is ever actually run; the other 7 exist as documented, deployable reference material.
+- `src/layers/{bronze,silver,gold}/<source-or-domain-or-gateway>/`: mirrors the catalog/schema naming below, not the ingestion pattern or use case. Exception: the schema-evolution-mode variants have one subfolder each, isolating each pipeline's `libraries` glob so pipelines never pick up a sibling variant's source file (see `phase3b-clickstream-schema-evolution-variants`'s design.md). Only `bronze/clickstream/python_add_new_columns/` is ever actually run; the other 7 are documented, deployable reference material in the separate patterns bundle, `references/patterns/src/bronze/autoloader_<mode>_<language>.{py,sql}`.
 - `src/common/`: the only part of `src/` that is plainly importable, wheel-packaged Python.
 - `src/seed_data/`: synthetic-data generation notebooks — not a medallion layer, not deployed data, just a way to populate a source system for demo/dev purposes. Two shapes so far: truncate-and-reseed for a database source (`seed_neon_ecommerce.py`) vs. append-a-new-batch for a file-drop source (`generate_clickstream_events.py`) — pick the shape that matches how the real source would behave, not one convention for both.
 - `tests/` mirrors `src/common/` 1:1 (standard `databricks bundle init` convention). It does not mirror `src/layers/` — pipeline transformation correctness is validated with inline data-quality expectations and `bundle run --refresh`, not pytest.
@@ -222,12 +216,14 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     mode's behavior and error/recovery workflow. Only `addNewColumns`
     (Python, the canonical resource above) is ever actually run — the other
     7 are documented from Databricks' own docs, not independently
-    re-verified here. Those 7 are displayed with the source system
-    `template` (`bronze--template--autoloader--<language>--<mode>--<target>`),
-    since they are reference material, not part of clickstream's flow; the
-    canonical pipeline and both SCD pipelines (the Python one feeds Silver
-    Landing) keep `clickstream`. Display names only: resource keys, tables
-    and schemas are unchanged. See `src/layers/bronze/clickstream/` and
+    re-verified here. Those 7 live in the separate dev-only patterns bundle
+    (`references/patterns/`, change `references-patterns-bundle`) and are
+    displayed with the source system `pattern`
+    (`bronze--pattern--autoloader--<language>--<mode>--<target>`), since they
+    are reference material, not part of clickstream's flow; the canonical
+    pipeline and both SCD pipelines (the Python one feeds Silver Landing)
+    keep `clickstream`. They are not deployed to `tst`/`prd` and hold no
+    tables. See `src/layers/bronze/clickstream/` and
     `phase3b-clickstream-schema-evolution-variants`'s design.md. Production-
     hardening pattern (practitioner-sourced, not official docs — see the
     canonical `python_add_new_columns/web_events_raw.py`'s header for the
@@ -670,8 +666,14 @@ the decision record behind what's built.
   `neon_ecommerce_ingestion`, which (per Databricks' default pipeline-delete
   behavior) dropped `bronze_neon.*_raw` along with it — the Neon Postgres
   source itself was untouched, but the ingested-into-Databricks copy had to be
-  rebuilt from scratch. Never treat a human-identity dev pipeline/job's data
-  as something worth preserving; if it needs deleting, delete it freely. To
+  rebuilt from scratch. **Not every human copy is disposable**: check what it
+  owns first (`databricks tables list <catalog> <schema>` shows each table's
+  `pipeline_id`). A human copy that owns no tables is safe to delete; one that
+  owns tables is not until ownership has moved to the SP copy (NAMING.md,
+  "Removing a pipeline"). As of 2026-10-21 four human copies still own live dev
+  tables because neon and clickstream's silver landing were last run from a
+  local deploy: `bronze--neon--scd--python`, `bronze--neon--scd--sql`,
+  `silver--landing--neon`, `silver--landing--clickstream` (15 tables). To
   run something as the SP without local M2M credentials, just trigger the
   SP-owned resource's ID directly (`databricks pipelines start-update
   <pipeline_id>` / `databricks jobs run-now <job_id>`) — execution identity is

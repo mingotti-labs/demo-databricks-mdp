@@ -102,7 +102,7 @@ Used by: [clickstream](data-sources.md#clickstream). Evidence: `dev`.
 ### bronze_autoloader_{rescue,fail_on_new_columns,none}_python, bronze_autoloader_{add_new_columns,rescue,fail_on_new_columns,none}_sql
 The other seven schema-evolution variants, each its own deployable pipeline with
 an in-code write-up of its behaviour and recovery workflow.
-Code: the other `src/layers/bronze/clickstream/*/` folders.
+Code: `references/patterns/src/bronze/autoloader_<mode>_<language>.{py,sql}` (a separate dev-only bundle).
 Used by: none (reference). Evidence: `documented only`.
 
 ### bronze_custom_ckan_python
