@@ -16,7 +16,7 @@ Findings from the survey (read-only):
 ## Decisions
 
 - **Register next to the data-sources register**:
-  `reference/docs/registers/design-patterns.md`.
+  `references/docs/registers/design-patterns.md`.
 - **ID scheme**: `<layer>_<technology>_<variant>_<language>`, language last
   and omitted when agnostic. Auto CDC is split into stream and snapshot
   entries, because streaming fails against upserted sources (Neon) while
@@ -34,7 +34,7 @@ Findings from the survey (read-only):
 ## Risks
 
 - A missed reference breaks PR validation (the schema path). Mitigation: after
-  the move, search for `docs/` outside `reference/` and the archive, run the
+  the move, search for `docs/` outside `references/` and the archive, run the
   schema check locally, and run `apply_edition.py --check`.
 - Pattern IDs may need adjusting while entries are written. Accepted: that is
   why changes 2 and 3 wait.

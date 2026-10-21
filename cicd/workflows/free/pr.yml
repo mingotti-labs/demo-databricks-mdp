@@ -14,7 +14,7 @@ on:
       - "migrations/**"
       - "tests/**"
       - "cicd/**"
-      - "reference/docs/normalised-spec/**"
+      - "references/docs/normalised-spec/**"
       - ".github/workflows/**"
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - name: Validate normalised specs against the schema
-        run: uvx check-jsonschema --schemafile reference/docs/normalised-spec/schema.json src/layers/silver/normalised/specs/*.yml
+        run: uvx check-jsonschema --schemafile references/docs/normalised-spec/schema.json src/layers/silver/normalised/specs/*.yml
       - name: Unit tests
         run: uv run pytest
       - name: Generated files match config.json edition
