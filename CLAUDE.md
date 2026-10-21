@@ -222,7 +222,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     (`bronze--pattern--autoloader--<language>--<mode>--<target>`), since they
     are reference material, not part of clickstream's flow; the canonical
     pipeline and both SCD pipelines (the Python one feeds Silver Landing)
-    keep `clickstream`. They are not deployed to `tst`/`prd` and hold no
+    keep `clickstream`. They write to the dev-only `pattern_bronze` schema (iac repo), are not deployed to `tst`/`prd` and hold no
     tables. See `src/layers/bronze/clickstream/` and
     `phase3b-clickstream-schema-evolution-variants`'s design.md. Production-
     hardening pattern (practitioner-sourced, not official docs — see the

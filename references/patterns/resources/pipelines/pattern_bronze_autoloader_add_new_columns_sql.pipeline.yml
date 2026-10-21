@@ -3,7 +3,7 @@ resources:
     pattern_bronze_autoloader_add_new_columns_sql:
       name: bronze--pattern--autoloader--sql--add-new-columns--${bundle.target}
       catalog: ${var.catalog}
-      schema: bronze_clickstream
+      schema: pattern_bronze
       serverless: true
       continuous: false
       configuration:
