@@ -12,6 +12,12 @@ Databricks' docs, not from this repo).
 
 ## Ingestion (Bronze)
 
+Entries marked `documented only` with no code come from Databricks' ingestion
+overview (<https://docs.databricks.com/aws/en/ingestion/overview>, read
+2026-10-21), which recommends starting with the most managed option and moving
+down only if it does not fit. Release stages change; check the docs before
+relying on one.
+
 ### bronze_lakeflow_query
 Lakeflow Connect, query-based (gateway-free), reading a Postgres source through
 a Unity Catalog Connection. Pick it for a relational source when CDC (which
@@ -32,17 +38,58 @@ Code: none. Used by: none (reference). Evidence: `documented only`.
 Lakeflow Connect database connector with change data capture: an ingestion
 gateway in the customer's network stages change events to a UC Volume and a
 serverless ingestion pipeline applies them as CDC. Pick it for a database that
-exposes a change feed (SQL Server, and PostgreSQL/MySQL in preview). The gateway
+exposes a change feed (SQL Server, PostgreSQL, MySQL, Oracle; release stage
+varies by connector). The gateway
 needs classic compute, which Free Edition does not have, which is why Neon uses
 `bronze_lakeflow_query` instead.
 Code: none. Used by: none (reference). Evidence: `documented only`.
 
 ### bronze_lakeflow_community
 Community connectors: template-based connectors outside Databricks' managed
-catalog (Databricks Labs' separate "Community Connectors" repo and CLI). For a
-source with no managed connector. Considered and not chosen for CKAN (see
+catalog (Databricks Labs' separate "Community Connectors" repo and CLI),
+open source and not backed by Databricks SLAs. For a source with no managed
+connector. Considered and not chosen for CKAN (see
 `phase3d-acnc-charity-register-ingestion`'s design.md), which uses
 `bronze_custom_ckan_python` instead.
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
+### bronze_lakeflow_file
+Lakeflow Connect file connectors: ingest files from services such as SharePoint
+and Google Drive (managed connectors) into Delta tables. Pick it when files live
+in an application, not on cloud object storage; for object storage use the
+Auto Loader entries below. SFTP is listed among the standard connectors, where
+you build the pipeline yourself.
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
+### bronze_streaming_kafka_python
+Continuous ingestion from a message bus (Apache Kafka, and per the docs also
+Kinesis, Pub/Sub and Pulsar) with Structured Streaming, a Lakeflow pipeline or
+Databricks SQL, at increasing levels of managed behaviour. Pick it when the
+source is an event stream you can subscribe to. Distinct from Zerobus, where the
+producer pushes.
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
+### bronze_zerobus_direct_write
+Zerobus Ingest: a push-based service where the producing application writes
+records straight into a Unity Catalog Delta table over gRPC, REST or OTLP, with
+no message bus. The table schema is the contract and is never auto-evolved;
+records that no longer fit go to a fallback location. Pick it when you control
+the producer. Release stage differs by feature (core managed and streaming
+tables generally available; some options in preview or beta).
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
+### bronze_federation_foreign_catalog
+Lakehouse Federation: register the source as a foreign catalog and query it in
+place, with no copy. Pick it for occasional or exploratory reads, not for
+history or heavy workloads. The iac repo's Neon connectivity check used a
+temporary foreign catalog this way (see `demo-databricks-iac`'s
+`phase3a-neon-uc-connection`).
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
+### bronze_delta_sharing
+Receive a partner's data as a share, with no pipeline of your own. The docs'
+ingestion overview lists this as OpenSharing. Pick it when the provider already
+publishes a share.
 Code: none. Used by: none (reference). Evidence: `documented only`.
 
 ### bronze_autoloader_add_new_columns_python
