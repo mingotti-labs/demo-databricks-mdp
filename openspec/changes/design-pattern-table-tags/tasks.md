@@ -1,5 +1,5 @@
 ## 1. Probe
-- [ ] 1.1 Run P1 and P2 on one acnc streaming table in dev; record the result in design.md
+- [x] 1.1 Run P1 and P2 on one acnc streaming table in dev; record the result in design.md
 
 ## 2. Mapping and notebook
 - [ ] 2.1 `src/common/design_patterns.yml` for acnc, ungm, iso, geonames, nsw_spatial (schema defaults plus overrides)
