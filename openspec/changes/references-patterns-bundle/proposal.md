@@ -15,6 +15,12 @@ separate from what actually runs.
   `clickstream_autoloader_{python_rescue,python_fail_on_new_columns,python_none,sql_add_new_columns,sql_rescue,sql_fail_on_new_columns,sql_none}`
   pipelines and their `src/layers/bronze/clickstream/<variant>/` folders. The
   canonical `python_add_new_columns` pipeline stays in the main bundle.
+- **Named and grouped by pattern, not by source system.** Resource keys become
+  `pattern_<register ID>` (for example `pattern_bronze_autoloader_rescue_python`),
+  and the source is grouped by layer:
+  `references/patterns/src/bronze/autoloader_<mode>_<language>/` (later
+  `bronze_publish/` and so on). The pipelines demonstrate a pattern; clickstream
+  is only the data they happen to read.
 - **Root bundle stops syncing `references/`**: `sync.exclude: ["references/**"]`
   in both edition sources of `databricks.yml`, then regenerate. Without it the
   patterns files (and today's docs) still upload to prd.

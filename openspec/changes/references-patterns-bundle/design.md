@@ -21,14 +21,17 @@ Surveyed (read-only):
   created in the other. That is harmless here because the seven hold no data,
   but it is why the deletion is a manual pre-merge step and why the SQL twins
   (which own tables) wait.
-- **Keep each pipeline's resource key**, so the diff is a pure move plus the
-  display name; only the bundle changes.
+- **Rename the resource keys to `pattern_<register ID>`.** Keys are normally
+  never renamed, but these are new resources in a new bundle that was never
+  deployed, so there is no identity to preserve. The key carries the pattern
+  (`pattern_bronze_autoloader_rescue_python`), not the source system.
+- **Group the pattern source by layer** (`src/bronze/`, later `bronze_publish/`
+  and so on), each folder named after the register ID without the layer prefix.
 - **Keep targeting `bronze_clickstream` for now.** The pattern schemas arrive
   in change 3; re-pointing is then a one-line change per pipeline with no data
   to migrate. Until then the variants are deployed but never run.
 - **Display name segment `pattern`** replaces `template` for these pipelines
-  and in NAMING.md/CLAUDE.md. Display names change freely; resource keys do
-  not change.
+  and in NAMING.md/CLAUDE.md.
 - **Manual deploy, no CI** for the patterns bundle initially: it is reference
   material in `dev`; the cost of CI exceeds the benefit.
 - **`sync.exclude` lives in both edition sources** of the root

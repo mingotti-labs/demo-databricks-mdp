@@ -1,7 +1,7 @@
 resources:
   pipelines:
-    clickstream_autoloader_sql_rescue:
-      name: bronze--pattern--autoloader--sql--rescue--${bundle.target}
+    pattern_bronze_autoloader_none_python:
+      name: bronze--pattern--autoloader--python--none--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true
@@ -10,4 +10,4 @@ resources:
         clickstream_catalog: ${var.catalog}
       libraries:
         - glob:
-            include: ../../src/sql_rescue/**
+            include: ../../src/bronze/autoloader_none_python/**

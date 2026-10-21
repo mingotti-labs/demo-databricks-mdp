@@ -1,6 +1,6 @@
 resources:
   pipelines:
-    clickstream_autoloader_python_fail_on_new_columns:
+    pattern_bronze_autoloader_fail_on_new_columns_python:
       name: bronze--pattern--autoloader--python--fail-on-new-columns--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
@@ -10,4 +10,4 @@ resources:
         clickstream_catalog: ${var.catalog}
       libraries:
         - glob:
-            include: ../../src/python_fail_on_new_columns/**
+            include: ../../src/bronze/autoloader_fail_on_new_columns_python/**
