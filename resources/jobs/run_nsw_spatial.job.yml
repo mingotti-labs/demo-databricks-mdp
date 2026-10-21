@@ -23,3 +23,12 @@ resources:
             job_id: ${resources.jobs.verify_silver_landing.id}
             job_parameters:
               source: nsw_spatial
+        - task_key: tag_patterns
+          depends_on:
+            - task_key: silver
+          notebook_task:
+            notebook_path: ../../src/common/tag_design_patterns.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: nsw_spatial
+              workspace_file_path: ${workspace.file_path}

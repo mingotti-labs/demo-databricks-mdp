@@ -24,12 +24,11 @@ reference/patterns roadmap: tables only (pipelines and jobs are out of scope).
   runs as a `tag_patterns` task in each `run_<source>` job, after the last
   pipeline task.
 - **Pattern tables too**: the seven tables in `pattern_bronze` (dev, patterns
-  bundle) are tagged by a `tag_patterns` job in that bundle running the same
-  notebook; the pattern ID is `bronze_` plus the table name.
-- Silver Normalised tables get the tag from the existing `tag.py` (one extra
-  key, `silver_normalised_spec_driven_python`), so no second step for them.
-- Register and data-sources docs: a short "Finding a pattern from a table"
-  note.
+  bundle) are tagged by a small job in that bundle; the pattern ID is
+  `bronze_` plus the table name.
+- Silver landing and Silver Normalised schemas are mapped in the same file, so
+  `silver/normalised/tag.py` is untouched.
+- Register: a short "Finding a pattern from a table" note.
 
 ## Capabilities
 

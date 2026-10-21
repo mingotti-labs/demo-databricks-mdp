@@ -32,3 +32,12 @@ resources:
             job_id: ${resources.jobs.verify_silver_normalised.id}
             job_parameters:
               source: acnc
+        - task_key: tag_patterns
+          depends_on:
+            - task_key: silver
+          notebook_task:
+            notebook_path: ../../src/common/tag_design_patterns.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: acnc
+              workspace_file_path: ${workspace.file_path}

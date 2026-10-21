@@ -1,0 +1,10 @@
+resources:
+  jobs:
+    tag_patterns:
+      name: tag--pattern--${bundle.target}
+      tasks:
+        - task_key: tag_patterns
+          notebook_task:
+            notebook_path: ../../src/tag_patterns.py
+            base_parameters:
+              catalog: ${var.catalog}

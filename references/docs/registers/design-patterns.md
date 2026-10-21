@@ -10,6 +10,12 @@ when the pattern is language-agnostic.
 (deployable reference material that was never run; its behaviour comes from
 Databricks' docs, not from this repo).
 
+**Finding a pattern from a table**: every table that uses a pattern carries the
+Unity Catalog tag `design_pattern = <ID>`, set after each run by
+`src/common/tag_design_patterns.py` (mapping: `src/common/design_patterns.yml`)
+and, for the pattern-only tables, by the `tag--pattern` job in
+`references/patterns/`. One value per table: the pattern that decides its shape.
+
 ## Ingestion (Bronze)
 
 Entries marked `documented only` with no code come from Databricks' ingestion
