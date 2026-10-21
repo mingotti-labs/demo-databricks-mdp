@@ -1,0 +1,19 @@
+bundle:
+  name: demo-databricks-mdp-patterns
+
+include:
+  - resources/**/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog the pattern pipelines write into.
+    default: mdp_dev
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://dbc-e3197e2d-933b.cloud.databricks.com
+    variables:
+      catalog: mdp_dev

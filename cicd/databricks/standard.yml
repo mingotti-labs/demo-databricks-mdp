@@ -1,6 +1,10 @@
 bundle:
   name: demo-databricks-mdp
 
+sync:
+  exclude:
+    - references/**
+
 include:
   - resources/**/*.yml
 
