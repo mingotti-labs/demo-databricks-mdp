@@ -666,8 +666,14 @@ the decision record behind what's built.
   `neon_ecommerce_ingestion`, which (per Databricks' default pipeline-delete
   behavior) dropped `bronze_neon.*_raw` along with it — the Neon Postgres
   source itself was untouched, but the ingested-into-Databricks copy had to be
-  rebuilt from scratch. Never treat a human-identity dev pipeline/job's data
-  as something worth preserving; if it needs deleting, delete it freely. To
+  rebuilt from scratch. **Not every human copy is disposable**: check what it
+  owns first (`databricks tables list <catalog> <schema>` shows each table's
+  `pipeline_id`). A human copy that owns no tables is safe to delete; one that
+  owns tables is not until ownership has moved to the SP copy (NAMING.md,
+  "Removing a pipeline"). As of 2026-10-21 four human copies still own live dev
+  tables because neon and clickstream's silver landing were last run from a
+  local deploy: `bronze--neon--scd--python`, `bronze--neon--scd--sql`,
+  `silver--landing--neon`, `silver--landing--clickstream` (15 tables). To
   run something as the SP without local M2M credentials, just trigger the
   SP-owned resource's ID directly (`databricks pipelines start-update
   <pipeline_id>` / `databricks jobs run-now <job_id>`) — execution identity is
