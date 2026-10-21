@@ -19,6 +19,32 @@ needs classic compute) is unavailable. Hard deletes are not propagated; new
 tables must be added explicitly. Code: `resources/pipelines/` (no source file).
 Used by: [neon](data-sources.md#neon). Evidence: `dev`.
 
+### bronze_lakeflow_saas
+Lakeflow Connect managed connector pulling from a SaaS application (Salesforce,
+Workday Reports, ServiceNow, Google Analytics 4, HubSpot, Confluence and others)
+through a UC Connection, into governed Delta tables on a serverless ingestion
+pipeline. Pick it for a SaaS source with a managed connector. Pipelines carry an
+`ingestion_definition` (never `libraries`) and run triggered only; connector
+availability varies by release stage, so check Databricks' connector reference.
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
+### bronze_lakeflow_cdc
+Lakeflow Connect database connector with change data capture: an ingestion
+gateway in the customer's network stages change events to a UC Volume and a
+serverless ingestion pipeline applies them as CDC. Pick it for a database that
+exposes a change feed (SQL Server, and PostgreSQL/MySQL in preview). The gateway
+needs classic compute, which Free Edition does not have, which is why Neon uses
+`bronze_lakeflow_query` instead.
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
+### bronze_lakeflow_community
+Community connectors: template-based connectors outside Databricks' managed
+catalog (Databricks Labs' separate "Community Connectors" repo and CLI). For a
+source with no managed connector. Considered and not chosen for CKAN (see
+`phase3d-acnc-charity-register-ingestion`'s design.md), which uses
+`bronze_custom_ckan_python` instead.
+Code: none. Used by: none (reference). Evidence: `documented only`.
+
 ### bronze_autoloader_add_new_columns_python
 Auto Loader streaming table over files in a UC Volume, schema evolution mode
 `addNewColumns`. A new column restarts the flow once and Databricks starts the

@@ -13,6 +13,10 @@ documented.
 - **WHEN** a reader opens the register
 - **THEN** each pattern's ID, purpose, code location, sources and verification status are on its entry
 
+#### Scenario: Pattern with no code in the repo
+- **WHEN** a pattern is an alternative to one the repo uses (for example the other Lakeflow Connect architectures) and has no code here
+- **THEN** it has an entry with code "none" and evidence `documented only`
+
 #### Scenario: Pattern split by behaviour
 - **WHEN** two implementations behave differently for the same step (for example streaming and snapshot-based Auto CDC)
 - **THEN** they are separate entries with separate IDs
