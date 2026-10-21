@@ -3,7 +3,7 @@
 # and its Silver Landing tables: drift, parity, key uniqueness, bridge
 # element counts, value completeness, FK integrity, lineage totals, match
 # keys, tags, timestamps and tolerances. Collects every failure, then
-# asserts. Contract: docs/medallion/silver.md ("Silver Normalised").
+# asserts. Contract: references/docs/medallion/silver.md ("Silver Normalised").
 import re
 import sys
 

@@ -91,6 +91,8 @@ demo-databricks-mdp/
     cicd/                 # unit tests for cicd/ (offline, no Databricks)
   cicd/                   # CI/CD tooling, not deployed: affected_units.py picks the run_<unit> jobs a merge affects
   verification/           # live-environment functional checks — see "Verification vs validation"
+  references/
+    docs/                 # all documentation; registers/design-patterns.md lists every implemented design pattern
 ```
 
 - `resources/<type>/`: grouped by resource kind (job/pipeline/dashboard/app), not one flat directory.

@@ -1,6 +1,6 @@
 <!--
 Skeleton for a Silver Normalised source change's design.md. Filled in by
-the silver-normalised-propose agent (docs/templates/silver-normalised-propose.prompt.md).
+the silver-normalised-propose agent (references/docs/templates/silver-normalised-propose.prompt.md).
 Cite profile.json numbers for every claim; delete these comments.
 -->
 

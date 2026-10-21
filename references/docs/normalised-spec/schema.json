@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "docs/normalised-spec/schema.json",
+  "$id": "references/docs/normalised-spec/schema.json",
   "title": "Silver Normalised spec",
-  "description": "Format of one source's normalised spec (src/layers/silver/normalised/specs/{source}.yml). Meaning of every attribute: docs/normalised-spec/README.md.",
+  "description": "Format of one source's normalised spec (src/layers/silver/normalised/specs/{source}.yml). Meaning of every attribute: references/docs/normalised-spec/README.md.",
   "version": "0.2",
   "type": "object",
   "additionalProperties": false,

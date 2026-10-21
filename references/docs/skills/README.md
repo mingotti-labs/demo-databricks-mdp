@@ -38,7 +38,7 @@ OpenSpec:
 
 - `silver-normalised-propose` — proposes a source for Silver Normalised.
   A thin wrapper: its only instruction is to follow
-  `docs/templates/silver-normalised-propose.prompt.md`, which holds the
+  `references/docs/templates/silver-normalised-propose.prompt.md`, which holds the
   actual instructions, so they exist in exactly one place. Edit the
   template, not the skill.
 

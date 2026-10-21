@@ -3,7 +3,8 @@
 Authoritative inventory of every upstream system feeding Bronze, what Bronze
 Publish exposes for each one, and what is currently consumed downstream.
 Update this file whenever a source is onboarded to Bronze Publish, or when a
-new layer starts (or stops) consuming an existing source.
+new layer starts (or stops) consuming an existing source. Each source links to
+the design patterns it uses, defined in [design-patterns.md](design-patterns.md).
 
 ## SCD selection rule
 
@@ -16,7 +17,7 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ### neon
 - **What it is**: Neon Postgres e-commerce operational database
-- **Ingestion pattern**: Lakeflow Connect, query-based (gateway-free)
+- **Design patterns**: [`bronze_lakeflow_query`](design-patterns.md#bronze_lakeflow_query), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`bronze_publish_scd1_materialized_view_sql`](design-patterns.md#bronze_publish_scd1_materialized_view_sql), [`bronze_publish_scd2_merge_sql`](design-patterns.md#bronze_publish_scd2_merge_sql), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python)
 - **Bronze raw**: `bronze_neon.{customers,products,orders,order_items}_raw`
 - **Bronze Publish** (`bronze_neon_publish`):
   - customers: `customers_scd1`, `customers_scd2`, `customers_scd1_sql`
@@ -28,9 +29,7 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ### clickstream
 - **What it is**: Synthetic web clickstream events, file-drop via UC Volume
-- **Ingestion pattern**: Auto Loader (Lakeflow Declarative Pipeline streaming
-  table); several schema-evolution demo variants exist in `bronze_clickstream`
-  (`fail_on_new_columns`, `none`, `rescue`, `add_new_columns`)
+- **Design patterns**: [`bronze_autoloader_add_new_columns_python`](design-patterns.md#bronze_autoloader_add_new_columns_python), [`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python), [`bronze_publish_scd1_autocdc_stream_sql`](design-patterns.md#bronze_publish_scd1_autocdc_stream_sql), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python)
 - **Bronze raw**: `bronze_clickstream.web_events_raw` (+ demo variants)
 - **Bronze Publish** (`bronze_clickstream_publish`): `web_events_scd1`,
   `web_events_scd1_sql`
@@ -39,7 +38,7 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ### ungm
 - **What it is**: UNGM UNSPSC classification, public REST API
-- **Ingestion pattern**: custom Python/API fetch (`src/common/ungm.py`)
+- **Design patterns**: [`bronze_rest_api_materialized_view_python`](design-patterns.md#bronze_rest_api_materialized_view_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_ungm.unspsc_public_raw`
 - **Bronze Publish** (`bronze_ungm_publish`): `unspsc_public_scd1`,
   `unspsc_public_scd2`
@@ -48,8 +47,7 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ### acnc
 - **What it is**: ACNC Charity Register, data.gov.au CKAN Data API
-- **Ingestion pattern**: reusable PySpark Custom Data Source connector
-  (CKAN `datastore_search`)
+- **Design patterns**: [`bronze_custom_ckan_python`](design-patterns.md#bronze_custom_ckan_python), [`bronze_quarantine_null_key_python`](design-patterns.md#bronze_quarantine_null_key_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_acnc.charity_register_raw` (+ `charity_register_quarantine`)
 - **Bronze Publish** (`bronze_acnc_publish`): `charity_register_scd1`,
   `charity_register_scd2` (`charity_register_valid` is a private
@@ -63,7 +61,7 @@ richer variant if it exists; fall back only when it doesn't. See
 ### nsw_spatial
 - **What it is**: NSW "Land Parcel and Property Theme", Esri ArcGIS REST
   FeatureServer
-- **Ingestion pattern**: reusable custom Spark data source connector
+- **Design patterns**: [`bronze_custom_arcgis_python`](design-patterns.md#bronze_custom_arcgis_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_nsw_spatial.property_raw`
 - **Bronze Publish** (`bronze_nsw_spatial_publish`): `property_scd1`,
   `property_scd2`
@@ -73,7 +71,7 @@ richer variant if it exists; fall back only when it doesn't. See
 ### airroi
 - **What it is**: AirROI short-term rental market intelligence API (4 real
   markets: Vitoria da Conquista/BA, Urubici/SC, Tauranga/NZ, Prado/BA)
-- **Ingestion pattern**: custom connector
+- **Design patterns**: [`bronze_rest_api_materialized_view_python`](design-patterns.md#bronze_rest_api_materialized_view_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python)
 - **Bronze raw**: `bronze_airroi.{market_metrics_all,market_summary}_raw`
 - **Bronze Publish** (`bronze_airroi_publish`): `market_metrics_all_scd2`,
   `market_summary_scd2` (no SCD1 variant exists for either)
@@ -84,8 +82,7 @@ richer variant if it exists; fall back only when it doesn't. See
 ### iso
 - **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,
   public GitHub CSV mirror (CC BY-SA 4.0)
-- **Ingestion pattern**: small fetch helper (`src/common/iso3166.py`),
-  static CSV, no connector needed
+- **Design patterns**: [`bronze_file_materialized_view_python`](design-patterns.md#bronze_file_materialized_view_python), [`bronze_quarantine_duplicate_key_python`](design-patterns.md#bronze_quarantine_duplicate_key_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_iso.{country_codes,subdivision_codes}_raw`
   (+ `subdivision_codes_quarantine`)
 - **Bronze Publish** (`bronze_iso_publish`): `country_codes_scd2`,
@@ -99,8 +96,7 @@ richer variant if it exists; fall back only when it doesn't. See
 ### geonames
 - **What it is**: GeoNames country/admin1/admin2/city gazetteer data,
   public dump-file mirror (CC BY 4.0)
-- **Ingestion pattern**: two fetch helpers (`src/common/geonames.py`),
-  plain + zip-wrapped static dumps, no connector needed
+- **Design patterns**: [`bronze_file_materialized_view_python`](design-patterns.md#bronze_file_materialized_view_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_geonames.{country_info,admin1_codes,admin2_codes,cities}_raw`
 - **Bronze Publish** (`bronze_geonames_publish`):
   `{country_info,admin1_codes,admin2_codes,cities}_scd2` (no SCD1 variant

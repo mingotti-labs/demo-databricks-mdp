@@ -33,7 +33,7 @@ Row-count parity checks vs Bronze
 > timestamp columns": `ingested_timestamp` is stamped once at `_raw` and
 > never changes downstream. Silver Landing is a transformation step, not
 > an ingestion step, so it stamps `transformed_timestamp` instead — see
-> [`docs/decision-register.md`](../decision-register.md#2026-09-25-silver-landing-provenance-timestamp-column-name).
+> [`references/docs/decision-register.md`](../decision-register.md#2026-09-25-silver-landing-provenance-timestamp-column-name).
 
 ### What does NOT fit here
 - Normalisation
@@ -72,7 +72,7 @@ Choice depends on whether the Bronze Publish source is append-only:
 > object name including its SCD suffix, or just the same logical entity
 > name? Resolved to the logical-name-only reading above; full rationale
 > and alternative considered recorded in
-> [`docs/decision-register.md`](../decision-register.md#2026-09-25-silver-landing-table-naming-keep-or-drop-the-bronze-scd-suffix).
+> [`references/docs/decision-register.md`](../decision-register.md#2026-09-25-silver-landing-table-naming-keep-or-drop-the-bronze-scd-suffix).
 
 ### Standards applied
 - If SCD columns from Bronze Publish are not descriptive enough, e.g., `_START_AT` and `_END_AT` apply a column rename `scd_valid_from_timestamp` and `scd_valid_to_timestamp`.
@@ -224,8 +224,8 @@ runtime heuristic.
 
 ### Agent instructions — Silver Normalised
 When proposing a source for this layer, follow
-[`docs/templates/silver-normalised-propose.prompt.md`](../templates/silver-normalised-propose.prompt.md)
+[`references/docs/templates/silver-normalised-propose.prompt.md`](../templates/silver-normalised-propose.prompt.md)
 (also loaded by the `silver-normalised-propose` skill). Rules N1–N10 are
 binding, and the source's normalised spec must validate against the
 normalised spec schema,
-[`docs/normalised-spec/schema.json`](../normalised-spec/schema.json).
+[`references/docs/normalised-spec/schema.json`](../normalised-spec/schema.json).

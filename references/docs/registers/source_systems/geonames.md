@@ -3,7 +3,7 @@
 GeoNames' country, subdivision (admin1/admin2), and city gazetteer data,
 via public, unauthenticated static dump files. Free, no auth. The
 city/locality half of the authoritative reference-data backbone, sitting
-under ISO 3166's country/state half (`docs/registers/source_systems/iso.md`).
+under ISO 3166's country/state half (`references/docs/registers/source_systems/iso.md`).
 
 - Base URL: `download.geonames.org/export/dump/` — `countryInfo.txt`,
   `admin1CodesASCII.txt`, `admin2Codes.txt` (plain tab-delimited), and
@@ -47,7 +47,7 @@ code was written.
 All four SCD keys were checked for uniqueness against the real fetched
 data *before* any SCD pipeline code was written — the proactive check
 ISO's `subdivision_code` surprise
-(`docs/registers/source_systems/iso.md`) motivated:
+(`references/docs/registers/source_systems/iso.md`) motivated:
 
 | Table | Key | Distinct / Total |
 |---|---|---|

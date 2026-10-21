@@ -2,7 +2,7 @@
 # Checks every Silver Landing table against its selected Bronze Publish
 # source: row count parity, non-null source_name/transformed_timestamp,
 # and (for SCD2-sourced entities) is_current correctly derived from
-# scd_valid_to_timestamp. See docs/medallion/silver.md and
+# scd_valid_to_timestamp. See references/docs/medallion/silver.md and
 # openspec/changes/phase4a-silver-landing/design.md for the full contract.
 dbutils.widgets.text("catalog", "")
 dbutils.widgets.text("source", "")

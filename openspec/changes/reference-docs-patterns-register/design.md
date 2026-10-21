@@ -16,15 +16,18 @@ Findings from the survey (read-only):
 ## Decisions
 
 - **Register next to the data-sources register**:
-  `reference/docs/registers/design-patterns.md`.
+  `references/docs/registers/design-patterns.md`.
 - **ID scheme**: `<layer>_<technology>_<variant>_<language>`, language last
   and omitted when agnostic. Auto CDC is split into stream and snapshot
   entries, because streaming fails against upserted sources (Neon) while
   snapshot works.
-- **Document only what exists.** Entries come from code already in the repo
-  and the CLAUDE.md findings; a variant that was never run is marked
-  "documented, not verified", as CLAUDE.md already says for the clickstream
-  variants. No new behaviour is invented.
+- **Document what exists, and mark the rest.** Entries come from code already
+  in the repo and the CLAUDE.md findings; a variant that was never run is
+  marked "documented only", as CLAUDE.md already says for the clickstream
+  variants. The other ingestion options Databricks documents (Lakeflow Connect SaaS,
+  database CDC, file and community connectors, streaming, Zerobus, Federation,
+  sharing) have no code here and are also entries
+  marked `documented only`, with the reason they were not used.
 - **Replace, don't duplicate, the "Ingestion pattern" lines**, so there is one
   place to read a source's pattern.
 - **Mechanical move first, content second**, as separate commits, so the move
@@ -34,7 +37,7 @@ Findings from the survey (read-only):
 ## Risks
 
 - A missed reference breaks PR validation (the schema path). Mitigation: after
-  the move, search for `docs/` outside `reference/` and the archive, run the
+  the move, search for `docs/` outside `references/` and the archive, run the
   schema check locally, and run `apply_edition.py --check`.
 - Pattern IDs may need adjusting while entries are written. Accepted: that is
   why changes 2 and 3 wait.
