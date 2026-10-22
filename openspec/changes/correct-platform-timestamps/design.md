@@ -98,6 +98,39 @@ experiment (not for merge).
   `value_lineage` checked). CKAN had no changes between the runs.
 - `charity_register_scd2_backup` is kept in dev until dropped by hand.
 
+## Prd result (2026-10-22)
+
+- Main run 39850661171 (#88), 43 min, all SUCCESS. It ran all five units, not
+  only acnc: #88 changed `src/common/design_patterns.py`, which every unit's
+  `tag_patterns` task uses. `run_acnc` took 17 min, including `migrate` and
+  both verifications.
+- Not yet checked in prd: rows restamped by a second run, and the SCD2 row
+  count against `charity_register_scd2_backup`. The prd backup is kept until
+  then.
+
+## Open question: streaming Auto CDC for bronze SCD2 (probe P5)
+
+D2 replaced snapshot Auto CDC with a job `MERGE` after measuring that the
+snapshot flow rewrites every current row. Streaming Auto CDC
+(`create_auto_cdc_flow`, formerly `apply_changes`) was not tested; it was
+ruled out by reasoning only: raw is a full reload, so the stream would carry
+every row each run, and Auto CDC would overwrite the columns it does not track
+for history (`ingested_timestamp`) on every current row.
+
+Why it matters: the `MERGE` moves the SCD2 table out of the pipeline (no
+lineage on the pipeline graph, table created by our own code), and the
+Normalised rebuild moves out of the pipeline too. Both are a drift from the
+declarative approach, caused by the timestamp rule.
+
+P5, on a copy in `pattern_bronze_publish` before rolling the change to other
+sources: build SCD2 with `create_auto_cdc_flow` from raw (stored as SCD
+type 2, `track_history_except_column_list` holding the platform columns), run
+twice with unchanged raw, read `DESCRIBE HISTORY`.
+- If 0 rows are written on the second run: bronze SCD2 goes back into the
+  pipeline; rethink D2.
+- If every current row is rewritten: keep the `MERGE`, record the evidence
+  here, close the question.
+
 ## Migration (per environment, dev first)
 
 1. Back up the SCD2 table and the Normalised tables (`DEEP CLONE`).
