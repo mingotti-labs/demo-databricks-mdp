@@ -21,6 +21,14 @@ created that version, and SHALL NOT change afterwards.
 - **WHEN** the bronze pipeline runs again and a row's business columns are unchanged
 - **THEN** its current SCD2 version is not rewritten and keeps its `ingested_timestamp`
 
+### Requirement: Silver Landing applies only bronze's changes
+Silver Landing SHALL read only the rows changed in its bronze SCD2 table since
+its last run, and SHALL hold the same rows as a full read of that table.
+
+#### Scenario: One bronze version closed and one inserted
+- **WHEN** the bronze `MERGE` closes one version and inserts one
+- **THEN** Landing changes exactly those two rows and equals a full read of the SCD2 table
+
 ### Requirement: No run-time stamping on full snapshots
 `current_timestamp()` SHALL NOT be applied to a full snapshot that feeds a
 change-detecting step or a silver table, except as `ingested_timestamp` on a

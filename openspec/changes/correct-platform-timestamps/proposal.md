@@ -34,16 +34,21 @@ row, whether it changed or not. Evidence from `dev` (acnc, 2026-10-22):
   only on inserted and closed rows. Unchanged rows are not written. Snapshot
   Auto CDC has no way to add a value only on the rows it changes, which is why
   it is replaced. Same shape as neon's existing `scd2_merge` job.
-- **Silver as a full rebuild that keeps timestamps.** Measured on acnc: a full
-  rebuild of all 17 silver tables costs 77 s of table work against 42 s for a
-  run with nothing to do; start-up (86 to 148 s) dominates. So no incremental
-  machinery: each silver table is rebuilt from its current definition and
-  compared with the previous table on the business columns. Unchanged rows keep
-  their `transformed_timestamp`, new or changed rows get `current_timestamp()`,
-  rows that are gone are removed. A materialized view cannot read its own
-  previous result, so silver becomes a job task (one shared notebook reusing
-  today's `land()` and `transforms.py` functions), replacing acnc's silver
-  pipeline.
+- **Silver Landing incremental, from bronze's changes.** Landing is one row per
+  bronze SCD2 row, so it reads only the rows the bronze `MERGE` changed (the SCD2
+  table's change data feed) and applies them by key, as a streaming table in the
+  silver pipeline. `transformed_timestamp = current_timestamp()` is stamped in
+  that stream, where only changed rows pass, so only they get it.
+- **Silver Normalised as a full rebuild that keeps timestamps.** Its tables are
+  mostly distinct values and counts across many rows. Measured on acnc: a full
+  rebuild of all silver tables costs 77 s of table work against 42 s for a run
+  with nothing to do; start-up (86 to 148 s) dominates. So each Normalised table
+  is rebuilt from its current definition and compared with the previous table
+  on the business columns: unchanged rows keep their `transformed_timestamp`,
+  new or changed rows get `current_timestamp()`, rows that are gone are
+  removed. A materialized view cannot read its own previous result, so
+  Normalised becomes a job task after the silver pipeline (one shared notebook
+  reusing today's `transforms.py` functions).
 - **Existing history backfilled once.** The original fetch times of existing
   versions were overwritten and cannot be recovered. Existing versions get
   `ingested_timestamp = __START_AT` and
@@ -63,8 +68,8 @@ row, whether it changed or not. Evidence from `dev` (acnc, 2026-10-22):
   mean and when they may be written.
 
 ### Modified Capabilities
-- `pipeline-per-layer`: acnc's silver layer is a job, not a pipeline (updated
-  at archive time).
+- `pipeline-per-layer`: acnc's silver pipeline holds Landing only; Normalised
+  is a job task (updated at archive time).
 
 ## Model
 
@@ -73,11 +78,14 @@ Sonnet for the later per-source rollouts.
 
 ## Impact
 
-- **Table migration, with approval.** The acnc SCD2 table and the 18 silver
-  tables are owned by pipelines today, and a job cannot write to them. They are
-  backed up, removed from the pipelines and recreated as plain Delta tables
-  under the same names. SCD2 history is kept through the backup; every drop
-  needs explicit approval. Probes come first (design.md).
+- **Table migration, with approval.** The acnc SCD2 table and the 17
+  Normalised tables are owned by pipelines today, and a job cannot write to
+  them. They are backed up, removed from the pipelines and recreated as plain
+  Delta tables under the same names. SCD2 history is kept through the backup.
+  The Landing table changes from a materialized view to a streaming table, so
+  it is dropped and rebuilt from bronze; it holds no history of its own, and its
+  first run stamps every row (they are all inserted then). Every drop needs
+  explicit approval. Probes come first (design.md).
 - prd: the same migration after dev is verified, through the prd approval gate.
 - Verification jobs keep their checks; the null `transformed_timestamp` on the
   10 pre-retrofit closed versions goes away with the backfill.
