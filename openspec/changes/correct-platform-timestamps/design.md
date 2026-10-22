@@ -84,6 +84,20 @@ experiment (not for merge).
   feed was enabled on an existing table; the stream starts from its current
   snapshot, so no history of the feed is needed.
 
+## Dev result (2026-10-22)
+
+- `run_acnc` run 1 (154226357301263, 17.4 min, all tasks SUCCESS): `migrate`
+  recreated `charity_register_scd2` as a plain table (70,811 rows, equal to the
+  backup) and dropped Landing and the 16 Normalised materialized views;
+  `scd2_merge` wrote 0 rows; Landing (streaming table) and Normalised (plain
+  tables) rebuilt, 70,811 Landing rows, no null timestamps; both verifications
+  passed.
+- `run_acnc` run 2 (246107832143311, 16.8 min, all tasks SUCCESS): `migrate`
+  reported nothing to migrate; `scd2_merge` wrote 0 rows; 0 rows restamped in
+  the SCD2, Landing and Normalised tables (`charity_register`, `state`,
+  `value_lineage` checked). CKAN had no changes between the runs.
+- `charity_register_scd2_backup` is kept in dev until dropped by hand.
+
 ## Migration (per environment, dev first)
 
 1. Back up the SCD2 table and the Normalised tables (`DEEP CLONE`).

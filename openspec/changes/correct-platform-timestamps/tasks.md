@@ -12,7 +12,7 @@
 - [x] 2.5 Guard test: no `current_timestamp()` outside `_raw` files and the stamping helpers
 
 ## 3. Migration (each drop needs explicit approval)
-- [ ] 3.1 dev: backup, recreate with backfill, run, verify
+- [x] 3.1 dev: backup, recreate with backfill, run, verify
 - [ ] 3.2 prd: same, after the PR merges and the prd gate is approved
 
 ## 4. Docs
