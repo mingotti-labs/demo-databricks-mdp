@@ -4,7 +4,7 @@
 # references/docs/medallion/silver.md ("Silver Normalised") and
 # openspec phase4d-silver-normalised-framework's design.md.
 import re
-from functools import reduce
+from functools import partial, reduce
 
 from pyspark import cloudpickle
 from pyspark.sql import DataFrame, SparkSession
@@ -202,7 +202,7 @@ def extracted(spark: SparkSession, spec: dict, name: str) -> DataFrame:
         df.groupBy(*group)
         .agg(
             F.count("*").alias("row_count"),
-            F.max("ingested_timestamp").alias("ingested_timestamp"),
+            F.min("ingested_timestamp").alias("ingested_timestamp"),
         )
         .withColumn(
             "rdm_proposed_match_key", match_key_udf(F.col("value").cast("string"))
@@ -239,7 +239,23 @@ def value_lineage(spark: SparkSession, spec: dict) -> DataFrame:
         .groupBy("entity", "value", "source_table", "source_column")
         .agg(
             F.count("*").alias("row_count"),
-            F.max("ingested_timestamp").alias("ingested_timestamp"),
+            F.min("ingested_timestamp").alias("ingested_timestamp"),
         )
     )
     return _stamped(df)
+
+
+def builders(spark: SparkSession, spec: dict) -> dict:
+    """Every table of a source's normalised spec, mapped to the function building it."""
+    result = {}
+    quarantined = {t["entity"] for t in spec.get("dependency_tolerance", [])}
+    for name in spec["base_entities"]:
+        result[name] = partial(base, spark, spec, name)
+        if name in quarantined:
+            result[f"{name}_quarantine"] = partial(base, spark, spec, name, quarantined=True)
+    for name in spec.get("bridge_entities", {}):
+        result[name] = partial(bridge, spark, spec, name)
+    for name in spec.get("extracted_entities", {}):
+        result[name] = partial(extracted, spark, spec, name)
+    result["value_lineage"] = partial(value_lineage, spark, spec)
+    return result

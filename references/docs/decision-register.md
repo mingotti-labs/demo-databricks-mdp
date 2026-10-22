@@ -7,6 +7,18 @@ alternative" for. Newest entries at the top.
 
 ---
 
+## 2026-10-22: Platform timestamps stamp only rows a step changed
+
+**Context**: `current_timestamp()` was applied to full snapshots before any change check. In `dev`, acnc's SCD2 runs with no new version still rewrote all 65,907 current rows (excluded columns are updated in place), so current rows showed the latest fetch, not the one that created the version; every silver table was fully rebuilt on every run.
+
+**Discussion**: Deriving the timestamps from snapshot Auto CDC's `__START_AT`/`__END_AT` was rejected: it gives the SCD2 step's time, not raw's fetch time. Incremental refresh of Silver Normalised was rejected: a full rebuild costs about 35 s more table work at this size, and start-up dominates. Silver Landing, one row per SCD2 row, reads the SCD2 change feed instead.
+
+**Decision**: `transformed_timestamp` is written only on rows a step inserts, modifies or closes; `ingested_timestamp` on an SCD2 version is the fetch that created it and never changes. Bronze SCD2 by `MERGE`, Silver Landing from the change feed, Silver Normalised by a full rebuild that keeps unchanged rows' stamps; aggregates carry `min(ingested_timestamp)`. Existing acnc versions were backfilled from `__START_AT`/`__END_AT` (original fetch times lost). acnc first; other sources one change each.
+
+**Affected**: `src/common/scd2_merge.py`, `src/common/keep_timestamps.py`, `src/layers/bronze/scd2_merge.py`, `src/layers/silver/landing/acnc/`, `src/layers/silver/normalised/`, `resources/jobs/run_acnc.job.yml`, `NAMING.md`, `references/docs/medallion/silver.md`.
+
+---
+
 The ten 2026-10-01 entries below come from
 `phase4e-silver-normalised-acnc`; its design.md has the full reasoning.
 **Affected** unless stated: `src/layers/silver/normalised/`,

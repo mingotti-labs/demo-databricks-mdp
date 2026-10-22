@@ -87,9 +87,11 @@ Choice depends on whether the Bronze Publish source is append-only:
   it through unchanged. If it doesn't (not yet retrofitted for that
   source, per `NAMING.md`), the column is simply absent — Silver Landing
   does not backfill it.
-- `transformed_timestamp` is stamped with `current_timestamp()` at this
-  layer's own refresh, on every table regardless of whether Bronze already
-  had one — it reflects the most recent transformation, not the first.
+- `transformed_timestamp` marks the rows this layer inserted, modified or
+  closed; a row it did not change keeps its previous value (NAMING.md
+  "Platform-added timestamp columns"). acnc reads only Bronze's changed rows
+  from the SCD2 change feed and stamps those; sources not yet moved still
+  restamp every row.
 
 ### Orchestration
 A source has one silver pipeline, `silver--{source}--${bundle.target}`,
@@ -102,7 +104,10 @@ Normalised never reads a stale or partial Landing refresh. The source's
 step (`depends_on` the pipeline task), then verification. There is no
 silver-only wrapper job.
 
-acnc is built this way. Sources still on a separate Landing pipeline
+acnc differs since `correct-platform-timestamps`: its silver pipeline holds
+Landing only, and `run_acnc` rebuilds Silver Normalised in a job task after
+it (a materialized view cannot read its own previous result, which keeping
+timestamps needs). Other sources still on a separate Landing pipeline
 (`silver--landing--{source}--${bundle.target}`), a separate Normalised
 pipeline and a `silver--{source}` chaining job are listed as pending
 refactor in the `pipeline-per-layer` and `silver-normalised` specs (airroi
@@ -211,10 +216,11 @@ runtime heuristic.
 
 ### Standards applied
 - Table naming per [NAMING.md](../../NAMING.md#silver-normalised-tables)
-- `transformed_timestamp` stamped on every table at this layer's refresh
+- `transformed_timestamp` marks the rows this layer inserted or changed; for
+  acnc a full rebuild keeps the previous value on unchanged rows
 - `ingested_timestamp`: base and bridge entities pass it through from
   their Landing row; extracted entities and `value_lineage` carry the
-  `max()` of the Landing rows they aggregate
+  `min()` of the Landing rows they aggregate
 - Every Landing column a source's normalised spec reads is either used or
   listed in its `ignored_columns`; a new Landing column fails the drift
   check until the spec is updated

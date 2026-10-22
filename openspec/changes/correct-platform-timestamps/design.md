@@ -48,6 +48,56 @@ experiment (not for merge).
   Landing equals a full read of the SCD2 copy row for row (zero difference in
   both directions), and only the changed rows got a new `transformed_timestamp`.
 
+## Probe results
+
+- **P1 (2026-10-22, dev, throwaway pipeline `probe--dataset-removal--dev` in the
+  patterns bundle):** removing a dataset from the pipeline code and running
+  again leaves the table in place, with its rows, still a materialized view
+  still tied to the pipeline (`pipeline_id` unchanged). So removal loses no
+  data, but the table stays pipeline-owned: the migration copies it out, drops
+  it and recreates it as a plain Delta table.
+- **P2 (2026-10-22, dev, copy `pattern_bronze_publish.probe_scd2` of
+  `charity_register_scd2` with the D6 backfill, source `charity_register_raw`
+  with non-null ABN, `src/common/scd2_merge.py`):** two runs with unchanged raw
+  wrote 0 rows each (Auto CDC rewrote 65,907 in the same situation). After
+  editing one current row, adding a fake key and deleting one key on the copy,
+  one run inserted 2 and updated 2: the edited key closed and got a new version,
+  the deleted key was inserted, the fake key was closed. Inserted versions carry
+  raw's `ingested_timestamp`; only those 4 rows got the run's
+  `transformed_timestamp`; current rows stayed 65,907.
+- **P3 (2026-10-22, dev, one-off serverless run of `src/common/keep_timestamps.py`
+  on a copy of `silver_normalised_acnc.state` in `pattern_bronze_publish`):** a
+  rebuild with unchanged input kept every `transformed_timestamp`; a rebuild
+  with one row edited, one removed and one added left 22 rows, 20 with their
+  original stamp, a new stamp only on the edited and the added row, and the
+  removed row gone.
+- **P4 (2026-10-22, dev, throwaway pipeline `probe--landing-change-feed--dev`
+  reading the P2 copy with `readChangeFeed`, keeping `insert` and
+  `update_postimage`, applied by `create_auto_cdc_flow` on
+  `(ABN, scd_valid_from_timestamp)` sequenced by `_commit_version`, stamping
+  `current_timestamp()` in the stream):** the first run loaded all 70,813 rows
+  (one stamp, correct for an initial load); a second run with no change wrote
+  nothing. After one edit applied by the `MERGE`, only the closed and the new
+  version (2 rows) got a new `transformed_timestamp`; Landing equals a full read
+  of the copy (0 rows missing in either direction) and carries
+  `ingested_timestamp` and the end times exactly (0 mismatches). Change data
+  feed was enabled on an existing table; the stream starts from its current
+  snapshot, so no history of the feed is needed.
+
+## Dev result (2026-10-22)
+
+- `run_acnc` run 1 (154226357301263, 17.4 min, all tasks SUCCESS): `migrate`
+  recreated `charity_register_scd2` as a plain table (70,811 rows, equal to the
+  backup) and dropped Landing and the 16 Normalised materialized views;
+  `scd2_merge` wrote 0 rows; Landing (streaming table) and Normalised (plain
+  tables) rebuilt, 70,811 Landing rows, no null timestamps; both verifications
+  passed.
+- `run_acnc` run 2 (246107832143311, 16.8 min, all tasks SUCCESS): `migrate`
+  reported nothing to migrate; `scd2_merge` wrote 0 rows; 0 rows restamped in
+  the SCD2, Landing and Normalised tables (`charity_register`, `state`,
+  `value_lineage` checked). CKAN had no changes between the runs.
+- `charity_register_scd2_backup` is kept in dev until dropped by hand.
+
 ## Migration (per environment, dev first)
 
 1. Back up the SCD2 table and the Normalised tables (`DEEP CLONE`).

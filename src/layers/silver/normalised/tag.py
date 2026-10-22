@@ -13,6 +13,9 @@ source = dbutils.widgets.get("source")
 workspace_file_path = dbutils.widgets.get("workspace_file_path")
 
 sys.path.insert(0, f"{workspace_file_path}/src")
+from databricks.sdk import WorkspaceClient  # noqa: E402
+
+from common.design_patterns import OBJECT_TYPES  # noqa: E402
 from common.normalised_spec import load_spec, tables  # noqa: E402
 
 spec = load_spec(
@@ -21,13 +24,16 @@ spec = load_spec(
 
 # COMMAND ----------
 
+client = WorkspaceClient()
 for table, kind in tables(spec).items():
+    name = f"{catalog}.silver_normalised_{source}.{table}"
+    object_type = OBJECT_TYPES[client.tables.get(name).table_type.value]
     tags = {"mdp_layer": "silver_normalised", "mdp_source_system": source}
     if kind:
         tags["mdp_entity_kind"] = kind
     pairs = ", ".join(f"'{k}' = '{v}'" for k, v in tags.items())
     spark.sql(
-        f"ALTER MATERIALIZED VIEW `{catalog}`.`silver_normalised_{source}`.`{table}` SET TAGS ({pairs})"
+        f"ALTER {object_type} `{catalog}`.`silver_normalised_{source}`.`{table}` SET TAGS ({pairs})"
     )
 
 dbutils.notebook.exit(

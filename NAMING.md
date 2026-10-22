@@ -92,65 +92,36 @@ In `silver_normalised_<source>` (entity kinds defined in
 
 ## Platform-added timestamp columns
 
-Two standard lineage columns, one per layer, added by the platform itself (never
-sourced from the upstream API/system):
+Two standard lineage columns, added by the platform itself (never sourced from
+the upstream API/system). Corrected definition (openspec
+`correct-platform-timestamps`, decision register 2026-10-22):
 
-- **`ingested_timestamp`** — on every `_raw` table, stamped with `current_timestamp()`
-  inside the dataset's own query (e.g. `.withColumn("ingested_timestamp", current_timestamp())`
-  on the returned DataFrame). For a Materialized View (full-refresh), this reflects
-  the most recent run that (re)computed the row, not a true "first ever landed" time.
-- **`transformed_timestamp`** — stamped with `current_timestamp()` at every
-  transformation layer downstream of `_raw`, not just `_scd1`/`_scd2` — any
-  layer that transforms already-ingested data (bronze SCD modeling, Silver
-  Landing, and beyond) restamps it to reflect its own most recent processing.
-  It is not "first transformed at"; it is "last transformed at." At the
-  bronze `_scd1`/`_scd2` layer this is stamped in a `@dp.temporary_view()`
-  that wraps the `_raw` source before feeding
-  `create_auto_cdc_from_snapshot_flow`/`create_auto_cdc_flow` (see the
-  auto-cdc reference's "pre-filtering via temp view" pattern — this reuses
-  it for stamping, not filtering).
-  - **Both timestamp columns must be listed in `track_history_except_column_list`**
-    (SCD2) — `current_timestamp()` differs on every single run, so without this,
-    Auto CDC would treat every row as changed on every run and create a spurious
-    new history version each time, regardless of whether the real source data
-    changed. Confirmed via a real run producing the correct row count (no
-    inflation) only once this exclusion was added. Only applies to a layer
-    that runs its own Auto CDC; a layer that's a plain materialized view
-    over an already-deduplicated/already-versioned source (e.g. Silver
-    Landing over Bronze Publish) isn't re-running CDC, so this exclusion
-    doesn't apply there.
-- `ingested_timestamp` is never re-stamped past `_raw` — every downstream
-  layer either propagates it unchanged (if the source already has it) or
-  leaves it absent (if it doesn't). Only `transformed_timestamp` changes as
-  data moves through further transformation layers.
-  - **Aggregating tables** (one output row from many input rows, e.g. a
-    Silver Normalised extracted entity or `value_lineage`) carry the
-    `max()` of the input rows' `ingested_timestamp`: "the newest ingest
-    that contributed to this row". Never `min()` — `_raw` MVs restamp the
-    column on every run, so `min()` would look like "first ingested"
-    without being that.
-  - **Silver Normalised requires it**: a source's Silver Landing tables
-    must carry `ingested_timestamp` before that source is normalised. A
-    source without it is retrofitted at bronze just in time, only when it
-    is about to be normalised — either in its own change first, or as the
-    first task group of that source's Silver Normalised change (acnc's
-    choice, `phase4e-silver-normalised-acnc`).
-- First introduced with AirROI (Phase 3h) — see `market_summary_raw.py`/
-  `market_summary_scd2.py` for the reference implementation. Retrofitted
-  to ACNC (Phase 4e) — see `charity_register_raw.py`/`charity_register_scd2.py`.
-  Not yet retrofitted to the remaining earlier sources (NSW Spatial, UNGM,
-  Neon, clickstream) at the bronze layer; apply the same pattern to them if/
-  when they're revisited. Silver Landing (`phase4a-silver-landing`) is the
-  first layer to apply `transformed_timestamp` universally, regardless of
-  whether the bronze layer for that source has been retrofitted yet. Every
-  source onboarded after AirROI applies the pattern from the start — ISO
-  3166 (Phase 3i) is the first: see `country_codes_raw.py`/
-  `country_codes_scd2.py`.
-  - **A closed SCD2 version from before a source's retrofit keeps a null
-    `ingested_timestamp`** — Auto CDC does not rewrite closed versions.
-    Accepted (acnc's decision): downstream `max()` aggregation already
-    ignores nulls, and Silver Normalised verification checks current rows
-    only (see `phase4e-silver-normalised-acnc`'s design.md).
+- **`ingested_timestamp`** — the fetch time of the data. On a `_raw` table every
+  row, stamped with `current_timestamp()` in the dataset's own query: a full
+  reload really re-fetches every row. On an SCD2 version, the fetch that created
+  that version, fixed forever, so a row's story can be read in one table. It is
+  never re-stamped past `_raw`; downstream layers carry it unchanged.
+  Aggregating tables (a Silver Normalised extracted entity, `value_lineage`)
+  carry the `min()` of their input rows: the first ingest that contributed.
+- **`transformed_timestamp`** — when this table's own step inserted, modified or
+  closed the row. A row the step did not touch keeps its previous value.
+  `current_timestamp()` is stamped only where changes are detected, never on a
+  full snapshot:
+  - bronze SCD2: the `MERGE` task stamps it, with the validity columns, only on
+    the versions it inserts or closes (`bronze_publish_scd2_merge_python`);
+  - Silver Landing: stamped in a stream that carries only the SCD2 table's
+    changed rows (`silver_landing_change_feed_python`);
+  - Silver Normalised: a full rebuild keeps the previous stamp on unchanged rows
+    and stamps new or changed rows (`silver_rebuild_keep_timestamps_python`).
+- **Silver Normalised requires `ingested_timestamp`** on its Landing tables; a
+  source without it is retrofitted at bronze just in time.
+- **Status**: acnc follows the corrected definition. The other sources still
+  stamp `current_timestamp()` on the full snapshot (`track_history_except_column_list`
+  stops spurious SCD2 versions there, but every current row is still rewritten
+  on every run); each moves in its own change. Existing acnc versions were
+  backfilled once with `ingested_timestamp = __START_AT` and
+  `transformed_timestamp = coalesce(__END_AT, __START_AT)`: their original fetch
+  times had been overwritten.
 
 ## Volume paths
 
