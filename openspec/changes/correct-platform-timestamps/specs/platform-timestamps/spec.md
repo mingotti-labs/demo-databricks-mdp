@@ -13,21 +13,37 @@ keep its previous value.
 - **WHEN** one source row changed since the last run
 - **THEN** only the rows derived from it get a new `transformed_timestamp`
 
-### Requirement: An SCD2 version keeps its ingestion time
-On an SCD2 table, `ingested_timestamp` SHALL be the fetch time of the data that
-created that version, and SHALL NOT change afterwards.
+### Requirement: A per-load column stays out of the snapshot
+In a bronze full pattern (a `_raw` table reloaded in full), a column whose value
+changes on every load SHALL NOT be part of the snapshot applied to Bronze
+Publish. `ingested_timestamp` is such a column; it SHALL be used only as the
+snapshot's version.
 
-#### Scenario: Unchanged row across runs
-- **WHEN** the bronze pipeline runs again and a row's business columns are unchanged
-- **THEN** its current SCD2 version is not rewritten and keeps its `ingested_timestamp`
+#### Scenario: Unchanged load
+- **WHEN** the bronze pipeline reloads `_raw` and no business column changed
+- **THEN** the SCD2 table gets no write
 
-### Requirement: Silver Landing applies only bronze's changes
-Silver Landing SHALL read only the rows changed in its bronze SCD2 table since
-its last run, and SHALL hold the same rows as a full read of that table.
+### Requirement: An SCD2 version keeps its fetch time
+On a Bronze Publish SCD2 table, `__START_AT` SHALL be the fetch time of the load
+that created the version, to the millisecond, and `__END_AT` the fetch time of
+the load that closed it. Neither SHALL change afterwards.
+
+#### Scenario: One row changed
+- **WHEN** a load changes one row's business columns
+- **THEN** its old version gets `__END_AT` = that load's fetch time, a new version
+  gets `__START_AT` = that load's fetch time, and no other row is written
+
+### Requirement: Silver Landing settles the platform timestamps
+Silver Landing SHALL read only the rows changed in its Bronze Publish SCD2 table
+since its last run, SHALL hold the same rows as a full read of that table, SHALL
+stamp `transformed_timestamp` on the rows it receives, and SHALL set
+`ingested_timestamp` to the version's `__START_AT`. Every Landing row SHALL have
+both columns populated.
 
 #### Scenario: One bronze version closed and one inserted
-- **WHEN** the bronze `MERGE` closes one version and inserts one
-- **THEN** Landing changes exactly those two rows and equals a full read of the SCD2 table
+- **WHEN** Bronze Publish closes one version and inserts one
+- **THEN** Landing changes exactly those two rows, only they get a new
+  `transformed_timestamp`, and Landing equals a full read of the SCD2 table
 
 ### Requirement: No run-time stamping on full snapshots
 `current_timestamp()` SHALL NOT be applied to a full snapshot that feeds a
@@ -36,4 +52,5 @@ change-detecting step or a silver table, except as `ingested_timestamp` on a
 
 #### Scenario: Guard test
 - **WHEN** the test suite runs
-- **THEN** it fails if `current_timestamp()` appears outside `_raw` files and the stamping helpers
+- **THEN** it fails if `current_timestamp()` appears outside `_raw` files, the
+  Silver Landing stream and the stamping helpers

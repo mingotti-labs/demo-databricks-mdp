@@ -7,7 +7,7 @@ experiment (not for merge).
 
 - **D1 Stamp where changes are detected.** `current_timestamp()` only on rows a
   step inserts, modifies or closes; never on a full snapshot.
-- **D2 Bronze SCD2 via a `MERGE` job task** (pattern
+- **D2 (superseded by D7) Bronze SCD2 via a `MERGE` job task** (pattern
   `bronze_publish_scd2_merge_python`). Change detection on the business columns
   (every column except the platform and validity columns), keyed by ABN.
   Rejected: deriving the timestamps from snapshot Auto CDC's `__START_AT` and
@@ -33,7 +33,7 @@ experiment (not for merge).
   `min()` is meaningful. In the D4 comparison, every column except
   `transformed_timestamp` counts, so a change in `ingested_timestamp` also
   gives the row a new `transformed_timestamp = current_timestamp()`.
-- **D6 Backfill** of existing SCD2 versions, as stated in proposal.md.
+- **D6 (superseded by D9) Backfill** of existing SCD2 versions (#88).
 
 ## Probes (dev, before any migration)
 
@@ -111,7 +111,7 @@ experiment (not for merge).
   their rows carry its stamp. No second run yet, so no restamp count. The prd
   backup is kept.
 
-## Under review: back to standard Auto CDC (probes P5 to P8)
+## Back to standard Auto CDC (probes P5 to P8)
 
 D2 (job `MERGE`) and D4 (notebook rebuild) move tables out of the pipelines
 and add our own code: a drift from declarative pipelines. Root cause of the
@@ -121,7 +121,7 @@ version". acnc passed `ingested_timestamp`, new on every reload, into the
 snapshot as an untracked column, so every current row was overwritten each
 run. The cause was that column, not snapshot Auto CDC.
 
-Direction agreed with the user (2026-10-23), to be proven before acnc changes:
+Direction agreed with the user (2026-10-23), proven before acnc changes:
 - Bronze publish uses standard `create_auto_cdc_from_snapshot_flow`. Any raw
   column whose value changes on every load (today `ingested_timestamp`) is
   left out of the snapshot. Bronze publish does not care where a column came
@@ -186,25 +186,45 @@ on `pattern_bronze_publish.probe_raw`, a copy of `charity_register_raw`):
   supported"). Raw is a materialized view because it is a full reload, so
   streaming Auto CDC is not an option for acnc.
 
-Outcome: if P5 to P7 pass, acnc's bronze goes back to snapshot Auto CDC (a
-new migration), the `MERGE` task and `src/common/scd2_merge.py` are retired,
-and proposal.md, the spec and NAMING.md are rewritten to match. If not,
-record the evidence here and keep D2.
+## Decision (2026-10-23, with the user)
 
-## Migration (per environment, dev first)
+P5 to P7 passed, so acnc's bronze goes back to snapshot Auto CDC. D2 and D6
+are superseded; D3 to D5 stay.
 
-1. Back up the SCD2 table and the Normalised tables (`DEEP CLONE`).
-2. Remove the datasets from the pipelines (P1 decides whether each table
-   survives).
-3. Recreate them as plain Delta tables under the same names from the backups,
-   with the D6 backfill, owned by the CI/CD service principal.
-4. Drop the Landing materialized view; the silver pipeline recreates it as a
-   streaming table from the SCD2 table's change feed.
-5. Run `run_acnc`, verify, then drop the backups (approval).
+- **D7 Bronze full pattern** (pattern
+  `bronze_publish_scd2_autocdc_full_load_python`, replacing
+  `bronze_publish_scd2_merge_python`). `_raw` is a full load, so its
+  `ingested_timestamp` changes on every load and is never part of the
+  snapshot. The SCD2 table is a streaming table in the bronze pipeline, built
+  by `create_auto_cdc_from_snapshot_flow` with P6's function source: raw's rows
+  with non-null ABN and without `ingested_timestamp`, versioned by
+  `date_trunc("millisecond", max(ingested_timestamp))`, or `None` when that
+  version is already applied. Change data feed on, `pipelines.reset.allowed`
+  false. No platform timestamp columns on the SCD2 table.
+- **D8 Silver Landing settles both timestamps.** D3's stream, plus
+  `ingested_timestamp = __START_AT`, kept next to `scd_valid_from_timestamp`
+  (same value; `ingested_timestamp` is the standard name Normalised reads).
+- **D9 New load, no migration** (approved for dev and prd). acnc's SCD2 history
+  is not carried over.
+
+## New load (per environment, dev first)
+
+A one-off `reset` task, first in `run_acnc`, replacing #88's `migrate`: if
+`charity_register_scd2` is a plain Delta table, drop it,
+`charity_register_scd2_backup` and `silver_landing_acnc.charity_register`;
+otherwise do nothing. Then the bronze pipeline creates the SCD2 streaming table
+from one load and the silver pipeline rebuilds Landing from its change feed.
+The Normalised tables are kept; that first run restamps their rows once,
+because `ingested_timestamp` changes.
 
 ## Risks
 
-- Losing SCD2 history: mitigated by the backup and by checking row counts and
-  closed versions before the backup is dropped.
-- Ownership and permission errors: the job runs as the CI/CD service principal,
-  as today.
+- Stale flow state: the bronze pipeline ran a snapshot flow into
+  `charity_register_scd2` before #88. Give the new flow its own name so it
+  starts with no stored version; check in dev that the first run loads every
+  row.
+- Landing's stream must start from the new SCD2 table, not an old checkpoint:
+  check in dev that Landing equals a full read of the SCD2 table after the
+  first run.
+- Ownership: the job runs as the CI/CD service principal, which owns the
+  dropped tables, as in #88's migration.
