@@ -6,6 +6,8 @@ ownership and pipeline ids in dev/tst/prd; (2) a migration job moves each table
 with `ALTER ... SET TBLPROPERTIES('pipelines.pipelineId'=...)` as the SP and
 deletes the emptied pipelines; (3) the consolidation PR merges the pipeline
 definitions and removes the wrapper job. Tables keep schemas and names.
+SCD and timestamp code moves as is; changing it waits for
+`correct-platform-timestamps` tasks 5.x (standard Auto CDC under review).
 
 ## Per source
 

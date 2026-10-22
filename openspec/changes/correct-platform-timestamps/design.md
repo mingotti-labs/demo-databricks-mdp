@@ -108,28 +108,51 @@ experiment (not for merge).
   count against `charity_register_scd2_backup`. The prd backup is kept until
   then.
 
-## Open question: streaming Auto CDC for bronze SCD2 (probe P5)
+## Under review: back to standard Auto CDC (probes P5 to P8)
 
-D2 replaced snapshot Auto CDC with a job `MERGE` after measuring that the
-snapshot flow rewrites every current row. Streaming Auto CDC
-(`create_auto_cdc_flow`, formerly `apply_changes`) was not tested; it was
-ruled out by reasoning only: raw is a full reload, so the stream would carry
-every row each run, and Auto CDC would overwrite the columns it does not track
-for history (`ingested_timestamp`) on every current row.
+D2 (job `MERGE`) and D4 (notebook rebuild) move tables out of the pipelines
+and add our own code: a drift from declarative pipelines. Root cause of the
+original rewrite, from the Databricks CDC docs: changes in columns not
+tracked for history "overwrite the current row instead of creating a new
+version". acnc passed `ingested_timestamp`, new on every reload, into the
+snapshot as an untracked column, so every current row was overwritten each
+run. The cause was that column, not snapshot Auto CDC.
 
-Why it matters: the `MERGE` moves the SCD2 table out of the pipeline (no
-lineage on the pipeline graph, table created by our own code), and the
-Normalised rebuild moves out of the pipeline too. Both are a drift from the
-declarative approach, caused by the timestamp rule.
+Direction agreed with the user (2026-10-23), to be proven before acnc changes:
+- Bronze publish uses standard `create_auto_cdc_from_snapshot_flow`. Any raw
+  column whose value changes on every load (today `ingested_timestamp`) is
+  left out of the snapshot. Bronze publish does not care where a column came
+  from. `ingested_timestamp` stays in raw only.
+- "When was this version first ingested" is `__START_AT`, already renamed
+  `scd_valid_from_timestamp` in Silver Landing; "when was it last changed in
+  bronze" is `coalesce(__END_AT, __START_AT)`. No extra column.
+- Silver Landing reads the SCD2 table's change feed (the docs' supported way
+  to stream from an Auto CDC target) and stamps `transformed_timestamp` only
+  on the rows it receives, so downstream change feeds carry only real
+  changes.
+- Silver Normalised: parked until the above is settled. The user is wary of
+  a generic parameterised rebuild hiding lineage; it also uses
+  `min(ingested_timestamp)` from Landing, which needs another input if
+  `ingested_timestamp` leaves Landing.
 
-P5, on a copy in `pattern_bronze_publish` before rolling the change to other
-sources: build SCD2 with `create_auto_cdc_flow` from raw (stored as SCD
-type 2, `track_history_except_column_list` holding the platform columns), run
-twice with unchanged raw, read `DESCRIBE HISTORY`.
-- If 0 rows are written on the second run: bronze SCD2 goes back into the
-  pipeline; rethink D2.
-- If every current row is rewritten: keep the `MERGE`, record the evidence
-  here, close the question.
+Probes, on copies in `pattern_bronze_publish`, acnc code untouched:
+- **P5** Snapshot Auto CDC from raw without `ingested_timestamp`: two runs
+  with unchanged raw; the second writes 0 rows (`DESCRIBE HISTORY`). A
+  simulated change closes one version and inserts one.
+- **P6** Same flow with a function `source` whose version is raw's fetch time
+  (the docs type the version `Any`; their examples use integers): accepted,
+  and `__START_AT` equals raw's fetch time.
+- **P7** Landing from the P5/P6 table's change feed: after the simulated
+  change, only the changed rows arrive and get a new `transformed_timestamp`;
+  Landing equals a full read of the SCD2 copy.
+- **P8** Streaming Auto CDC (`create_auto_cdc_flow`) from raw, for
+  comparison. First check whether raw can be read as a stream at all (it is a
+  full reload); if not, record that and stop.
+
+Outcome: if P5 to P7 pass, acnc's bronze goes back to snapshot Auto CDC (a
+new migration), the `MERGE` task and `src/common/scd2_merge.py` are retired,
+and proposal.md, the spec and NAMING.md are rewritten to match. If not,
+record the evidence here and keep D2.
 
 ## Migration (per environment, dev first)
 
