@@ -65,6 +65,18 @@ experiment (not for merge).
   the deleted key was inserted, the fake key was closed. Inserted versions carry
   raw's `ingested_timestamp`; only those 4 rows got the run's
   `transformed_timestamp`; current rows stayed 65,907.
+- **P4 (2026-10-22, dev, throwaway pipeline `probe--landing-change-feed--dev`
+  reading the P2 copy with `readChangeFeed`, keeping `insert` and
+  `update_postimage`, applied by `create_auto_cdc_flow` on
+  `(ABN, scd_valid_from_timestamp)` sequenced by `_commit_version`, stamping
+  `current_timestamp()` in the stream):** the first run loaded all 70,813 rows
+  (one stamp, correct for an initial load); a second run with no change wrote
+  nothing. After one edit applied by the `MERGE`, only the closed and the new
+  version (2 rows) got a new `transformed_timestamp`; Landing equals a full read
+  of the copy (0 rows missing in either direction) and carries
+  `ingested_timestamp` and the end times exactly (0 mismatches). Change data
+  feed was enabled on an existing table; the stream starts from its current
+  snapshot, so no history of the feed is needed.
 
 ## Migration (per environment, dev first)
 

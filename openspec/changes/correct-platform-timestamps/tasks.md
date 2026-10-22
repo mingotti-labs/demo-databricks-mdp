@@ -2,7 +2,7 @@
 - [x] 1.1 P1: dataset removal behaviour; record in design.md
 - [x] 1.2 P2: SCD2 `MERGE` on a copy in `pattern_bronze_publish`
 - [ ] 1.3 P3: Normalised rebuild that keeps timestamps, on a copy
-- [ ] 1.4 P4: Landing from the change feed, on the P2 copy
+- [x] 1.4 P4: Landing from the change feed, on the P2 copy
 
 ## 2. Code
 - [ ] 2.1 `src/common/scd2_merge.py` (tested) and a bronze SCD2 merge notebook task in `run_acnc`
