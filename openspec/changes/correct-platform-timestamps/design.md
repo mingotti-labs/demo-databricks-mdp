@@ -104,9 +104,12 @@ experiment (not for merge).
   only acnc: #88 changed `src/common/design_patterns.py`, which every unit's
   `tag_patterns` task uses. `run_acnc` took 17 min, including `migrate` and
   both verifications.
-- Not yet checked in prd: rows restamped by a second run, and the SCD2 row
-  count against `charity_register_scd2_backup`. The prd backup is kept until
-  then.
+- Checked 2026-10-23: `charity_register_scd2` equals
+  `charity_register_scd2_backup` (72,158 rows, 65,907 current). Only one
+  `run_acnc` has run since the migration: its `MERGE` read 65,907 rows and
+  wrote 0; Landing and the Normalised tables were created by that run, so all
+  their rows carry its stamp. No second run yet, so no restamp count. The prd
+  backup is kept.
 
 ## Under review: back to standard Auto CDC (probes P5 to P8)
 
@@ -148,6 +151,40 @@ Probes, on copies in `pattern_bronze_publish`, acnc code untouched:
 - **P8** Streaming Auto CDC (`create_auto_cdc_flow`) from raw, for
   comparison. First check whether raw can be read as a stream at all (it is a
   full reload); if not, record that and stop.
+
+Results (2026-10-23, dev, throwaway pipeline `probe--auto-cdc-snapshot--dev`
+on `pattern_bronze_publish.probe_raw`, a copy of `charity_register_raw`):
+- **P5 passed.** `probe_p5_scd2`: snapshot Auto CDC from raw with non-null ABN,
+  `ingested_timestamp` dropped, no `track_history_except_column_list`. Run 1
+  inserted 65,907. Run 2, raw unchanged: 0 rows written (`DESCRIBE HISTORY`).
+  Then a simulated reload: a new `ingested_timestamp` on every raw row, one
+  charity's name edited, one charity deleted, one fake charity added. Run 3
+  inserted 2 and updated 2: the edited charity's old version closed and a new
+  one inserted, the deleted one closed, the fake one inserted; 65,907 current.
+  With a table as source, `__START_AT` is the pipeline run's time, not raw's
+  fetch time.
+- **P7 passed.** `probe_p7_landing`: today's Landing code (`land()`, change
+  feed of `probe_p5_scd2`, Auto CDC on `(ABN, scd_valid_from_timestamp)`).
+  Run 1 loaded 65,907 rows with one stamp; run 2 wrote 0 rows; run 3 wrote the
+  same 4 rows, and only those got a new `transformed_timestamp` (65,905 kept
+  the first one). Landing equals a full read of `probe_p5_scd2` (0 missing,
+  0 extra on key, start and end).
+- **P6 passed, with one fix.** `probe_p6_scd2`: same flow, `source` a function
+  returning raw without `ingested_timestamp` and, as version, raw's fetch time
+  (or `None` when that version is already applied). `__START_AT` equals raw's
+  fetch time (65,907 rows at 22:54:10.143). First try looped: the flow applied
+  the same snapshot every ~17 s (33 MERGEs of 0 rows, stopped by hand). Cause,
+  shown by raising both values: Auto CDC keeps the version to the millisecond
+  (`22:54:10.143000`) while raw's fetch time has microseconds
+  (`22:54:10.143992`), so raw always looked newer. With the version cut to the
+  millisecond (`date_trunc("millisecond", max(ingested_timestamp))`): an
+  unchanged run wrote nothing; after a reload with one charity edited, one
+  run closed 1 version and inserted 1, both at the new fetch time
+  (23:12:13.455).
+- **P8 stopped at the first check.** Streaming from raw fails:
+  `STREAMING_FROM_MATERIALIZED_VIEW` ("Streaming from Materialized Views is not
+  supported"). Raw is a materialized view because it is a full reload, so
+  streaming Auto CDC is not an option for acnc.
 
 Outcome: if P5 to P7 pass, acnc's bronze goes back to snapshot Auto CDC (a
 new migration), the `MERGE` task and `src/common/scd2_merge.py` are retired,

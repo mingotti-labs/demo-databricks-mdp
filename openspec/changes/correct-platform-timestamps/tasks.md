@@ -13,14 +13,14 @@
 
 ## 3. Migration (each drop needs explicit approval)
 - [x] 3.1 dev: backup, recreate with backfill, run, verify
-- [ ] 3.2 prd: same, after the PR merges and the prd gate is approved (run SUCCESS 2026-10-22; restamp and row-count checks pending)
+- [ ] 3.2 prd: same, after the PR merges and the prd gate is approved (run SUCCESS 2026-10-22; row count equals backup; restamp check waits for a second run)
 - [ ] 3.3 Drop `charity_register_scd2_backup` in dev and prd (explicit approval)
 
 ## 5. Under review: back to standard Auto CDC (design.md; blocks archive and other sources)
-- [ ] 5.1 P5: snapshot Auto CDC without `ingested_timestamp` writes 0 rows on an unchanged run
-- [ ] 5.2 P6: function source with raw's fetch time as version
-- [ ] 5.3 P7: Landing from the change feed gets only changed rows
-- [ ] 5.4 P8: streaming Auto CDC from raw (stop if raw cannot be streamed)
+- [x] 5.1 P5: snapshot Auto CDC without `ingested_timestamp` writes 0 rows on an unchanged run
+- [x] 5.2 P6: function source with raw's fetch time as version
+- [x] 5.3 P7: Landing from the change feed gets only changed rows
+- [x] 5.4 P8: streaming Auto CDC from raw (stop if raw cannot be streamed)
 - [ ] 5.5 Decide with the user; then rewrite proposal.md, spec and NAMING.md, or record why D2 stays
 - [ ] 5.6 Silver Normalised: revisit with the user after 5.5
 
