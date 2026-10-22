@@ -16,56 +16,54 @@ row, whether it changed or not. Evidence from `dev` (acnc, 2026-10-22):
 - NAMING.md encodes the mistake ("last transformed at", restamped at every
   layer).
 
+Root cause at bronze, from the Databricks CDC docs: changes in columns not
+tracked for history "overwrite the current row instead of creating a new
+version". acnc passed `ingested_timestamp`, new on every full load, into the
+snapshot as such a column. The cause was that column, not snapshot Auto CDC
+(probe P5, design.md).
+
 ## What the timestamps mean (corrected definition)
 
 - `ingested_timestamp`: the fetch time of the data. On `_raw`, every row (a full
-  reload re-fetches every row). On an SCD2 version, the fetch that created that
-  version, fixed forever, so a row's story is readable in one table.
+  load re-fetches every row). Downstream, the fetch that created the row's
+  version, fixed forever.
 - `transformed_timestamp`: when this table's step inserted, modified or closed
   the row. A row the step did not touch keeps its previous value.
 
-> **Under review (2026-10-23).** The bronze `MERGE` and the Normalised rebuild
-> below may be replaced by standard Auto CDC plus a change-feed Landing; see
-> design.md "Under review" and tasks 5.x. The `ingested_timestamp` definition
-> above for SCD2 is part of that review.
-
 ## What Changes (acnc first, as the reference implementation)
 
-- **Bronze SCD2 by `MERGE`, not snapshot Auto CDC.** A job task after the bronze
-  pipeline compares `charity_register_raw` (non-null ABN) with the current SCD2
-  rows on the business columns: a changed row closes the old version and inserts
-  a new one, a new key inserts, a vanished key closes. Inserted versions carry
-  raw's exact `ingested_timestamp`; `transformed_timestamp = current_timestamp()`
-  only on inserted and closed rows. Unchanged rows are not written. Snapshot
-  Auto CDC has no way to add a value only on the rows it changes, which is why
-  it is replaced. Same shape as neon's existing `scd2_merge` job.
-- **Silver Landing incremental, from bronze's changes.** Landing is one row per
-  bronze SCD2 row, so it reads only the rows the bronze `MERGE` changed (the SCD2
-  table's change data feed) and applies them by key, as a streaming table in the
-  silver pipeline. `transformed_timestamp = current_timestamp()` is stamped in
-  that stream, where only changed rows pass, so only they get it.
-- **Silver Normalised as a full rebuild that keeps timestamps.** Its tables are
-  mostly distinct values and counts across many rows. Measured on acnc: a full
-  rebuild of all silver tables costs 77 s of table work against 42 s for a run
-  with nothing to do; start-up (86 to 148 s) dominates. So each Normalised table
-  is rebuilt from its current definition and compared with the previous table
-  on the business columns: unchanged rows keep their `transformed_timestamp`,
-  new or changed rows get `current_timestamp()`, rows that are gone are
-  removed. Aggregating tables take `min(ingested_timestamp)`, the first ingest
-  that contributed. A materialized view cannot read its own previous result, so
-  Normalised becomes a job task after the silver pipeline (one shared notebook
-  reusing today's `transforms.py` functions).
-- **Existing history backfilled once.** The original fetch times of existing
-  versions were overwritten and cannot be recovered. Existing versions get
-  `ingested_timestamp = __START_AT` and
-  `transformed_timestamp = coalesce(__END_AT, __START_AT)`, the best available
-  values, recorded in the decision register.
-- **Docs**: NAMING.md "Platform-added timestamp columns", silver.md and a
-  decision-register entry state the corrected definition; the patterns register
-  and `design_patterns.yml` get the new pattern IDs.
-- **Out of scope**: SCD1 tables (unchanged for now); the other sources (one
-  change each, once acnc is proven); performance work beyond removing the
-  per-run rewrites.
+The first implementation (#88) replaced snapshot Auto CDC with a `MERGE` job
+task. Probes P5 to P8 (design.md) showed standard Auto CDC works once the
+per-load column is kept out of the snapshot, so bronze goes back into the
+pipeline:
+
+- **Bronze full pattern.** `_raw` is a full load (a materialized view), so every
+  row's `ingested_timestamp` changes on every load. That column is never part
+  of the snapshot. Bronze Publish SCD2 is `create_auto_cdc_from_snapshot_flow`
+  with a function source that returns raw's rows without `ingested_timestamp`
+  and, as the snapshot's version, raw's fetch time cut to the millisecond (Auto
+  CDC keeps the version to the millisecond). Auto CDC writes that version as
+  `__START_AT` on the versions it inserts and `__END_AT` on the ones it closes;
+  unchanged rows are not written. The SCD2 table has no platform timestamp
+  columns. Streaming Auto CDC is not an option: a materialized view cannot be
+  streamed (P8).
+- **Silver Landing settles both timestamps.** A streaming table reading the SCD2
+  table's change feed, so it receives only the versions Auto CDC inserted or
+  closed (as today, #88). It stamps `transformed_timestamp = current_timestamp()`
+  in that stream and sets `ingested_timestamp = __START_AT`, kept alongside
+  `scd_valid_from_timestamp` (same value, the standard column name).
+- **Silver Normalised: unchanged for now** (the #88 rebuild task that keeps
+  timestamps). It reads `ingested_timestamp` from Landing, which keeps it.
+  Revisited separately (task 5.6).
+- **New load, no migration.** This is a test platform: acnc's current SCD2
+  table, its backup and Landing are dropped in dev and prd (approved
+  2026-10-23) and rebuilt from one load. Existing SCD2 history is lost.
+- **Retired**: the `scd2_merge` task, `src/common/scd2_merge.py`,
+  `src/layers/bronze/scd2_merge.py`, the #88 migration task and its notebook.
+- **Docs**: NAMING.md "Platform-added timestamp columns", the patterns register
+  (the bronze full pattern stated as such) and `design_patterns.yml`.
+- **Out of scope**: SCD1 tables; the other sources (one change each, once acnc
+  is proven); performance work.
 
 ## Capabilities
 
@@ -79,20 +77,16 @@ row, whether it changed or not. Evidence from `dev` (acnc, 2026-10-22):
 
 ## Model
 
-Opus to implement acnc: it sets the convention and includes a table migration.
-Sonnet for the later per-source rollouts.
+Sonnet to implement: it applies the agreed design and the probed code (P6, P7).
 
 ## Impact
 
-- **Table migration, with approval.** The acnc SCD2 table and the 17
-  Normalised tables are owned by pipelines today, and a job cannot write to
-  them. They are backed up, removed from the pipelines and recreated as plain
-  Delta tables under the same names. SCD2 history is kept through the backup.
-  The Landing table changes from a materialized view to a streaming table, so
-  it is dropped and rebuilt from bronze; it holds no history of its own, and its
-  first run stamps every row (they are all inserted then). Every drop needs
-  explicit approval. Probes come first (design.md).
-- prd: the same migration after dev is verified, through the prd approval gate.
-- Verification jobs keep their checks; the null `transformed_timestamp` on the
-  10 pre-retrofit closed versions goes away with the backfill.
-- Table count: temporary backups (+19 in one environment at a time).
+- **Drops, approved 2026-10-23 for dev and prd**:
+  `bronze_acnc_publish.charity_register_scd2` (plain Delta today; recreated as
+  a streaming table by the bronze pipeline), `charity_register_scd2_backup`
+  and `silver_landing_acnc.charity_register` (its stream reads the old table's
+  change feed). Normalised tables are kept; their first run after the new load
+  restamps every row once, since `ingested_timestamp` changes.
+- prd: same, through the prd approval gate after dev is verified.
+- Verification jobs: checks on the SCD2 table's platform columns move to
+  Landing.
