@@ -46,7 +46,8 @@ row, whether it changed or not. Evidence from `dev` (acnc, 2026-10-22):
   is rebuilt from its current definition and compared with the previous table
   on the business columns: unchanged rows keep their `transformed_timestamp`,
   new or changed rows get `current_timestamp()`, rows that are gone are
-  removed. A materialized view cannot read its own previous result, so
+  removed. Aggregating tables take `min(ingested_timestamp)`, the first ingest
+  that contributed. A materialized view cannot read its own previous result, so
   Normalised becomes a job task after the silver pipeline (one shared notebook
   reusing today's `transforms.py` functions).
 - **Existing history backfilled once.** The original fetch times of existing

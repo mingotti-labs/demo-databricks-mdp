@@ -26,8 +26,13 @@ experiment (not for merge).
   Chosen over incremental refresh because these tables are mostly distinct
   values and counts, full rebuilds are cheap at this size (measured), and the
   result is simpler to reason about.
-- **D5 Silver's `ingested_timestamp`** is carried from its input, as today
-  (`max()` for aggregating tables).
+- **D5 Silver's `ingested_timestamp`** is carried from its input. Aggregating
+  Normalised tables (extracted entities, `value_lineage`) take `min()`: the
+  first ingest that contributed to the row. `max()` was only chosen because
+  `_raw` restamped every run; with each SCD2 version keeping its own fetch time,
+  `min()` is meaningful. In the D4 comparison, every column except
+  `transformed_timestamp` counts, so a change in `ingested_timestamp` also
+  gives the row a new `transformed_timestamp = current_timestamp()`.
 - **D6 Backfill** of existing SCD2 versions, as stated in proposal.md.
 
 ## Probes (dev, before any migration)
