@@ -7,6 +7,18 @@ alternative" for. Newest entries at the top.
 
 ---
 
+## 2026-10-23: Bronze full pattern replaces the SCD2 MERGE
+
+**Context**: The 2026-10-22 decision moved acnc's SCD2 to a `MERGE` job task because snapshot Auto CDC rewrote every current row. Root cause, found later: `ingested_timestamp`, new on every full load, was passed into the snapshot as an untracked column, and Auto CDC overwrites the current row for such columns. The cause was that column, not snapshot Auto CDC.
+
+**Discussion**: Probes P5 to P8 (dev, copies in `pattern_bronze_publish`): snapshot Auto CDC without the column writes 0 rows on an unchanged load; a function source can pass raw's fetch time as the snapshot version, which becomes `__START_AT`/`__END_AT`, but Auto CDC keeps the version to the millisecond, so the fetch time must be cut to the millisecond or the same snapshot is applied forever; Landing from the change feed gets only changed rows; streaming Auto CDC is impossible because a materialized view cannot be streamed. A migration of the SCD2 history was rejected: a test platform can reload.
+
+**Decision**: Bronze full pattern: raw keeps `ingested_timestamp`, used only as the snapshot version; the SCD2 table has no platform timestamps; Silver Landing stamps `transformed_timestamp` on the change-feed rows it receives and sets `ingested_timestamp = __START_AT`. acnc reloads from one fetch (history not kept). The `MERGE` task is retired. Silver Normalised is unchanged for now.
+
+**Affected**: `src/layers/bronze/acnc_publish/charity_register_scd2.py`, `src/layers/silver/landing/acnc/`, `resources/jobs/run_acnc.job.yml`, `migrations/acnc_reset_scd2.py`, `NAMING.md`, `references/docs/registers/design-patterns.md`.
+
+---
+
 ## 2026-10-22: Platform timestamps stamp only rows a step changed
 
 **Context**: `current_timestamp()` was applied to full snapshots before any change check. In `dev`, acnc's SCD2 runs with no new version still rewrote all 65,907 current rows (excluded columns are updated in place), so current rows showed the latest fetch, not the one that created the version; every silver table was fully rebuilt on every run.

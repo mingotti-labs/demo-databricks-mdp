@@ -150,19 +150,24 @@ Evidence: `prd`.
 current state per run (an upserted table or a Materialized View). Platform
 timestamps are excluded from history tracking, but are still rewritten in place
 on every current row each run (openspec `correct-platform-timestamps`), so it is
-being replaced by `bronze_publish_scd2_merge_python`. Code:
-`src/layers/bronze/{neon,ungm,nsw_spatial,airroi,iso,geonames}_publish/`.
+being replaced by `bronze_publish_scd2_autocdc_full_load_python` source by
+source. Code: `src/layers/bronze/{neon,ungm,nsw_spatial,airroi,iso,geonames}_publish/`.
 Used by: neon, ungm, nsw_spatial, airroi, iso, geonames. Evidence: `prd`
 (neon: `dev`).
 
-### bronze_publish_scd2_merge_python
-One null-safe `MERGE`, run as a job task after the bronze pipeline, applying a
-`_raw` snapshot to its SCD2 table: a changed key closes its version and gets a
-new one, a new key gets a version, a vanished key is closed; unchanged rows are
-not written. Inserted versions keep raw's `ingested_timestamp`;
-`transformed_timestamp` and the validity columns are stamped only on written
-rows. Code: `src/common/scd2_merge.py`, `src/layers/bronze/scd2_merge.py`.
-Used by: [acnc](data-sources.md#acnc). Evidence: `dev`.
+### bronze_publish_scd2_autocdc_full_load_python
+The bronze full pattern: `_raw` is a full load, so its `ingested_timestamp`
+changes on every row at every load and is never part of the snapshot. Standard
+`create_auto_cdc_from_snapshot_flow` with a function source returning the raw
+rows without that column and, as the snapshot's version, raw's fetch time cut to
+the millisecond (or `None` once applied; Auto CDC keeps the version to the
+millisecond, so a finer value loops forever). The version becomes `__START_AT`
+on inserted versions and `__END_AT` on closed ones; unchanged rows are not
+written; the SCD2 table has no platform timestamp columns. Change data feed on,
+for Silver Landing. A materialized view cannot be streamed, so streaming Auto CDC
+is not an option for a full load. Code:
+`src/layers/bronze/acnc_publish/charity_register_scd2.py`.
+Used by: [acnc](data-sources.md#acnc). Evidence: `dev` (pending the first run).
 
 ### bronze_publish_scd1_autocdc_snapshot_python
 The same snapshot flow, keeping only the latest version per key. Used where a
@@ -222,7 +227,8 @@ clickstream, airroi: `dev`).
 A streaming table that reads only the rows changed in its Bronze Publish SCD2
 table (`readChangeFeed`) and applies them by version key with
 `create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
-rows. Code: `src/layers/silver/landing/acnc/`. Used by:
+rows, and sets `ingested_timestamp` to the version's `__START_AT`. Code:
+`src/layers/silver/landing/acnc/`. Used by:
 [acnc](data-sources.md#acnc). Evidence: `dev`.
 
 ### silver_normalised_spec_driven_python

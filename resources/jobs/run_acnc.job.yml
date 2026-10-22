@@ -4,31 +4,19 @@ resources:
       name: run--acnc--${bundle.target}
       tasks:
         # One-off (openspec correct-platform-timestamps); a no-op once applied.
-        - task_key: migrate
+        - task_key: reset
           notebook_task:
-            notebook_path: ../../migrations/acnc_platform_timestamps.py
+            notebook_path: ../../migrations/acnc_reset_scd2.py
             base_parameters:
               catalog: ${var.catalog}
         - task_key: bronze
           depends_on:
-            - task_key: migrate
+            - task_key: reset
           pipeline_task:
             pipeline_id: ${resources.pipelines.acnc_charity_register_ingestion.id}
-        - task_key: scd2_merge
-          depends_on:
-            - task_key: bronze
-          notebook_task:
-            notebook_path: ../../src/layers/bronze/scd2_merge.py
-            base_parameters:
-              catalog: ${var.catalog}
-              source: bronze_acnc.charity_register_raw
-              where: ABN IS NOT NULL
-              target: bronze_acnc_publish.charity_register_scd2
-              keys: ABN
-              workspace_file_path: ${workspace.file_path}
         - task_key: verify_bronze
           depends_on:
-            - task_key: scd2_merge
+            - task_key: bronze
           run_job_task:
             job_id: ${resources.jobs.verify_acnc_charity_register.id}
         - task_key: silver
