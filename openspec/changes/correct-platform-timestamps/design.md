@@ -65,6 +65,12 @@ experiment (not for merge).
   the deleted key was inserted, the fake key was closed. Inserted versions carry
   raw's `ingested_timestamp`; only those 4 rows got the run's
   `transformed_timestamp`; current rows stayed 65,907.
+- **P3 (2026-10-22, dev, one-off serverless run of `src/common/keep_timestamps.py`
+  on a copy of `silver_normalised_acnc.state` in `pattern_bronze_publish`):** a
+  rebuild with unchanged input kept every `transformed_timestamp`; a rebuild
+  with one row edited, one removed and one added left 22 rows, 20 with their
+  original stamp, a new stamp only on the edited and the added row, and the
+  removed row gone.
 - **P4 (2026-10-22, dev, throwaway pipeline `probe--landing-change-feed--dev`
   reading the P2 copy with `readChangeFeed`, keeping `insert` and
   `update_postimage`, applied by `create_auto_cdc_flow` on
