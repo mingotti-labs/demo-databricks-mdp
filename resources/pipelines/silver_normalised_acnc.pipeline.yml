@@ -8,14 +8,8 @@ resources:
       continuous: false
       configuration:
         workspace_file_path: ${workspace.file_path}
-        normalised_spec: src/layers/silver/normalised/specs/acnc.yml
-      environment:
-        dependencies:
-          - pyyaml
+      # Landing only: Silver Normalised is rebuilt by run_acnc's normalised
+      # task (openspec correct-platform-timestamps).
       libraries:
-        - file:
-            path: ../../src/layers/silver/normalised/pipeline.py
-        # A pipeline's libraries cannot mix `file` and `glob` entries (the
-        # API rejects it), so the Landing file is listed as a file too.
         - file:
             path: ../../src/layers/silver/landing/acnc/charity_register.py

@@ -148,10 +148,21 @@ Evidence: `prd`.
 ### bronze_publish_scd2_autocdc_snapshot_python
 `create_auto_cdc_from_snapshot_flow` against a `_raw` source that is the full
 current state per run (an upserted table or a Materialized View). Platform
-timestamps are excluded from history tracking. Code:
-`src/layers/bronze/{neon,ungm,acnc,nsw_spatial,airroi,iso,geonames}_publish/`.
-Used by: neon, ungm, acnc, nsw_spatial, airroi, iso, geonames. Evidence: `prd`
+timestamps are excluded from history tracking, but are still rewritten in place
+on every current row each run (openspec `correct-platform-timestamps`), so it is
+being replaced by `bronze_publish_scd2_merge_python`. Code:
+`src/layers/bronze/{neon,ungm,nsw_spatial,airroi,iso,geonames}_publish/`.
+Used by: neon, ungm, nsw_spatial, airroi, iso, geonames. Evidence: `prd`
 (neon: `dev`).
+
+### bronze_publish_scd2_merge_python
+One null-safe `MERGE`, run as a job task after the bronze pipeline, applying a
+`_raw` snapshot to its SCD2 table: a changed key closes its version and gets a
+new one, a new key gets a version, a vanished key is closed; unchanged rows are
+not written. Inserted versions keep raw's `ingested_timestamp`;
+`transformed_timestamp` and the validity columns are stamped only on written
+rows. Code: `src/common/scd2_merge.py`, `src/layers/bronze/scd2_merge.py`.
+Used by: [acnc](data-sources.md#acnc). Evidence: `dev`.
 
 ### bronze_publish_scd1_autocdc_snapshot_python
 The same snapshot flow, keeping only the latest version per key. Used where a
@@ -204,8 +215,15 @@ Used by: [iso](data-sources.md#iso). Evidence: `prd`.
 One Materialized View per Bronze Publish table, applying the shared mechanical
 conventions of Silver Landing. Code: `src/layers/silver/landing/`,
 `src/common/silver_landing.py`. Contract: [silver.md](../medallion/silver.md).
-Used by: all sources with a landing schema. Evidence: `prd` (neon, clickstream,
-airroi: `dev`).
+Used by: all sources with a landing schema except acnc. Evidence: `prd` (neon,
+clickstream, airroi: `dev`).
+
+### silver_landing_change_feed_python
+A streaming table that reads only the rows changed in its Bronze Publish SCD2
+table (`readChangeFeed`) and applies them by version key with
+`create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
+rows. Code: `src/layers/silver/landing/acnc/`. Used by:
+[acnc](data-sources.md#acnc). Evidence: `dev`.
 
 ### silver_normalised_spec_driven_python
 One shared pipeline driven by a per-source YAML spec validated against a JSON
@@ -214,7 +232,16 @@ not hand-written. Code: `src/layers/silver/normalised/`,
 `src/common/normalised_spec.py`. Contract:
 [normalised-spec](../normalised-spec/README.md).
 Used by: [acnc](data-sources.md#acnc) (`prd`), [airroi](data-sources.md#airroi)
-(`dev`).
+(`dev`). acnc's tables are built by `silver_rebuild_keep_timestamps_python`
+instead of the pipeline.
+
+### silver_rebuild_keep_timestamps_python
+A job task that rebuilds every table of a normalised spec in full and compares
+each row with the previous table (every column but `transformed_timestamp`):
+unchanged rows keep their stamp, new or changed rows get `current_timestamp()`,
+rows that are gone are removed. Code: `src/common/keep_timestamps.py`,
+`src/layers/silver/normalised/rebuild.py`. Used by:
+[acnc](data-sources.md#acnc). Evidence: `dev`.
 
 ## Operations
 
