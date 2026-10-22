@@ -27,10 +27,6 @@ match_key_udf = F.udf(ns.match_key, "string")
 NATURAL_KEY_COMMENT = {"comment": "Natural key"}
 
 
-def _stamped(df: DataFrame) -> DataFrame:
-    return df.withColumn("transformed_timestamp", F.current_timestamp())
-
-
 def landing_rows(
     spark: SparkSession, spec: dict, name: str, quarantined: bool = False
 ) -> DataFrame:
@@ -79,7 +75,12 @@ def base(
         raise ValueError(f"{name}: Landing is SCD2, so the spec must set history: scd2")
     platform = [
         c
-        for c in ("source_name", "source_file_name", "ingested_timestamp")
+        for c in (
+            "source_name",
+            "source_file_name",
+            "ingested_timestamp",
+            "transformed_timestamp",
+        )
         if c in df.columns
     ]
     columns = ns.base_output_columns(entity)
@@ -88,7 +89,7 @@ def base(
     )
     for key in entity["natural_key"]:
         df = df.withMetadata(key, NATURAL_KEY_COMMENT)
-    return _stamped(df)
+    return df
 
 
 def bridge(spark: SparkSession, spec: dict, name: str) -> DataFrame:
@@ -107,12 +108,15 @@ def bridge(spark: SparkSession, spec: dict, name: str) -> DataFrame:
             *[F.when(F.col(c).cast("string") == keep, F.lit(c)) for c in flags]
         )
     keys = _key_columns(parent)
-    df = df.select(*keys, F.explode(values).alias(element), "ingested_timestamp").where(
-        F.col(element).isNotNull()
-    )
+    df = df.select(
+        *keys,
+        F.explode(values).alias(element),
+        "ingested_timestamp",
+        "transformed_timestamp",
+    ).where(F.col(element).isNotNull())
     for key in parent["natural_key"]:
         df = df.withMetadata(key, NATURAL_KEY_COMMENT)
-    return _stamped(df)
+    return df
 
 
 def _member_values(
@@ -142,6 +146,7 @@ def _member_values(
                 *extra,
                 *attributes,
                 "ingested_timestamp",
+                "transformed_timestamp",
             )
             table = landing_table(base_entity["from"])
         else:
@@ -155,6 +160,7 @@ def _member_values(
                 F.col(column).alias("value"),
                 source_column.alias("source_column"),
                 "ingested_timestamp",
+                "transformed_timestamp",
             )
             table = landing_table(bridge_entity["from"])
         result.append((table, df.where(F.col("value").isNotNull())))
@@ -203,6 +209,7 @@ def extracted(spark: SparkSession, spec: dict, name: str) -> DataFrame:
         .agg(
             F.count("*").alias("row_count"),
             F.max("ingested_timestamp").alias("ingested_timestamp"),
+            F.max("transformed_timestamp").alias("transformed_timestamp"),
         )
         .withColumn(
             "rdm_proposed_match_key", match_key_udf(F.col("value").cast("string"))
@@ -214,10 +221,11 @@ def extracted(spark: SparkSession, spec: dict, name: str) -> DataFrame:
             "rdm_proposed_match_key",
             "row_count",
             "ingested_timestamp",
+            "transformed_timestamp",
         )
         .withMetadata(name, NATURAL_KEY_COMMENT)
     )
-    return _stamped(df)
+    return df
 
 
 def value_lineage(spark: SparkSession, spec: dict) -> DataFrame:
@@ -232,6 +240,7 @@ def value_lineage(spark: SparkSession, spec: dict) -> DataFrame:
                     F.lit(table).alias("source_table"),
                     "source_column",
                     "ingested_timestamp",
+                    "transformed_timestamp",
                 )
             )
     df = (
@@ -240,6 +249,7 @@ def value_lineage(spark: SparkSession, spec: dict) -> DataFrame:
         .agg(
             F.count("*").alias("row_count"),
             F.max("ingested_timestamp").alias("ingested_timestamp"),
+            F.max("transformed_timestamp").alias("transformed_timestamp"),
         )
     )
-    return _stamped(df)
+    return df

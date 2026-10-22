@@ -12,7 +12,11 @@ from pyspark import pipelines as dp
 # refused instead of truncating the history (openspec acnc-two-pipelines D6).
 dp.create_streaming_table(
     name="bronze_acnc_publish.charity_register_scd2",
-    table_properties={"pipelines.reset.allowed": "false"},
+    table_properties={
+        "pipelines.reset.allowed": "false",
+        "delta.enableRowTracking": "true",
+        "delta.enableChangeDataFeed": "true",
+    },
 )
 dp.create_auto_cdc_from_snapshot_flow(
     target="bronze_acnc_publish.charity_register_scd2",

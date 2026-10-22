@@ -4,7 +4,13 @@
 # direct-to-raw pattern).
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="bronze_acnc_publish.charity_register_scd1")
+dp.create_streaming_table(
+    name="bronze_acnc_publish.charity_register_scd1",
+    table_properties={
+        "delta.enableRowTracking": "true",
+        "delta.enableChangeDataFeed": "true",
+    },
+)
 dp.create_auto_cdc_from_snapshot_flow(
     target="bronze_acnc_publish.charity_register_scd1",
     source="charity_register_valid",
