@@ -2,7 +2,7 @@ import pytest
 
 pytest.importorskip("pyspark")
 
-from common.keep_timestamps import compared_columns  # noqa: E402
+from common.keep_timestamps import compared_columns
 
 
 def test_every_column_but_the_stamp_is_compared():
