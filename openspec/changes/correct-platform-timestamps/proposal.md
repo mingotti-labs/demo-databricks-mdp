@@ -24,6 +24,11 @@ row, whether it changed or not. Evidence from `dev` (acnc, 2026-10-22):
 - `transformed_timestamp`: when this table's step inserted, modified or closed
   the row. A row the step did not touch keeps its previous value.
 
+> **Under review (2026-10-23).** The bronze `MERGE` and the Normalised rebuild
+> below may be replaced by standard Auto CDC plus a change-feed Landing; see
+> design.md "Under review" and tasks 5.x. The `ingested_timestamp` definition
+> above for SCD2 is part of that review.
+
 ## What Changes (acnc first, as the reference implementation)
 
 - **Bronze SCD2 by `MERGE`, not snapshot Auto CDC.** A job task after the bronze
