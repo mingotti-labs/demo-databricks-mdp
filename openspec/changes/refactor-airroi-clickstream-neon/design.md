@@ -33,3 +33,11 @@ SCD and timestamp code moves as is; changing it waits for
 
 Checkpoint after each source: verify in all environments, stop, report. Do not
 start the next source on a failed verify.
+
+## Inventory: airroi (2026-10-22, read-only)
+
+- **tst**: no airroi tables (the tst catalog was dropped by `free-edition-drop-tst`); tst is out of scope.
+- **dev**: every airroi pipeline, job and table is owned by the CI/CD SP; no human-owned copies, so no ownership fix is needed. Tables: bronze_airroi 2 (pipeline ingestion), bronze_airroi_publish 2 (scd), silver_landing_airroi 2, silver_normalised_airroi 7.
+- **prd**: bronze_airroi 2 and bronze_airroi_publish 2 exist (ingestion and scd pipelines, SP-owned); silver_landing_airroi and silver_normalised_airroi are empty (silver never ran in prd).
+- **Pipelines to merge**: bronze ingestion + scd (dev, prd), silver landing + normalised (dev, prd). Jobs: `run_airroi` (`ci_auto_run: "false"`), `silver_airroi` (to remove), `verify_bronze` for airroi; all exist in dev and prd.
+- **Consequence**: the table-move migration applies to bronze in dev and prd, and to silver in dev only. In prd the silver pipelines own no tables, so they are simply replaced.
