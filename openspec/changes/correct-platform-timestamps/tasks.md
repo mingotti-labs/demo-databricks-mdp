@@ -1,6 +1,6 @@
 ## 1. Probes (dev)
-- [ ] 1.1 P1: dataset removal behaviour; record in design.md
-- [ ] 1.2 P2: SCD2 `MERGE` on a copy in `pattern_bronze_publish`
+- [x] 1.1 P1: dataset removal behaviour; record in design.md
+- [x] 1.2 P2: SCD2 `MERGE` on a copy in `pattern_bronze_publish`
 - [ ] 1.3 P3: Normalised rebuild that keeps timestamps, on a copy
 - [ ] 1.4 P4: Landing from the change feed, on the P2 copy
 

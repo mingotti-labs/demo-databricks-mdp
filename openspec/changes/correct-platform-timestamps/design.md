@@ -48,6 +48,24 @@ experiment (not for merge).
   Landing equals a full read of the SCD2 copy row for row (zero difference in
   both directions), and only the changed rows got a new `transformed_timestamp`.
 
+## Probe results
+
+- **P1 (2026-10-22, dev, throwaway pipeline `probe--dataset-removal--dev` in the
+  patterns bundle):** removing a dataset from the pipeline code and running
+  again leaves the table in place, with its rows, still a materialized view
+  still tied to the pipeline (`pipeline_id` unchanged). So removal loses no
+  data, but the table stays pipeline-owned: the migration copies it out, drops
+  it and recreates it as a plain Delta table.
+- **P2 (2026-10-22, dev, copy `pattern_bronze_publish.probe_scd2` of
+  `charity_register_scd2` with the D6 backfill, source `charity_register_raw`
+  with non-null ABN, `src/common/scd2_merge.py`):** two runs with unchanged raw
+  wrote 0 rows each (Auto CDC rewrote 65,907 in the same situation). After
+  editing one current row, adding a fake key and deleting one key on the copy,
+  one run inserted 2 and updated 2: the edited key closed and got a new version,
+  the deleted key was inserted, the fake key was closed. Inserted versions carry
+  raw's `ingested_timestamp`; only those 4 rows got the run's
+  `transformed_timestamp`; current rows stayed 65,907.
+
 ## Migration (per environment, dev first)
 
 1. Back up the SCD2 table and the Normalised tables (`DEEP CLONE`).
