@@ -33,7 +33,7 @@
 - [x] 6.6 dev: run `run_acnc` twice; first loads every row, second writes 0 rows to the SCD2 table and Landing; Landing equals a full read of the SCD2 table
 - [x] 6.8 No pipeline retries on acnc's two pipelines (both settings `"0"`); the other 27 move to the rollout change
 - [x] 6.9 Bronze verification merged into one notebook (`verify_bronze_acnc.py`, one task, titled markdown cells); not run in dev by decision
-- [x] 6.10 `run_acnc` verification is opt-in: job parameter `verify` (default `"false"`) feeds a condition task; `verify_bronze` and `verify_silver` run last and only with `verify=true`. First version (silver depending on `verify_bronze`) excluded silver, normalised, tag and tag_patterns in prd; fixed in `fix-run-acnc-verify-gate`
+- [x] 6.10 `run_acnc` verification is opt-in: job parameter `verify` (default `"false"`) feeds a condition task; `verify_bronze` (before silver) and `verify_silver` run only with `verify=true`; `silver` has `run_if: NONE_FAILED`. The first version (default `ALL_SUCCESS`) excluded silver, normalised, tag and tag_patterns in prd; fixed in `fix-run-acnc-verify-gate`, tested in dev with `verify=false`
 - [ ] 6.7 prd: same, through the prd gate
 
 ## 4. Docs

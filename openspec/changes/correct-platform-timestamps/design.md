@@ -266,15 +266,17 @@ acnc alone (about 17 min; checked with `cicd/affected_units.py`).
 The verification tasks cost a serverless start-up each (41 to 47 s for bronze)
 and found nothing on repeated runs. `run_acnc` has a job parameter `verify`
 (default `"false"`); a condition task (no compute) gates `verify_bronze` and
-`verify_silver` on `verify=true`.
+`verify_silver` on `verify=true`. With verification on, `verify_bronze` runs
+after `bronze` and before `silver`; with it off, `silver` runs straight after
+`bronze`.
 
-A task that depends on a gated task is excluded with it. The first design had
-`silver` depend on `verify_bronze` (and on `bronze`, because the Databricks
-docs say an excluded upstream counts as successful). In prd, with verification
-off, `silver` was excluded ("dependency type condition was not met") and so
-were `normalised`, `tag` and `tag_patterns`, while the run reported SUCCESS.
-Fixed (`fix-run-acnc-verify-gate`): nothing that must run depends on a gated
-task. The verifications run last (`verify_bronze` after `tag` and
-`tag_patterns`, `verify_silver` after `verify_bronze`), so with verification off
-only they are excluded. Because CI runs the job with its defaults, verification
-is off in tst/prd runs until the default or the CI command changes.
+`silver` depends on `bronze` and `verify_bronze` with `run_if: NONE_FAILED`.
+The first version used the default `ALL_SUCCESS` (the Databricks docs say an
+excluded upstream counts as successful): in prd, with verification off,
+`silver` was excluded ("dependency type condition was not met") and so were
+`normalised`, `tag` and `tag_patterns`, while the run reported SUCCESS. A failed
+verification still stops `silver`; a skipped one does not. Tested in dev with
+`verify=false` (run 206238828805026): only `verify_bronze` and `verify_silver`
+were excluded and every other task succeeded. The `verify=true` path has not
+been run. Because CI runs the job with its defaults, verification is off in
+tst/prd runs until the default or the CI command changes.
