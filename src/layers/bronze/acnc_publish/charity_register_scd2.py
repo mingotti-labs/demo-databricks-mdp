@@ -2,10 +2,11 @@
 # (bronze_publish_scd2_autocdc_full_load_python, openspec
 # correct-platform-timestamps).
 #
-# charity_register_raw is a full load, so its ingested_timestamp changes on
-# every row at every load. It is left out of the snapshot: Auto CDC overwrites
-# the current row for a column it does not track, so every row would be
-# rewritten each run. Auto CDC then versions each snapshot with the pipeline
+# The snapshot is charity_register_valid (raw without the NULL-ABN rows, see its
+# header). Raw is a full load, so its ingested_timestamp changes on every row at
+# every load, and valid stamps transformed_timestamp for SCD1. Both are left out
+# of the snapshot: Auto CDC overwrites the current row for a column it does not
+# track, so every row would be rewritten each run. Auto CDC then versions each snapshot with the pipeline
 # update's time, written as __START_AT on the versions it inserts and __END_AT
 # on the ones it closes. (A function source could pass raw's exact fetch time
 # instead, but it cannot read a dataset defined in this same pipeline.)
@@ -15,9 +16,8 @@ from pyspark import pipelines as dp
 @dp.temporary_view()
 def charity_register_scd2_snapshot():
     return (
-        spark.read.table("bronze_acnc.charity_register_raw")
-        .where("ABN IS NOT NULL")
-        .drop("ingested_timestamp")
+        spark.read.table("charity_register_valid")
+        .drop("ingested_timestamp", "transformed_timestamp")
     )
 
 
