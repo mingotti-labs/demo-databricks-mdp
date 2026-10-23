@@ -81,6 +81,16 @@ SCD tables equal raw; the spec accepts an SCD1-only table), and
 `verify--bronze--neon` is gone. The seed-data and source-versus-bronze notebooks
 stay for manual runs.
 
+## Neon dev result (2026-10-23)
+
+`run_neon` with `verify=true` (all tasks SUCCESS), then a second run with
+verification off (verification tasks excluded, everything else SUCCESS). Landing
+customers 200, products 50, orders 500, order_items 1,240: streaming tables owned
+by the CI/CD service principal, equal to their bronze tables, one
+`transformed_timestamp` each, `ingested_timestamp` equal to
+`scd_valid_from_timestamp` on the SCD2 ones. The second load wrote 0 rows to the
+bronze SCD tables and to Landing.
+
 ## Risks
 
 - Streaming tables cannot be moved while an update is running.
