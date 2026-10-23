@@ -21,20 +21,21 @@
 # separate "latest value" table when SCD2's `WHERE __END_AT IS NULL` gives
 # the same thing.
 #
-# ingested_timestamp/transformed_timestamp both excluded via
-# track_history_except_column_list -- current_timestamp() differs on every
-# run, so leaving them tracked would make Auto CDC think every row changed
-# every run. See country_codes_scd2.py and NAMING.md for the full pattern.
+# Bronze full pattern (openspec rollout-bronze-full-pattern): see
+# country_codes_scd2.py. The per-load ingested_timestamp is dropped in
+# subdivision_codes_deduped, so the snapshot has no untracked column.
 from pyspark import pipelines as dp
 
 dp.create_streaming_table(
     name="bronze_iso_publish.subdivision_codes_scd2",
-    table_properties={"pipelines.reset.allowed": "false"},
+    table_properties={
+        "pipelines.reset.allowed": "false",
+        "delta.enableChangeDataFeed": "true",
+    },
 )
 dp.create_auto_cdc_from_snapshot_flow(
     target="bronze_iso_publish.subdivision_codes_scd2",
     source="subdivision_codes_deduped",
     keys=["subdivision_code", "language_code", "subdivision_name"],
     stored_as_scd_type=2,
-    track_history_except_column_list=["ingested_timestamp", "transformed_timestamp"],
 )

@@ -18,13 +18,12 @@
 # (bronze_iso, complementary filter over the same raw table) for where
 # they're kept visible: `raw = deduped + quarantine` exactly.
 #
-# Also stamps transformed_timestamp (publish layer) here, since this is
-# the dataset that directly feeds Auto CDC -- same role
-# market_summary_transformed plays in AirROI's pattern. dropDuplicates()
-# runs before the timestamp column is added, so it dedupes on the same
-# key regardless of run time.
+# Also drops ingested_timestamp, which changes on every row at every load: it
+# must stay out of the snapshot (bronze full pattern, openspec
+# rollout-bronze-full-pattern; see country_codes_scd2.py). Full-row duplicates
+# share their ingested_timestamp, so dropping it after dropDuplicates changes
+# nothing about which rows are kept.
 from pyspark import pipelines as dp
-from pyspark.sql.functions import current_timestamp
 
 KEY_COLUMNS = ["subdivision_code", "language_code", "subdivision_name"]
 
@@ -34,4 +33,4 @@ def subdivision_codes_deduped():
     deduped = spark.read.table("bronze_iso.subdivision_codes_raw").dropDuplicates(
         KEY_COLUMNS
     )
-    return deduped.withColumn("transformed_timestamp", current_timestamp())
+    return deduped.drop("ingested_timestamp")
