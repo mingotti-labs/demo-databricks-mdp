@@ -24,8 +24,10 @@ schemas and names.
   the change feed of an Auto CDC SCD1 target carries the rows needed.
 - **D3 ci_auto_run.** neon `"false"` (no prd Neon instance); airroi `"false"`
   (paid); clickstream decided at its stage (prd would get synthetic tables).
-- **D4 SCD1 move last**, so it can be cut. The patterns bundle is dev-only; the
-  live tables are dropped in dev and prd.
+- **D4 Clean-up stage last**, so it can be cut: the unused SCD1 tables and the
+  SQL twins (neon SQL SCD pipeline and merge job, clickstream SQL SCD pipeline)
+  move to the patterns bundle. The patterns bundle is dev-only; the live tables
+  are dropped in dev and prd.
 
 ## Per source
 
@@ -34,8 +36,8 @@ schemas and names.
   SCD2, orders and order_items from SCD1.
 - **clickstream**: `run_clickstream` starts with `generate_clickstream_events`.
   The Auto Loader flow and the Python SCD flow move into one pipeline; check the
-  append-only SCD1 stream still reads the Auto Loader table. The SQL twin stays
-  exempt.
+  append-only SCD1 stream still reads the Auto Loader table. The SQL twin
+  moves in the clean-up stage.
 - **airroi**: bronze 2 pipelines to 1, silver 2 to 1, drop `silver_airroi`; both
   SCD2 views drop the stamping and the per-load `ingested_timestamp`; Normalised
   by D1. One paid dev run (about $0.80) with `verify=true`.
@@ -59,6 +61,16 @@ schemas and names.
   first attempt at the update lost because the raw `timestamp` is a string with a
   `T` separator and my edited value used a space, so it sorted as older: a probe
   mistake, not a pattern problem.
+
+## Neon dev run 1 (2026-10-23)
+
+Ingestion and the SCD pipeline succeeded; `verify_bronze` failed and, as
+designed, blocked `silver`. Cause: `verify_neon_connection.py` creates a
+temporary foreign catalog, which needs `CREATE CATALOG` on the metastore, and the
+CI/CD service principal does not have it (the check had only ever been run by the
+human admin). The successful ingestion already proves the connection is live, so
+the connection task was removed from `verify--bronze--neon` rather than widening
+the service principal's privileges.
 
 ## Risks
 

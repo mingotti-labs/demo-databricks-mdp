@@ -3,14 +3,10 @@ resources:
     verify_neon_ecommerce_pattern:
       name: verify--bronze--neon--${bundle.target}
       tasks:
-        - task_key: verify_connection
-          notebook_task:
-            notebook_path: ../../verification/verify_neon_connection.py
-          environment_key: default
-
+        # The UC connection is proven live by the ingestion pipeline itself; a
+        # separate check needs CREATE CATALOG, which the CI/CD service principal
+        # does not have.
         - task_key: verify_seed_data
-          depends_on:
-            - task_key: verify_connection
           notebook_task:
             notebook_path: ../../verification/verify_seed_data.py
           environment_key: default

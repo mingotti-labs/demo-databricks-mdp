@@ -30,7 +30,8 @@ What the code shows (2026-10-23):
 
 ## What Changes
 
-Order (user, 2026-10-23): neon, clickstream, airroi, then the SCD1 move. One
+Order (user, 2026-10-23): neon, clickstream, airroi, then the clean-up stage
+(SCD1 tables and SQL twins moved to the patterns bundle). One
 checkpoint after each source: verify, stop, report.
 
 - **One probe first (dev)**: a change feed from an Auto CDC SCD1 target, and
@@ -66,13 +67,20 @@ checkpoint after each source: verify, stop, report.
   spec file under `verification/bronze_checks/` for the generic `verify_bronze`
   job (replacing the per-source verification jobs and notebooks), and mapping
   entries in `src/common/design_patterns.yml`.
-- **SCD1 tables nothing reads move to the patterns bundle** (last stage, can be
-  cut without blocking the rest): `charity_register_scd1`, `unspsc_public_scd1`,
+- **Reference-only code moves to the patterns bundle** (last stage, can be cut
+  without blocking the rest). First the SCD1 tables nothing reads: `charity_register_scd1`, `unspsc_public_scd1`,
   `property_scd1` and neon `customers_scd1`, `products_scd1`. Their live tables
   are dropped in dev and prd (explicit approval), the bronze verification specs
   stop listing them, `charity_register_valid` stops stamping and the guard
   test's exception goes. Still read, so they stay: neon `orders_scd1` and
-  `order_items_scd1`, clickstream `web_events_scd1`.
+  `order_items_scd1`, clickstream `web_events_scd1`. Then the SQL twins,
+  documented as exempt reference variants until now: neon's SQL SCD pipeline
+  and SQL SCD2 merge job, and clickstream's SQL SCD pipeline. neon's `*_sql`
+  dev tables were already dropped with the stale set; clickstream's
+  `web_events_scd1_sql` is dropped with its stage's approval. After this neon
+  has two bronze pipelines (the Lakeflow Connect exception), one silver
+  pipeline, `run_neon`, `seed` and `verify` jobs, and the spec's exempt lists
+  are empty.
 - **CKAN HTTP retry** (#96's change) merges with the acnc-affecting stage.
 - **Specs**: the "Sources pending refactor" lists are emptied in
   `pipeline-per-layer` and `silver-normalised`; `platform-timestamps` covers
@@ -115,6 +123,3 @@ Procedure: NAMING.md "Removing a pipeline".
 - **Free Edition**: one workload at a time; runs are serial. The serverless
   daily quota can block runs (hit on 2026-10-21 for the pattern pipelines).
 - tst does not exist; prd holds no clickstream or neon tables (never ran).
-- The SQL SCD twins (clickstream SQL SCD pipeline, neon SQL SCD pipeline and
-  merge job) stay as exempt reference variants; moving them to the patterns
-  bundle is a later change.

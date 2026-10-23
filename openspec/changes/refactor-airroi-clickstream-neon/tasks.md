@@ -19,10 +19,11 @@
 - [ ] 4.2 Merge pipelines; bronze full pattern on both SCD2 tables; two Landing streaming tables; Normalised through the `normalised` task; remove `silver_airroi`; flat `run_airroi`; `bronze_checks/airroi.yml`
 - [ ] 4.3 One dev run with `verify=true` (about $0.80); checkpoint. prd: migration only; a verified prd run only on request
 
-## 5. SCD1 move (last; can be cut)
+## 5. Clean-up: reference-only code to the patterns bundle (last; can be cut)
 - [ ] 5.1 Move `charity_register_scd1`, `unspsc_public_scd1`, `property_scd1`, neon `customers_scd1` and `products_scd1` to the patterns bundle; drop the live tables in dev and prd (explicit approval); bronze verification specs stop listing them
 - [ ] 5.2 `charity_register_valid` stops stamping; remove the guard test exception
-- [ ] 5.3 Merge the CKAN HTTP retry (branch `fix/ckan-http-retry`)
+- [ ] 5.3 Move the SQL twins to the patterns bundle: neon SQL SCD pipeline and SQL SCD2 merge job, clickstream SQL SCD pipeline (and its human-owned or stale dev tables, with approval); empty the exempt lists in the specs
+- [ ] 5.4 Merge the CKAN HTTP retry (branch `fix/ckan-http-retry`)
 
 ## 6. Specs and docs
 - [ ] 6.1 Empty the "Sources pending refactor" lists (MODIFIED deltas with full requirement text); update NAMING.md, CLAUDE.md, the patterns register and source registers
