@@ -72,6 +72,12 @@ human admin). The successful ingestion already proves the connection is live, so
 the connection task was removed from `verify--bronze--neon` rather than widening
 the service principal's privileges.
 
+Run 2 then failed in `verify_seed_data`: it reads the Neon credentials from the
+`neon-postgres` secret scope, which the service principal cannot read (a
+Terraform-side grant). That check inspects the source system's seed data, which
+`run_neon` does not change, so it was removed from `verify--bronze--neon` too
+(the notebook stays for manual runs), leaving the bronze ingestion check.
+
 ## Risks
 
 - Streaming tables cannot be moved while an update is running.
