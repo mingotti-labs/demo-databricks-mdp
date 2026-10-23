@@ -20,7 +20,10 @@ this layout.
 **Exceptions.** neon's bronze layer has two pipelines: its ingestion is a
 managed Lakeflow Connect pipeline, which cannot hold transformation code,
 so its SCD tables are built by one separate pipeline
-(`neon_scd_modeling_python`).
+(`neon_scd_modeling_python`). acnc's silver pipeline builds Silver Landing
+only: its Silver Normalised tables are plain Delta tables rebuilt by
+`run_acnc`'s `normalised` task, which keeps `transformed_timestamp` on
+unchanged rows (openspec `correct-platform-timestamps`).
 
 **Exempt reference variants.** Resources kept only as documented reference
 material, never part of a source's official flow, are outside this rule:
@@ -108,9 +111,8 @@ it from this list):
 #### Scenario: acnc jobs after migration
 - **WHEN** the bundle is validated for any target
 - **THEN** there is no `silver_acnc` job, acnc's own jobs are `run_acnc`
-  and `verify_acnc_charity_register` (`verify--bronze--acnc--<target>`),
-  and `run_acnc` verifies silver through the shared
-  `verify_silver_normalised` job with `source: acnc`
+  and `run_acnc` verifies bronze and silver (when `verify` is true) through the
+  shared `verify_bronze` and `verify_silver_normalised` jobs with `source: acnc`
 
 ### Requirement: A full refresh cannot discard SCD2 history
 A full refresh of a bronze pipeline SHALL NOT truncate an SCD2 table.

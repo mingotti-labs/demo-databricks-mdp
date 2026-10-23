@@ -14,7 +14,7 @@
 ## 3. Migration (each drop needs explicit approval)
 - [x] 3.1 dev: backup, recreate with backfill, run, verify
 - [x] 3.2 prd: same (run SUCCESS 2026-10-22; row count equals backup); restamp check superseded by D9
-- [ ] 3.3 Drop `charity_register_scd2_backup` in dev and prd: done by the `reset` task (6.3), approved 2026-10-23
+- [x] 3.3 Drop `charity_register_scd2_backup` in dev and prd: done by the `reset` task (6.3), approved 2026-10-23
 
 ## 5. Back to standard Auto CDC (design.md; blocks archive and other sources)
 - [x] 5.1 P5: snapshot Auto CDC without `ingested_timestamp` writes 0 rows on an unchanged run
@@ -34,8 +34,8 @@
 - [x] 6.8 No pipeline retries on acnc's two pipelines (both settings `"0"`); the other 27 move to the rollout change
 - [x] 6.9 Bronze verification merged into one notebook (`verify_bronze_acnc.py`, one task, titled markdown cells); not run in dev by decision
 - [x] 6.10 `run_acnc` verification is opt-in: job parameter `verify` (default `"false"`) feeds a condition task; `verify_bronze` (before silver) and `verify_silver` run only with `verify=true`; `silver` has `run_if: NONE_FAILED`. The first version (default `ALL_SUCCESS`) excluded silver, normalised, tag and tag_patterns in prd; fixed in `fix-run-acnc-verify-gate`, tested in dev with `verify=false`
-- [ ] 6.7 prd: same, through the prd gate
+- [x] 6.7 prd: through the prd gate (2026-10-23): SCD2 65,907 rows, Landing equal to a full read, one stamp, second load wrote 0 rows; `verify=true` path not run in prd
 
 ## 4. Docs
 - [x] 4.1 NAMING.md timestamp section, silver.md, decision register, patterns register, `design_patterns.yml`
-- [ ] 4.2 At archive: update `pipeline-per-layer` (acnc's silver pipeline holds Landing only; Normalised is a job task)
+- [x] 4.2 At archive: update `pipeline-per-layer` (acnc's silver pipeline holds Landing only; Normalised is a job task)
