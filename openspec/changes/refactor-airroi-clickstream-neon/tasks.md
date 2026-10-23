@@ -1,12 +1,12 @@
 ## 1. Inventory and probe
 - [x] 1.1 airroi inventory (design.md)
-- [ ] 1.2 Inventory clickstream and neon (pipelines, ids, table owners) in dev and prd
-- [ ] 1.3 P1: change feed from an Auto CDC SCD1 target feeds a Landing streaming table
+- [x] 1.2 Inventory clickstream and neon (pipelines, ids, table owners) in dev and prd
+- [x] 1.3 P1: change feed from an Auto CDC SCD1 target feeds a Landing streaming table
 
 ## 2. neon (dev only)
 - [ ] 2.1 Dev ownership fix: user deletes human pipelines and jobs, stale dev tables dropped with approval
-- [ ] 2.2 Change data feed on the SCD tables; four Landing streaming tables (`land_changes`, `scd2` flag); silver displayed `silver--neon--<target>`; reset task
-- [ ] 2.3 `run_neon` (`ci_auto_run: "false"`) with `tag_patterns` and the `verify` gate; `verification/bronze_checks/neon.yml`; mapping entries
+- [x] 2.2 Change data feed on the SCD tables; four Landing streaming tables (`land_changes`, `scd2` flag); silver displayed `silver--neon--<target>`; reset task
+- [x] 2.3 `run_neon` (`ci_auto_run: "false"`) with `tag_patterns` and the `verify` gate (keeps the existing neon verification job: Neon connection, seed data, ingestion); mapping entries
 - [ ] 2.4 Verify dev; checkpoint
 
 ## 3. clickstream

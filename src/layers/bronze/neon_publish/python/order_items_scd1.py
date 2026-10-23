@@ -2,7 +2,10 @@
 # reasoning as orders_scd1.py.
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="order_items_scd1")
+dp.create_streaming_table(
+    name="order_items_scd1",
+    table_properties={"delta.enableChangeDataFeed": "true"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
     target="order_items_scd1",
     source="bronze_neon.order_items_raw",

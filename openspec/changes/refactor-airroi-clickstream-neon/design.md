@@ -46,6 +46,20 @@ schemas and names.
   `orders_scd1`) read by a throwaway Landing pipeline: inserts and updates
   arrive, and a second run with no change writes nothing.
 
+## Probe result
+
+- **P1 (2026-10-23, dev, throwaway pipeline `probe--scd1-change-feed--dev` on a
+  600-row copy of clickstream events in `pattern_bronze_publish`)**: a streaming
+  Auto CDC SCD1 table with change data feed on, and a Landing streaming table
+  over its change feed (`insert` and `update_postimage`). Run 1 loaded 600 rows
+  into both; run 2, no change, wrote nothing; one new event gave 1 insert in
+  SCD1 and in Landing; the same event re-sent later gave 1 update in both.
+  Landing equals SCD1 (0 missing, 0 extra), and only the changed rows got a new
+  `transformed_timestamp` (599 kept the first stamp, 1 and 1 the later ones). A
+  first attempt at the update lost because the raw `timestamp` is a string with a
+  `T` separator and my edited value used a space, so it sorted as older: a probe
+  mistake, not a pattern problem.
+
 ## Risks
 
 - Streaming tables cannot be moved while an update is running.

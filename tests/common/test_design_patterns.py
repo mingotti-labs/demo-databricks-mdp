@@ -9,7 +9,9 @@ ROOT = Path(__file__).resolve().parents[2]
 MAPPING = load_mapping(ROOT / "src/common/design_patterns.yml")
 REGISTER = (ROOT / "references/docs/registers/design-patterns.md").read_text()
 REGISTER_IDS = set(re.findall(r"^### (\w+)$", REGISTER, re.M))
-SOURCE_CODE = "\n".join(p.read_text() for p in (ROOT / "src/layers").rglob("*.py"))
+SOURCE_CODE = "\n".join(
+    p.read_text() for ext in ("*.py", "*.sql") for p in (ROOT / "src/layers").rglob(ext)
+)
 
 
 def all_ids():
