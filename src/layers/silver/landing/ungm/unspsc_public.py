@@ -1,13 +1,28 @@
 # SCD2 selected over SCD1 per silver.md's precedence rule (SCD2 > SCD1 > SCD0).
+# Reads only the rows Auto CDC inserted or closed in the bronze SCD2 table (its
+# change data feed) and applies them by version key, so the run-time stamp lands
+# only on changed rows (openspec rollout-bronze-full-pattern).
 import sys
 
 from pyspark import pipelines as dp
 
 sys.path.insert(0, f"{spark.conf.get('workspace_file_path')}/src")
-from common.silver_landing import land  # noqa: E402
+from common.silver_landing import land_changes  # noqa: E402
 
 
-@dp.materialized_view()
-def unspsc_public():
-    df = spark.read.table("bronze_ungm_publish.unspsc_public_scd2")
-    return land(df, natural_keys=["Id"], source_name="ungm", scd2=True)
+@dp.temporary_view()
+def unspsc_public_changes():
+    return land_changes(
+        spark, "bronze_ungm_publish.unspsc_public_scd2", ["Id"], "ungm"
+    )
+
+
+dp.create_streaming_table(name="silver_landing_ungm.unspsc_public")
+dp.create_auto_cdc_flow(
+    target="silver_landing_ungm.unspsc_public",
+    source="unspsc_public_changes",
+    keys=["Id", "scd_valid_from_timestamp"],
+    sequence_by="_commit_version",
+    except_column_list=["_commit_version"],
+    stored_as_scd_type=1,
+)

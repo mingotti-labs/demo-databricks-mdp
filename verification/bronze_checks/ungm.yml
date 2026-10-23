@@ -1,0 +1,9 @@
+source: ungm
+raw_schema: bronze_ungm
+publish_schema: bronze_ungm_publish
+tables:
+  - raw: unspsc_public_raw
+    keys: [Id]
+    columns: [Id, ParentId, UNSPSCode, Title]
+    scd1: unspsc_public_scd1
+    scd2: unspsc_public_scd2

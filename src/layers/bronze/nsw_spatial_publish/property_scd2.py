@@ -9,11 +9,18 @@
 # confirmed the mismatch (486 distinct `propid` among 500 rows) before
 # building this, then confirmed `addressstringoid` is unique across all 500
 # rows with zero NULLs.
+#
+# Change data feed feeds Silver Landing (the bronze full pattern, openspec
+# rollout-bronze-full-pattern); raw has no per-load column, so the snapshot is
+# raw as is.
 from pyspark import pipelines as dp
 
 dp.create_streaming_table(
     name="bronze_nsw_spatial_publish.property_scd2",
-    table_properties={"pipelines.reset.allowed": "false"},
+    table_properties={
+        "pipelines.reset.allowed": "false",
+        "delta.enableChangeDataFeed": "true",
+    },
 )
 dp.create_auto_cdc_from_snapshot_flow(
     target="bronze_nsw_spatial_publish.property_scd2",

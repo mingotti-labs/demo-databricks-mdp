@@ -151,8 +151,8 @@ current state per run (an upserted table or a Materialized View). Platform
 timestamps are excluded from history tracking, but are still rewritten in place
 on every current row each run (openspec `correct-platform-timestamps`), so it is
 being replaced by `bronze_publish_scd2_autocdc_full_load_python` source by
-source. Code: `src/layers/bronze/{neon,ungm,nsw_spatial,airroi,iso,geonames}_publish/`.
-Used by: neon, ungm, nsw_spatial, airroi, iso, geonames. Evidence: `prd`
+source. Code: `src/layers/bronze/{neon,airroi}_publish/`.
+Used by: neon, airroi. Evidence: `prd`
 (neon: `dev`).
 
 ### bronze_publish_scd2_autocdc_full_load_python
@@ -165,8 +165,11 @@ rows are not written; the SCD2 table has no platform timestamp columns. Change
 data feed on, for Silver Landing. Not possible: streaming Auto CDC (a
 materialized view cannot be streamed) and a function source carrying raw's
 exact fetch time (it cannot read a dataset of its own pipeline). Code:
-`src/layers/bronze/acnc_publish/charity_register_scd2.py`.
-Used by: [acnc](data-sources.md#acnc). Evidence: `dev`.
+`src/layers/bronze/acnc_publish/charity_register_scd2.py`,
+`src/layers/bronze/{ungm,iso,geonames,nsw_spatial}_publish/`.
+Used by: [acnc](data-sources.md#acnc), [ungm](data-sources.md#ungm),
+[iso](data-sources.md#iso), [geonames](data-sources.md#geonames),
+[nsw_spatial](data-sources.md#nsw_spatial). Evidence: `prd` (acnc), `dev`.
 
 ### bronze_publish_scd1_autocdc_snapshot_python
 The same snapshot flow, keeping only the latest version per key. Used where a
@@ -219,7 +222,7 @@ Used by: [iso](data-sources.md#iso). Evidence: `prd`.
 One Materialized View per Bronze Publish table, applying the shared mechanical
 conventions of Silver Landing. Code: `src/layers/silver/landing/`,
 `src/common/silver_landing.py`. Contract: [silver.md](../medallion/silver.md).
-Used by: all sources with a landing schema except acnc. Evidence: `prd` (neon,
+Used by: the sources with a landing schema that are not on the bronze full pattern (neon, clickstream, airroi). Evidence: `prd` (neon,
 clickstream, airroi: `dev`).
 
 ### silver_landing_change_feed_python
@@ -227,8 +230,9 @@ A streaming table that reads only the rows changed in its Bronze Publish SCD2
 table (`readChangeFeed`) and applies them by version key with
 `create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
 rows, and sets `ingested_timestamp` to the version's `__START_AT`. Code:
-`src/layers/silver/landing/acnc/`. Used by:
-[acnc](data-sources.md#acnc). Evidence: `dev`.
+`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial}/`, shared helper
+`land_changes` in `src/common/silver_landing.py`. Used by: acnc, ungm, iso,
+geonames, nsw_spatial. Evidence: `prd` (acnc), `dev`.
 
 ### silver_normalised_spec_driven_python
 One shared pipeline driven by a per-source YAML spec validated against a JSON

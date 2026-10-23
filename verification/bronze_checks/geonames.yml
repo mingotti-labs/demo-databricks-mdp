@@ -1,0 +1,23 @@
+source: geonames
+raw_schema: bronze_geonames
+publish_schema: bronze_geonames_publish
+tables:
+  - raw: country_info_raw
+    keys: [iso_alpha2]
+    columns: [ingested_timestamp]
+    reference_rows: 252
+    scd2: country_info_scd2
+  - raw: admin1_codes_raw
+    keys: [code]
+    columns: [ingested_timestamp]
+    reference_rows: 3865
+    scd2: admin1_codes_scd2
+  - raw: admin2_codes_raw
+    keys: [code]
+    columns: [ingested_timestamp]
+    reference_rows: 47643
+    scd2: admin2_codes_scd2
+  - raw: cities_raw
+    keys: [geonameid]
+    columns: [ingested_timestamp]
+    scd2: cities_scd2

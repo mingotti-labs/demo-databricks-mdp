@@ -1,9 +1,9 @@
 # SCD Type 2 (full history, __START_AT/__END_AT) modeling of ISO 3166-1
-# country codes. `source` points at country_codes_transformed, a private
-# temp view wrapping bronze_iso.country_codes_raw -- no intermediate
+# country codes. `source` points at country_codes_snapshot, a private
+# temp view over bronze_iso.country_codes_raw -- no intermediate
 # snapshot materialized view (see phase3b-scd-snapshot-cleanup's
 # design.md: that wrapper was tried, found unnecessary, and removed
-# project-wide), just the timestamp stamp below.
+# project-wide), just the column drop below.
 #
 # Keyed by country_code_alpha2 -- confirmed unique (249 distinct of 249
 # rows) via the real source data.
@@ -13,33 +13,29 @@
 # separate "latest value" table when SCD2's `WHERE __END_AT IS NULL` gives
 # the same thing.
 #
-# transformed_timestamp is stamped here (publish layer), separate from
-# ingested_timestamp which country_codes_raw stamps (bronze layer) -- the
-# platform's two standard lineage timestamps, one per layer (see
-# NAMING.md). Both are excluded via track_history_except_column_list:
-# since current_timestamp() differs on every run, leaving them untracked
-# would make Auto CDC think every row changed every run, creating a
-# spurious new SCD2 version each time regardless of whether the real data
-# changed. Same pattern as AirROI's market_summary_scd2.py.
+# Bronze full pattern (openspec rollout-bronze-full-pattern): raw stamps
+# ingested_timestamp on every row at every load, so it is left out of the
+# snapshot; with it in, Auto CDC would rewrite every current row each run.
+# Auto CDC versions each snapshot with the pipeline update's time (__START_AT,
+# __END_AT), and Silver Landing reads the change feed (enabled below).
 from pyspark import pipelines as dp
-from pyspark.sql.functions import current_timestamp
 
 
 @dp.temporary_view()
-def country_codes_transformed():
-    return spark.read.table("bronze_iso.country_codes_raw").withColumn(
-        "transformed_timestamp", current_timestamp()
-    )
+def country_codes_snapshot():
+    return spark.read.table("bronze_iso.country_codes_raw").drop("ingested_timestamp")
 
 
 dp.create_streaming_table(
     name="bronze_iso_publish.country_codes_scd2",
-    table_properties={"pipelines.reset.allowed": "false"},
+    table_properties={
+        "pipelines.reset.allowed": "false",
+        "delta.enableChangeDataFeed": "true",
+    },
 )
 dp.create_auto_cdc_from_snapshot_flow(
     target="bronze_iso_publish.country_codes_scd2",
-    source="country_codes_transformed",
+    source="country_codes_snapshot",
     keys=["country_code_alpha2"],
     stored_as_scd_type=2,
-    track_history_except_column_list=["ingested_timestamp", "transformed_timestamp"],
 )

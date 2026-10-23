@@ -7,6 +7,8 @@ resources:
       serverless: true
       continuous: false
       configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
         ungm_base_url: ${var.ungm_base_url}
         workspace_file_path: ${workspace.file_path}
       environment:

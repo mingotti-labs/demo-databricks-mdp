@@ -2,23 +2,51 @@ resources:
   jobs:
     run_ungm:
       name: run--ungm--${bundle.target}
+      parameters:
+        # Verification is opt-in: run with verify=true to include both checks.
+        - name: verify
+          default: "false"
       tasks:
+        # One-off (openspec rollout-bronze-full-pattern); a no-op once applied.
+        - task_key: reset
+          notebook_task:
+            notebook_path: ../../migrations/reset_full_load.py
+            base_parameters:
+              catalog: ${var.catalog}
+              landing: silver_landing_ungm.unspsc_public
         - task_key: bronze
+          depends_on:
+            - task_key: reset
           pipeline_task:
             pipeline_id: ${resources.pipelines.ungm_unspsc_ingestion.id}
+        - task_key: verify_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.verify}}"
+            right: "true"
         - task_key: verify_bronze
           depends_on:
             - task_key: bronze
+            - task_key: verify_enabled
+              outcome: "true"
           run_job_task:
-            job_id: ${resources.jobs.verify_unspsc_pattern.id}
+            job_id: ${resources.jobs.verify_bronze.id}
+            job_parameters:
+              source: ungm
+        # NONE_FAILED, not the default ALL_SUCCESS: with verification off,
+        # verify_bronze is excluded, which ALL_SUCCESS does not accept.
         - task_key: silver
           depends_on:
+            - task_key: bronze
             - task_key: verify_bronze
+          run_if: NONE_FAILED
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_landing_ungm.id}
         - task_key: verify_silver
           depends_on:
             - task_key: silver
+            - task_key: verify_enabled
+              outcome: "true"
           run_job_task:
             job_id: ${resources.jobs.verify_silver_landing.id}
             job_parameters:
