@@ -32,7 +32,7 @@
 - [x] 6.5 NAMING.md, patterns register (`bronze_publish_scd2_autocdc_full_load_python`, stated as the bronze full pattern), `design_patterns.yml`, CLAUDE.md acnc entry
 - [x] 6.6 dev: run `run_acnc` twice; first loads every row, second writes 0 rows to the SCD2 table and Landing; Landing equals a full read of the SCD2 table
 - [x] 6.8 No pipeline retries: both retry settings `"0"` on all 29 pipelines
-- [x] 6.9 Bronze verification merged into one notebook (`verify_acnc_charity_register.py`, one task, titled markdown cells); not run in dev by decision
+- [x] 6.9 Bronze verification merged into one notebook (`verify_bronze_acnc.py`, one task, titled markdown cells); not run in dev by decision
 - [ ] 6.7 prd: same, through the prd gate
 
 ## 4. Docs

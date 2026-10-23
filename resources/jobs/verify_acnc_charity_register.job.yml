@@ -5,6 +5,6 @@ resources:
       tasks:
         - task_key: verify_bronze
           notebook_task:
-            notebook_path: ../../verification/verify_acnc_charity_register.py
+            notebook_path: ../../verification/verify_bronze_acnc.py
             base_parameters:
               catalog: ${var.catalog}
