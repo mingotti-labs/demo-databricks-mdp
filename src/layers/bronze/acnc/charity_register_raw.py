@@ -26,6 +26,8 @@
 # rather than import it.
 import requests
 from pyspark import pipelines as dp
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 from pyspark.sql.datasource import DataSource, DataSourceReader, InputPartition
 from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import (
@@ -55,10 +57,18 @@ _CKAN_TYPE_MAP = {
 }
 
 
+# data.gov.au answers a request now and then with a transient 5xx (a 500 at
+# offset 42000 failed a prd run, with pipeline retries off), so each request
+# retries a few times with a growing wait before the run fails.
+RETRY = Retry(total=4, backoff_factor=2, status_forcelist=[429, 500, 502, 503, 504])
+
+
 def _datastore_search(
     base_url: str, resource_id: str, limit: int, offset: int = 0
 ) -> dict:
-    response = requests.get(
+    session = requests.Session()
+    session.mount("https://", HTTPAdapter(max_retries=RETRY))
+    response = session.get(
         f"{base_url}/data/api/3/action/datastore_search",
         params={"resource_id": resource_id, "limit": limit, "offset": offset},
         headers={"User-Agent": USER_AGENT},

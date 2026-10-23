@@ -307,6 +307,9 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     matches reports of the identical failure in the Databricks Community.
     A future second CKAN dataset would copy this file's connector block
     rather than import it.
+  - **Each CKAN request retries transient 5xx/429 (4 retries, growing wait).**
+    A 500 from data.gov.au at offset 42000 failed a prd run once pipeline
+    retries were turned off; the pipeline no longer retries, the request does.
   - **Schema is inferred from CKAN's own field metadata**, not hardcoded
     to ACNC's fields — one `datastore_search?limit=1` call reads the
     resource's `fields` array and maps CKAN's `text`/`int`/`float`/
