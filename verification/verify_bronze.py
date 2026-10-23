@@ -48,7 +48,7 @@ for table in spec["tables"]:
     raw = f"{raw_schema}.{table['raw']}"
     counts = {
         "raw": count(f"SELECT count(*) AS n FROM {raw}"),
-        "valid_distinct": count(bronze_checks.valid_distinct_keys_sql(raw, table["keys"])),
+        "valid_distinct": count(bronze_checks.valid_distinct_keys_sql(raw, table["keys"], table.get("nullable_keys", []))),
     }
     if "scd2" in table:
         counts["scd2_current"] = current_rows(table["scd2"])

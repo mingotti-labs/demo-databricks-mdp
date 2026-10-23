@@ -48,9 +48,16 @@ schemas and names.
   events) and a `verify` parameter; it keeps the existing
   `verify--bronze--clickstream` job, which reads only Databricks tables and
   volumes. The SQL twin moves in the clean-up stage.
-- **airroi**: bronze 2 pipelines to 1, silver 2 to 1, drop `silver_airroi`; both
-  SCD2 views drop the stamping and the per-load `ingested_timestamp`; Normalised
-  by D1. One paid dev run (about $0.80) with `verify=true`.
+- **airroi**: bronze 2 pipelines to 1 (the ingestion pipeline keeps its key and
+  takes the SCD2 files), silver 2 to 1 (the Landing pipeline), drop
+  `silver_airroi`; both SCD2 tables follow the bronze full pattern; Normalised by
+  D1. A new load, no table moves: the `reset` task drops the old tables in the
+  environment where `run_airroi` first runs. prd tables stay untouched until then
+  (the raw views and the SCD2 history are kept; the next prd run drops the SCD2
+  history). One paid dev run (about $0.80) with `verify=true`.
+  Open risk: `_district` is NULL for three of four markets and is a key column of
+  the Landing `create_auto_cdc_flow`; whether a NULL key matches on update is
+  probed in dev (P2).
 
 ## Probe (dev)
 

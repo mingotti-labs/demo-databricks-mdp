@@ -151,9 +151,8 @@ current state per run (an upserted table or a Materialized View). Platform
 timestamps are excluded from history tracking, but are still rewritten in place
 on every current row each run (openspec `correct-platform-timestamps`), so it is
 being replaced by `bronze_publish_scd2_autocdc_full_load_python` source by
-source. Code: `src/layers/bronze/{neon,airroi}_publish/`.
-Used by: neon, airroi. Evidence: `prd`
-(neon: `dev`).
+source. Code: `src/layers/bronze/neon_publish/`.
+Used by: neon. Evidence: `dev`.
 
 ### bronze_publish_scd2_autocdc_full_load_python
 The bronze full pattern: `_raw` is a full load, so its `ingested_timestamp`
@@ -222,27 +221,26 @@ Used by: [iso](data-sources.md#iso). Evidence: `prd`.
 One Materialized View per Bronze Publish table, applying the shared mechanical
 conventions of Silver Landing. Code: `src/layers/silver/landing/`,
 `src/common/silver_landing.py`. Contract: [silver.md](../medallion/silver.md).
-Used by: the sources with a landing schema that are not on the bronze full pattern (neon, clickstream, airroi). Evidence: `prd` (neon,
-clickstream, airroi: `dev`).
+Used by: no source since airroi moved to `silver_landing_change_feed_python`; candidate for the patterns bundle.
 
 ### silver_landing_change_feed_python
 A streaming table that reads only the rows changed in its Bronze Publish SCD2
 table (`readChangeFeed`) and applies them by version key with
 `create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
 rows, and sets `ingested_timestamp` to the version's `__START_AT`. Code:
-`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial}/`, shared helper
+`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi}/`, shared helper
 `land_changes` in `src/common/silver_landing.py`. Used by: acnc, ungm, iso,
-geonames, nsw_spatial. Evidence: `prd` (acnc), `dev`.
+geonames, nsw_spatial, airroi. Evidence: `prd` (acnc), `dev`.
 
 ### silver_normalised_spec_driven_python
-One shared pipeline driven by a per-source YAML spec validated against a JSON
+Shared builders driven by a per-source YAML spec validated against a JSON
 schema; extracted entities, bridges, quarantine and value lineage are generated,
 not hand-written. Code: `src/layers/silver/normalised/`,
 `src/common/normalised_spec.py`. Contract:
 [normalised-spec](../normalised-spec/README.md).
 Used by: [acnc](data-sources.md#acnc) (`prd`), [airroi](data-sources.md#airroi)
-(`dev`). acnc's tables are built by `silver_rebuild_keep_timestamps_python`
-instead of the pipeline.
+(`dev`). Tables are built by `silver_rebuild_keep_timestamps_python`; the
+pipeline entry point was retired.
 
 ### silver_rebuild_keep_timestamps_python
 A job task that rebuilds every table of a normalised spec in full and compares
@@ -250,15 +248,15 @@ each row with the previous table (every column but `transformed_timestamp`):
 unchanged rows keep their stamp, new or changed rows get `current_timestamp()`,
 rows that are gone are removed. Code: `src/common/keep_timestamps.py`,
 `src/layers/silver/normalised/rebuild.py`. Used by:
-[acnc](data-sources.md#acnc). Evidence: `dev`.
+[acnc](data-sources.md#acnc), [airroi](data-sources.md#airroi). Evidence: `dev`.
 
 ## Operations
 
 ### bronze_silver_pipeline_per_layer
 One bronze pipeline and one silver pipeline per source, building the publish and
 landing tables by qualified name, instead of one pipeline per pattern. Used by
-acnc, ungm, iso, geonames, nsw_spatial; airroi, clickstream and neon are not yet
-refactored. Evidence: `prd`.
+acnc, ungm, iso, geonames, nsw_spatial, airroi; clickstream and neon follow it as
+far as their sources allow. Evidence: `prd`.
 
 ### cicd_run_unit
 A bundle job named `run_<unit>` chains everything a source produces; after a

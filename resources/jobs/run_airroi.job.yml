@@ -2,30 +2,81 @@ resources:
   jobs:
     run_airroi:
       name: run--airroi--${bundle.target}
+      parameters:
+        # Verification is opt-in: run with verify=true to include both checks.
+        - name: verify
+          default: "false"
       tags:
         ci_auto_run: "false"
       tasks:
-        - task_key: bronze_ingestion
+        # One-off (openspec refactor-airroi-clickstream-neon); a no-op once applied.
+        - task_key: reset
+          notebook_task:
+            notebook_path: ../../migrations/reset_full_load.py
+            base_parameters:
+              catalog: ${var.catalog}
+              landing: silver_landing_airroi.market_summary,silver_landing_airroi.market_metrics_all
+              also_drop: bronze_airroi_publish.market_summary_scd2,bronze_airroi_publish.market_metrics_all_scd2,silver_normalised_airroi.market_summary,silver_normalised_airroi.market_metrics_all,silver_normalised_airroi.country,silver_normalised_airroi.region,silver_normalised_airroi.locality,silver_normalised_airroi.district,silver_normalised_airroi.value_lineage
+        - task_key: bronze
+          depends_on:
+            - task_key: reset
           pipeline_task:
             pipeline_id: ${resources.pipelines.airroi_market_summary_ingestion.id}
-        - task_key: bronze_scd
-          depends_on:
-            - task_key: bronze_ingestion
-          pipeline_task:
-            pipeline_id: ${resources.pipelines.airroi_market_summary_scd_modeling.id}
+        - task_key: verify_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.verify}}"
+            right: "true"
         - task_key: verify_bronze
           depends_on:
-            - task_key: bronze_scd
+            - task_key: bronze
+            - task_key: verify_enabled
+              outcome: "true"
           run_job_task:
-            job_id: ${resources.jobs.verify_airroi_market_summary_pattern.id}
+            job_id: ${resources.jobs.verify_bronze.id}
+            job_parameters:
+              source: airroi
+        # NONE_FAILED, not the default ALL_SUCCESS: with verification off,
+        # verify_bronze is excluded, which ALL_SUCCESS does not accept.
         - task_key: silver
           depends_on:
+            - task_key: bronze
             - task_key: verify_bronze
-          run_job_task:
-            job_id: ${resources.jobs.silver_airroi.id}
-        - task_key: verify_silver
+          run_if: NONE_FAILED
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_landing_airroi.id}
+        - task_key: normalised
           depends_on:
             - task_key: silver
+          notebook_task:
+            notebook_path: ../../src/layers/silver/normalised/rebuild.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: airroi
+              workspace_file_path: ${workspace.file_path}
+        - task_key: tag
+          depends_on:
+            - task_key: normalised
+          notebook_task:
+            notebook_path: ../../src/layers/silver/normalised/tag.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: airroi
+              workspace_file_path: ${workspace.file_path}
+        - task_key: tag_patterns
+          depends_on:
+            - task_key: normalised
+          notebook_task:
+            notebook_path: ../../src/common/tag_design_patterns.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: airroi
+              workspace_file_path: ${workspace.file_path}
+        - task_key: verify_silver
+          depends_on:
+            - task_key: tag
+            - task_key: verify_enabled
+              outcome: "true"
           run_job_task:
             job_id: ${resources.jobs.verify_silver_normalised.id}
             job_parameters:

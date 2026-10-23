@@ -19,6 +19,12 @@ def test_valid_distinct_keys_sql_excludes_null_keys():
     assert "a IS NOT NULL AND b IS NOT NULL" in sql and "DISTINCT a, b" in sql
 
 
+def test_nullable_key_is_not_filtered():
+    sql = valid_distinct_keys_sql("c.s.t", ["a", "b"], ["b"])
+    assert "a IS NOT NULL" in sql and "b IS NOT NULL" not in sql
+    assert "WHERE" not in valid_distinct_keys_sql("c.s.t", ["a"], ["a"])
+
+
 def test_passes_when_every_row_landed():
     assert check_table(PLAIN, OK, {"id"}) == []
 

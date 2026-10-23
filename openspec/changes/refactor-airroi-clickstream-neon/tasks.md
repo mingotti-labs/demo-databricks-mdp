@@ -18,8 +18,8 @@
 - [x] 3.4 Verified dev 2026-10-23: run 1 with verify=true all tasks SUCCESS (SCD1 600, Landing 600, raw 600, one transformed_timestamp); run 2 SUCCESS, Landing still 600 with one stamp (0 rows written)
 
 ## 4. airroi
-- [ ] 4.1 Migration job (table moves, delete emptied pipelines); user approves deletes
-- [ ] 4.2 Merge pipelines; bronze full pattern on both SCD2 tables; two Landing streaming tables; Normalised through the `normalised` task; remove `silver_airroi`; flat `run_airroi`; `bronze_checks/airroi.yml`
+- [x] 4.1 No migration job: a new load, as for the other full-load sources. The `reset` task of `run_airroi` drops the old Landing views, both SCD2 tables and the seven Normalised views while Landing is still a materialized view (dev drops approved by the user); the user deletes the emptied pipelines first
+- [x] 4.2 One bronze pipeline (`bronze--airroi--<target>`, SCD2 files joined), bronze full pattern on both SCD2 tables, two Landing streaming tables in `silver--airroi--<target>` (Landing only), Normalised through the `normalised` task, `silver_airroi` and the Normalised pipeline removed, flat `run_airroi`, `bronze_checks/airroi.yml` (new `nullable_keys` option: `_district` is NULL for three markets), the four old verify notebooks and `verify--bronze--airroi` removed, `src/layers/silver/normalised/pipeline.py` retired
 - [ ] 4.3 One dev run with `verify=true` (about $0.80); checkpoint. prd: migration only; a verified prd run only on request
 
 ## 5. Clean-up: reference-only code to the patterns bundle (last; can be cut)

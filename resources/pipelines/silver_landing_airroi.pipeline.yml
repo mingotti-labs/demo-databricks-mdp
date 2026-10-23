@@ -1,7 +1,7 @@
 resources:
   pipelines:
     silver_landing_airroi:
-      name: silver--landing--airroi--${bundle.target}
+      name: silver--airroi--${bundle.target}
       catalog: ${var.catalog}
       schema: silver_landing_airroi
       serverless: true

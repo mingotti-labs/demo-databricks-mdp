@@ -71,13 +71,14 @@ richer variant if it exists; fall back only when it doesn't. See
 ### airroi
 - **What it is**: AirROI short-term rental market intelligence API (4 real
   markets: Vitoria da Conquista/BA, Urubici/SC, Tauranga/NZ, Prado/BA)
-- **Design patterns**: [`bronze_rest_api_materialized_view_python`](design-patterns.md#bronze_rest_api_materialized_view_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python)
+- **Design patterns**: [`bronze_rest_api_materialized_view_python`](design-patterns.md#bronze_rest_api_materialized_view_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python)
 - **Bronze raw**: `bronze_airroi.{market_metrics_all,market_summary}_raw`
 - **Bronze Publish** (`bronze_airroi_publish`): `market_metrics_all_scd2`,
   `market_summary_scd2` (no SCD1 variant exists for either)
 - **Consumed by Silver Landing**: yes — both → `silver_landing_airroi`
 - **Consumed by Silver Normalised**: yes — `silver_normalised_airroi` (spec
-  `src/layers/silver/normalised/specs/airroi.yml`, first normalised source)
+  `src/layers/silver/normalised/specs/airroi.yml`), rebuilt by the `normalised`
+  task of `run_airroi`
 
 ### iso
 - **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,

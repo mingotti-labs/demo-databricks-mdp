@@ -10,7 +10,15 @@ from pathlib import Path
 import yaml
 
 REQUIRED = {"raw", "keys", "columns"}
-OPTIONAL = {"scd1", "scd2", "quarantine", "quarantine_not_empty", "absent_columns", "reference_rows"}
+OPTIONAL = {
+    "scd1",
+    "scd2",
+    "quarantine",
+    "quarantine_not_empty",
+    "absent_columns",
+    "reference_rows",
+    "nullable_keys",
+}
 TOLERANCE = 0.02
 
 
@@ -30,13 +38,11 @@ def load_spec(path: str | Path) -> dict:
     return spec
 
 
-def valid_distinct_keys_sql(table: str, keys: list[str]) -> str:
-    """Count of distinct key combinations with no NULL key column."""
-    not_null = " AND ".join(f"{k} IS NOT NULL" for k in keys)
-    return (
-        f"SELECT count(*) AS n FROM (SELECT DISTINCT {', '.join(keys)} "
-        f"FROM {table} WHERE {not_null})"
-    )
+def valid_distinct_keys_sql(table: str, keys: list[str], nullable: list[str] = ()) -> str:
+    """Count of distinct key combinations with no NULL in a key column that may not be NULL."""
+    required = [k for k in keys if k not in nullable]
+    where = f" WHERE {' AND '.join(f'{k} IS NOT NULL' for k in required)}" if required else ""
+    return f"SELECT count(*) AS n FROM (SELECT DISTINCT {', '.join(keys)} FROM {table}{where})"
 
 
 def check_table(table: dict, counts: dict, columns: set[str]) -> list[str]:

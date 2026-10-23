@@ -1,0 +1,15 @@
+source: airroi
+raw_schema: bronze_airroi
+publish_schema: bronze_airroi_publish
+tables:
+  - raw: market_summary_raw
+    keys: [_country, _region, _locality, _district]
+    nullable_keys: [_district]
+    columns: [ingested_timestamp]
+    reference_rows: 4
+    scd2: market_summary_scd2
+  - raw: market_metrics_all_raw
+    keys: [_country, _region, _locality, _district, date]
+    nullable_keys: [_district]
+    columns: [ingested_timestamp]
+    scd2: market_metrics_all_scd2
