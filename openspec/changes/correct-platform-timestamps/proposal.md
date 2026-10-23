@@ -39,14 +39,16 @@ pipeline:
 
 - **Bronze full pattern.** `_raw` is a full load (a materialized view), so every
   row's `ingested_timestamp` changes on every load. That column is never part
-  of the snapshot. Bronze Publish SCD2 is `create_auto_cdc_from_snapshot_flow`
-  with a function source that returns raw's rows without `ingested_timestamp`
-  and, as the snapshot's version, raw's fetch time cut to the millisecond (Auto
-  CDC keeps the version to the millisecond). Auto CDC writes that version as
-  `__START_AT` on the versions it inserts and `__END_AT` on the ones it closes;
-  unchanged rows are not written. The SCD2 table has no platform timestamp
-  columns. Streaming Auto CDC is not an option: a materialized view cannot be
-  streamed (P8).
+  of the snapshot. Bronze Publish SCD2 is standard
+  `create_auto_cdc_from_snapshot_flow` from a temporary view over
+  `charity_register_valid` without `ingested_timestamp` (nor the SCD1 stamp
+  `transformed_timestamp`). Auto CDC versions each snapshot with the pipeline
+  update's time: `__START_AT` on the versions it inserts, `__END_AT` on the
+  ones it closes; unchanged rows are not written. The SCD2 table has no
+  platform timestamp columns. Streaming Auto CDC is not an option (a
+  materialized view cannot be streamed, P8), and neither is a function source
+  carrying raw's exact fetch time (it cannot read a dataset of its own
+  pipeline, design.md D7).
 - **Silver Landing settles both timestamps.** A streaming table reading the SCD2
   table's change feed, so it receives only the versions Auto CDC inserted or
   closed (as today, #88). It stamps `transformed_timestamp = current_timestamp()`
@@ -60,6 +62,10 @@ pipeline:
   2026-10-23) and rebuilt from one load. Existing SCD2 history is lost.
 - **Retired**: the `scd2_merge` task, `src/common/scd2_merge.py`,
   `src/layers/bronze/scd2_merge.py`, the #88 migration task and its notebook.
+- **No pipeline retries, acnc first**: acnc's two pipelines set both retry
+  settings to `"0"`; a failed update fails once instead of repeating the same
+  error. The other pipelines follow in the rollout change (changing them here
+  would make CI run every unit in prd).
 - **Docs**: NAMING.md "Platform-added timestamp columns", the patterns register
   (the bronze full pattern stated as such) and `design_patterns.yml`.
 - **Out of scope**: SCD1 tables; the other sources (one change each, once acnc

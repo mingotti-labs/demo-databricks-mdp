@@ -25,12 +25,15 @@
 - [ ] 5.6 Silver Normalised: revisit with the user after 5.5
 
 ## 6. Bronze full pattern (implement PR)
-- [ ] 6.1 Bronze SCD2 back in the bronze pipeline: P6's function source, own flow name, change data feed on, `pipelines.reset.allowed=false`
-- [ ] 6.2 Landing: `ingested_timestamp = __START_AT`; verification checks the platform columns on Landing, not the SCD2 table
-- [ ] 6.3 `run_acnc`: one-off `reset` task replaces `migrate`; remove the `scd2_merge` task; delete `src/common/scd2_merge.py` (and its test), `src/layers/bronze/scd2_merge.py`, `migrations/acnc_platform_timestamps.py`
-- [ ] 6.4 Guard test allows `current_timestamp()` only in `_raw` files, the Landing stream and the stamping helpers
-- [ ] 6.5 NAMING.md, patterns register (`bronze_publish_scd2_autocdc_full_load_python`, stated as the bronze full pattern), `design_patterns.yml`, CLAUDE.md acnc entry
-- [ ] 6.6 dev: run `run_acnc` twice; first loads every row, second writes 0 rows to the SCD2 table and Landing; Landing equals a full read of the SCD2 table
+- [x] 6.1 Bronze SCD2 back in the bronze pipeline: snapshot view over `charity_register_valid` (P6's function source is not possible, design.md D7), change data feed on, `pipelines.reset.allowed=false`
+- [x] 6.2 Landing: `ingested_timestamp = __START_AT`; verification checks the platform columns on Landing, not the SCD2 table
+- [x] 6.3 `run_acnc`: one-off `reset` task replaces `migrate`; remove the `scd2_merge` task; delete `src/common/scd2_merge.py` (and its test), `src/layers/bronze/scd2_merge.py`, `migrations/acnc_platform_timestamps.py`
+- [x] 6.4 Guard test allows `current_timestamp()` only in `_raw` files, the Landing stream and the stamping helpers
+- [x] 6.5 NAMING.md, patterns register (`bronze_publish_scd2_autocdc_full_load_python`, stated as the bronze full pattern), `design_patterns.yml`, CLAUDE.md acnc entry
+- [x] 6.6 dev: run `run_acnc` twice; first loads every row, second writes 0 rows to the SCD2 table and Landing; Landing equals a full read of the SCD2 table
+- [x] 6.8 No pipeline retries on acnc's two pipelines (both settings `"0"`); the other 27 move to the rollout change
+- [x] 6.9 Bronze verification merged into one notebook (`verify_bronze_acnc.py`, one task, titled markdown cells); not run in dev by decision
+- [x] 6.10 `run_acnc` verification is opt-in: job parameter `verify` (default `"false"`) feeds a condition task; `verify_bronze` and `verify_silver` run only with `verify=true`; `silver` also depends on `bronze` (a task whose dependencies are all excluded is excluded). Not yet run: the first run confirms that silver still runs with verification off
 - [ ] 6.7 prd: same, through the prd gate
 
 ## 4. Docs

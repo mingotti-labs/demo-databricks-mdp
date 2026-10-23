@@ -369,9 +369,10 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     development mode Databricks auto-retries the failed update a few
     times). Refresh a single upstream table selectively if ever needed.
   - **Corrected platform timestamps** (`correct-platform-timestamps`,
-    2026-10): `charity_register_scd2` is a plain Delta table written by
-    `run_acnc`'s `scd2_merge` task (only changed rows), no longer a
-    pipeline dataset; Silver Landing reads its change feed; Silver
+    2026-10): `charity_register_scd2` is the bronze full pattern: snapshot Auto CDC
+    in the bronze pipeline from a view over `charity_register_valid` without
+    `ingested_timestamp` (versions are the update's time, `__START_AT`);
+    Silver Landing reads its change feed and settles both timestamps; Silver
     Normalised is rebuilt by the `normalised` task. See NAMING.md
     "Platform-added timestamp columns".
 - **NSW Spatial Services** (Phase 3f) — a second reusable custom Spark

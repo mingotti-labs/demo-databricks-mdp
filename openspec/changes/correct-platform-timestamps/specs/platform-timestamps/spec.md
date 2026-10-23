@@ -16,22 +16,30 @@ keep its previous value.
 ### Requirement: A per-load column stays out of the snapshot
 In a bronze full pattern (a `_raw` table reloaded in full), a column whose value
 changes on every load SHALL NOT be part of the snapshot applied to Bronze
-Publish. `ingested_timestamp` is such a column; it SHALL be used only as the
-snapshot's version.
+Publish. `ingested_timestamp` is such a column.
 
 #### Scenario: Unchanged load
 - **WHEN** the bronze pipeline reloads `_raw` and no business column changed
 - **THEN** the SCD2 table gets no write
 
-### Requirement: An SCD2 version keeps its fetch time
-On a Bronze Publish SCD2 table, `__START_AT` SHALL be the fetch time of the load
-that created the version, to the millisecond, and `__END_AT` the fetch time of
-the load that closed it. Neither SHALL change afterwards.
+### Requirement: An SCD2 version keeps the time of the update that created it
+On a Bronze Publish SCD2 table, `__START_AT` SHALL be the time of the bronze
+pipeline update that created the version, and `__END_AT` the time of the update
+that closed it. Neither SHALL change afterwards.
 
 #### Scenario: One row changed
 - **WHEN** a load changes one row's business columns
-- **THEN** its old version gets `__END_AT` = that load's fetch time, a new version
-  gets `__START_AT` = that load's fetch time, and no other row is written
+- **THEN** its old version gets `__END_AT` = that update's time, a new version
+  gets `__START_AT` = that update's time, and no other row is written
+
+### Requirement: Pipeline updates are not retried
+The pipelines of a source on the corrected timestamps (acnc so far) SHALL set
+`pipelines.numUpdateRetryAttempts` and `pipelines.maxFlowRetryAttempts` to
+`"0"`.
+
+#### Scenario: Failing update
+- **WHEN** a pipeline update fails
+- **THEN** it is not retried automatically and the job task fails at once
 
 ### Requirement: Silver Landing settles the platform timestamps
 Silver Landing SHALL read only the rows changed in its Bronze Publish SCD2 table

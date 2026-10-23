@@ -3,16 +3,8 @@ resources:
     verify_acnc_charity_register:
       name: verify--bronze--acnc--${bundle.target}
       tasks:
-        - task_key: verify_ingestion
+        - task_key: verify_bronze
           notebook_task:
-            notebook_path: ../../verification/verify_acnc_charity_register_ingestion.py
-            base_parameters:
-              catalog: ${var.catalog}
-
-        - task_key: verify_scd
-          depends_on:
-            - task_key: verify_ingestion
-          notebook_task:
-            notebook_path: ../../verification/verify_acnc_charity_register_scd.py
+            notebook_path: ../../verification/verify_bronze_acnc.py
             base_parameters:
               catalog: ${var.catalog}

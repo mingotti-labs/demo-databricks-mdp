@@ -97,18 +97,23 @@ the upstream API/system). Corrected definition (openspec
 `correct-platform-timestamps`, decision register 2026-10-22):
 
 - **`ingested_timestamp`** — the fetch time of the data. On a `_raw` table every
-  row, stamped with `current_timestamp()` in the dataset's own query: a full
-  reload really re-fetches every row. On an SCD2 version, the fetch that created
-  that version, fixed forever, so a row's story can be read in one table. It is
-  never re-stamped past `_raw`; downstream layers carry it unchanged.
-  Aggregating tables (a Silver Normalised extracted entity, `value_lineage`)
-  carry the `min()` of their input rows: the first ingest that contributed.
+  row, stamped with `current_timestamp()` in the dataset's own query: a full load
+  really re-fetches every row. It is never re-stamped past `_raw`.
+  - **Bronze full pattern** (`_raw` is a full load): the column changes on every
+    row at every load, so it is never part of the snapshot applied to Bronze
+    Publish (it would rewrite every current row each run). Auto CDC versions
+    each snapshot with the pipeline update's time, written as `__START_AT` on
+    the versions it inserts and `__END_AT` on the ones it closes. The SCD2
+    table has no platform timestamp columns.
+  - Silver Landing sets `ingested_timestamp = __START_AT`: the update that
+    created the version (seconds to minutes after the fetch), fixed forever. Aggregating tables (a Silver Normalised
+    extracted entity, `value_lineage`) carry the `min()` of their input rows.
 - **`transformed_timestamp`** — when this table's own step inserted, modified or
   closed the row. A row the step did not touch keeps its previous value.
   `current_timestamp()` is stamped only where changes are detected, never on a
   full snapshot:
-  - bronze SCD2: the `MERGE` task stamps it, with the validity columns, only on
-    the versions it inserts or closes (`bronze_publish_scd2_merge_python`);
+  - Bronze Publish: no column; `__START_AT` and `__END_AT` carry the update times
+    (`bronze_publish_scd2_autocdc_full_load_python`);
   - Silver Landing: stamped in a stream that carries only the SCD2 table's
     changed rows (`silver_landing_change_feed_python`);
   - Silver Normalised: a full rebuild keeps the previous stamp on unchanged rows
@@ -118,10 +123,8 @@ the upstream API/system). Corrected definition (openspec
 - **Status**: acnc follows the corrected definition. The other sources still
   stamp `current_timestamp()` on the full snapshot (`track_history_except_column_list`
   stops spurious SCD2 versions there, but every current row is still rewritten
-  on every run); each moves in its own change. Existing acnc versions were
-  backfilled once with `ingested_timestamp = __START_AT` and
-  `transformed_timestamp = coalesce(__END_AT, __START_AT)`: their original fetch
-  times had been overwritten.
+  on every run); each moves in its own change. acnc's SCD2 history was not
+  migrated: it was reloaded from one fetch (2026-10).
 
 ## Volume paths
 
