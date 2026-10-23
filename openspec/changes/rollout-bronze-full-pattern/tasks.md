@@ -13,7 +13,7 @@
 ## 3. Verification
 - [ ] 3.1 `verification/verify_bronze.py` and `verification/bronze_checks/<source>.yml` for acnc, ungm, iso, geonames, nsw_spatial
 - [ ] 3.2 One job `verify--bronze--<target>` with a `source` parameter; remove the five per-source verify jobs and ten notebooks
-- [ ] 3.3 `verify` gate (parameter, condition task, `silver` also depends on `bronze`) on `run_acnc`, `run_ungm`, `run_iso`, `run_geonames`, `run_nsw_spatial`; silver Landing verification gated the same way
+- [ ] 3.3 `verify` gate (parameter, condition task, `silver` with `run_if: NONE_FAILED`) on `run_acnc`, `run_ungm`, `run_iso`, `run_geonames`, `run_nsw_spatial`; silver Landing verification gated the same way
 - [ ] 3.4 Unit tests for the spec loader
 
 ## 4. Retries

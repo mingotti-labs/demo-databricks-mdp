@@ -36,8 +36,10 @@ the per-load columns, change-feed Landing, `ingested_timestamp = __START_AT`).
 - **D5 Opt-in gate on every unit**, as in `correct-platform-timestamps` 6.10.
   `run_<unit>` jobs gain the `verify` parameter (default `"false"`), a condition
   task, and the bronze and silver verification tasks depend on it; `silver`
-  depends on `bronze` besides the verification task. The default also applies in
-  CI, so verification is off in tst/prd runs.
+  depends on `bronze` and `verify_bronze` with `run_if: NONE_FAILED` (the default
+  `ALL_SUCCESS` excluded silver and everything after it in prd when verification
+  was off; fixed and tested in `fix-run-acnc-verify-gate`). The default also
+  applies in CI, so verification is off in tst/prd runs.
 - **D6 Retries off everywhere.** `pipelines.numUpdateRetryAttempts` and
   `pipelines.maxFlowRetryAttempts` set to `"0"` on the 27 pipelines left out of
   #92. The patch is saved from that branch.
