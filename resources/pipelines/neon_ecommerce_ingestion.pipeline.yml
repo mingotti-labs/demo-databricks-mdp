@@ -2,9 +2,6 @@ resources:
   pipelines:
     neon_ecommerce_ingestion:
       name: bronze--neon--lakeflow--${bundle.target}
-      configuration:
-        pipelines.numUpdateRetryAttempts: "0"
-        pipelines.maxFlowRetryAttempts: "0"
       ingestion_definition:
         connection_name: neon_dev
         objects:
