@@ -61,6 +61,12 @@ def test_reference_rows_tolerance():
     assert check_table(table, far, {"id"})
 
 
+def test_scd1_only_table_is_valid_and_checked():
+    table = {"raw": "t_raw", "scd1": "t_scd1", "keys": ["id"], "columns": ["id"]}
+    assert check_table(table, {"raw": 10, "valid_distinct": 10, "scd1_current": 10}, {"id"}) == []
+    assert check_table(table, {"raw": 10, "valid_distinct": 10, "scd1_current": 9}, {"id"})
+
+
 def test_scd1_checked_when_listed():
     table = {**PLAIN, "scd1": "t_scd1"}
     assert check_table(table, {**OK, "scd1_current": 10}, {"id"}) == []

@@ -49,14 +49,15 @@ for table in spec["tables"]:
     counts = {
         "raw": count(f"SELECT count(*) AS n FROM {raw}"),
         "valid_distinct": count(bronze_checks.valid_distinct_keys_sql(raw, table["keys"])),
-        "scd2_current": current_rows(table["scd2"]),
     }
+    if "scd2" in table:
+        counts["scd2_current"] = current_rows(table["scd2"])
     if "scd1" in table:
         counts["scd1_current"] = count(f"SELECT count(*) AS n FROM {publish_schema}.{table['scd1']}")
     if "quarantine" in table:
         counts["quarantine"] = count(f"SELECT count(*) AS n FROM {raw_schema}.{table['quarantine']}")
     failures += bronze_checks.check_table(table, counts, set(spark.table(raw).columns))
-    summary.append(f"{table['raw']}: raw={counts['raw']}, scd2 current={counts['scd2_current']}")
+    summary.append(f"{table['raw']}: raw={counts['raw']}, scd current={counts.get('scd2_current', counts.get('scd1_current'))}")
 
 assert not failures, "; ".join(failures)
 

@@ -72,11 +72,14 @@ human admin). The successful ingestion already proves the connection is live, so
 the connection task was removed from `verify--bronze--neon` rather than widening
 the service principal's privileges.
 
-Run 2 then failed in `verify_seed_data`: it reads the Neon credentials from the
-`neon-postgres` secret scope, which the service principal cannot read (a
-Terraform-side grant). That check inspects the source system's seed data, which
-`run_neon` does not change, so it was removed from `verify--bronze--neon` too
-(the notebook stays for manual runs), leaving the bronze ingestion check.
+Runs 2 and 3 then failed in `verify_seed_data` and the ingestion check: both
+read the Neon database itself through the `neon-postgres` secret scope, which the
+service principal cannot read (a Terraform-side grant in the other repo, not worth
+it for dev-only synthetic data). Neon's bronze verification is now the generic
+`verify_bronze` job with `verification/bronze_checks/neon.yml` (raw populated,
+SCD tables equal raw; the spec accepts an SCD1-only table), and
+`verify--bronze--neon` is gone. The seed-data and source-versus-bronze notebooks
+stay for manual runs.
 
 ## Risks
 

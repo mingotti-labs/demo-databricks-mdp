@@ -36,6 +36,8 @@ open PR that drifts against `main` while implementation is pending
    (`/model`). Work through `tasks.md`, committing incrementally (see Commits
    below). If a cross-repo dependency is discovered only now, update
    `proposal.md` in this same branch (see Cross-repo dependencies below).
+   A small throwaway experiment in dev (a probe) is recorded in the change's
+   `design.md` and listed in `references/docs/registers/probes.md`.
 4. **Validate and verify** — `databricks bundle validate` before every
    deploy; deploy to `dev`; run the change's `verification/` job against
    real data (see Verification vs validation below). Only mark a task

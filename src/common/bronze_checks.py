@@ -9,8 +9,8 @@ from pathlib import Path
 
 import yaml
 
-REQUIRED = {"raw", "scd2", "keys", "columns"}
-OPTIONAL = {"scd1", "quarantine", "quarantine_not_empty", "absent_columns", "reference_rows"}
+REQUIRED = {"raw", "keys", "columns"}
+OPTIONAL = {"scd1", "scd2", "quarantine", "quarantine_not_empty", "absent_columns", "reference_rows"}
 TOLERANCE = 0.02
 
 
@@ -22,8 +22,11 @@ def load_spec(path: str | Path) -> dict:
     for table in spec["tables"]:
         missing = REQUIRED - table.keys()
         unknown = table.keys() - REQUIRED - OPTIONAL
-        if missing or unknown:
-            raise ValueError(f"{path}: {table.get('raw')}: missing {missing}, unknown {unknown}")
+        if missing or unknown or not ({"scd1", "scd2"} & table.keys()):
+            raise ValueError(
+                f"{path}: {table.get('raw')}: missing {missing}, unknown {unknown}, "
+                "or neither scd1 nor scd2"
+            )
     return spec
 
 
