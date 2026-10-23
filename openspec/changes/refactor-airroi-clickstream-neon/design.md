@@ -84,12 +84,13 @@ the service principal's privileges.
 
 Runs 2 and 3 then failed in `verify_seed_data` and the ingestion check: both
 read the Neon database itself through the `neon-postgres` secret scope, which the
-service principal cannot read (a Terraform-side grant in the other repo, not worth
-it for dev-only synthetic data). Neon's bronze verification is now the generic
-`verify_bronze` job with `verification/bronze_checks/neon.yml` (raw populated,
-SCD tables equal raw; the spec accepts an SCD1-only table), and
-`verify--bronze--neon` is gone. The seed-data and source-versus-bronze notebooks
-stay for manual runs.
+service principal cannot read. That is a missing grant, not a reason to drop the
+checks: it is proposed in `demo-databricks-iac` as `grant-cicd-read-neon-secrets`
+(PR #52). Until it is applied, neon's bronze verification is the generic
+`verify_bronze` job with `verification/bronze_checks/neon.yml` (raw populated, SCD
+tables equal raw; the spec accepts an SCD1-only table), and `verify--bronze--neon`
+is gone. The seed-data and source-versus-bronze notebooks stay; task 2.6 puts
+them back into the automated verification once the grant is applied.
 
 ## Neon dev result (2026-10-23)
 

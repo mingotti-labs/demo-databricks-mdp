@@ -100,6 +100,12 @@ Opus if the probe behaves unlike the earlier ones, or if a clickstream or
 neon table move misbehaves (streaming tables fed by Lakeflow Connect or Auto
 Loader).
 
+## Cross-repo dependencies
+
+Depends on `grant-cicd-read-neon-secrets` in `demo-databricks-iac` (PR #52): the
+CI/CD service principal needs `READ` on the `neon-postgres` secret scope for
+neon's seed-data and source-versus-bronze checks. Only task 2.6 waits on it.
+
 ## Context
 
 Follows `acnc-two-pipelines`, `ungm-iso-geonames-nsw-two-pipelines`,
