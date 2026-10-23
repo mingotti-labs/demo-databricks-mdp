@@ -23,11 +23,7 @@
 - [ ] 4.3 One dev run with `verify=true` (about $0.80); checkpoint. prd: migration only; a verified prd run only on request
 
 ## 5. Clean-up: reference-only code to the patterns bundle (last; can be cut)
-- [ ] 5.1 Move `charity_register_scd1`, `unspsc_public_scd1`, `property_scd1`, neon `customers_scd1` and `products_scd1` to the patterns bundle; drop the live tables in dev and prd (explicit approval); bronze verification specs stop listing them
-- [ ] 5.2 `charity_register_valid` stops stamping; remove the guard test exception
-- [ ] 5.3 Move the SQL twins to the patterns bundle: neon SQL SCD pipeline and SQL SCD2 merge job, clickstream SQL SCD pipeline (and its human-owned or stale dev tables, with approval); empty the exempt lists in the specs
+- [x] 5.1 One representative per pattern moved to `references/patterns/` (schema `pattern_bronze_publish`, tables named by the register ID): SCD1 snapshot (from `unspsc_public_scd1`), SCD1 materialized view SQL, SCD1 stream SQL, SCD2 MERGE SQL job; the duplicates (`charity_register_scd1`, `property_scd1`, neon `customers_scd1` and `products_scd1` and the other SQL twins, the products merge) are removed from the live bundle; `tag_patterns` tags both pattern schemas; verification specs and `design_patterns.yml` no longer list them
+- [x] 5.2 `charity_register_valid` stops stamping; the guard test has no exception and covers airroi
+- [ ] 5.3 After the user deletes the emptied pipelines and jobs and approves the drops: drop the live tables no longer built (dev and prd SCD1 of acnc, ungm, nsw_spatial; dev neon `customers_scd1`, `products_scd1`, the six SQL tables, clickstream `web_events_scd1_sql`); deploy and run the pattern pipelines in dev
 - [ ] 5.4 Merge the CKAN HTTP retry (branch `fix/ckan-http-retry`)
-
-## 6. Specs and docs
-- [ ] 6.1 Empty the "Sources pending refactor" lists (MODIFIED deltas with full requirement text); update NAMING.md, CLAUDE.md, the patterns register and source registers
-- [ ] 6.2 Archive
