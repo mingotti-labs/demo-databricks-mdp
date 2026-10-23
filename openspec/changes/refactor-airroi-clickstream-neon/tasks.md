@@ -8,13 +8,13 @@
 - [x] 2.2 Change data feed on the SCD tables; four Landing streaming tables (`land_changes`, `scd2` flag); silver displayed `silver--neon--<target>`; reset task
 - [x] 2.3 `run_neon` (`ci_auto_run: "false"`) with `tag_patterns` and the `verify` gate (neon bronze verification is the generic `verify_bronze` job with `bronze_checks/neon.yml`; the Neon-source checks stay as manual notebooks); mapping entries
 - [x] 2.4 Verify dev; checkpoint (2026-10-23): Landing x4 are streaming tables, equal to their bronze tables (200, 50, 500, 1,240), one stamp each; the second load wrote 0 rows to bronze and Landing; `verify=true` run passes
+- [x] 2.5 neon resources defined under `targets.dev.resources` (dev only); user deletes the prd copies before the prd deploy
 
 ## 3. clickstream
 - [ ] 3.1 Dev ownership fix as 2.1
 - [x] 3.2 Merge the Auto Loader and Python SCD pipelines (no migration job: SCD1 of append-only events is recreated from raw); Landing streaming table; silver displayed `silver--clickstream--<target>`
 - [x] 3.3 `run_clickstream` (`generate` and `verify` parameters, `ci_auto_run: "false"`), mapping entries
 - [ ] 3.4 Verify dev; checkpoint
-- [x] 2.5 neon resources defined under `targets.dev.resources` (dev only); user deletes the prd copies before the prd deploy
 
 ## 4. airroi
 - [ ] 4.1 Migration job (table moves, delete emptied pipelines); user approves deletes
