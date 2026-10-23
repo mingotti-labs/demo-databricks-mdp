@@ -260,3 +260,14 @@ acnc alone (about 17 min; checked with `cicd/affected_units.py`).
   the stamps of Landing and of Normalised (`charity_register`, `state`) were
   unchanged. `verify_silver` was cancelled at the user's request (compute);
   every other task SUCCESS.
+
+## Opt-in verification
+
+The verification tasks cost a serverless start-up each (41 to 47 s for bronze)
+and found nothing on repeated runs. `run_acnc` has a job parameter `verify`
+(default `"false"`); a condition task (no compute) gates `verify_bronze` and
+`verify_silver` on `verify=true`. Databricks treats an excluded upstream task as
+successful, except that a task whose dependencies are all excluded is excluded
+as well, so `silver` depends on `bronze` besides `verify_bronze`. Because CI
+runs the job with its defaults, verification is off in tst/prd runs too until
+the default or the CI command changes. Source: Databricks docs, "Run if".

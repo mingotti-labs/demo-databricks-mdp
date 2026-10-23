@@ -2,6 +2,10 @@ resources:
   jobs:
     run_acnc:
       name: run--acnc--${bundle.target}
+      parameters:
+        # Verification is opt-in: run with verify=true to include both checks.
+        - name: verify
+          default: "false"
       tasks:
         # One-off (openspec correct-platform-timestamps); a no-op once applied.
         - task_key: reset
@@ -14,13 +18,23 @@ resources:
             - task_key: reset
           pipeline_task:
             pipeline_id: ${resources.pipelines.acnc_charity_register_ingestion.id}
+        - task_key: verify_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.verify}}"
+            right: "true"
         - task_key: verify_bronze
           depends_on:
             - task_key: bronze
+            - task_key: verify_enabled
+              outcome: "true"
           run_job_task:
             job_id: ${resources.jobs.verify_acnc_charity_register.id}
+        # Depends on bronze as well: a task whose dependencies are all excluded
+        # is excluded too, which would skip silver when verification is off.
         - task_key: silver
           depends_on:
+            - task_key: bronze
             - task_key: verify_bronze
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_normalised_acnc.id}
@@ -54,6 +68,8 @@ resources:
         - task_key: verify_silver
           depends_on:
             - task_key: tag
+            - task_key: verify_enabled
+              outcome: "true"
           run_job_task:
             job_id: ${resources.jobs.verify_silver_normalised.id}
             job_parameters:
