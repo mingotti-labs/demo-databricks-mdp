@@ -196,11 +196,18 @@ are superseded; D3 to D5 stay.
   `bronze_publish_scd2_merge_python`). `_raw` is a full load, so its
   `ingested_timestamp` changes on every load and is never part of the
   snapshot. The SCD2 table is a streaming table in the bronze pipeline, built
-  by `create_auto_cdc_from_snapshot_flow` with P6's function source: raw's rows
-  with non-null ABN and without `ingested_timestamp`, versioned by
-  `date_trunc("millisecond", max(ingested_timestamp))`, or `None` when that
-  version is already applied. Change data feed on, `pipelines.reset.allowed`
-  false. No platform timestamp columns on the SCD2 table.
+  by standard `create_auto_cdc_from_snapshot_flow` from a temporary view over
+  `charity_register_valid` (raw without NULL-ABN rows) that drops
+  `ingested_timestamp` and the `transformed_timestamp` that valid stamps for
+  SCD1. Auto CDC versions each snapshot with the pipeline update's time
+  (`__START_AT` on inserted versions, `__END_AT` on closed ones). Change data
+  feed on, `pipelines.reset.allowed` false. No platform timestamp columns on
+  the SCD2 table. P6's function source (exact fetch time as version) was
+  dropped: in the real pipeline it fails with
+  `REFERENCE_DLT_DATASET_OUTSIDE_QUERY_DEFINITION`, because a function source
+  cannot read a dataset defined in its own pipeline. Cost: `__START_AT` is the
+  update's time, seconds to minutes after raw's fetch (35 s in dev), not the
+  exact fetch time.
 - **D8 Silver Landing settles both timestamps.** D3's stream, plus
   `ingested_timestamp = __START_AT`, kept next to `scd_valid_from_timestamp`
   (same value; `ingested_timestamp` is the standard name Normalised reads).
@@ -220,11 +227,33 @@ because `ingested_timestamp` changes.
 ## Risks
 
 - Stale flow state: the bronze pipeline ran a snapshot flow into
-  `charity_register_scd2` before #88. Give the new flow its own name so it
-  starts with no stored version; check in dev that the first run loads every
-  row.
-- Landing's stream must start from the new SCD2 table, not an old checkpoint:
-  check in dev that Landing equals a full read of the SCD2 table after the
-  first run.
+  `charity_register_scd2` before #88. Checked in dev: the first run after the
+  drop loaded every row.
+- Landing's stream must start from the new SCD2 table, not an old checkpoint.
+  Checked in dev: Landing equals a full read of the SCD2 table after the first
+  run.
 - Ownership: the job runs as the CI/CD service principal, which owns the
   dropped tables, as in #88's migration.
+
+## No pipeline retries
+
+A failed update was retried automatically (platform defaults: 5 update and 2
+flow attempts), so the first dev run of this change failed over and over on a
+code error and spent compute each time. All 29 pipelines (main and patterns
+bundles) now set `pipelines.numUpdateRetryAttempts` and
+`pipelines.maxFlowRetryAttempts` to `"0"`: an error fails the update once.
+
+## Dev result (2026-10-23, new pattern)
+
+- P6 in the real pipeline failed (see D7). Changed to a snapshot view over
+  `charity_register_valid`.
+- `run_acnc` run 1: `reset` dropped the old SCD2 table, its backup and Landing;
+  the SCD2 table loaded 65,907 rows (all current, one `__START_AT`, 35 s after
+  raw's fetch); Landing 65,907 rows, both timestamps populated,
+  `ingested_timestamp` = `scd_valid_from_timestamp` on every row, equal to a
+  full read of the SCD2 table (0 missing, 0 extra); all tasks SUCCESS.
+- `run_acnc` run 2 (raw re-fetched, every row has a new `ingested_timestamp`,
+  no business change): the SCD2 table wrote 0 rows, Landing wrote 0 rows, and
+  the stamps of Landing and of Normalised (`charity_register`, `state`) were
+  unchanged. `verify_silver` was cancelled at the user's request (compute);
+  every other task SUCCESS.

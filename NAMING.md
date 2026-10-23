@@ -101,18 +101,18 @@ the upstream API/system). Corrected definition (openspec
   really re-fetches every row. It is never re-stamped past `_raw`.
   - **Bronze full pattern** (`_raw` is a full load): the column changes on every
     row at every load, so it is never part of the snapshot applied to Bronze
-    Publish (it would rewrite every current row each run). It is used only as
-    the snapshot's version, cut to the millisecond; Auto CDC writes that as
-    `__START_AT` on the versions it inserts and `__END_AT` on the ones it
-    closes. The SCD2 table has no platform timestamp columns.
-  - Silver Landing sets `ingested_timestamp = __START_AT`: the fetch that
-    created the version, fixed forever. Aggregating tables (a Silver Normalised
+    Publish (it would rewrite every current row each run). Auto CDC versions
+    each snapshot with the pipeline update's time, written as `__START_AT` on
+    the versions it inserts and `__END_AT` on the ones it closes. The SCD2
+    table has no platform timestamp columns.
+  - Silver Landing sets `ingested_timestamp = __START_AT`: the update that
+    created the version (seconds to minutes after the fetch), fixed forever. Aggregating tables (a Silver Normalised
     extracted entity, `value_lineage`) carry the `min()` of their input rows.
 - **`transformed_timestamp`** — when this table's own step inserted, modified or
   closed the row. A row the step did not touch keeps its previous value.
   `current_timestamp()` is stamped only where changes are detected, never on a
   full snapshot:
-  - Bronze Publish: no column; `__START_AT` and `__END_AT` carry the fetch times
+  - Bronze Publish: no column; `__START_AT` and `__END_AT` carry the update times
     (`bronze_publish_scd2_autocdc_full_load_python`);
   - Silver Landing: stamped in a stream that carries only the SCD2 table's
     changed rows (`silver_landing_change_feed_python`);

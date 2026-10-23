@@ -370,8 +370,8 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     times). Refresh a single upstream table selectively if ever needed.
   - **Corrected platform timestamps** (`correct-platform-timestamps`,
     2026-10): `charity_register_scd2` is the bronze full pattern: snapshot Auto CDC
-    in the bronze pipeline with a function source whose version is raw's
-    fetch time (`__START_AT`), `ingested_timestamp` never in the snapshot;
+    in the bronze pipeline from a view over `charity_register_valid` without
+    `ingested_timestamp` (versions are the update's time, `__START_AT`);
     Silver Landing reads its change feed and settles both timestamps; Silver
     Normalised is rebuilt by the `normalised` task. See NAMING.md
     "Platform-added timestamp columns".

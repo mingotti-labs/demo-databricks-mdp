@@ -158,16 +158,15 @@ Used by: neon, ungm, nsw_spatial, airroi, iso, geonames. Evidence: `prd`
 ### bronze_publish_scd2_autocdc_full_load_python
 The bronze full pattern: `_raw` is a full load, so its `ingested_timestamp`
 changes on every row at every load and is never part of the snapshot. Standard
-`create_auto_cdc_from_snapshot_flow` with a function source returning the raw
-rows without that column and, as the snapshot's version, raw's fetch time cut to
-the millisecond (or `None` once applied; Auto CDC keeps the version to the
-millisecond, so a finer value loops forever). The version becomes `__START_AT`
-on inserted versions and `__END_AT` on closed ones; unchanged rows are not
-written; the SCD2 table has no platform timestamp columns. Change data feed on,
-for Silver Landing. A materialized view cannot be streamed, so streaming Auto CDC
-is not an option for a full load. Code:
+`create_auto_cdc_from_snapshot_flow` from a temporary view that drops that
+column; Auto CDC versions each snapshot with the pipeline update's time, written
+as `__START_AT` on inserted versions and `__END_AT` on closed ones; unchanged
+rows are not written; the SCD2 table has no platform timestamp columns. Change
+data feed on, for Silver Landing. Not possible: streaming Auto CDC (a
+materialized view cannot be streamed) and a function source carrying raw's
+exact fetch time (it cannot read a dataset of its own pipeline). Code:
 `src/layers/bronze/acnc_publish/charity_register_scd2.py`.
-Used by: [acnc](data-sources.md#acnc). Evidence: `dev` (pending the first run).
+Used by: [acnc](data-sources.md#acnc). Evidence: `dev`.
 
 ### bronze_publish_scd1_autocdc_snapshot_python
 The same snapshot flow, keeping only the latest version per key. Used where a
