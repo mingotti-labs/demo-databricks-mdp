@@ -32,7 +32,7 @@ geonames:
 nsw_spatial:
   schemas:
     bronze_nsw_spatial: bronze_custom_arcgis_python
-    bronze_nsw_spatial_publish: bronze_publish_scd2_autocdc_snapshot_python
-    silver_landing_nsw_spatial: silver_landing_materialized_view_python
+    bronze_nsw_spatial_publish: bronze_publish_scd2_autocdc_full_load_python
+    silver_landing_nsw_spatial: silver_landing_change_feed_python
   tables:
     bronze_nsw_spatial_publish.property_scd1: bronze_publish_scd1_autocdc_snapshot_python

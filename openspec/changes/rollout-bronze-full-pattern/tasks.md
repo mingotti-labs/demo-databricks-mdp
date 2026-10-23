@@ -1,11 +1,11 @@
 ## 1. Probes (dev)
-- [ ] 1.1 P1: change data feed on an existing pipeline-owned SCD2 table (ungm); Landing loads once
+- [x] 1.1 P1: change data feed on an existing pipeline-owned SCD2 table (ungm); Landing loads once
 - [ ] 1.2 P2: iso `subdivision_codes` writes 0 rows on an unchanged second load
 
 ## 2. Code (one source at a time; dev run after each)
-- [ ] 2.1 `migrations/reset_full_load.py` (parameterised, no-op once applied)
-- [ ] 2.2 ungm: change data feed, Landing as change-feed streaming table, `run_ungm` reset task and verification gate
-- [ ] 2.3 nsw_spatial: same
+- [x] 2.1 `migrations/reset_full_load.py` (parameterised, no-op once applied)
+- [x] 2.2 ungm: change data feed, Landing as change-feed streaming table, `run_ungm` reset task and verification gate
+- [x] 2.3 nsw_spatial: same
 - [ ] 2.4 iso: snapshot views without per-load columns, no stamping in the deduped view, Landing x2, reset
 - [ ] 2.5 geonames: same, Landing x4, reset
 - [ ] 2.6 Shared Landing code in `src/common/silver_landing.py` if the repetition warrants it
