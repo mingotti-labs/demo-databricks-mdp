@@ -23,3 +23,22 @@ def land(df: DataFrame, natural_keys: list[str], source_name: str, scd2: bool) -
     for key in natural_keys:
         df = df.withMetadata(key, {"comment": "Natural key"})
     return df
+
+
+def land_changes(
+    spark, scd2_table: str, natural_keys: list[str], source_name: str
+) -> DataFrame:
+    """Stream the versions Auto CDC inserted or closed in `scd2_table`.
+
+    Reads the table's change feed, so `land()`'s run-time stamp lands only on
+    changed rows. `ingested_timestamp` is the version's `__START_AT`: the SCD2
+    table carries no platform timestamps (openspec correct-platform-timestamps).
+    """
+    df = (
+        spark.readStream.option("readChangeFeed", "true")
+        .table(scd2_table)
+        .where("_change_type IN ('insert', 'update_postimage')")
+        .drop("_change_type", "_commit_timestamp")
+        .withColumn("ingested_timestamp", F.col("__START_AT"))
+    )
+    return land(df, natural_keys=natural_keys, source_name=source_name, scd2=True)
