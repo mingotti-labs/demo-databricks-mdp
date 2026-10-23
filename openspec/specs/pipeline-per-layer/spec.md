@@ -12,18 +12,18 @@ table.
 Every source SHALL have exactly one bronze pipeline, publishing to
 `bronze_<source>` and `bronze_<source>_publish`, displayed as
 `bronze--<source>--<target>`, and exactly one silver pipeline, publishing
-to `silver_landing_<source>` and, once the source is normalised,
-`silver_normalised_<source>`, displayed as `silver--<source>--<target>`.
+to `silver_landing_<source>`, displayed as `silver--<source>--<target>`.
+A normalised source's `silver_normalised_<source>` tables are plain Delta
+tables rebuilt by the `normalised` task of its `run_<source>` job.
 Tables SHALL keep their schemas and names when a source is refactored to
 this layout.
 
 **Exceptions.** neon's bronze layer has two pipelines: its ingestion is a
 managed Lakeflow Connect pipeline, which cannot hold transformation code,
 so its SCD tables are built by one separate pipeline
-(`neon_scd_modeling_python`). acnc's silver pipeline builds Silver Landing
-only: its Silver Normalised tables are plain Delta tables rebuilt by
-`run_acnc`'s `normalised` task, which keeps `transformed_timestamp` on
-unchanged rows (openspec `correct-platform-timestamps`).
+(`neon_scd_modeling_python`). The `normalised` task keeps
+`transformed_timestamp` on unchanged rows (openspec
+`correct-platform-timestamps`).
 
 **Exempt reference variants.** Resources kept only as documented reference
 material, never part of a source's official flow, are outside this rule:
@@ -36,15 +36,6 @@ feeds `bronze_clickstream_publish` (`clickstream_autoloader`) keeps the
 source system `clickstream` among the Auto Loader pipelines; the SQL SCD
 pipeline, which itself writes to `bronze_clickstream_publish`, keeps it
 too.
-
-**Sources pending refactor** (each change that refactors a source removes
-it from this list):
-- airroi: bronze ingestion + SCD pipelines to merge; Silver Landing +
-  Silver Normalised pipelines to merge.
-- clickstream: the canonical Auto Loader pipeline and the Python SCD
-  pipeline to merge; silver pipeline to display as
-  `silver--clickstream--<target>`.
-- neon: silver pipeline to display as `silver--neon--<target>`.
 
 #### Scenario: acnc after migration
 - **WHEN** the bundle is validated for any target
@@ -60,8 +51,8 @@ it from this list):
 
 #### Scenario: Source not on the pending list
 - **WHEN** a source other than neon has more than one bronze or silver
-  pipeline in its official flow and is not listed as pending refactor
-- **THEN** the layout is a defect, not known pending work
+  pipeline in its official flow
+- **THEN** the layout is a defect
 
 #### Scenario: Reference variant
 - **WHEN** one of clickstream's seven non-canonical Auto Loader pipelines
@@ -104,10 +95,6 @@ source as a parameter. Verification jobs SHALL be displayed as
 `verify--<layer>--<source>--<target>` (or `verify--<layer>--<check>--<target>`
 for a shared one).
 
-**Sources pending refactor** (each change that refactors a source removes
-it from this list):
-- airroi: wrapper job `silver_airroi` to remove.
-
 #### Scenario: acnc jobs after migration
 - **WHEN** the bundle is validated for any target
 - **THEN** there is no `silver_acnc` job, acnc's own jobs are `run_acnc`
@@ -121,3 +108,19 @@ A full refresh of a bronze pipeline SHALL NOT truncate an SCD2 table.
 - **WHEN** a full refresh of the acnc bronze pipeline is requested
 - **THEN** `charity_register_scd2` keeps all its rows, whether the refresh
   skips that table or the update is refused
+
+### Requirement: Every source runs from its own run job
+Every source SHALL have a `run_<source>` job holding its pipeline, verification
+and `tag_patterns` tasks directly, so no source is left outside the
+one-pipeline-per-layer layout.
+
+#### Scenario: airroi, clickstream and neon after refactor
+- **WHEN** the bundle is validated for any target
+- **THEN** airroi and clickstream each have exactly `bronze--<source>--<target>`
+  and `silver--<source>--<target>`, neon has its two bronze pipelines and
+  `silver--neon--<target>`, each has a `run_<source>` job, no `silver_airroi`
+  job exists, and every table keeps its schema and name
+
+#### Scenario: Nothing pending
+- **WHEN** the `pipeline-per-layer` and `silver-normalised` specs are read
+- **THEN** no "Sources pending refactor" list names a source
