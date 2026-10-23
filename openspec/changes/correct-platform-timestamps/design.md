@@ -266,8 +266,15 @@ acnc alone (about 17 min; checked with `cicd/affected_units.py`).
 The verification tasks cost a serverless start-up each (41 to 47 s for bronze)
 and found nothing on repeated runs. `run_acnc` has a job parameter `verify`
 (default `"false"`); a condition task (no compute) gates `verify_bronze` and
-`verify_silver` on `verify=true`. Databricks treats an excluded upstream task as
-successful, except that a task whose dependencies are all excluded is excluded
-as well, so `silver` depends on `bronze` besides `verify_bronze`. Because CI
-runs the job with its defaults, verification is off in tst/prd runs too until
-the default or the CI command changes. Source: Databricks docs, "Run if".
+`verify_silver` on `verify=true`.
+
+A task that depends on a gated task is excluded with it. The first design had
+`silver` depend on `verify_bronze` (and on `bronze`, because the Databricks
+docs say an excluded upstream counts as successful). In prd, with verification
+off, `silver` was excluded ("dependency type condition was not met") and so
+were `normalised`, `tag` and `tag_patterns`, while the run reported SUCCESS.
+Fixed (`fix-run-acnc-verify-gate`): nothing that must run depends on a gated
+task. The verifications run last (`verify_bronze` after `tag` and
+`tag_patterns`, `verify_silver` after `verify_bronze`), so with verification off
+only they are excluded. Because CI runs the job with its defaults, verification
+is off in tst/prd runs until the default or the CI command changes.
