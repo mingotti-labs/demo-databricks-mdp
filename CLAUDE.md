@@ -123,14 +123,14 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
 ## Sources
 
 - **One pipeline per layer** (openspec `pipeline-per-layer`): acnc, ungm, iso,
-  geonames and nsw_spatial each have `bronze--<source>--<target>` (the
+  geonames, nsw_spatial, airroi and clickstream each have `bronze--<source>--<target>` (the
   ingestion pipeline also builds `bronze_<source>_publish.*` by qualified name;
   every SCD2 table has `pipelines.reset.allowed=false`, so a full refresh of
   the bronze pipeline is refused, by design) and `silver--<source>--<target>`.
   ungm/iso/geonames/nsw_spatial moved in `ungm-iso-geonames-nsw-two-pipelines`
   (their `run_<source>` jobs exist; their dev tables were recreated under the
   CI/CD service principal rather than migrated). airroi, clickstream and neon
-  are still pending refactor; see the spec for the lists and exceptions.
+  moved in `refactor-airroi-clickstream-neon`; see the spec for the exceptions.
 - **Neon Postgres** (serverless, free tier) — relational source. `bronze_neon` is
   populated by `neon_ecommerce_ingestion`, a query-based Lakeflow Connect pipeline
   (not CDC — the gateway architecture needs classic compute, unavailable on Free
