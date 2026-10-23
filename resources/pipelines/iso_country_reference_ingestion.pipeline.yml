@@ -7,6 +7,8 @@ resources:
       serverless: true
       continuous: false
       configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
         iso3166_countries_url: ${var.iso3166_countries_url}
         iso3166_subdivisions_url: ${var.iso3166_subdivisions_url}
         workspace_file_path: ${workspace.file_path}

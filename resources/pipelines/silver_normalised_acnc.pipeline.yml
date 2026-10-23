@@ -7,6 +7,8 @@ resources:
       serverless: true
       continuous: false
       configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
         workspace_file_path: ${workspace.file_path}
       # Landing only: Silver Normalised is rebuilt by run_acnc's normalised
       # task (openspec correct-platform-timestamps).

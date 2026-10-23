@@ -7,6 +7,8 @@ resources:
       serverless: true
       continuous: false
       configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
         acnc_base_url: ${var.acnc_base_url}
         acnc_resource_id: ${var.acnc_resource_id}
         acnc_row_limit: ${var.acnc_row_limit}
