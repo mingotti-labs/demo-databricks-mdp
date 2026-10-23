@@ -18,9 +18,25 @@ resources:
             - task_key: reset
           pipeline_task:
             pipeline_id: ${resources.pipelines.acnc_charity_register_ingestion.id}
+        - task_key: verify_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.verify}}"
+            right: "true"
+        - task_key: verify_bronze
+          depends_on:
+            - task_key: bronze
+            - task_key: verify_enabled
+              outcome: "true"
+          run_job_task:
+            job_id: ${resources.jobs.verify_acnc_charity_register.id}
+        # NONE_FAILED, not the default ALL_SUCCESS: with verification off,
+        # verify_bronze is excluded, which ALL_SUCCESS does not accept.
         - task_key: silver
           depends_on:
             - task_key: bronze
+            - task_key: verify_bronze
+          run_if: NONE_FAILED
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_normalised_acnc.id}
         - task_key: normalised
@@ -50,24 +66,11 @@ resources:
               catalog: ${var.catalog}
               source: acnc
               workspace_file_path: ${workspace.file_path}
-        # Verification is opt-in and last: a task that depends on an excluded task
-        # is itself excluded, so nothing that must run may depend on these.
-        - task_key: verify_enabled
-          condition_task:
-            op: EQUAL_TO
-            left: "{{job.parameters.verify}}"
-            right: "true"
-        - task_key: verify_bronze
-          depends_on:
-            - task_key: tag
-            - task_key: tag_patterns
-            - task_key: verify_enabled
-              outcome: "true"
-          run_job_task:
-            job_id: ${resources.jobs.verify_acnc_charity_register.id}
         - task_key: verify_silver
           depends_on:
-            - task_key: verify_bronze
+            - task_key: tag
+            - task_key: verify_enabled
+              outcome: "true"
           run_job_task:
             job_id: ${resources.jobs.verify_silver_normalised.id}
             job_parameters:
