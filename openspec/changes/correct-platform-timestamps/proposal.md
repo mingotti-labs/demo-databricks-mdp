@@ -62,8 +62,10 @@ pipeline:
   2026-10-23) and rebuilt from one load. Existing SCD2 history is lost.
 - **Retired**: the `scd2_merge` task, `src/common/scd2_merge.py`,
   `src/layers/bronze/scd2_merge.py`, the #88 migration task and its notebook.
-- **No pipeline retries**: every pipeline sets both retry settings to `"0"`;
-  a failed update fails once instead of repeating the same error.
+- **No pipeline retries, acnc first**: acnc's two pipelines set both retry
+  settings to `"0"`; a failed update fails once instead of repeating the same
+  error. The other pipelines follow in the rollout change (changing them here
+  would make CI run every unit in prd).
 - **Docs**: NAMING.md "Platform-added timestamp columns", the patterns register
   (the bronze full pattern stated as such) and `design_patterns.yml`.
 - **Out of scope**: SCD1 tables; the other sources (one change each, once acnc

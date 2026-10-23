@@ -239,9 +239,12 @@ because `ingested_timestamp` changes.
 
 A failed update was retried automatically (platform defaults: 5 update and 2
 flow attempts), so the first dev run of this change failed over and over on a
-code error and spent compute each time. All 29 pipelines (main and patterns
-bundles) now set `pipelines.numUpdateRetryAttempts` and
-`pipelines.maxFlowRetryAttempts` to `"0"`: an error fails the update once.
+code error and spent compute each time. acnc's two pipelines now set
+`pipelines.numUpdateRetryAttempts` and `pipelines.maxFlowRetryAttempts` to
+`"0"`: an error fails the update once. The other 27 pipelines (20 main, 7
+patterns bundle) were changed too, then moved to the rollout change: touching
+every pipeline file makes CI run every unit in prd (about 45 min), against
+acnc alone (about 17 min; checked with `cicd/affected_units.py`).
 
 ## Dev result (2026-10-23, new pattern)
 

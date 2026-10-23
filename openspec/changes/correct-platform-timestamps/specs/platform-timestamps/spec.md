@@ -33,8 +33,9 @@ that closed it. Neither SHALL change afterwards.
   gets `__START_AT` = that update's time, and no other row is written
 
 ### Requirement: Pipeline updates are not retried
-Every pipeline SHALL set `pipelines.numUpdateRetryAttempts` and
-`pipelines.maxFlowRetryAttempts` to `"0"`.
+The pipelines of a source on the corrected timestamps (acnc so far) SHALL set
+`pipelines.numUpdateRetryAttempts` and `pipelines.maxFlowRetryAttempts` to
+`"0"`.
 
 #### Scenario: Failing update
 - **WHEN** a pipeline update fails
