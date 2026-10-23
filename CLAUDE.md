@@ -32,9 +32,7 @@ demo-databricks-mdp/
       bronze/
         neon/
         neon_publish/
-          python/          # snapshot-based Auto CDC vs. bronze_neon.*_raw directly (SCD1 all 4, SCD2 customers/products)
-          sql/              # SCD1 only (plain passthrough MVs) -- SCD2 is scd2_merge/, a job not a pipeline
-          scd2_merge/       # hand-rolled two-phase MERGE, SQL SCD2's real home
+          python/          # snapshot-based Auto CDC vs. bronze_neon.*_raw directly (SCD1 orders/order_items, SCD2 customers/products); the SQL twins are in references/patterns
         atlas/
         clickstream/
           python_add_new_columns/   # canonical; the other 7 variants live in references/patterns/

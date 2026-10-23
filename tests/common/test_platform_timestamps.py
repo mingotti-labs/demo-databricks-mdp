@@ -6,11 +6,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-MIGRATED = ["acnc", "ungm", "iso", "geonames", "nsw_spatial"]
-ALLOWED = {
-    "src/layers/bronze/acnc_publish/charity_register_valid.py": "feeds SCD1, left as is",
-}
-
+MIGRATED = ["acnc", "ungm", "iso", "geonames", "nsw_spatial", "airroi"]
 
 def checked_files():
     for source in MIGRATED:
@@ -20,6 +16,4 @@ def checked_files():
 
 @pytest.mark.parametrize("path", list(checked_files()), ids=lambda p: p.name)
 def test_no_current_timestamp_outside_stamping_helpers(path):
-    relative = path.relative_to(ROOT).as_posix()
-    if relative not in ALLOWED:
-        assert "current_timestamp" not in path.read_text(), relative
+    assert "current_timestamp" not in path.read_text(), path.name

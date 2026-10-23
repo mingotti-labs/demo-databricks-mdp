@@ -172,9 +172,11 @@ Used by: [acnc](data-sources.md#acnc), [ungm](data-sources.md#ungm),
 
 ### bronze_publish_scd1_autocdc_snapshot_python
 The same snapshot flow, keeping only the latest version per key. Used where a
-source also needs a "latest value" table. Code: `neon_publish/python/`,
-`ungm_publish/`, `acnc_publish/`, `nsw_spatial_publish/`.
-Used by: neon, ungm, acnc, nsw_spatial. Evidence: `prd` (neon: `dev`).
+source also needs a "latest value" table. Reference only: code in the patterns
+bundle, `references/patterns/src/bronze_publish/bronze_publish_scd1_autocdc_snapshot_python.py`
+(table `pattern_bronze_publish.bronze_publish_scd1_autocdc_snapshot_python`).
+Used by: neon `orders_scd1` and `order_items_scd1` (Landing's source) are the same flow in
+`neon_publish/python/`. Evidence: `prd` (earlier use), `dev`.
 
 ### bronze_publish_scd1_autocdc_stream_python
 Streaming `create_auto_cdc_flow`. Valid only against an append-only source:
@@ -184,19 +186,22 @@ Used by: [clickstream](data-sources.md#clickstream). Evidence: `dev`.
 
 ### bronze_publish_scd1_autocdc_stream_sql
 The same streaming pattern in SQL (`AUTO CDC INTO`), same append-only
-restriction. Code: `src/layers/bronze/clickstream_publish/sql/`.
-Used by: [clickstream](data-sources.md#clickstream). Evidence: `dev`.
+restriction. Reference only: code in the patterns bundle,
+`references/patterns/src/bronze_publish/bronze_publish_scd1_autocdc_stream_sql.sql`.
+Evidence: `dev`.
 
 ### bronze_publish_scd1_materialized_view_sql
 A plain passthrough Materialized View: an upserted `_raw` table already is the
-latest value per key. Code: `src/layers/bronze/neon_publish/sql/`.
-Used by: [neon](data-sources.md#neon). Evidence: `dev`.
+latest value per key. Reference only: code in the patterns bundle,
+`references/patterns/src/bronze_publish/bronze_publish_scd1_materialized_view_sql.sql`.
+Evidence: `dev`.
 
 ### bronze_publish_scd2_merge_sql
 A hand-rolled two-phase `MERGE` (expire the old version, insert the new one) run
 as a job, because SQL has no snapshot Auto CDC and `MERGE` is invalid inside a
-pipeline. Code: `src/layers/bronze/neon_publish/scd2_merge/`.
-Used by: [neon](data-sources.md#neon). Evidence: `dev`.
+pipeline. Reference only: code in the patterns bundle,
+`references/patterns/src/bronze_publish/bronze_publish_scd2_merge_sql.py` (job
+`bronze--pattern--publish--scd2--merge--sql--<target>`). Evidence: `dev`.
 
 ## Data quality
 

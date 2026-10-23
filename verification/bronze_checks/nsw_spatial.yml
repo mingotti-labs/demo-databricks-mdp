@@ -5,5 +5,4 @@ tables:
   - raw: property_raw
     keys: [addressstringoid]
     columns: [propid, addressstringoid, address, propertytype, urbanity]
-    scd1: property_scd1
     scd2: property_scd2

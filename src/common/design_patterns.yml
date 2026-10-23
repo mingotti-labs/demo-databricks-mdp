@@ -9,14 +9,11 @@ acnc:
     silver_normalised_acnc: silver_normalised_spec_driven_python
   tables:
     bronze_acnc.charity_register_quarantine: bronze_quarantine_null_key_python
-    bronze_acnc_publish.charity_register_scd1: bronze_publish_scd1_autocdc_snapshot_python
 ungm:
   schemas:
     bronze_ungm: bronze_rest_api_materialized_view_python
     bronze_ungm_publish: bronze_publish_scd2_autocdc_full_load_python
     silver_landing_ungm: silver_landing_change_feed_python
-  tables:
-    bronze_ungm_publish.unspsc_public_scd1: bronze_publish_scd1_autocdc_snapshot_python
 iso:
   schemas:
     bronze_iso: bronze_file_materialized_view_python
@@ -34,8 +31,6 @@ nsw_spatial:
     bronze_nsw_spatial: bronze_custom_arcgis_python
     bronze_nsw_spatial_publish: bronze_publish_scd2_autocdc_full_load_python
     silver_landing_nsw_spatial: silver_landing_change_feed_python
-  tables:
-    bronze_nsw_spatial_publish.property_scd1: bronze_publish_scd1_autocdc_snapshot_python
 airroi:
   schemas:
     bronze_airroi: bronze_rest_api_materialized_view_python
@@ -48,20 +43,10 @@ neon:
     bronze_neon_publish: bronze_publish_scd2_autocdc_snapshot_python
     silver_landing_neon: silver_landing_change_feed_python
   tables:
-    bronze_neon_publish.customers_scd1: bronze_publish_scd1_autocdc_snapshot_python
-    bronze_neon_publish.products_scd1: bronze_publish_scd1_autocdc_snapshot_python
     bronze_neon_publish.orders_scd1: bronze_publish_scd1_autocdc_snapshot_python
     bronze_neon_publish.order_items_scd1: bronze_publish_scd1_autocdc_snapshot_python
-    bronze_neon_publish.customers_scd1_sql: bronze_publish_scd1_materialized_view_sql
-    bronze_neon_publish.products_scd1_sql: bronze_publish_scd1_materialized_view_sql
-    bronze_neon_publish.orders_scd1_sql: bronze_publish_scd1_materialized_view_sql
-    bronze_neon_publish.order_items_scd1_sql: bronze_publish_scd1_materialized_view_sql
-    bronze_neon_publish.customers_scd2_sql: bronze_publish_scd2_merge_sql
-    bronze_neon_publish.products_scd2_sql: bronze_publish_scd2_merge_sql
 clickstream:
   schemas:
     bronze_clickstream: bronze_autoloader_add_new_columns_python
     bronze_clickstream_publish: bronze_publish_scd1_autocdc_stream_python
     silver_landing_clickstream: silver_landing_change_feed_python
-  tables:
-    bronze_clickstream_publish.web_events_scd1_sql: bronze_publish_scd1_autocdc_stream_sql

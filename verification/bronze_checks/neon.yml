@@ -5,12 +5,10 @@ tables:
   - raw: customers_raw
     keys: [id]
     columns: [id]
-    scd1: customers_scd1
     scd2: customers_scd2
   - raw: products_raw
     keys: [id]
     columns: [id]
-    scd1: products_scd1
     scd2: products_scd2
   - raw: orders_raw
     keys: [id]
