@@ -113,8 +113,9 @@ Procedure: NAMING.md "Removing a pipeline".
   selects (`cicd/affected_units.py` against the PR): neon and airroi are
   `ci_auto_run: "false"`; the SCD1 stage touches acnc, ungm and nsw_spatial
   bronze pipelines, so those three units run in prd (check before predicting
-  the time). Whether clickstream runs in prd (synthetic data, new tables there)
-  is decided at its stage.
+  the time). clickstream is also `ci_auto_run: "false"` (user, 2026-10-23). Because the
+  shared Landing helper (`src/common/silver_landing.py`) changes, merging runs
+  acnc, ungm, iso, geonames and nsw_spatial in prd (about 45 minutes).
 - **User-gated steps**: deleting emptied pipelines (CI cannot confirm
   deletion), deleting the human-owned dev pipelines and jobs, merging PRs,
   approving prd, and every drop.

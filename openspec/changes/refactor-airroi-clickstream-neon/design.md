@@ -22,8 +22,14 @@ schemas and names.
   `__START_AT` rename or `is_current` for an SCD1 source (clickstream, neon
   `orders` and `order_items`); Landing keys on the natural key. Probe P1 checks
   the change feed of an Auto CDC SCD1 target carries the rows needed.
-- **D3 ci_auto_run.** neon `"false"` (no prd Neon instance); airroi `"false"`
-  (paid); clickstream decided at its stage (prd would get synthetic tables).
+- **D3 ci_auto_run.** neon, airroi (paid) and clickstream (a prd run would create
+  synthetic tables; user, 2026-10-23) are all `"false"`.
+- **D5 neon is dev-only.** There is no tst or prd Neon instance, so neon's
+  pipelines and jobs are defined under `targets.dev.resources` in
+  `cicd/databricks/<edition>.yml` (a target cannot include files, so they cannot
+  stay under `resources/`) and no longer deploy to prd. The prd copies are
+  deleted by the user before the prd deploy, because `bundle deploy` will not
+  delete a pipeline without confirmation.
 - **D4 Clean-up stage last**, so it can be cut: the unused SCD1 tables and the
   SQL twins (neon SQL SCD pipeline and merge job, clickstream SQL SCD pipeline)
   move to the patterns bundle. The patterns bundle is dev-only; the live tables
@@ -34,10 +40,14 @@ schemas and names.
 - **neon**: dev only. Ingestion is Lakeflow Connect; the SCD2 SQL merge job stays
   exempt. Bronze has no stamping to remove. Landing: customers and products from
   SCD2, orders and order_items from SCD1.
-- **clickstream**: `run_clickstream` starts with `generate_clickstream_events`.
-  The Auto Loader flow and the Python SCD flow move into one pipeline; check the
-  append-only SCD1 stream still reads the Auto Loader table. The SQL twin
-  moves in the clean-up stage.
+- **clickstream**: the Auto Loader flow and the Python SCD flow merge into one
+  pipeline (`bronze--clickstream--<target>`, key `clickstream_autoloader`). The
+  SCD1 table is not migrated: SCD1 of append-only events has no history, so
+  `web_events_scd1` is dropped and recreated from raw. `run_clickstream` takes a
+  `generate` parameter (default false: a real source does not create its own
+  events) and a `verify` parameter; it keeps the existing
+  `verify--bronze--clickstream` job, which reads only Databricks tables and
+  volumes. The SQL twin moves in the clean-up stage.
 - **airroi**: bronze 2 pipelines to 1, silver 2 to 1, drop `silver_airroi`; both
   SCD2 views drop the stamping and the per-load `ingested_timestamp`; Normalised
   by D1. One paid dev run (about $0.80) with `verify=true`.

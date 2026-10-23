@@ -11,8 +11,10 @@
 
 ## 3. clickstream
 - [ ] 3.1 Dev ownership fix as 2.1
-- [ ] 3.2 Migration job; merge the Auto Loader and Python SCD pipelines; Landing streaming table; silver displayed `silver--clickstream--<target>`
-- [ ] 3.3 `run_clickstream` (events generation first), `verify` gate, `bronze_checks/clickstream.yml`, mapping entries; verify dev; checkpoint
+- [x] 3.2 Merge the Auto Loader and Python SCD pipelines (no migration job: SCD1 of append-only events is recreated from raw); Landing streaming table; silver displayed `silver--clickstream--<target>`
+- [x] 3.3 `run_clickstream` (`generate` and `verify` parameters, `ci_auto_run: "false"`), mapping entries
+- [ ] 3.4 Verify dev; checkpoint
+- [x] 2.5 neon resources defined under `targets.dev.resources` (dev only); user deletes the prd copies before the prd deploy
 
 ## 4. airroi
 - [ ] 4.1 Migration job (table moves, delete emptied pipelines); user approves deletes
