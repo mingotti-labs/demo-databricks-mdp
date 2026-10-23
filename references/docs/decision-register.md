@@ -7,6 +7,18 @@ alternative" for. Newest entries at the top.
 
 ---
 
+## 2026-10-23: The bronze full pattern for every full-load source
+
+**Context**: acnc proved the pattern (snapshot Auto CDC without the per-load columns, change-feed Silver Landing). ungm and nsw_spatial already had a correct SCD2 table (their raw tables carry no per-load column) but a Landing materialized view that restamped every row each run. iso and geonames had acnc's exact bug: a stamped `transformed_timestamp` and an untracked `ingested_timestamp` rewrote every current row each run.
+
+**Discussion**: Landing could not stay a materialized view, so each Landing table was dropped and recreated as a streaming table over the SCD2 change feed. iso and geonames SCD2 tables were reloaded, losing 84 closed cities versions in prd (reference data, accepted); ungm and nsw_spatial kept theirs. Five per-source verification jobs and nine notebooks were replaced by one parameterised job driven by a spec file per source. Verification became opt-in (a `verify` job parameter, default false), with `silver` set to `run_if: NONE_FAILED`: the default `ALL_SUCCESS` excluded silver and everything after it in prd when verification was off. airroi (paid API), neon (upserted raw) and clickstream (append-only) were left out.
+
+**Decision**: ungm, iso, geonames and nsw_spatial follow the bronze full pattern; `ingested_timestamp` in Landing is the version's `__START_AT` whether or not raw stamps one; pipeline retries are off on every pipeline.
+
+**Affected**: `src/layers/bronze/{ungm,iso,geonames,nsw_spatial}_publish/`, `src/layers/silver/landing/`, `src/common/silver_landing.py`, `migrations/reset_full_load.py`, `resources/jobs/run_*.job.yml`, `resources/jobs/verify_bronze.job.yml`, `verification/`, `NAMING.md`, `references/docs/registers/design-patterns.md`.
+
+---
+
 ## 2026-10-23: Bronze full pattern replaces the SCD2 MERGE
 
 **Context**: The 2026-10-22 decision moved acnc's SCD2 to a `MERGE` job task because snapshot Auto CDC rewrote every current row. Root cause, found later: `ingested_timestamp`, new on every full load, was passed into the snapshot as an untracked column, and Auto CDC overwrites the current row for such columns. The cause was that column, not snapshot Auto CDC.

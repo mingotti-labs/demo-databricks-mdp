@@ -1,0 +1,15 @@
+source: iso
+raw_schema: bronze_iso
+publish_schema: bronze_iso_publish
+tables:
+  - raw: country_codes_raw
+    keys: [country_code_alpha2]
+    columns: [country_code_alpha2, country_code_alpha3, numeric_code, name_short, name_long, ingested_timestamp]
+    scd2: country_codes_scd2
+  - raw: subdivision_codes_raw
+    keys: [subdivision_code, language_code, subdivision_name]
+    columns: [country_code_alpha2, subdivision_code, subdivision_name, language_code, ingested_timestamp]
+    absent_columns: ["subdivision_code_iso3166-2"]
+    quarantine: subdivision_codes_quarantine
+    quarantine_not_empty: true
+    scd2: subdivision_codes_scd2

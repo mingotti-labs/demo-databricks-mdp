@@ -7,6 +7,8 @@ resources:
       serverless: true
       continuous: false
       configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
         nsw_property_service_url: ${var.nsw_property_service_url}
         nsw_property_layer_id: ${var.nsw_property_layer_id}
         nsw_property_row_limit: ${var.nsw_property_row_limit}

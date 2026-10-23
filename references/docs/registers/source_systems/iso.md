@@ -79,4 +79,4 @@ the same `subdivision_codes_raw` with complementary logic, using a
   kept visible and queryable rather than discarded.
 
 `raw = distinct_key_count + quarantine_count` exactly (6,260 = 6,250 + 10),
-checked by `verify_iso_country_reference_scd.py`.
+checked by `verification/verify_bronze.py` (spec: `verification/bronze_checks/iso.yml`).

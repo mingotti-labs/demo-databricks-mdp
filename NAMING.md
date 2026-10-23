@@ -120,11 +120,15 @@ the upstream API/system). Corrected definition (openspec
     and stamps new or changed rows (`silver_rebuild_keep_timestamps_python`).
 - **Silver Normalised requires `ingested_timestamp`** on its Landing tables; a
   source without it is retrofitted at bronze just in time.
-- **Status**: acnc follows the corrected definition. The other sources still
-  stamp `current_timestamp()` on the full snapshot (`track_history_except_column_list`
-  stops spurious SCD2 versions there, but every current row is still rewritten
-  on every run); each moves in its own change. acnc's SCD2 history was not
-  migrated: it was reloaded from one fetch (2026-10).
+- **Status**: acnc, ungm, iso, geonames and nsw_spatial follow the corrected
+  definition (the bronze full pattern and a change-feed Silver Landing). The
+  other sources (neon, airroi, clickstream) still stamp `current_timestamp()` on
+  the snapshot (`track_history_except_column_list` stops spurious SCD2 versions
+  there, but every current row is still rewritten on every run); each moves in
+  its own change. acnc's and iso's and geonames' SCD2 history was not migrated:
+  those tables were reloaded from one fetch (2026-10). A source whose `_raw`
+  table has no `ingested_timestamp` (ungm, nsw_spatial) needs none: Silver
+  Landing takes it from `__START_AT`.
 
 ## Volume paths
 

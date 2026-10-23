@@ -1,0 +1,15 @@
+resources:
+  jobs:
+    verify_bronze:
+      name: verify--bronze--${bundle.target}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: source
+          default: ""
+        - name: workspace_file_path
+          default: ${workspace.file_path}
+      tasks:
+        - task_key: verify_bronze
+          notebook_task:
+            notebook_path: ../../verification/verify_bronze.py

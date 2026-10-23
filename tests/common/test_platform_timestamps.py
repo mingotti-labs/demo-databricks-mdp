@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-MIGRATED = ["acnc"]
+MIGRATED = ["acnc", "ungm", "iso", "geonames", "nsw_spatial"]
 ALLOWED = {
     "src/layers/bronze/acnc_publish/charity_register_valid.py": "feeds SCD1, left as is",
 }

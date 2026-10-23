@@ -30,7 +30,9 @@ resources:
             - task_key: verify_enabled
               outcome: "true"
           run_job_task:
-            job_id: ${resources.jobs.verify_unspsc_pattern.id}
+            job_id: ${resources.jobs.verify_bronze.id}
+            job_parameters:
+              source: ungm
         # NONE_FAILED, not the default ALL_SUCCESS: with verification off,
         # verify_bronze is excluded, which ALL_SUCCESS does not accept.
         - task_key: silver

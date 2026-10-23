@@ -7,6 +7,8 @@ resources:
       serverless: true
       continuous: false
       configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
         workspace_file_path: ${workspace.file_path}
         normalised_spec: src/layers/silver/normalised/specs/airroi.yml
       environment:

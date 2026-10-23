@@ -565,7 +565,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     read the same `subdivision_codes_raw` with complementary logic — a
     `row_number()` window over the SCD key keeps rank 1 in the deduped
     path and rank > 1 in quarantine — so `raw = deduped_distinct_keys +
-    quarantine` exactly, checked by `verify_iso_country_reference_scd.py`.
+    quarantine` exactly, checked by `verification/verify_bronze.py` (spec: `verification/bronze_checks/iso.yml`).
 - **GeoNames country/admin1/admin2/city gazetteer data** (Phase 3j) — the
   city/locality half of the reference-data backbone under ISO 3166's
   country/state half. Four static files from a public, unauthenticated
