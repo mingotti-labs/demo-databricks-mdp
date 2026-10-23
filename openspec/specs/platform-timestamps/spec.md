@@ -1,0 +1,88 @@
+# platform-timestamps Specification
+
+## Purpose
+What `ingested_timestamp` and `transformed_timestamp` mean, and when a step may write them: only on rows it inserts, modifies or closes, so unchanged runs rewrite nothing. Covers the bronze full pattern, the change-feed Silver Landing and the no-retry rule for pipelines of migrated sources.
+
+## Requirements
+
+### Requirement: transformed_timestamp marks only rows a step changed
+`transformed_timestamp` SHALL be written only on rows that the table's own step
+inserts, modifies or closes in that run. A row the step does not change SHALL
+keep its previous value.
+
+#### Scenario: Run with no source change
+- **WHEN** a step runs and its input has not changed since the last run
+- **THEN** no row of its table gets a new `transformed_timestamp`
+
+#### Scenario: One row changed
+- **WHEN** one source row changed since the last run
+- **THEN** only the rows derived from it get a new `transformed_timestamp`
+
+### Requirement: A per-load column stays out of the snapshot
+In a bronze full pattern (a `_raw` table reloaded in full), a column whose value
+changes on every load SHALL NOT be part of the snapshot applied to Bronze
+Publish. `ingested_timestamp` is such a column.
+
+#### Scenario: Unchanged load
+- **WHEN** the bronze pipeline reloads `_raw` and no business column changed
+- **THEN** the SCD2 table gets no write
+
+### Requirement: An SCD2 version keeps the time of the update that created it
+On a Bronze Publish SCD2 table, `__START_AT` SHALL be the time of the bronze
+pipeline update that created the version, and `__END_AT` the time of the update
+that closed it. Neither SHALL change afterwards.
+
+#### Scenario: One row changed
+- **WHEN** a load changes one row's business columns
+- **THEN** its old version gets `__END_AT` = that update's time, a new version
+  gets `__START_AT` = that update's time, and no other row is written
+
+### Requirement: Pipeline updates are not retried
+The pipelines of a source on the corrected timestamps (acnc so far) SHALL set
+`pipelines.numUpdateRetryAttempts` and `pipelines.maxFlowRetryAttempts` to
+`"0"`.
+
+#### Scenario: Failing update
+- **WHEN** a pipeline update fails
+- **THEN** it is not retried automatically and the job task fails at once
+
+### Requirement: Silver Landing settles the platform timestamps
+Silver Landing SHALL read only the rows changed in its Bronze Publish SCD2 table
+since its last run, SHALL hold the same rows as a full read of that table, SHALL
+stamp `transformed_timestamp` on the rows it receives, and SHALL set
+`ingested_timestamp` to the version's `__START_AT`. Every Landing row SHALL have
+both columns populated.
+
+#### Scenario: One bronze version closed and one inserted
+- **WHEN** Bronze Publish closes one version and inserts one
+- **THEN** Landing changes exactly those two rows, only they get a new
+  `transformed_timestamp`, and Landing equals a full read of the SCD2 table
+
+### Requirement: No run-time stamping on full snapshots
+`current_timestamp()` SHALL NOT be applied to a full snapshot that feeds a
+change-detecting step or a silver table, except as `ingested_timestamp` on a
+`_raw` table.
+
+#### Scenario: Guard test
+- **WHEN** the test suite runs
+- **THEN** it fails if `current_timestamp()` appears outside `_raw` files, the
+  Silver Landing stream and the stamping helpers
+
+### Requirement: Every full-load source follows the bronze full pattern
+Every source whose `_raw` table is a full load SHALL build its Bronze Publish
+SCD2 table with snapshot Auto CDC from a snapshot that excludes every column
+that changes on each load, with change data feed on, and SHALL build its Silver
+Landing as a streaming table over that change feed.
+
+#### Scenario: Second load with no source change
+- **WHEN** a source is loaded twice and no business column changed
+- **THEN** the second load writes 0 rows to its SCD2 table and to its Landing
+  tables
+
+### Requirement: Landing carries the version's fetch time
+Silver Landing SHALL set `ingested_timestamp` to the SCD2 version's `__START_AT`
+for every source, whether or not its `_raw` table stamps one.
+
+#### Scenario: Source without a raw stamp
+- **WHEN** a source's `_raw` table has no `ingested_timestamp`
+- **THEN** its Landing rows still have `ingested_timestamp` equal to `scd_valid_from_timestamp`

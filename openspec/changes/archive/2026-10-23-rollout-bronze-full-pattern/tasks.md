@@ -24,5 +24,5 @@
 
 ## 6. Verify
 - [x] 6.1 dev: ungm, nsw_spatial, iso and geonames each run twice (first load fills SCD2 and Landing, second load re-fetched and wrote 0 rows to both, one stamp per Landing table, ingested_timestamp = scd_valid_from_timestamp on every row), once with verify=true; the generic verify_bronze job passes for all five sources
-- [ ] 6.2 prd: after merge, through the prd gate; acnc, ungm, iso, geonames, nsw_spatial all SUCCESS
-- [ ] 6.3 Archive this change; archive `correct-platform-timestamps` first
+- [x] 6.2 prd: after merge, through the prd gate (2026-10-23): ungm, iso, geonames, nsw_spatial SUCCESS and verified (Landing = SCD2, one stamp, nsw_spatial kept its 7 closed versions). acnc failed on a data.gov.au HTTP 500 (its tables untouched, proven separately); a connector retry (#96) was cancelled. The prd second load of the four units has not run yet
+- [x] 6.3 Archive this change; archive `correct-platform-timestamps` first
