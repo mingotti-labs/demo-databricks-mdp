@@ -7,7 +7,7 @@
 - [x] 2.2 ungm: change data feed, Landing as change-feed streaming table, `run_ungm` reset task and verification gate
 - [x] 2.3 nsw_spatial: same
 - [x] 2.4 iso: snapshot views without per-load columns, no stamping in the deduped view, Landing x2, reset
-- [ ] 2.5 geonames: same, Landing x4, reset
+- [x] 2.5 geonames: same, Landing x4, reset
 - [ ] 2.6 Shared Landing code in `src/common/silver_landing.py` if the repetition warrants it
 
 ## 3. Verification
