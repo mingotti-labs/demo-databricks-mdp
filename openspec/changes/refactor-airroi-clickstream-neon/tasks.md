@@ -8,7 +8,7 @@
 - [x] 2.2 Change data feed on the SCD tables; four Landing streaming tables (`land_changes`, `scd2` flag); silver displayed `silver--neon--<target>`; reset task
 - [x] 2.3 `run_neon` (`ci_auto_run: "false"`) with `tag_patterns` and the `verify` gate (neon bronze verification is the generic `verify_bronze` job with `bronze_checks/neon.yml`; the Neon-source checks stay as manual notebooks); mapping entries
 - [x] 2.4 Verify dev; checkpoint (2026-10-23): Landing x4 are streaming tables, equal to their bronze tables (200, 50, 500, 1,240), one stamp each; the second load wrote 0 rows to bronze and Landing; `verify=true` run passes
-- [ ] 2.6 After the iac grant is applied: add the Neon seed-data and source-versus-bronze checks back to neon's automated verification, run as the service principal
+- [x] 2.6 After the iac grant is applied: add the Neon seed-data and source-versus-bronze checks back to neon's automated verification, run as the service principal
 - [x] 2.5 neon resources defined under `targets.dev.resources` (dev only); user deletes the prd copies before the prd deploy
 
 ## 3. clickstream
