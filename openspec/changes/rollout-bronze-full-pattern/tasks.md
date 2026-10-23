@@ -23,6 +23,6 @@
 - [x] 5.1 NAMING.md, patterns register, `design_patterns.yml`, CLAUDE.md, decision register, `data-sources.md`, source registers
 
 ## 6. Verify
-- [ ] 6.1 dev: each unit run twice; first loads everything, second writes 0 rows to SCD2 and Landing; Landing equals a full read of the SCD2 table; one run per unit with `verify=true`
+- [x] 6.1 dev: ungm, nsw_spatial, iso and geonames each run twice (first load fills SCD2 and Landing, second load re-fetched and wrote 0 rows to both, one stamp per Landing table, ingested_timestamp = scd_valid_from_timestamp on every row), once with verify=true; the generic verify_bronze job passes for all five sources
 - [ ] 6.2 prd: after merge, through the prd gate; acnc, ungm, iso, geonames, nsw_spatial all SUCCESS
 - [ ] 6.3 Archive this change; archive `correct-platform-timestamps` first
