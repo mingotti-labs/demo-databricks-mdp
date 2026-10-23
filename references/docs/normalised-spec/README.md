@@ -106,8 +106,8 @@ entity, or the pipeline fails.
 
 ## What the pipeline builds
 
-The generic pipeline, `src/layers/silver/normalised/pipeline.py`, builds one
-materialized view per entity:
+The generic `normalised` job task, `src/layers/silver/normalised/rebuild.py`, builds one
+table per entity:
 
 - **Base**: natural key, `columns`, then the `extracted` foreign keys not
   already listed, then platform columns.

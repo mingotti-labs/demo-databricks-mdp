@@ -1,0 +1,14 @@
+resources:
+  pipelines:
+    pattern_bronze_publish_scd1_autocdc_stream_sql:
+      name: bronze--pattern--publish--scd1--stream--sql--${bundle.target}
+      catalog: ${var.catalog}
+      schema: pattern_bronze_publish
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+      libraries:
+        - file:
+            path: ../../src/bronze_publish/bronze_publish_scd1_autocdc_stream_sql.sql

@@ -19,6 +19,12 @@ def test_valid_distinct_keys_sql_excludes_null_keys():
     assert "a IS NOT NULL AND b IS NOT NULL" in sql and "DISTINCT a, b" in sql
 
 
+def test_nullable_key_is_not_filtered():
+    sql = valid_distinct_keys_sql("c.s.t", ["a", "b"], ["b"])
+    assert "a IS NOT NULL" in sql and "b IS NOT NULL" not in sql
+    assert "WHERE" not in valid_distinct_keys_sql("c.s.t", ["a"], ["a"])
+
+
 def test_passes_when_every_row_landed():
     assert check_table(PLAIN, OK, {"id"}) == []
 
@@ -59,6 +65,12 @@ def test_reference_rows_tolerance():
     assert check_table(table, OK, {"id"}) == []
     far = {"raw": 20, "valid_distinct": 20, "scd2_current": 20}
     assert check_table(table, far, {"id"})
+
+
+def test_scd1_only_table_is_valid_and_checked():
+    table = {"raw": "t_raw", "scd1": "t_scd1", "keys": ["id"], "columns": ["id"]}
+    assert check_table(table, {"raw": 10, "valid_distinct": 10, "scd1_current": 10}, {"id"}) == []
+    assert check_table(table, {"raw": 10, "valid_distinct": 10, "scd1_current": 9}, {"id"})
 
 
 def test_scd1_checked_when_listed():

@@ -20,10 +20,12 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Design patterns**: [`bronze_lakeflow_query`](design-patterns.md#bronze_lakeflow_query), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`bronze_publish_scd1_materialized_view_sql`](design-patterns.md#bronze_publish_scd1_materialized_view_sql), [`bronze_publish_scd2_merge_sql`](design-patterns.md#bronze_publish_scd2_merge_sql), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python)
 - **Bronze raw**: `bronze_neon.{customers,products,orders,order_items}_raw`
 - **Bronze Publish** (`bronze_neon_publish`):
-  - customers: `customers_scd1`, `customers_scd2`, `customers_scd1_sql`
-  - products: `products_scd1`, `products_scd2`, `products_scd1_sql`
-  - orders: `orders_scd1`, `orders_scd1_sql`
-  - order_items: `order_items_scd1`, `order_items_scd1_sql`
+  - customers: `customers_scd2`
+  - products: `products_scd2`
+  - orders: `orders_scd1`
+  - order_items: `order_items_scd1`
+  - the SCD1 tables of customers and products and the SQL twins moved to the
+    patterns bundle
 - **Consumed by Silver Landing**: yes — `customers_scd2`, `products_scd2`,
   `orders_scd1`, `order_items_scd1` (all Python variants) → `silver_landing_neon`
 
@@ -31,8 +33,8 @@ richer variant if it exists; fall back only when it doesn't. See
 - **What it is**: Synthetic web clickstream events, file-drop via UC Volume
 - **Design patterns**: [`bronze_autoloader_add_new_columns_python`](design-patterns.md#bronze_autoloader_add_new_columns_python), [`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python), [`bronze_publish_scd1_autocdc_stream_sql`](design-patterns.md#bronze_publish_scd1_autocdc_stream_sql), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python)
 - **Bronze raw**: `bronze_clickstream.web_events_raw` (+ demo variants)
-- **Bronze Publish** (`bronze_clickstream_publish`): `web_events_scd1`,
-  `web_events_scd1_sql`
+- **Bronze Publish** (`bronze_clickstream_publish`): `web_events_scd1` (the SQL twin
+  moved to the patterns bundle)
 - **Consumed by Silver Landing**: yes — `web_events_scd1` (Python) →
   `silver_landing_clickstream`
 
@@ -40,8 +42,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **What it is**: UNGM UNSPSC classification, public REST API
 - **Design patterns**: [`bronze_rest_api_materialized_view_python`](design-patterns.md#bronze_rest_api_materialized_view_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_ungm.unspsc_public_raw`
-- **Bronze Publish** (`bronze_ungm_publish`): `unspsc_public_scd1`,
-  `unspsc_public_scd2`
+- **Bronze Publish** (`bronze_ungm_publish`): `unspsc_public_scd2`
 - **Consumed by Silver Landing**: yes — `unspsc_public_scd2` →
   `silver_landing_ungm`
 
@@ -49,8 +50,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **What it is**: ACNC Charity Register, data.gov.au CKAN Data API
 - **Design patterns**: [`bronze_custom_ckan_python`](design-patterns.md#bronze_custom_ckan_python), [`bronze_quarantine_null_key_python`](design-patterns.md#bronze_quarantine_null_key_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_acnc.charity_register_raw` (+ `charity_register_quarantine`)
-- **Bronze Publish** (`bronze_acnc_publish`): `charity_register_scd1`,
-  `charity_register_scd2` (`charity_register_valid` is a private
+- **Bronze Publish** (`bronze_acnc_publish`): `charity_register_scd2` (`charity_register_valid` is a private
   pipeline-scoped intermediate, not published)
 - **Consumed by Silver Landing**: yes — `charity_register_scd2` →
   `silver_landing_acnc`
@@ -63,21 +63,21 @@ richer variant if it exists; fall back only when it doesn't. See
   FeatureServer
 - **Design patterns**: [`bronze_custom_arcgis_python`](design-patterns.md#bronze_custom_arcgis_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_nsw_spatial.property_raw`
-- **Bronze Publish** (`bronze_nsw_spatial_publish`): `property_scd1`,
-  `property_scd2`
+- **Bronze Publish** (`bronze_nsw_spatial_publish`): `property_scd2`
 - **Consumed by Silver Landing**: yes — `property_scd2` →
   `silver_landing_nsw_spatial`
 
 ### airroi
 - **What it is**: AirROI short-term rental market intelligence API (4 real
   markets: Vitoria da Conquista/BA, Urubici/SC, Tauranga/NZ, Prado/BA)
-- **Design patterns**: [`bronze_rest_api_materialized_view_python`](design-patterns.md#bronze_rest_api_materialized_view_python), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python)
+- **Design patterns**: [`bronze_rest_api_materialized_view_python`](design-patterns.md#bronze_rest_api_materialized_view_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`silver_normalised_spec_driven_python`](design-patterns.md#silver_normalised_spec_driven_python)
 - **Bronze raw**: `bronze_airroi.{market_metrics_all,market_summary}_raw`
 - **Bronze Publish** (`bronze_airroi_publish`): `market_metrics_all_scd2`,
   `market_summary_scd2` (no SCD1 variant exists for either)
 - **Consumed by Silver Landing**: yes — both → `silver_landing_airroi`
 - **Consumed by Silver Normalised**: yes — `silver_normalised_airroi` (spec
-  `src/layers/silver/normalised/specs/airroi.yml`, first normalised source)
+  `src/layers/silver/normalised/specs/airroi.yml`), rebuilt by the `normalised`
+  task of `run_airroi`
 
 ### iso
 - **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,

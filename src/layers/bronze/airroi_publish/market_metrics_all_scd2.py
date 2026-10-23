@@ -1,35 +1,34 @@
-# SCD Type 2 modeling of AirROI's market metrics time series -- SCD2 only,
-# matching market_summary_scd2's scope decision.
+# SCD Type 2 modeling of AirROI's market metrics time series -- SCD2 only, no SCD1 (a deliberate
+# scope decision: SCD1 would just duplicate SCD2's `WHERE __END_AT IS NULL`).
 #
-# Keyed by market (_country/_region/_locality/_district) + `date`: each
-# (market, date) pair is a distinct data point (e.g. Urubici's Dec 2025
-# forecast), and AirROI can revise a given month's forecast on a later
-# pull as it approaches -- SCD2 keeps that revision history instead of
-# silently overwriting it, which is the actual reason this needs SCD2
-# rather than a plain append-only landing (unlike market_summary, where
-# the SCD2 need was about tracking a single evolving "current value" per
-# market; here it's about tracking how each future month's forecast
-# itself changes call to call).
+# Keyed by the flat _country/_region/_locality/_district columns plus `date` (each (market, date) pair is a distinct data point, and AirROI can revise a month's forecast on a later pull) the raw
+# table carries, not the API's nested `market` map (Auto CDC keys need flat
+# columns). _district is NULL for three of the four markets, which is fine as a
+# key component.
 #
-# transformed_timestamp / ingested_timestamp handling matches
-# market_summary_scd2.py -- see that file's header for why both are
-# excluded from track_history_except_column_list.
+# Bronze full pattern (openspec rollout-bronze-full-pattern): raw stamps
+# ingested_timestamp on every row at every load, so it is left out of the
+# snapshot; with it in, Auto CDC would rewrite every current row each run. Auto
+# CDC versions each snapshot with the pipeline update's time (__START_AT,
+# __END_AT), and Silver Landing reads the change feed (enabled below).
 from pyspark import pipelines as dp
-from pyspark.sql.functions import current_timestamp
 
 
 @dp.temporary_view()
-def market_metrics_all_transformed():
-    return spark.read.table("bronze_airroi.market_metrics_all_raw").withColumn(
-        "transformed_timestamp", current_timestamp()
-    )
+def market_metrics_all_snapshot():
+    return spark.read.table("bronze_airroi.market_metrics_all_raw").drop("ingested_timestamp")
 
 
-dp.create_streaming_table(name="market_metrics_all_scd2")
+dp.create_streaming_table(
+    name="bronze_airroi_publish.market_metrics_all_scd2",
+    table_properties={
+        "pipelines.reset.allowed": "false",
+        "delta.enableChangeDataFeed": "true",
+    },
+)
 dp.create_auto_cdc_from_snapshot_flow(
-    target="market_metrics_all_scd2",
-    source="market_metrics_all_transformed",
+    target="bronze_airroi_publish.market_metrics_all_scd2",
+    source="market_metrics_all_snapshot",
     keys=["_country", "_region", "_locality", "_district", "date"],
     stored_as_scd_type=2,
-    track_history_except_column_list=["ingested_timestamp", "transformed_timestamp"],
 )

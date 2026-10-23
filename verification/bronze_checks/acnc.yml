@@ -6,5 +6,4 @@ tables:
     keys: [ABN]
     columns: [ABN, Charity_Legal_Name, State, Registration_Date]
     quarantine: charity_register_quarantine
-    scd1: charity_register_scd1
     scd2: charity_register_scd2

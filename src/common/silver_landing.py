@@ -26,19 +26,22 @@ def land(df: DataFrame, natural_keys: list[str], source_name: str, scd2: bool) -
 
 
 def land_changes(
-    spark, scd2_table: str, natural_keys: list[str], source_name: str
+    spark, table: str, natural_keys: list[str], source_name: str, scd2: bool = True
 ) -> DataFrame:
-    """Stream the versions Auto CDC inserted or closed in `scd2_table`.
+    """Stream the rows Auto CDC inserted, updated or closed in `table`.
 
     Reads the table's change feed, so `land()`'s run-time stamp lands only on
-    changed rows. `ingested_timestamp` is the version's `__START_AT`: the SCD2
-    table carries no platform timestamps (openspec correct-platform-timestamps).
+    changed rows. For an SCD2 table `ingested_timestamp` is the version's
+    `__START_AT`: the table carries no platform timestamps (openspec
+    correct-platform-timestamps). An SCD1 table has no versions, so Landing
+    keeps its columns as they are.
     """
     df = (
         spark.readStream.option("readChangeFeed", "true")
-        .table(scd2_table)
+        .table(table)
         .where("_change_type IN ('insert', 'update_postimage')")
         .drop("_change_type", "_commit_timestamp")
-        .withColumn("ingested_timestamp", F.col("__START_AT"))
     )
-    return land(df, natural_keys=natural_keys, source_name=source_name, scd2=True)
+    if scd2:
+        df = df.withColumn("ingested_timestamp", F.col("__START_AT"))
+    return land(df, natural_keys=natural_keys, source_name=source_name, scd2=scd2)

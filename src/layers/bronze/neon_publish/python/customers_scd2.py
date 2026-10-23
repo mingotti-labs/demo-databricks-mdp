@@ -6,7 +6,10 @@
 # tracking their full change history isn't meaningful the way it is here.
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="customers_scd2")
+dp.create_streaming_table(
+    name="customers_scd2",
+    table_properties={"delta.enableChangeDataFeed": "true"},
+)
 dp.create_auto_cdc_from_snapshot_flow(
     target="customers_scd2",
     source="bronze_neon.customers_raw",

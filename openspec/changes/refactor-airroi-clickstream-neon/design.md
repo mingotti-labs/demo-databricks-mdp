@@ -22,29 +22,92 @@ schemas and names.
   `__START_AT` rename or `is_current` for an SCD1 source (clickstream, neon
   `orders` and `order_items`); Landing keys on the natural key. Probe P1 checks
   the change feed of an Auto CDC SCD1 target carries the rows needed.
-- **D3 ci_auto_run.** neon `"false"` (no prd Neon instance); airroi `"false"`
-  (paid); clickstream decided at its stage (prd would get synthetic tables).
-- **D4 SCD1 move last**, so it can be cut. The patterns bundle is dev-only; the
-  live tables are dropped in dev and prd.
+- **D3 ci_auto_run.** neon, airroi (paid) and clickstream (a prd run would create
+  synthetic tables; user, 2026-10-23) are all `"false"`.
+- **D5 neon is dev-only.** There is no tst or prd Neon instance, so neon's
+  pipelines and jobs are defined under `targets.dev.resources` in
+  `cicd/databricks/<edition>.yml` (a target cannot include files, so they cannot
+  stay under `resources/`) and no longer deploy to prd. The prd copies are
+  deleted by the user before the prd deploy, because `bundle deploy` will not
+  delete a pipeline without confirmation.
+- **D4 Clean-up stage last**, so it can be cut: the unused SCD1 tables and the
+  SQL twins (neon SQL SCD pipeline and merge job, clickstream SQL SCD pipeline)
+  move to the patterns bundle. The patterns bundle is dev-only; the live tables
+  are dropped in dev and prd.
 
 ## Per source
 
 - **neon**: dev only. Ingestion is Lakeflow Connect; the SCD2 SQL merge job stays
   exempt. Bronze has no stamping to remove. Landing: customers and products from
   SCD2, orders and order_items from SCD1.
-- **clickstream**: `run_clickstream` starts with `generate_clickstream_events`.
-  The Auto Loader flow and the Python SCD flow move into one pipeline; check the
-  append-only SCD1 stream still reads the Auto Loader table. The SQL twin stays
-  exempt.
-- **airroi**: bronze 2 pipelines to 1, silver 2 to 1, drop `silver_airroi`; both
-  SCD2 views drop the stamping and the per-load `ingested_timestamp`; Normalised
-  by D1. One paid dev run (about $0.80) with `verify=true`.
+- **clickstream**: the Auto Loader flow and the Python SCD flow merge into one
+  pipeline (`bronze--clickstream--<target>`, key `clickstream_autoloader`). The
+  SCD1 table is not migrated: SCD1 of append-only events has no history, so
+  `web_events_scd1` is dropped and recreated from raw. `run_clickstream` takes a
+  `generate` parameter (default false: a real source does not create its own
+  events) and a `verify` parameter; it keeps the existing
+  `verify--bronze--clickstream` job, which reads only Databricks tables and
+  volumes. The SQL twin moves in the clean-up stage.
+- **airroi**: bronze 2 pipelines to 1 (the ingestion pipeline keeps its key and
+  takes the SCD2 files), silver 2 to 1 (the Landing pipeline), drop
+  `silver_airroi`; both SCD2 tables follow the bronze full pattern; Normalised by
+  D1. A new load, no table moves: the `reset` task drops the old tables in the
+  environment where `run_airroi` first runs. prd tables stay untouched until then
+  (the raw views and the SCD2 history are kept; the next prd run drops the SCD2
+  history). One paid dev run (about $0.80) with `verify=true`.
+  Open risk: `_district` is NULL for three of four markets and is a key column of
+  the Landing `create_auto_cdc_flow`; whether a NULL key matches on update is
+  probed in dev (P2).
 
 ## Probe (dev)
 
 - **P1** Change feed from an Auto CDC SCD1 target (`web_events_scd1`,
   `orders_scd1`) read by a throwaway Landing pipeline: inserts and updates
   arrive, and a second run with no change writes nothing.
+
+## Probe result
+
+- **P1 (2026-10-23, dev, throwaway pipeline `probe--scd1-change-feed--dev` on a
+  600-row copy of clickstream events in `pattern_bronze_publish`)**: a streaming
+  Auto CDC SCD1 table with change data feed on, and a Landing streaming table
+  over its change feed (`insert` and `update_postimage`). Run 1 loaded 600 rows
+  into both; run 2, no change, wrote nothing; one new event gave 1 insert in
+  SCD1 and in Landing; the same event re-sent later gave 1 update in both.
+  Landing equals SCD1 (0 missing, 0 extra), and only the changed rows got a new
+  `transformed_timestamp` (599 kept the first stamp, 1 and 1 the later ones). A
+  first attempt at the update lost because the raw `timestamp` is a string with a
+  `T` separator and my edited value used a space, so it sorted as older: a probe
+  mistake, not a pattern problem.
+
+## Neon dev run 1 (2026-10-23)
+
+Ingestion and the SCD pipeline succeeded; `verify_bronze` failed and, as
+designed, blocked `silver`. Cause: `verify_neon_connection.py` creates a
+temporary foreign catalog, which needs `CREATE CATALOG` on the metastore, and the
+CI/CD service principal does not have it (the check had only ever been run by the
+human admin). The successful ingestion already proves the connection is live, so
+the connection task was removed from `verify--bronze--neon` rather than widening
+the service principal's privileges.
+
+Runs 2 and 3 then failed in `verify_seed_data` and the ingestion check: both
+read the Neon database itself through the `neon-postgres` secret scope, which the
+service principal cannot read. That is a missing grant, not a reason to drop the
+checks: it is proposed in `demo-databricks-iac` as `grant-cicd-read-neon-secrets`
+(PR #52). Until it is applied, neon's bronze verification is the generic
+`verify_bronze` job with `verification/bronze_checks/neon.yml` (raw populated, SCD
+tables equal raw; the spec accepts an SCD1-only table), and `verify--bronze--neon`
+is gone. The seed-data and source-versus-bronze notebooks stay; task 2.6 puts
+them back into the automated verification once the grant is applied.
+
+## Neon dev result (2026-10-23)
+
+`run_neon` with `verify=true` (all tasks SUCCESS), then a second run with
+verification off (verification tasks excluded, everything else SUCCESS). Landing
+customers 200, products 50, orders 500, order_items 1,240: streaming tables owned
+by the CI/CD service principal, equal to their bronze tables, one
+`transformed_timestamp` each, `ingested_timestamp` equal to
+`scd_valid_from_timestamp` on the SCD2 ones. The second load wrote 0 rows to the
+bronze SCD tables and to Landing.
 
 ## Risks
 

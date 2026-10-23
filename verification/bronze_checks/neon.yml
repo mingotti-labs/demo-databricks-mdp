@@ -1,0 +1,20 @@
+source: neon
+raw_schema: bronze_neon
+publish_schema: bronze_neon_publish
+tables:
+  - raw: customers_raw
+    keys: [id]
+    columns: [id]
+    scd2: customers_scd2
+  - raw: products_raw
+    keys: [id]
+    columns: [id]
+    scd2: products_scd2
+  - raw: orders_raw
+    keys: [id]
+    columns: [id]
+    scd1: orders_scd1
+  - raw: order_items_raw
+    keys: [id]
+    columns: [id]
+    scd1: order_items_scd1

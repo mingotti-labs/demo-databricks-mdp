@@ -1,5 +1,6 @@
 # Databricks notebook source
-# Hand-rolled SCD Type 2 for Neon's customers table via the classic
+# Pattern bronze_publish_scd2_merge_sql (reference only; reads the dev Neon
+# customers). Hand-rolled SCD Type 2 for Neon's customers table via the classic
 # two-phase MERGE pattern -- the real SQL-native answer for a source
 # that's already upsert-maintained (bronze_neon.customers_raw is merged in
 # place by Lakeflow Connect, not appended to). AUTO CDC INTO only supports
@@ -14,7 +15,7 @@ dbutils.widgets.text("catalog", "")
 catalog = dbutils.widgets.get("catalog")
 
 spark.sql(f"""
-CREATE TABLE IF NOT EXISTS {catalog}.bronze_neon_publish.customers_scd2_sql (
+CREATE TABLE IF NOT EXISTS {catalog}.pattern_bronze_publish.bronze_publish_scd2_merge_sql (
   id INT,
   first_name STRING,
   last_name STRING,
@@ -31,7 +32,7 @@ CREATE TABLE IF NOT EXISTS {catalog}.bronze_neon_publish.customers_scd2_sql (
 # Phase A: expire the currently-active version of any row whose tracked
 # columns changed since the last run.
 spark.sql(f"""
-MERGE INTO {catalog}.bronze_neon_publish.customers_scd2_sql AS target
+MERGE INTO {catalog}.pattern_bronze_publish.bronze_publish_scd2_merge_sql AS target
 USING {catalog}.bronze_neon.customers_raw AS source
 ON target.id = source.id AND target.__END_AT IS NULL
 WHEN MATCHED AND (
@@ -48,7 +49,7 @@ WHEN MATCHED AND (
 # must run after Phase A, since it joins against the now-expired rows to
 # find what still needs a fresh version.
 spark.sql(f"""
-MERGE INTO {catalog}.bronze_neon_publish.customers_scd2_sql AS target
+MERGE INTO {catalog}.pattern_bronze_publish.bronze_publish_scd2_merge_sql AS target
 USING (
   SELECT
     source.id, source.first_name, source.last_name, source.email,
@@ -56,7 +57,7 @@ USING (
     source.updated_at AS __START_AT,
     CAST(NULL AS TIMESTAMP) AS __END_AT
   FROM {catalog}.bronze_neon.customers_raw AS source
-  LEFT JOIN {catalog}.bronze_neon_publish.customers_scd2_sql AS current_version
+  LEFT JOIN {catalog}.pattern_bronze_publish.bronze_publish_scd2_merge_sql AS current_version
     ON source.id = current_version.id AND current_version.__END_AT IS NULL
   WHERE current_version.id IS NULL
      OR source.first_name != current_version.first_name
@@ -67,4 +68,4 @@ ON target.id = new_versions.id AND target.__START_AT = new_versions.__START_AT
 WHEN NOT MATCHED THEN INSERT *
 """)
 
-dbutils.notebook.exit("customers_scd2_sql merge complete")
+dbutils.notebook.exit("bronze_publish_scd2_merge_sql merge complete")

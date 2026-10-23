@@ -1,7 +1,7 @@
 resources:
   pipelines:
     clickstream_autoloader:
-      name: bronze--clickstream--autoloader--python--add-new-columns--${bundle.target}
+      name: bronze--clickstream--${bundle.target}
       catalog: ${var.catalog}
       schema: bronze_clickstream
       serverless: true
@@ -13,3 +13,5 @@ resources:
       libraries:
         - glob:
             include: ../../src/layers/bronze/clickstream/python_add_new_columns/**
+        - glob:
+            include: ../../src/layers/bronze/clickstream_publish/python/**

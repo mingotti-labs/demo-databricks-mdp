@@ -1,0 +1,80 @@
+resources:
+  jobs:
+    run_clickstream:
+      name: run--clickstream--${bundle.target}
+      # Not run by CI for now: it would create synthetic tables in prd.
+      tags:
+        ci_auto_run: "false"
+      parameters:
+        # The source is synthetic: generate=true drops a new batch of event files
+        # first. Without it the run ingests whatever files have landed.
+        - name: generate
+          default: "false"
+        # Verification is opt-in: run with verify=true to include both checks.
+        - name: verify
+          default: "false"
+      tasks:
+        # One-off (openspec refactor-airroi-clickstream-neon); a no-op once applied.
+        - task_key: reset
+          notebook_task:
+            notebook_path: ../../migrations/reset_full_load.py
+            base_parameters:
+              catalog: ${var.catalog}
+              landing: silver_landing_clickstream.web_events
+        - task_key: generate_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.generate}}"
+            right: "true"
+        - task_key: generate_events
+          depends_on:
+            - task_key: generate_enabled
+              outcome: "true"
+          run_job_task:
+            job_id: ${resources.jobs.generate_clickstream_events.id}
+        # NONE_FAILED, not the default ALL_SUCCESS: with generation off,
+        # generate_events is excluded, which ALL_SUCCESS does not accept.
+        - task_key: bronze
+          depends_on:
+            - task_key: reset
+            - task_key: generate_events
+          run_if: NONE_FAILED
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.clickstream_autoloader.id}
+        - task_key: verify_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.verify}}"
+            right: "true"
+        - task_key: verify_bronze
+          depends_on:
+            - task_key: bronze
+            - task_key: verify_enabled
+              outcome: "true"
+          run_job_task:
+            job_id: ${resources.jobs.verify_clickstream_pattern.id}
+        - task_key: silver
+          depends_on:
+            - task_key: bronze
+            - task_key: verify_bronze
+          run_if: NONE_FAILED
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_landing_clickstream.id}
+        - task_key: verify_silver
+          depends_on:
+            - task_key: silver
+            - task_key: verify_enabled
+              outcome: "true"
+          run_job_task:
+            job_id: ${resources.jobs.verify_silver_landing.id}
+            job_parameters:
+              source: clickstream
+        - task_key: tag_patterns
+          depends_on:
+            - task_key: silver
+          notebook_task:
+            notebook_path: ../../src/common/tag_design_patterns.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: clickstream
+              workspace_file_path: ${workspace.file_path}
