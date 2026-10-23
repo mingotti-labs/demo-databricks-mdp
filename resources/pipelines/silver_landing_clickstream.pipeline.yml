@@ -1,7 +1,7 @@
 resources:
   pipelines:
     silver_landing_clickstream:
-      name: silver--landing--clickstream--${bundle.target}
+      name: silver--clickstream--${bundle.target}
       catalog: ${var.catalog}
       schema: silver_landing_clickstream
       serverless: true

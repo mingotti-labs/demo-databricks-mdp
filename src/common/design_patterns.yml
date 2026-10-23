@@ -52,3 +52,10 @@ neon:
     bronze_neon_publish.order_items_scd1_sql: bronze_publish_scd1_materialized_view_sql
     bronze_neon_publish.customers_scd2_sql: bronze_publish_scd2_merge_sql
     bronze_neon_publish.products_scd2_sql: bronze_publish_scd2_merge_sql
+clickstream:
+  schemas:
+    bronze_clickstream: bronze_autoloader_add_new_columns_python
+    bronze_clickstream_publish: bronze_publish_scd1_autocdc_stream_python
+    silver_landing_clickstream: silver_landing_change_feed_python
+  tables:
+    bronze_clickstream_publish.web_events_scd1_sql: bronze_publish_scd1_autocdc_stream_sql

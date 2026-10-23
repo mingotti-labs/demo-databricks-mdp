@@ -9,9 +9,15 @@
 # never has anything to overwrite.
 from pyspark import pipelines as dp
 
-dp.create_streaming_table(name="web_events_scd1")
+# Built by the single bronze pipeline (default schema bronze_clickstream), so the
+# target is qualified. Change data feed feeds Silver Landing (openspec
+# refactor-airroi-clickstream-neon).
+dp.create_streaming_table(
+    name="bronze_clickstream_publish.web_events_scd1",
+    table_properties={"delta.enableChangeDataFeed": "true"},
+)
 dp.create_auto_cdc_flow(
-    target="web_events_scd1",
+    target="bronze_clickstream_publish.web_events_scd1",
     source="bronze_clickstream.web_events_raw",
     keys=["event_id"],
     sequence_by="timestamp",

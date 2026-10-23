@@ -73,6 +73,193 @@ targets:
       # conflicts from Silver Normalised profiling (see its design.md).
       acnc_row_limit: ""
       nsw_property_row_limit: "500"
+    # neon has no tst or prd Neon instance, so its resources exist in dev only
+    # (openspec refactor-airroi-clickstream-neon). A target cannot include
+    # files, so they are defined here instead of under resources/.
+    resources:
+      pipelines:
+        neon_ecommerce_ingestion:
+          name: bronze--neon--lakeflow--${bundle.target}
+          configuration:
+            pipelines.numUpdateRetryAttempts: '0'
+            pipelines.maxFlowRetryAttempts: '0'
+          ingestion_definition:
+            connection_name: neon_dev
+            objects:
+            - table:
+                source_catalog: app
+                source_schema: public
+                source_table: customers
+                destination_table: customers_raw
+                table_configuration:
+                  query_based_connector_config:
+                    cursor_columns:
+                    - updated_at
+                destination_catalog: ${var.catalog}
+                destination_schema: bronze_neon
+            - table:
+                source_catalog: app
+                source_schema: public
+                source_table: products
+                destination_table: products_raw
+                table_configuration:
+                  query_based_connector_config:
+                    cursor_columns:
+                    - updated_at
+                destination_catalog: ${var.catalog}
+                destination_schema: bronze_neon
+            - table:
+                source_catalog: app
+                source_schema: public
+                source_table: orders
+                destination_table: orders_raw
+                table_configuration:
+                  query_based_connector_config:
+                    cursor_columns:
+                    - updated_at
+                destination_catalog: ${var.catalog}
+                destination_schema: bronze_neon
+            - table:
+                source_catalog: app
+                source_schema: public
+                source_table: order_items
+                destination_table: order_items_raw
+                table_configuration:
+                  query_based_connector_config:
+                    cursor_columns:
+                    - updated_at
+                destination_catalog: ${var.catalog}
+                destination_schema: bronze_neon
+          target: bronze_neon
+          catalog: ${var.catalog}
+        neon_scd_modeling_python:
+          name: bronze--neon--scd--python--${bundle.target}
+          catalog: ${var.catalog}
+          schema: bronze_neon_publish
+          serverless: true
+          continuous: false
+          configuration:
+            pipelines.numUpdateRetryAttempts: '0'
+            pipelines.maxFlowRetryAttempts: '0'
+          libraries:
+          - glob:
+              include: src/layers/bronze/neon_publish/python/**
+        neon_scd_modeling_sql:
+          name: bronze--neon--scd--sql--${bundle.target}
+          catalog: ${var.catalog}
+          schema: bronze_neon_publish
+          serverless: true
+          continuous: false
+          configuration:
+            pipelines.numUpdateRetryAttempts: '0'
+            pipelines.maxFlowRetryAttempts: '0'
+          libraries:
+          - glob:
+              include: src/layers/bronze/neon_publish/sql/**
+        silver_landing_neon:
+          name: silver--neon--${bundle.target}
+          catalog: ${var.catalog}
+          schema: silver_landing_neon
+          serverless: true
+          continuous: false
+          configuration:
+            pipelines.numUpdateRetryAttempts: '0'
+            pipelines.maxFlowRetryAttempts: '0'
+            workspace_file_path: ${workspace.file_path}
+          libraries:
+          - glob:
+              include: src/layers/silver/landing/neon/**
+      jobs:
+        run_neon:
+          name: run--neon--${bundle.target}
+          tags:
+            ci_auto_run: 'false'
+          parameters:
+          - name: verify
+            default: 'false'
+          tasks:
+          - task_key: reset
+            notebook_task:
+              notebook_path: migrations/reset_full_load.py
+              base_parameters:
+                catalog: ${var.catalog}
+                landing: silver_landing_neon.customers,silver_landing_neon.products,silver_landing_neon.orders,silver_landing_neon.order_items
+          - task_key: bronze_ingestion
+            depends_on:
+            - task_key: reset
+            pipeline_task:
+              pipeline_id: ${resources.pipelines.neon_ecommerce_ingestion.id}
+          - task_key: bronze_scd
+            depends_on:
+            - task_key: bronze_ingestion
+            pipeline_task:
+              pipeline_id: ${resources.pipelines.neon_scd_modeling_python.id}
+          - task_key: verify_enabled
+            condition_task:
+              op: EQUAL_TO
+              left: '{{job.parameters.verify}}'
+              right: 'true'
+          - task_key: verify_bronze
+            depends_on:
+            - task_key: bronze_scd
+            - task_key: verify_enabled
+              outcome: 'true'
+            run_job_task:
+              job_id: ${resources.jobs.verify_bronze.id}
+              job_parameters:
+                source: neon
+          - task_key: silver
+            depends_on:
+            - task_key: bronze_scd
+            - task_key: verify_bronze
+            run_if: NONE_FAILED
+            pipeline_task:
+              pipeline_id: ${resources.pipelines.silver_landing_neon.id}
+          - task_key: verify_silver
+            depends_on:
+            - task_key: silver
+            - task_key: verify_enabled
+              outcome: 'true'
+            run_job_task:
+              job_id: ${resources.jobs.verify_silver_landing.id}
+              job_parameters:
+                source: neon
+          - task_key: tag_patterns
+            depends_on:
+            - task_key: silver
+            notebook_task:
+              notebook_path: src/common/tag_design_patterns.py
+              base_parameters:
+                catalog: ${var.catalog}
+                source: neon
+                workspace_file_path: ${workspace.file_path}
+        seed_neon_ecommerce:
+          name: seed--neon--data--${bundle.target}
+          tasks:
+          - task_key: seed
+            notebook_task:
+              notebook_path: src/seed_data/seed_neon_ecommerce.py
+            environment_key: default
+          environments:
+          - environment_key: default
+            spec:
+              environment_version: '2'
+              dependencies:
+              - psycopg2-binary
+              - faker
+        neon_scd2_merge_sql:
+          name: bronze--neon--scd2--sql--${bundle.target}
+          tasks:
+          - task_key: customers_scd2
+            notebook_task:
+              notebook_path: src/layers/bronze/neon_publish/scd2_merge/customers_scd2_merge.py
+              base_parameters:
+                catalog: ${var.catalog}
+          - task_key: products_scd2
+            notebook_task:
+              notebook_path: src/layers/bronze/neon_publish/scd2_merge/products_scd2_merge.py
+              base_parameters:
+                catalog: ${var.catalog}
 
   tst:
     mode: production

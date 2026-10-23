@@ -1,11 +1,15 @@
 resources:
   jobs:
-    run_neon:
-      name: run--neon--${bundle.target}
-      # dev only: there is no Neon instance for tst or prd to ingest from.
+    run_clickstream:
+      name: run--clickstream--${bundle.target}
+      # Not run by CI for now: it would create synthetic tables in prd.
       tags:
         ci_auto_run: "false"
       parameters:
+        # The source is synthetic: generate=true drops a new batch of event files
+        # first. Without it the run ingests whatever files have landed.
+        - name: generate
+          default: "false"
         # Verification is opt-in: run with verify=true to include both checks.
         - name: verify
           default: "false"
@@ -16,17 +20,27 @@ resources:
             notebook_path: ../../migrations/reset_full_load.py
             base_parameters:
               catalog: ${var.catalog}
-              landing: silver_landing_neon.customers,silver_landing_neon.products,silver_landing_neon.orders,silver_landing_neon.order_items
-        - task_key: bronze_ingestion
+              landing: silver_landing_clickstream.web_events
+        - task_key: generate_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.generate}}"
+            right: "true"
+        - task_key: generate_events
+          depends_on:
+            - task_key: generate_enabled
+              outcome: "true"
+          run_job_task:
+            job_id: ${resources.jobs.generate_clickstream_events.id}
+        # NONE_FAILED, not the default ALL_SUCCESS: with generation off,
+        # generate_events is excluded, which ALL_SUCCESS does not accept.
+        - task_key: bronze
           depends_on:
             - task_key: reset
+            - task_key: generate_events
+          run_if: NONE_FAILED
           pipeline_task:
-            pipeline_id: ${resources.pipelines.neon_ecommerce_ingestion.id}
-        - task_key: bronze_scd
-          depends_on:
-            - task_key: bronze_ingestion
-          pipeline_task:
-            pipeline_id: ${resources.pipelines.neon_scd_modeling_python.id}
+            pipeline_id: ${resources.pipelines.clickstream_autoloader.id}
         - task_key: verify_enabled
           condition_task:
             op: EQUAL_TO
@@ -34,22 +48,18 @@ resources:
             right: "true"
         - task_key: verify_bronze
           depends_on:
-            - task_key: bronze_scd
+            - task_key: bronze
             - task_key: verify_enabled
               outcome: "true"
           run_job_task:
-            job_id: ${resources.jobs.verify_bronze.id}
-            job_parameters:
-              source: neon
-        # NONE_FAILED, not the default ALL_SUCCESS: with verification off,
-        # verify_bronze is excluded, which ALL_SUCCESS does not accept.
+            job_id: ${resources.jobs.verify_clickstream_pattern.id}
         - task_key: silver
           depends_on:
-            - task_key: bronze_scd
+            - task_key: bronze
             - task_key: verify_bronze
           run_if: NONE_FAILED
           pipeline_task:
-            pipeline_id: ${resources.pipelines.silver_landing_neon.id}
+            pipeline_id: ${resources.pipelines.silver_landing_clickstream.id}
         - task_key: verify_silver
           depends_on:
             - task_key: silver
@@ -58,7 +68,7 @@ resources:
           run_job_task:
             job_id: ${resources.jobs.verify_silver_landing.id}
             job_parameters:
-              source: neon
+              source: clickstream
         - task_key: tag_patterns
           depends_on:
             - task_key: silver
@@ -66,5 +76,5 @@ resources:
             notebook_path: ../../src/common/tag_design_patterns.py
             base_parameters:
               catalog: ${var.catalog}
-              source: neon
+              source: clickstream
               workspace_file_path: ${workspace.file_path}
