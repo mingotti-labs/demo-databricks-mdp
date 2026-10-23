@@ -30,12 +30,13 @@ resources:
               outcome: "true"
           run_job_task:
             job_id: ${resources.jobs.verify_acnc_charity_register.id}
-        # Depends on bronze as well: a task whose dependencies are all excluded
-        # is excluded too, which would skip silver when verification is off.
+        # NONE_FAILED, not the default ALL_SUCCESS: with verification off,
+        # verify_bronze is excluded, which ALL_SUCCESS does not accept.
         - task_key: silver
           depends_on:
             - task_key: bronze
             - task_key: verify_bronze
+          run_if: NONE_FAILED
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_normalised_acnc.id}
         - task_key: normalised

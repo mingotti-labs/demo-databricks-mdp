@@ -266,8 +266,17 @@ acnc alone (about 17 min; checked with `cicd/affected_units.py`).
 The verification tasks cost a serverless start-up each (41 to 47 s for bronze)
 and found nothing on repeated runs. `run_acnc` has a job parameter `verify`
 (default `"false"`); a condition task (no compute) gates `verify_bronze` and
-`verify_silver` on `verify=true`. Databricks treats an excluded upstream task as
-successful, except that a task whose dependencies are all excluded is excluded
-as well, so `silver` depends on `bronze` besides `verify_bronze`. Because CI
-runs the job with its defaults, verification is off in tst/prd runs too until
-the default or the CI command changes. Source: Databricks docs, "Run if".
+`verify_silver` on `verify=true`. With verification on, `verify_bronze` runs
+after `bronze` and before `silver`; with it off, `silver` runs straight after
+`bronze`.
+
+`silver` depends on `bronze` and `verify_bronze` with `run_if: NONE_FAILED`.
+The first version used the default `ALL_SUCCESS` (the Databricks docs say an
+excluded upstream counts as successful): in prd, with verification off,
+`silver` was excluded ("dependency type condition was not met") and so were
+`normalised`, `tag` and `tag_patterns`, while the run reported SUCCESS. A failed
+verification still stops `silver`; a skipped one does not. Tested in dev with
+`verify=false` (run 206238828805026): only `verify_bronze` and `verify_silver`
+were excluded and every other task succeeded. The `verify=true` path has not
+been run. Because CI runs the job with its defaults, verification is off in
+tst/prd runs until the default or the CI command changes.
