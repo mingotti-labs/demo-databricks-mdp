@@ -72,3 +72,19 @@ Change `refactor-airroi-clickstream-neon` (2026-10-23).
 | Probe | Question | Result |
 |---|---|---|
 | P1 | Does the change feed of an Auto CDC SCD1 target feed a Landing streaming table (inserts and updates, nothing on an unchanged run)? | Pass: 600 rows loaded; a new event gave 1 insert and a re-sent event 1 update in both tables; Landing equals SCD1; only changed rows were restamped. A first attempt looked like a failure and was a probe error: the raw `timestamp` is a string with a `T` separator, and my edited value (space separator) sorted as older. |
+
+## Dividend portfolio sources
+
+Change `dividend-portfolio-probes` (2026-10-25). Record: its `design.md`
+"Probe results". Scripts: `references/poc/dividend-portfolio/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Can serverless reach Wikipedia, FMP, SEC, Yahoo, RBA and FRED? | Pass: every host answered. |
+| P2 | How many tables does the metastore hold? | Pass: 301 (272 in `mdp_dev`/`mdp_prd`, 28 in `samples`); about 200 to 230 left. |
+| P3 | Can the Wikipedia S&P 500 page be parsed? | Pass with a constraint: 503 rows, 500 CIKs, every date added parses; read CIK as text; `BRK.B` uses a dot; the changes table is gone from the page. |
+| P4 | Does the FMP free plan give the S&P 500 list and dividend pay dates? | Fail: the list is paid (402), dividends only for some symbols (KO yes, O and BRK-B refused), calendar with a date range paid. FMP dropped from version one. |
+| P4b | Is the FMP dividends calendar free without a date range? | Fail for the story: 44 symbols only, the free sample. |
+| P5 | Do SEC company facts cover the ranking's figures? | Pass with constraints: concepts vary by company and over time (take the latest fiscal year); banks, insurers and REITs lack some figures; XOM's ticker and CIK now point to a new holding company with no 10-K, history under the old CIK. |
+| P6 | Does `yfinance` fetch the whole index from serverless? | Pass: 503 tickers, no blocking; 1-year prices in one bulk call (54 s), full dividends (142 s), options for 502 (36 s). |
+| P6b | Does `yfinance` give dividend pay dates? | Pass: `Ticker.calendar` has the next pay date for 413 of 420 payers, matching FMP for KO and JNJ; only the next one, so history builds weekly. |
