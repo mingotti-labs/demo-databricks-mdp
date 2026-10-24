@@ -1,9 +1,11 @@
 ## 1. Setup
 
-- [ ] 1.1 Create the scratch workspace folder
-      `/Workspace/Users/<user>/probes/dividend-portfolio/`; verify with
-      `databricks workspace list`
-- [ ] 1.2 User supplies the SEC `User-Agent` string (app name and contact email)
+- [ ] 1.1 Create `references/poc/dividend-portfolio/` with a README (what each
+      probe asks, how to upload and run it); each probe's script is added in
+      its task below; `ruff check` passes on the folder
+- [ ] 1.2 Upload the folder to `/Workspace/Users/<user>/poc/dividend-portfolio/`
+      before each run; verify with `databricks workspace list`
+- [ ] 1.3 User supplies the SEC `User-Agent` string (app name and contact email)
 
 ## 2. Probes (one serverless run at a time, design.md D1 and D2)
 
@@ -28,5 +30,5 @@
 - [ ] 3.4 If a result changes the story design, update it in
       `demo-databricks-planning` (separate PR); list any schema that becomes
       unnecessary for a later iac change
-- [ ] 3.5 With the user's approval, delete the scratch workspace folder; verify
-      it no longer lists
+- [ ] 3.5 With the user's approval, delete the uploaded workspace folder (the
+      repo copy stays); verify it no longer lists

@@ -26,9 +26,14 @@ those hosts. Whether it works for the new hosts is not known.
 
 - **D1 How the probes run.** Each probe is a plain Python file run as a one-time
   serverless job (`databricks jobs submit`, a `spark_python_task` with an
-  environment listing its PyPI packages), kept in a scratch workspace folder
-  `/Workspace/Users/<user>/probes/dividend-portfolio/`. Local copies sit in the
-  session scratchpad, not the repo. This is the real shape (serverless, packages
+  environment listing its PyPI packages). The scripts are committed in
+  `references/poc/dividend-portfolio/` (`p1_hosts.py` ... `p6_yahoo.py`, a README
+  with how to run them) and uploaded to
+  `/Workspace/Users/<user>/poc/dividend-portfolio/` for the runs.
+  `references/**` is already excluded from the bundle upload, so they never
+  deploy. Rejected: a top-level `poc/` folder (needs a new exclusion in both
+  edition files and a regenerated `databricks.yml`); not committing them (a
+  later change could not rerun or read them). This is the real shape (serverless, packages
   from the environment, outbound requests) except for identity: the run is the
   user's, not the CI/CD service principal's. The principal's READ on `fmp` is
   already confirmed by `databricks secrets list-acls fmp`; change 2 proves it in
@@ -95,6 +100,6 @@ those hosts. Whether it works for the new hosts is not known.
 
 ## Migration Plan
 
-None: nothing is deployed. After the results are recorded, the scratch
+None: nothing is deployed. After the results are recorded, the uploaded
 workspace folder is deleted (with the user's approval) and the one-time runs are
 left in the job run history.

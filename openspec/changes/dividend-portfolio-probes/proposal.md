@@ -24,8 +24,9 @@ the first source change is designed, so no change is built on a guess.
     full dividend history, and whether options are listed
 - Decide, from the results, the S&P 500 list source (FMP or Wikipedia) and the
   pay-date source (FMP or estimate). Record the decision for change 2 onwards.
-- No pipeline, job, table or bundle change. The probe code is not committed and
-  is deleted from the workspace afterwards.
+- The probe scripts are kept in `references/poc/dividend-portfolio/` (outside
+  the bundle upload, like the rest of `references/`), so they can be read and
+  rerun. No pipeline, job, table or bundle change.
 
 ## Capabilities
 
@@ -41,8 +42,11 @@ None. This change only records findings (`skip_specs: true`).
 
 - Docs: this change's `design.md` (results), `references/docs/registers/probes.md`
   (one new section).
-- Dev workspace: a scratch folder under the user's home and one-time serverless
-  job runs, both removed afterwards. No tables are created.
+- New folder `references/poc/dividend-portfolio/`: one script per probe and a
+  short README.
+- Dev workspace: the scripts uploaded to a folder under the user's home, run as
+  one-time serverless jobs; the folder is removed afterwards. No tables are
+  created.
 - FMP: at most 15 calls of the 250 a day. SEC: about 15 requests. Yahoo: about
   1,000 requests in one run. Free Edition allows one workload at a time, so the
   probes run one after another.
