@@ -103,3 +103,100 @@ those hosts. Whether it works for the new hosts is not known.
 None: nothing is deployed. After the results are recorded, the uploaded
 workspace folder is deleted (with the user's approval) and the one-time runs are
 left in the job run history.
+
+## Probe results
+
+All run on 2026-10-25 in dev as one-time serverless jobs (environment version
+4) from `references/poc/dividend-portfolio/` via `run.py`, one at a time. Two
+probes were added while running: P4b (one more FMP call) and P6b (Yahoo pay
+dates), both after P4 ruled FMP out.
+
+- **P1 Reaching the hosts: pass.** Every host answered within 0.4 s:
+  Wikipedia, SEC (`www` and `data`), Yahoo (`query1`, `query2`) and RBA with
+  200; FMP 401 and FRED 400 because no key was sent, which still shows the host
+  is reachable.
+- **P2 Metastore table count: pass.** 301 tables: `mdp_dev` 175 (113 managed,
+  46 streaming, 16 materialized views), `mdp_prd` 97, `samples` 28 (a shared
+  catalog, probably not counted against the limit), `dbacademy` 1. Headroom
+  about 200 to 230 tables.
+- **P3 Wikipedia page: pass with a constraint.** The `constituents` table
+  parses: 503 rows, 500 distinct CIKs (GOOGL/GOOG, FOXA/FOX, NWSA/NWS share
+  one), columns Symbol, Security, GICS Sector, GICS Sub-Industry,
+  Headquarters Location, Date added, CIK, Founded. Every date added parses
+  (1957-03-04 to 2026-10-06). Constraints: CIK is zero-padded on the page but
+  `read_html` turns it into a number (read it as text); `BRK.B` and `BF.B` use
+  a dot where Yahoo uses a dash. The "Selected changes" table is no longer on
+  the page (the only other table is a navigation box): membership history has
+  to come from our own weekly snapshots, as the story design already planned.
+  A first run was a probe error: a missing `id="changes"` table made pandas
+  fall back to another parser and hide the real error.
+- **P4 FMP free plan: fail.** 11 calls. `stable/sp500-constituent` and
+  `stable/historical-sp500-constituent`: 402 "Restricted Endpoint"; their
+  `api/v3` equivalents: 403 "Legacy Endpoint" (only for subscriptions before
+  2025-08-31). `stable/dividends` works only for some symbols: KO (227 events
+  from 1970), JNJ (228) and AAPL (92) return pay, record and declaration dates
+  (pay date filled for 159, 160 and 92 events); O and BRK-B are refused as
+  "Premium Query Parameter". `stable/dividends-calendar` with a date range:
+  402 (the `from` value is premium). No rate-limit headers in any response, so
+  the daily limit can only be read in the FMP dashboard.
+- **P4b FMP calendar without a date range: fail for the story.** 1 call (12
+  in total). 200, but only 44 symbols, all large well-known names (and ETFs
+  such as SPY and VWO): the same sample of symbols the free plan allows.
+- **P5 SEC company facts: pass with constraints.** `company_tickers.json`:
+  10,429 rows, share classes with a dash (`BRK-B`). `companyfacts` is 3 to
+  8 MB per company. For the 11 companies with filings, every figure has a
+  concept in the latest 10-K, except where the sector does not report it:
+  JPM and CB (bank, insurer) have no capital expenditure and no operating
+  income, O (REIT) no operating income, CB no D&A, and NEE's capital
+  expenditure is not under any of the four concepts tried. The concept varies
+  by company: dividends paid is `PaymentsOfDividends` (AAPL, KO, PG, JPM),
+  `PaymentsOfDividendsCommonStock` (MSFT, O, T, CB) or
+  `PaymentsOfOrdinaryDividends` (JNJ); D&A has four concepts; a company can
+  switch concept over the years (KO's `LongTermDebt` stops at FY2023,
+  `LongTermDebtAndCapitalLeaseObligations` continues), so the mapping must
+  take the concept with the latest fiscal year. `frames` (one concept, one
+  year, all companies) is one 130 KB call covering 871 companies for
+  `PaymentsOfDividends` CY2025. **XOM**: the ticker, and Wikipedia's CIK, now
+  point to the new holding company ExxonMobil Holdings Corp (CIK 2115436),
+  which has no 10-K yet; the history is under Exxon Mobil Corp (CIK 34088).
+- **P6 Yahoo (`yfinance` 1.7.0): pass.** 503 tickers, no blocking and no
+  errors. Bulk 1-year raw prices: 54 s, every ticker has data (251 trading
+  days for 498). `Ticker.dividends`: 142 s, 420 payers, earliest 1962-01-16,
+  median 121 events per payer. `Ticker.options`: 36 s, 502 with options (not
+  NVR). Open interest on the next monthly expiry (2026-11-20) ranges from
+  3,795 (BEN) to 139,028 (VZ). A bulk `yf.download(period="max",
+  actions=True)` returns exactly the same dividend events as
+  `Ticker.dividends` for KO, JNJ, O, BRK-B (none) and AAPL.
+- **P6b Yahoo next pay date: pass.** `Ticker.calendar` for 503 tickers: 33 s,
+  no errors; 420 have the next ex-dividend date and 413 the next pay date
+  ("Dividend Date"). KO (ex 2026-12-01, pay 2026-12-15) and JNJ (ex 2026-11-24,
+  pay 2026-12-08) match FMP exactly. It holds only the latest announced
+  dividend (AAPL's shows August's).
+
+## Decisions from the probes
+
+- **S&P 500 list: Wikipedia.** FMP's list is paid. Wikipedia gives symbol,
+  sector, sub-industry, date added and CIK in one page. CIK read as text.
+- **Pay dates: Yahoo `Ticker.calendar`, collected weekly; estimated before
+  that.** Each weekly run records the next announced ex-date and pay date, so
+  real pay dates build up from the first load. Dividends paid before then get
+  an estimated pay date (ex-date plus a number of days, per company once
+  enough real ones are collected, otherwise the reference table's default).
+- **FMP: dropped from version one.** Neither the list nor the dividend dates
+  are on the free plan for the whole index. The `fmp` secret scope and the
+  `bronze_fmp`, `bronze_fmp_publish`, `silver_landing_fmp` schemas are unused;
+  removing them is a small iac change (task 3.4).
+- **Yahoo: the main market source**, about 4 minutes a week for prices, full
+  dividends, options and calendar. Prices and dividends can each be one bulk
+  call.
+- **SEC: `companyfacts` per company** (about 500 calls, under a minute at 10
+  a second), keeping only the mapped concepts. The SEC change must handle:
+  the concept chosen by latest fiscal year, sector gaps (banks and insurers
+  without capital expenditure or operating income, so free cash flow and
+  EBITDA are not computed for them), and a predecessor CIK for reorganised
+  companies (XOM), kept in a small reference table.
+- **Table budget.** About 15 source datasets (Wikipedia 1, SEC 2, Yahoo 4,
+  RBA 2, FRED 1, purchases 1, reference about 4) at about 3 tables each (raw,
+  publish, landing), plus about 7 in `silver_investments` and 6 in gold: about
+  58 per environment, 116 for dev and prd. That fits the 200 to 230 left, with
+  80 to 110 to spare.
