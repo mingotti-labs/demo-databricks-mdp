@@ -72,3 +72,21 @@ Deploy to dev, run `run_wikipedia` with `verify=true`, run once more with no
 change and confirm no version is written. tst/prd: CI deploys on merge; the
 tables are created on the first run. Rollback: remove the resources; the three
 schemas stay (iac).
+
+## Results (2026-10-25, dev)
+
+- **Helper on the real page (task 1.2, run locally):** 503 rows, 503 distinct
+  `symbol`, every CIK 10 digits. `founded` is free text (`1928 (2011)`,
+  `1904/1946/1959`), which is why raw keeps text.
+- **First verified run** (`run_wikipedia` with `verify=true`, all tasks
+  succeeded): raw 503 rows, 503 symbols; SCD2 503 rows, 503 current; Landing
+  503 rows, 503 current; 3 tables tagged; the raw table's comment carries the
+  CC BY-SA attribution.
+- **Unchanged reruns (task 3.3):** two more runs. SCD2 still 503 rows, 0 closed,
+  one `__START_AT` (the first run's), so no version was inserted or closed;
+  Landing 503 rows and one `transformed_timestamp`. The raw table was re-fetched
+  each time (its `ingested_timestamp` moved to the latest run).
+- **Free Edition note:** the second run's silver task failed with
+  `RESOURCE_EXHAUSTED` because the SQL warehouse started by my queries was left
+  running; stopping it (`databricks warehouses stop`) fixed it, as CLAUDE.md
+  already says. Not a pipeline problem.

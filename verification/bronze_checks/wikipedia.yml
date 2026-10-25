@@ -1,0 +1,8 @@
+source: wikipedia
+raw_schema: bronze_wikipedia
+publish_schema: bronze_wikipedia_publish
+tables:
+  - raw: sp500_constituents_raw
+    keys: [symbol]
+    columns: [symbol, security, gics_sector, gics_sub_industry, headquarters_location, date_added, cik, founded, ingested_timestamp]
+    scd2: sp500_constituents_scd2

@@ -60,6 +60,12 @@ variables:
   geonames_cities_url:
     description: URL for GeoNames' cities500.zip dump (all populated places with population > 500) -- same for every target, no test/prod split exists for this source.
     default: https://download.geonames.org/export/dump/cities500.zip
+  wikipedia_sp500_url:
+    description: URL of Wikipedia's "List of S&P 500 companies" page -- same for every target, no test/prod split exists for this source.
+    default: https://en.wikipedia.org/wiki/List_of_S%26P_500_companies
+  http_user_agent:
+    description: User-Agent contact string sent to public sites that ask for one (Wikipedia, later SEC).
+    default: mdp handsonessential@gmail.com
 
 targets:
   dev:
