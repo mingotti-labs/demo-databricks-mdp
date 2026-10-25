@@ -77,6 +77,8 @@ demo-databricks-mdp/
                           # build-system config yet); see the UNGM "Sources" entry below
                           # for the confirmed sys.path-based import mechanism pipelines use
     seed_data/            # one-off synthetic-data generators, not part of any medallion layer
+  data/
+    portfolio/            # curated settings CSVs (master copy), copied to a volume by run_portfolio
   tests/
     common/               # mirrors src/common/ only — NOT src/layers/
     cicd/                 # unit tests for cicd/ (offline, no Databricks)
@@ -602,6 +604,16 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   Wikipedia because FMP's free plan refuses the list (probes in
   `references/docs/registers/probes.md`). Wikipedia needs a contact User-Agent:
   the `http_user_agent` bundle variable, reused by the SEC source.
+- **Portfolio internal data** (`portfolio-internal-settings`, dividend portfolio
+  story) -- company-owned data, not an upstream system: five curated CSVs
+  committed in `data/portfolio/` (SEC concept mapping, predecessor CIKs,
+  settings, risk levels, target mix), copied by `run_portfolio`'s first task
+  (`src/common/copy_repo_files.py`) into `bronze_portfolio.s3_raw/<name>/landing/`
+  on every run, so the repo is the master. `bronze_portfolio.<name>_raw` text
+  Materialized Views, SCD2 in `bronze_portfolio_publish` (the history of every
+  setting) and `silver_landing_portfolio`. The copy task's `source_glob` is also
+  how CI selects the unit when a CSV changes. Real purchases (later) are never
+  committed and never overwritten by the copy.
 
 ## Development style
 

@@ -140,10 +140,18 @@ A Materialized View over a static public CSV or text dump fetched by a helper in
 `src/common/`, with a licence note as a table comment. Code:
 `src/layers/bronze/iso/`, `src/layers/bronze/geonames/`,
 `src/common/iso3166.py`, `src/common/geonames.py`.
-Used by: [iso](data-sources.md#iso), [geonames](data-sources.md#geonames).
+Used by: [iso](data-sources.md#iso), [geonames](data-sources.md#geonames),
+[wikipedia](data-sources.md#wikipedia) (an HTML table parsed by a helper).
 Evidence: `prd`.
 
 ## Publish modelling (Bronze Publish)
+
+### bronze_volume_csv_materialized_view_python
+A CSV committed in the repo (`data/<source>/`), copied into a Unity Catalog
+volume by the run job's first task, and read by a Materialized View with every
+column as text. The repo is the master; the volume is overwritten on every run.
+Code: `src/common/copy_repo_files.py`, `src/layers/bronze/portfolio/`.
+Used by: [portfolio](data-sources.md#portfolio). Evidence: `dev`.
 
 ### bronze_publish_scd2_autocdc_snapshot_python
 `create_auto_cdc_from_snapshot_flow` against a `_raw` source that is the full
@@ -165,10 +173,11 @@ data feed on, for Silver Landing. Not possible: streaming Auto CDC (a
 materialized view cannot be streamed) and a function source carrying raw's
 exact fetch time (it cannot read a dataset of its own pipeline). Code:
 `src/layers/bronze/acnc_publish/charity_register_scd2.py`,
-`src/layers/bronze/{ungm,iso,geonames,nsw_spatial}_publish/`.
+`src/layers/bronze/{ungm,iso,geonames,nsw_spatial,wikipedia,portfolio}_publish/`.
 Used by: [acnc](data-sources.md#acnc), [ungm](data-sources.md#ungm),
 [iso](data-sources.md#iso), [geonames](data-sources.md#geonames),
-[nsw_spatial](data-sources.md#nsw_spatial). Evidence: `prd` (acnc), `dev`.
+[nsw_spatial](data-sources.md#nsw_spatial), [wikipedia](data-sources.md#wikipedia),
+[portfolio](data-sources.md#portfolio). Evidence: `prd` (acnc), `dev`.
 
 ### bronze_publish_scd1_autocdc_snapshot_python
 The same snapshot flow, keeping only the latest version per key. Used where a
@@ -233,9 +242,10 @@ A streaming table that reads only the rows changed in its Bronze Publish SCD2
 table (`readChangeFeed`) and applies them by version key with
 `create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
 rows, and sets `ingested_timestamp` to the version's `__START_AT`. Code:
-`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi}/`, shared helper
-`land_changes` in `src/common/silver_landing.py`. Used by: acnc, ungm, iso,
-geonames, nsw_spatial, airroi. Evidence: `prd` (acnc), `dev`.
+`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi,wikipedia,portfolio}/`,
+shared helper `land_changes` in `src/common/silver_landing.py`. Used by: acnc,
+ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio. Evidence: `prd`
+(acnc), `dev`.
 
 ### silver_normalised_spec_driven_python
 Shared builders driven by a per-source YAML spec validated against a JSON
@@ -260,7 +270,8 @@ rows that are gone are removed. Code: `src/common/keep_timestamps.py`,
 ### bronze_silver_pipeline_per_layer
 One bronze pipeline and one silver pipeline per source, building the publish and
 landing tables by qualified name, instead of one pipeline per pattern. Used by
-acnc, ungm, iso, geonames, nsw_spatial, airroi; clickstream and neon follow it as
+acnc, ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio; clickstream
+and neon follow it as
 far as their sources allow. Evidence: `prd`.
 
 ### cicd_run_unit

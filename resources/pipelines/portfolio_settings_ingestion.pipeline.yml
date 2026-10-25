@@ -1,0 +1,18 @@
+resources:
+  pipelines:
+    portfolio_settings_ingestion:
+      name: bronze--portfolio--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_portfolio
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        portfolio_volume_root: /Volumes/${var.catalog}/bronze_portfolio/s3_raw
+        workspace_file_path: ${workspace.file_path}
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/portfolio/**
+        - glob:
+            include: ../../src/layers/bronze/portfolio_publish/**

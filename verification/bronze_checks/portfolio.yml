@@ -1,0 +1,29 @@
+source: portfolio
+raw_schema: bronze_portfolio
+publish_schema: bronze_portfolio_publish
+tables:
+  - raw: concept_mapping_raw
+    keys: [figure, taxonomy, concept]
+    columns: [figure, priority, taxonomy, concept, ingested_timestamp]
+    reference_rows: 35
+    scd2: concept_mapping_scd2
+  - raw: predecessor_ciks_raw
+    keys: [cik]
+    columns: [cik, predecessor_cik, company, reason, ingested_timestamp]
+    reference_rows: 1
+    scd2: predecessor_ciks_scd2
+  - raw: settings_raw
+    keys: [setting]
+    columns: [setting, value, currency_code, description, ingested_timestamp]
+    reference_rows: 5
+    scd2: settings_scd2
+  - raw: risk_levels_raw
+    keys: [level]
+    columns: [level, sort_order, min_years_increases, max_payout_ratio, max_net_debt_to_ebitda, min_yield, max_yield, min_chowder, min_chowder_utilities, min_dividend_growth_5y, ingested_timestamp]
+    reference_rows: 4
+    scd2: risk_levels_scd2
+  - raw: target_mix_raw
+    keys: [level]
+    columns: [level, target_weight, ingested_timestamp]
+    reference_rows: 4
+    scd2: target_mix_scd2
