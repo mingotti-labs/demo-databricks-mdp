@@ -1,0 +1,23 @@
+resources:
+  pipelines:
+    wikipedia_sp500_ingestion:
+      name: bronze--wikipedia--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_wikipedia
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        wikipedia_sp500_url: ${var.wikipedia_sp500_url}
+        http_user_agent: ${var.http_user_agent}
+        workspace_file_path: ${workspace.file_path}
+      environment:
+        dependencies:
+          - requests
+          - lxml
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/wikipedia/**
+        - glob:
+            include: ../../src/layers/bronze/wikipedia_publish/**
