@@ -590,6 +590,18 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     `@dp.temporary_view()` per table, both excluded via
     `track_history_except_column_list`, SCD2-only (no SCD1), CC BY 4.0
     attribution as a Unity Catalog table comment on all four `_raw` tables.
+- **Wikipedia S&P 500 list** (`wikipedia-sp500-ingestion`, dividend portfolio
+  story) -- first source of the story: the `constituents` table of "List of S&P
+  500 companies", parsed with lxml by `src/common/wikipedia_sp500.py` (fails on a
+  layout change). `bronze_wikipedia.sp500_constituents_raw` (Materialized View,
+  text values as the page shows them, symbols with dots), SCD2
+  `bronze_wikipedia_publish.sp500_constituents_scd2` keyed by `symbol` and
+  `silver_landing_wikipedia.sp500_constituents`. SCD2 versions are the index
+  membership history (an exit closes a version), kept from the first load. One
+  weekly run job `run_wikipedia`; no Silver Normalised. The dividend story chose
+  Wikipedia because FMP's free plan refuses the list (probes in
+  `references/docs/registers/probes.md`). Wikipedia needs a contact User-Agent:
+  the `http_user_agent` bundle variable, reused by the SEC source.
 
 ## Development style
 
