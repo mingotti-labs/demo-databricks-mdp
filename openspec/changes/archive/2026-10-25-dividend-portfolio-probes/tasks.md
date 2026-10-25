@@ -30,5 +30,5 @@
 - [x] 3.4 (planning PR #13; unused: `fmp` scope, `bronze_fmp`, `bronze_fmp_publish`, `silver_landing_fmp`) If a result changes the story design, update it in
       `demo-databricks-planning` (separate PR); list any schema that becomes
       unnecessary for a later iac change
-- [ ] 3.5 With the user's approval, delete the uploaded workspace folder (the
+- [x] 3.5 (2026-10-25) With the user's approval, delete the uploaded workspace folder (the
       repo copy stays); verify it no longer lists
