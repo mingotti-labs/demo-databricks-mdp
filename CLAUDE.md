@@ -727,7 +727,7 @@ the decision record behind what's built.
 - No classic clusters — serverless only
 - No account-level API calls (Free Edition scope is workspace-level only)
 - No `%run` — use proper imports from `src/`
-- No `%pip install` in notebooks — declare dependencies in bundle config
+- No `%pip install` in notebooks — declare dependencies in bundle config. One exception (user, 2026-10-29): `src/common/fetch_yahoo.py` installs its pinned `yfinance`, since a notebook task cannot declare a library
 - No hardcoded secrets or connection strings — always `dbutils.secrets.get()`
 - No destructive DDL (`DROP TABLE`, `TRUNCATE`, `DELETE`) without explicit user approval
 - No direct writes to `mdp_prd` catalog from ad-hoc notebooks
