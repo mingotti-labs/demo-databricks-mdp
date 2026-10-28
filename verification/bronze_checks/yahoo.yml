@@ -1,0 +1,26 @@
+source: yahoo
+raw_schema: bronze_yahoo
+publish_schema: bronze_yahoo_publish
+# Append-only raw where each file holds only part of the data: the checks compare
+# the latest row per key (what streaming Auto CDC keeps) with Bronze Publish.
+tables:
+  - raw: prices_raw
+    compare_latest_file_per: [symbol, date]
+    keys: [symbol, date]
+    columns: [symbol, yahoo_symbol, date, open, high, low, close, adj_close, volume, ingested_timestamp, source_file_path]
+    scd1: prices_scd1
+  - raw: events_raw
+    compare_latest_file_per: [symbol, date, event_type]
+    keys: [symbol, date, event_type]
+    columns: [symbol, yahoo_symbol, date, event_type, value, ingested_timestamp, source_file_path]
+    scd1: events_scd1
+  - raw: options_raw
+    compare_latest_file_per: [symbol]
+    keys: [symbol]
+    columns: [symbol, yahoo_symbol, has_options, expiry_count, nearest_monthly_expiry, open_interest, volume, ingested_timestamp, source_file_path]
+    scd1: options_scd1
+  - raw: calendar_raw
+    compare_latest_file_per: [symbol]
+    keys: [symbol]
+    columns: [symbol, yahoo_symbol, ex_dividend_date, dividend_date, earnings_date, ingested_timestamp, source_file_path]
+    scd2: calendar_scd2

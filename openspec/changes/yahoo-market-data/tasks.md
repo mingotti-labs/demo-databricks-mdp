@@ -21,15 +21,15 @@
 
 ## 3. Pipelines and job
 
-- [ ] 3.1 `src/layers/bronze/yahoo/` (four raw tables) and
+- [x] 3.1 `src/layers/bronze/yahoo/` (four raw tables) and
       `src/layers/bronze/yahoo_publish/` (three SCD1 and one SCD2 streaming
       flows, D8); ruff clean
-- [ ] 3.2 `src/layers/silver/landing/yahoo/` (four Landing tables); ruff clean
-- [ ] 3.3 `resources/pipelines/yahoo_market_data_ingestion.pipeline.yml`,
+- [x] 3.2 `src/layers/silver/landing/yahoo/` (four Landing tables); ruff clean
+- [x] 3.3 `resources/pipelines/yahoo_market_data_ingestion.pipeline.yml`,
       `silver_landing_yahoo.pipeline.yml`, `resources/jobs/run_yahoo.job.yml`
       (fetch first, `reload_symbols` job parameter);
       `databricks bundle validate -t dev --profile DEFAULT` passes
-- [ ] 3.4 `verification/bronze_checks/yahoo.yml`, four entries in
+- [x] 3.4 `verification/bronze_checks/yahoo.yml`, four entries in
       `verification/verify_silver_landing.py`, `yahoo` in
       `src/common/design_patterns.yml`; `uv run python -m pytest` passes
 

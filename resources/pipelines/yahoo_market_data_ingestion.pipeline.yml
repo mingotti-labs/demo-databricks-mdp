@@ -1,0 +1,17 @@
+resources:
+  pipelines:
+    yahoo_market_data_ingestion:
+      name: bronze--yahoo--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_yahoo
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        yahoo_volume_root: /Volumes/${var.catalog}/bronze_yahoo/s3_raw
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/yahoo/**
+        - glob:
+            include: ../../src/layers/bronze/yahoo_publish/**
