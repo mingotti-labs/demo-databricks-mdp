@@ -13,6 +13,10 @@ API-based sources:
 - [nsw_spatial.md](nsw_spatial.md) — NSW property layer, ArcGIS FeatureServer REST API
 - [ungm.md](ungm.md) — UN Global Marketplace UNSPSC classification tree, REST API
 
+Web page sources:
+- [wikipedia.md](wikipedia.md) — S&P 500 constituents table, HTML parse
+
 Non-API sources:
 - [neon.md](neon.md) — Neon Postgres, Lakeflow Connect query-based ingestion
 - [clickstream.md](clickstream.md) — synthetic file-drop, Auto Loader
+- [portfolio.md](portfolio.md) — company-owned settings, repo CSVs copied to a volume

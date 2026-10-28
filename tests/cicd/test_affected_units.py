@@ -13,6 +13,7 @@ from affected_units import (
     matching_files,
     module_files,
     repo_relative,
+    used_files,
 )
 
 WS = "/Workspace/me/.bundle/demo/dev/files"
@@ -228,6 +229,12 @@ class TestHelpers:
             "src/layers/bronze/**", REPO_FILES
         )
         assert matching_files("src/layers/*", REPO_FILES) == ["src/layers/__init__.py"]
+
+
+    def test_data_glob_in_a_job_parameter_names_the_data_files(self):
+        body = {"base_parameters": {"source_glob": f"{WS}/data/portfolio/*.csv"}}
+        repo = ["data/portfolio/settings.csv", "data/portfolio/README.md", "src/a.py"]
+        assert used_files(body, WS, repo) == {"data/portfolio/settings.csv"}
 
 
 class TestBaseDeployment:

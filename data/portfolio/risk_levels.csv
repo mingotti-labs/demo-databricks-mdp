@@ -1,0 +1,5 @@
+level,sort_order,min_years_increases,max_payout_ratio,max_net_debt_to_ebitda,min_yield,max_yield,min_chowder,min_chowder_utilities,min_dividend_growth_5y
+Foundational,1,25,0.60,3,0.02,0.04,,,
+Moderate,2,10,0.75,,0.03,0.05,12,8,
+Aggressive,3,,0.90,,0.05,,,,
+Growth,4,5,,,,0.02,,,0.10

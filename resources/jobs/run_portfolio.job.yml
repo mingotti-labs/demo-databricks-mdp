@@ -1,0 +1,65 @@
+resources:
+  jobs:
+    run_portfolio:
+      name: run--portfolio--${bundle.target}
+      parameters:
+        # Verification is opt-in: run with verify=true to include both checks.
+        - name: verify
+          default: "false"
+      tasks:
+        # The glob is also how CI knows a settings file changed: affected_units
+        # maps every string that names repo files, so editing a CSV selects this unit.
+        - task_key: copy_settings
+          notebook_task:
+            notebook_path: ../../src/common/copy_repo_files.py
+            base_parameters:
+              source_glob: ${workspace.file_path}/data/portfolio/*.csv
+              catalog: ${var.catalog}
+              schema: bronze_portfolio
+              volume: s3_raw
+        - task_key: bronze
+          depends_on:
+            - task_key: copy_settings
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.portfolio_settings_ingestion.id}
+        - task_key: verify_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.verify}}"
+            right: "true"
+        - task_key: verify_bronze
+          depends_on:
+            - task_key: bronze
+            - task_key: verify_enabled
+              outcome: "true"
+          run_job_task:
+            job_id: ${resources.jobs.verify_bronze.id}
+            job_parameters:
+              source: portfolio
+        # NONE_FAILED, not the default ALL_SUCCESS: with verification off,
+        # verify_bronze is excluded, which ALL_SUCCESS does not accept.
+        - task_key: silver
+          depends_on:
+            - task_key: bronze
+            - task_key: verify_bronze
+          run_if: NONE_FAILED
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_landing_portfolio.id}
+        - task_key: verify_silver
+          depends_on:
+            - task_key: silver
+            - task_key: verify_enabled
+              outcome: "true"
+          run_job_task:
+            job_id: ${resources.jobs.verify_silver_landing.id}
+            job_parameters:
+              source: portfolio
+        - task_key: tag_patterns
+          depends_on:
+            - task_key: silver
+          notebook_task:
+            notebook_path: ../../src/common/tag_design_patterns.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: portfolio
+              workspace_file_path: ${workspace.file_path}

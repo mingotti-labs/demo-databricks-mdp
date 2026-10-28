@@ -104,3 +104,21 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Consumed by Silver Landing**: yes — all four `_scd2` objects →
   `silver_landing_geonames` (`country_info`, `admin1_codes`,
   `admin2_codes`, `cities`)
+
+### wikipedia
+- **What it is**: the S&P 500 constituents table of Wikipedia's "List of S&P 500
+  companies" (CC BY-SA 4.0), the index list of the dividend portfolio story
+- **Design patterns**: [`bronze_file_materialized_view_python`](design-patterns.md#bronze_file_materialized_view_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Bronze raw**: `bronze_wikipedia.sp500_constituents_raw`
+- **Bronze Publish** (`bronze_wikipedia_publish`): `sp500_constituents_scd2`
+  keyed by `symbol`; its versions are the index membership history
+- **Consumed by Silver Landing**: yes, `silver_landing_wikipedia.sp500_constituents`
+
+### portfolio
+- **What it is**: company-owned data of the dividend portfolio story: curated
+  settings committed in `data/portfolio/` (concept mapping, predecessor CIKs,
+  settings, risk levels, target mix); the purchases CSV joins later
+- **Design patterns**: [`bronze_volume_csv_materialized_view_python`](design-patterns.md#bronze_volume_csv_materialized_view_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Bronze raw**: `bronze_portfolio.{concept_mapping,predecessor_ciks,settings,risk_levels,target_mix}_raw`
+- **Bronze Publish** (`bronze_portfolio_publish`): the same five as `_scd2`
+- **Consumed by Silver Landing**: yes, `silver_landing_portfolio` (five tables)

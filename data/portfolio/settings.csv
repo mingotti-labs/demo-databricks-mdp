@@ -1,0 +1,6 @@
+setting,value,currency_code,description
+us_withholding_tax_rate,0.15,,US withholding tax on dividends with a W-8BEN form
+monthly_amount,1000,AUD,Amount invested each month
+max_weight_per_company,0.05,,Largest share of the portfolio in one company
+max_weight_per_sector,0.25,,Largest share of the portfolio in one sector
+pay_date_offset_days,14,,Days from ex-date to estimated pay date when no real pay date is known

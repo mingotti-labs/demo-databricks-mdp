@@ -25,19 +25,19 @@ change-feed Landing). Free Edition has dev and prd only.
   `src/layers/bronze/portfolio/` (the pipeline's `libraries` glob would pick the
   files up as source).
 - **D2 Copy step.** `src/common/copy_repo_files.py`, a notebook task first in
-  `run_portfolio`, with parameters `catalog`, `source` and `files` (the list of
-  dataset names). It copies `${workspace.file_path}/data/<source>/<dataset>.csv`
-  to the volume path in NAMING.md ("Volume paths"), overwriting. Generic over the
-  source so step 11 or another source can reuse it. Only the named files are
-  copied (D7). Rejected: Auto Loader (the files are full snapshots, not new
-  events); reading the workspace file directly from the pipeline (the volume is
-  the agreed landing place, and keeps the source shape the same as a real file
-  drop).
-- **D3 CI selection.** The copy task carries a `files_glob: data/portfolio/*.csv`
-  base parameter as written in the YAML, so `affected_units.py` (which collects
-  every string naming a tracked file or glob) maps a CSV edit to the unit. A unit
-  test in `tests/cicd/` proves it (task 2.6); if the resolver does not expand it,
-  the test shows that before merge.
+  `run_portfolio`, with parameters `source_glob` (the deployed
+  `data/portfolio/*.csv`), `catalog`, `schema` and `volume`. Each file is copied
+  to `<volume>/<name>/landing/<name>.csv` (NAMING.md "Volume paths"),
+  overwriting. Generic: any source can reuse it. Only committed files match the
+  glob, so real purchases dropped in the volume later are never touched (D7).
+  Rejected: Auto Loader (the files are full snapshots, not new events); reading
+  the workspace file directly from the pipeline (the volume is the agreed landing
+  place and keeps the source shaped like a real file drop).
+- **D3 CI selection.** The same `source_glob` string
+  (`${workspace.file_path}/data/portfolio/*.csv`) is in the job's JSON, and
+  `affected_units.py` maps every string naming repo files or globs, so a CSV edit
+  selects `portfolio`. A unit test (`test_data_glob_in_a_job_parameter_names_the_data_files`)
+  proves the resolver does it.
 - **D4 Raw as text.** `spark.read.csv(path, header=True)` without schema
   inference: every column a string, as the file shows it; silver casts. Each
   `_raw` is a Materialized View with `ingested_timestamp`.
@@ -95,3 +95,18 @@ Deploy to dev, run `run_portfolio` with `verify=true`, change one value, run
 again and confirm one version closed and one inserted, then revert the value
 (the revert run gives one more version, which is fine). prd: CI deploys on merge
 and runs the unit. Rollback: remove the resources; the schemas and volume stay.
+
+## Results (2026-10-25, dev)
+
+- **First verified run** (`run_portfolio` with `verify=true`, every task
+  succeeded, 15 tables tagged): the five volume files have the same content as
+  the repo files (checksums equal). Raw, SCD2 current and Landing current rows:
+  concept_mapping 35, predecessor_ciks 1, settings 5, risk_levels 4,
+  target_mix 4.
+- **A changed setting is versioned:** `monthly_amount` 1000 to 1200: `settings`
+  went to 6 versions with 1 closed (values 1200 and 1000); the other four
+  datasets stayed at 44 versions in total with 0 closed. Reverting to 1000 and
+  running again gave 7 versions, 2 closed, as expected.
+- A first `pytest` run failed because the new pattern was not yet in the
+  register (a test checks every mapped pattern id is registered); fixed by
+  task 4.1.
