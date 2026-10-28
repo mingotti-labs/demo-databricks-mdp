@@ -11,7 +11,7 @@
 
 ## 2. Fetch
 
-- [ ] 2.1 `tests/common/test_yahoo_market.py` for the helpers (symbol mapping,
+- [x] 2.1 `tests/common/test_yahoo_market.py` for the helpers (symbol mapping,
       start date and reload rule, rows from small pandas frames, monthly expiry,
       JSON Lines) passes; ruff clean
 - [ ] 2.2 `src/common/fetch_yahoo.py` notebook (D1, D3, D6, D7) with
