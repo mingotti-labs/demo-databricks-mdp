@@ -1,7 +1,7 @@
 # portfolio-internal-data Specification
 
 ## Purpose
-TBD - created by archiving change portfolio-internal-settings. Update Purpose after archive.
+Company-owned data of the dividend portfolio story: curated settings committed as CSV files in the repo, copied to the `bronze_portfolio` volume on every run, with SCD2 history and Silver Landing.
 
 ## Requirements
 
