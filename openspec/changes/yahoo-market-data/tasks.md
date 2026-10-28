@@ -1,6 +1,6 @@
 ## 1. Benchmarks and probe
 
-- [ ] 1.1 `data/portfolio/benchmarks.csv` (D9), `benchmarks` in the portfolio
+- [x] 1.1 `data/portfolio/benchmarks.csv` (D9), `benchmarks` in the portfolio
       raw `DATASETS`, its SCD2 and Landing tables, `verification/bronze_checks/portfolio.yml`
       (`reference_rows: 14`), the Silver Landing entry and `data/portfolio/README.md`;
       `uv run python -m pytest` passes

@@ -130,6 +130,13 @@ ENTITIES = [
         "scd2": True,
     },
     {
+        "source": "portfolio",
+        "table": "benchmarks",
+        "bronze_schema": "bronze_portfolio_publish",
+        "bronze_table": "benchmarks_scd2",
+        "scd2": True,
+    },
+    {
         "source": "wikipedia",
         "table": "sp500_constituents",
         "bronze_schema": "bronze_wikipedia_publish",

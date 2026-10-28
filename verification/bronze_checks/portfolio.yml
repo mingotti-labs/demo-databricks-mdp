@@ -27,3 +27,8 @@ tables:
     columns: [level, target_weight, ingested_timestamp]
     reference_rows: 4
     scd2: target_mix_scd2
+  - raw: benchmarks_raw
+    keys: [symbol]
+    columns: [symbol, name, kind, sector, ingested_timestamp]
+    reference_rows: 14
+    scd2: benchmarks_scd2
