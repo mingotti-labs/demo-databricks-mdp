@@ -1,7 +1,7 @@
 # wikipedia-sp500-ingestion Specification
 
 ## Purpose
-TBD - created by archiving change wikipedia-sp500-ingestion. Update Purpose after archive.
+The S&P 500 constituents list from Wikipedia, the index list of the dividend portfolio story, ingested weekly into bronze with SCD2 membership history and Silver Landing.
 
 ## Requirements
 
