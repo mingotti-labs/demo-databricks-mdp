@@ -10,7 +10,7 @@
       run on serverless with `run.py`; record rows per company, null and
       duplicate keys, and the extrapolated size in design.md and the probes
       register; settle the D8 facts key
-- [ ] 1.2 P2 (design): confirm automatic clustering from Python in a pipeline
+- [x] 1.2 P2 (design): confirm automatic clustering from Python in a pipeline
       on Free Edition; record the result
 
 ## 2. Fetch
@@ -38,19 +38,19 @@
 
 ## 4. Verify in dev
 
-- [ ] 4.1 Deploy to dev; run `run_sec` with `verify=true`: every task succeeds;
+- [x] 4.1 Deploy to dev; run `run_sec` with `verify=true`: every task succeeds;
       record files written, raw rows, SCD2 current rows and Landing rows per
       table, and the fetch time, in design.md
-- [ ] 4.2 Run `run_sec` again: record files written (expected none or a few) and
+- [x] 4.2 Run `run_sec` again: record files written (expected none or a few) and
       SCD2 versions added (expected none, or only for companies that filed)
-- [ ] 4.3 Check XOM: facts under `0000034088` are present; the 404s logged by the
+- [x] 4.3 Check XOM: facts under `0000034088` are present; the 404s logged by the
       fetch are listed in design.md
-- [ ] 4.4 Stop the SQL warehouse after any query session
+- [x] 4.4 Stop the SQL warehouse after any query session
 
 ## 5. Registers and docs
 
 - [x] 5.1 `design-patterns.md`: new `bronze_volume_append_autoloader_python`;
       `sec` added to the "Used by" lines of the patterns it uses
-- [ ] 5.2 `data-sources.md` `sec` entry; `source_systems/sec.md` (endpoints,
+- [x] 5.2 `data-sources.md` `sec` entry; `source_systems/sec.md` (endpoints,
       `User-Agent`, rate, long-form reshape, 404s), listed in its README
-- [ ] 5.3 CLAUDE.md: "Sources" entry for SEC
+- [x] 5.3 CLAUDE.md: "Sources" entry for SEC

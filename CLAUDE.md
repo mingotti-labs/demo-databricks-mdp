@@ -614,6 +614,18 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   setting) and `silver_landing_portfolio`. The copy task's `source_glob` is also
   how CI selects the unit when a CSV changes. Real purchases (later) are never
   committed and never overwritten by the copy.
+- **SEC EDGAR** (`sec-company-facts`, dividend portfolio story) -- the first
+  source with **append-only, replayable raw** (user, 2026-10-28): `run_sec`'s
+  first task (`src/common/fetch_sec.py`) calls SEC for the current Wikipedia
+  CIKs plus the `portfolio` predecessor CIKs, keeps the mapped concepts in long
+  form and writes dated JSON Lines into `bronze_sec.s3_raw`, only for companies
+  whose facts changed; Auto Loader appends them into `bronze_sec.*_raw`
+  streaming tables. `ingested_timestamp` is the fetch time written by the task.
+  SCD2 in `bronze_sec_publish` is built from each company's latest file; bronze
+  verification compares that latest file (`compare_latest_file_per`).
+  Verification is a dev tool: CI runs units with `verify=false`, prd relies on
+  the warn expectations. Yahoo follows this pattern next; Wikipedia and
+  portfolio move to it afterwards.
 
 ## Development style
 

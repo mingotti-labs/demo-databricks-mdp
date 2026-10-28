@@ -122,3 +122,17 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze raw**: `bronze_portfolio.{concept_mapping,predecessor_ciks,settings,risk_levels,target_mix}_raw`
 - **Bronze Publish** (`bronze_portfolio_publish`): the same five as `_scd2`
 - **Consumed by Silver Landing**: yes, `silver_landing_portfolio` (five tables)
+
+### sec
+- **What it is**: SEC EDGAR's ticker list and XBRL company facts (public domain)
+  for the S&P 500 companies and their predecessor CIKs, the fundamentals of the
+  dividend portfolio story
+- **Design patterns**: [`bronze_volume_append_autoloader_python`](design-patterns.md#bronze_volume_append_autoloader_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Bronze raw** (append-only, replayable from `bronze_sec.s3_raw`):
+  `bronze_sec.company_tickers_raw`, `bronze_sec.company_facts_raw` (long form,
+  mapped concepts only)
+- **Bronze Publish** (`bronze_sec_publish`): `company_tickers_scd2` keyed by
+  `cik`, `ticker`; `company_facts_scd2` keyed by `cik`, `taxonomy`, `concept`,
+  `unit`, `accn`, `start`, `end`
+- **Consumed by Silver Landing**: yes, `silver_landing_sec.company_tickers` and
+  `silver_landing_sec.company_facts`

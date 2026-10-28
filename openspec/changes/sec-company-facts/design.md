@@ -169,3 +169,24 @@ and `run_portfolio` if their tables are stale, then `run_sec` with
 almost no new files and no new SCD2 version. Stop the SQL warehouse after query
 sessions. prd: CI deploys on merge and runs the unit. Rollback: remove the
 resources; the volume files stay.
+
+## Results (2026-10-28, dev)
+
+- **First verified run** (`run_sec` with `verify=true`, every task succeeded,
+  6 tables tagged): the fetch task wrote 501 facts files (500 index CIKs plus
+  `0000034088`), no 404. Raw, SCD2 current and Landing rows: tickers 10,430;
+  facts 1,077,402 for 500 companies. XOM's old CIK holds 2,425 current facts.
+  No rescued data. Task times: fetch 21.3 min (mostly writing about 300 MB into
+  the volume), bronze 3.2, silver 2.4.
+- **Found and fixed:** Vylor Inc. (`0002128626`, new to SEC) has only
+  filing-fee facts (`ffd`), so it wrote an empty file with no hash, which would
+  be rewritten every run. The task now writes no file for a company with no
+  mapped concept and reports it.
+- **Second run, nothing changed** (task 4.2): 0 facts files written, 500
+  unchanged, 1 with no mapped concept; tickers raw appended its second fetch
+  (20,860 rows), SCD2 still 10,430 and 1,077,402 versions with 0 closed;
+  verification passed on the latest file. The empty `start` key causes no
+  spurious versions. Fetch 1.8 min, whole run 7.5 min.
+- **P2:** `clusterByAuto` is `true` on `company_facts_raw` and
+  `company_facts_scd2`; no clustering columns yet (Databricks chooses them from
+  the queries it sees).

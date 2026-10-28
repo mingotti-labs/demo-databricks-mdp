@@ -78,13 +78,18 @@ fetched = datetime.now(UTC)
 ingested = fetched.isoformat()
 write("company_tickers", "company_tickers", fetched, stamp(ticker_rows(client.tickers()), ingested))
 
-written, unchanged, missing = 0, 0, []
+# A company with no mapped concept (none of its facts are in the mapping) writes no
+# file: an empty file would carry no content_sha256 and be rewritten every run.
+written, unchanged, missing, unmapped = 0, 0, [], []
 for cik in ciks:
     payload = client.facts(cik)
     if payload is None:
         missing.append(cik)
         continue
     rows = fact_rows(cik, payload, concepts)
+    if not rows:
+        unmapped.append(cik)
+        continue
     sha = content_sha256(rows)
     if previous.get(cik) == sha:
         unchanged += 1
@@ -93,6 +98,8 @@ for cik in ciks:
     written += 1
 
 print(f"no facts (404): {missing}")
+print(f"no mapped concept: {unmapped}")
 dbutils.notebook.exit(
-    f"facts files written {written}, unchanged {unchanged}, no facts {len(missing)}"
+    f"facts files written {written}, unchanged {unchanged}, no facts {len(missing)}, "
+    f"no mapped concept {len(unmapped)}"
 )
