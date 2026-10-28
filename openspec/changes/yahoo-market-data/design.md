@@ -51,13 +51,17 @@ See proposal.md. What exists and shapes this change:
   - prices: `date`, `open`, `high`, `low`, `close`, `volume`;
   - dividends: `ex_date`, `amount`;
   - calendar: `ex_dividend_date`, `dividend_date` (Yahoo's name for the pay
-    date), `earnings_date`;
+    date), `earnings_date` (Yahoo sends a list; the first date is kept). The
+    earnings and revenue estimates Yahoo also sends are not needed and not kept;
   - options: `has_options`, `expiry_count`, `nearest_monthly_expiry`,
-    `open_interest` (calls plus puts on that expiry).
+    `open_interest` and `volume` (calls plus puts on that expiry, both as
+    sent). P1 found open interest 0 on every strike, even for AAPL, while
+    volume is filled in, so `volume` is the activity measure until Yahoo's
+    open interest comes back; silver decides which to use.
   Benchmarks have `symbol` equal to `yahoo_symbol`.
 - **D5 Monthly expiry** = the first expiry on or after the fetch date that is a
   Friday between the 15th and the 21st (the third Friday), as in the probe.
-  None found: `nearest_monthly_expiry` and `open_interest` empty,
+  None found: `nearest_monthly_expiry`, `open_interest` and `volume` empty,
   `has_options` still true if any expiry is listed.
 - **D6 Tolerated gaps.** Prices missing for more than 2% of symbols fails the
   task before any file is written (Yahoo blocking or a `yfinance` break should
@@ -90,6 +94,19 @@ See proposal.md. What exists and shapes this change:
   serverless, fetch 20 symbols (including `BRK-B`, a REIT, a non-payer and
   both benchmarks); report rows per dataset, duplicate keys, empty key values,
   the calendar's real field names and types, and the time per dataset.
+  **Result (2026-10-28, `references/poc/dividend-portfolio/p8_yahoo_shapes.py`):**
+  prices 251 trading days per symbol, 5,020 rows, `symbol, date` unique, no
+  empty key, columns Open, High, Low, Close, Adj Close, Volume (Close equals
+  Adj Close on these days; raw Close is what we keep); dividends 2,632 rows for
+  17 payers, `symbol, ex_date` unique (BRK-B, AMZN and TSLA pay none), the
+  ex-date carries a New York time of 09:30, so the date part in New York time
+  is the ex-date; calendar fields `Dividend Date` (pay date) and
+  `Ex-Dividend Date` (dates), `Earnings Date` (a list), plus estimates; ETFs
+  return an empty calendar; options listed for all 20 symbols, but open
+  interest is 0 on every AAPL strike (monthly and nearest expiry) while volume
+  is filled in (about 35,000 contracts on the November monthly), hence D4's
+  `volume`. Times for 20 symbols: prices 2.8 s, dividends 6.6 s, calendar
+  2.1 s, options 3.3 s (about 2, 2.7, 0.9 and 1.4 minutes for 505).
 - **P2 Unchanged second run**: two runs in a row in dev (task 4.2) give no new
   dividend, calendar or options versions; prices change only by the days that
   entered and left the window (plus any symbol Yahoo revised).

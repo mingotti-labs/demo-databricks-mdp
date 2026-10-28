@@ -29,7 +29,7 @@ Each run SHALL fetch, values kept as Yahoo returned them:
 - dividends: the full dividend history (ex-date, amount);
 - calendar: the next announced ex-date and pay date, where Yahoo has one;
 - options: whether options are listed, the nearest monthly expiry and its
-  total open interest.
+  total open interest and total volume.
 
 #### Scenario: A company that pays no dividend
 - **WHEN** a symbol has no dividend history

@@ -3,10 +3,10 @@
 - [ ] 1.1 Add `benchmark_symbols` (`"SPY,NOBL"`) to `data/portfolio/settings.csv`
       and `reference_rows: 6` in `verification/bronze_checks/portfolio.yml`;
       `uv run python -m pytest` passes
-- [ ] 1.2 P1 (design): `src/common/yahoo_market.py` helpers plus a probe script
-      in `references/poc/dividend-portfolio/`, run on serverless with `run.py`;
-      record rows, keys, calendar fields and times in design.md and the probes
-      register; settle the keys in D8
+- [x] 1.2 P1 (design): probe script `p8_yahoo_shapes.py` in
+      `references/poc/dividend-portfolio/`, run on serverless with `run.py`;
+      rows, keys, calendar fields and times recorded in design.md and the probes
+      register; keys in D8 confirmed
 
 ## 2. Fetch
 
