@@ -100,9 +100,12 @@ See proposal.md. What exists and shapes this change:
   path, rescued data) are dropped from the snapshot. A company that leaves the
   index keeps its last facts as current (silver joins to membership). Keys:
   tickers `cik`, `ticker`; facts `cik`, `taxonomy`, `concept`, `unit`, `accn`,
-  `start`, `end`, `fp`, `form`, `frame`, to be confirmed by probe P1 before
-  the flow is written (missing `start` and `frame` may need an empty string in
-  the snapshot view; duplicates would follow ISO's quarantine shape).
+  `start`, `end` (P1: unique over 47,133 rows of 20 companies; `fp`, `form` and
+  `frame` add nothing). `start` is empty for point-in-time values (balance
+  sheet, shares). The docs say nothing on missing key values in snapshot Auto
+  CDC, so task 4.2 (an unchanged second run writes no version) is the check;
+  if it fails, the snapshot view fills an empty `start` with `''` and the dev
+  SCD2 table is dropped and rebuilt with the user's approval.
 - **D9 Silver Landing** via `land_changes`, one file per table in
   `src/layers/silver/landing/sec/`, own silver pipeline, as Wikipedia.
 - **D10 Verification of an append-only raw.** A new option in the bronze check
@@ -126,10 +129,21 @@ See proposal.md. What exists and shapes this change:
   with the mapped concepts, report rows per company, nulls per key column and
   duplicate keys; extrapolate to 505 companies. Decides the D8 key and confirms
   the size fits Free Edition.
+  **Result (2026-10-28, `references/poc/dividend-portfolio/p7_sec_long_form.py`):**
+  22 CIKs, 49,599 rows; about 2,250 rows and 600 KB of JSON Lines per company,
+  so about 1.14 million rows and 313 MB for 505 companies (raw SEC JSON is 3 to
+  8 MB per company). No duplicate key with or without `frame`, and none on
+  `cik`, `taxonomy`, `concept`, `unit`, `accn`, `start`, `end` (checked locally
+  on 20 companies). Missing: `start` 15,714 rows (point-in-time values),
+  `fp` 452, `frame` 32,870; no other key column. XOM's new CIK `0002115436`
+  answers with 41 rows (not a 404); the old CIK `0000034088` has 2,425.
 - **P2 `CLUSTER BY AUTO` from Python**: does `@dp.table` and
   `dp.create_streaming_table` accept automatic clustering on serverless Free
   Edition (`cluster_by_auto`)? If not, use explicit `cluster_by` on `cik`,
   `concept`.
+  **Docs (2026-10-28):** both take `cluster_by_auto` (Python reference for
+  `@dp.table` and `create_streaming_table`). Confirmed on the real tables in
+  task 4.1 (`DESCRIBE DETAIL` shows clustering columns).
 
 ## Risks / Trade-offs
 

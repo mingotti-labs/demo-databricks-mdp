@@ -1,12 +1,12 @@
 ## 0. Prerequisite
 
-- [ ] 0.1 The iac change with `bronze_sec.s3_raw` (and grants) is merged and
+- [x] 0.1 The iac change with `bronze_sec.s3_raw` (and grants) is merged and
       applied; `databricks volumes read mdp_dev.bronze_sec.s3_raw --profile DEFAULT`
       returns the volume
 
 ## 1. Probes
 
-- [ ] 1.1 P1 (design): probe script in `references/poc/dividend-portfolio/`,
+- [x] 1.1 P1 (design): probe script in `references/poc/dividend-portfolio/`,
       run on serverless with `run.py`; record rows per company, null and
       duplicate keys, and the extrapolated size in design.md and the probes
       register; settle the D8 facts key
