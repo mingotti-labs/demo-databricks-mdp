@@ -1,0 +1,17 @@
+source: sec
+raw_schema: bronze_sec
+publish_schema: bronze_sec_publish
+# Append-only raw: the checks compare the latest file (per company for facts,
+# the latest fetch for tickers) with the SCD2 current rows.
+tables:
+  - raw: company_tickers_raw
+    compare_latest_file_per: []
+    keys: [cik, ticker]
+    columns: [cik, ticker, title, ingested_timestamp, source_file_path]
+    scd2: company_tickers_scd2
+  - raw: company_facts_raw
+    compare_latest_file_per: [cik]
+    keys: [cik, taxonomy, concept, unit, accn, start, end]
+    nullable_keys: [start]
+    columns: [cik, entity_name, taxonomy, concept, unit, start, end, val, accn, fy, fp, form, filed, frame, content_sha256, ingested_timestamp, source_file_path]
+    scd2: company_facts_scd2

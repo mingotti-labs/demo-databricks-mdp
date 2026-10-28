@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from common.bronze_checks import check_table, load_spec, valid_distinct_keys_sql
+from common.bronze_checks import check_table, compared_rows, load_spec, valid_distinct_keys_sql
 
 SPECS = sorted((Path(__file__).resolve().parents[2] / "verification/bronze_checks").glob("*.yml"))
 PLAIN = {"raw": "t_raw", "scd2": "t_scd2", "keys": ["id"], "columns": ["id"]}
@@ -77,3 +77,18 @@ def test_scd1_checked_when_listed():
     table = {**PLAIN, "scd1": "t_scd1"}
     assert check_table(table, {**OK, "scd1_current": 10}, {"id"}) == []
     assert check_table(table, {**OK, "scd1_current": 9}, {"id"})
+
+
+def test_whole_raw_table_is_compared_by_default():
+    assert compared_rows("c.s.t_raw", {"raw": "t_raw"}) == "c.s.t_raw"
+
+
+def test_append_only_raw_compares_the_latest_file_per_group():
+    sql = compared_rows("c.s.t_raw", {"raw": "t_raw", "compare_latest_file_per": ["cik"]})
+    assert "max(ingested_timestamp) OVER (PARTITION BY cik)" in sql
+    assert sql.startswith("(SELECT * FROM c.s.t_raw QUALIFY")
+
+
+def test_empty_group_compares_the_latest_fetch_overall():
+    sql = compared_rows("c.s.t_raw", {"raw": "t_raw", "compare_latest_file_per": []})
+    assert "OVER ()" in sql

@@ -1,0 +1,17 @@
+resources:
+  pipelines:
+    sec_company_facts_ingestion:
+      name: bronze--sec--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_sec
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        sec_volume_root: /Volumes/${var.catalog}/bronze_sec/s3_raw
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/sec/**
+        - glob:
+            include: ../../src/layers/bronze/sec_publish/**
