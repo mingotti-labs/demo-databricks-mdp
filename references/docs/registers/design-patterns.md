@@ -153,6 +153,18 @@ column as text. The repo is the master; the volume is overwritten on every run.
 Code: `src/common/copy_repo_files.py`, `src/layers/bronze/portfolio/`.
 Used by: [portfolio](data-sources.md#portfolio). Evidence: `dev`.
 
+### bronze_volume_append_autoloader_python
+Append-only, replayable raw. The run job's first task calls the source and
+writes each fetch as a dated JSON Lines file into the source's volume, never
+overwriting one; `ingested_timestamp` is that fetch time, written into every row,
+so a replay keeps it. Auto Loader appends every new file into a streaming table
+with an explicit all-text schema, warn expectations and the file path. A full
+refresh of raw rebuilds it from the files without calling the source. The SCD2
+snapshot is the latest file per group (`max(ingested_timestamp)`). Bronze
+verification compares that latest file, not the whole table
+(`compare_latest_file_per`). Code: `src/common/fetch_sec.py`,
+`src/layers/bronze/sec/`. Used by: [sec](data-sources.md#sec). Evidence: `dev`.
+
 ### bronze_publish_scd2_autocdc_snapshot_python
 `create_auto_cdc_from_snapshot_flow` against a `_raw` source that is the full
 current state per run (an upserted table or a Materialized View). Platform
@@ -173,11 +185,12 @@ data feed on, for Silver Landing. Not possible: streaming Auto CDC (a
 materialized view cannot be streamed) and a function source carrying raw's
 exact fetch time (it cannot read a dataset of its own pipeline). Code:
 `src/layers/bronze/acnc_publish/charity_register_scd2.py`,
-`src/layers/bronze/{ungm,iso,geonames,nsw_spatial,wikipedia,portfolio}_publish/`.
+`src/layers/bronze/{ungm,iso,geonames,nsw_spatial,wikipedia,portfolio,sec}_publish/`.
 Used by: [acnc](data-sources.md#acnc), [ungm](data-sources.md#ungm),
 [iso](data-sources.md#iso), [geonames](data-sources.md#geonames),
 [nsw_spatial](data-sources.md#nsw_spatial), [wikipedia](data-sources.md#wikipedia),
-[portfolio](data-sources.md#portfolio). Evidence: `prd` (acnc), `dev`.
+[portfolio](data-sources.md#portfolio), [sec](data-sources.md#sec) (snapshot from
+the latest file of an append-only raw table). Evidence: `prd` (acnc), `dev`.
 
 ### bronze_publish_scd1_autocdc_snapshot_python
 The same snapshot flow, keeping only the latest version per key. Used where a
@@ -242,9 +255,9 @@ A streaming table that reads only the rows changed in its Bronze Publish SCD2
 table (`readChangeFeed`) and applies them by version key with
 `create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
 rows, and sets `ingested_timestamp` to the version's `__START_AT`. Code:
-`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi,wikipedia,portfolio}/`,
+`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi,wikipedia,portfolio,sec}/`,
 shared helper `land_changes` in `src/common/silver_landing.py`. Used by: acnc,
-ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio. Evidence: `prd`
+ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec. Evidence: `prd`
 (acnc), `dev`.
 
 ### silver_normalised_spec_driven_python
@@ -270,7 +283,7 @@ rows that are gone are removed. Code: `src/common/keep_timestamps.py`,
 ### bronze_silver_pipeline_per_layer
 One bronze pipeline and one silver pipeline per source, building the publish and
 landing tables by qualified name, instead of one pipeline per pattern. Used by
-acnc, ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio; clickstream
+acnc, ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec; clickstream
 and neon follow it as
 far as their sources allow. Evidence: `prd`.
 

@@ -12,6 +12,7 @@ API-based sources:
 - [acnc.md](acnc.md) — ACNC charity register, CKAN REST API
 - [nsw_spatial.md](nsw_spatial.md) — NSW property layer, ArcGIS FeatureServer REST API
 - [ungm.md](ungm.md) — UN Global Marketplace UNSPSC classification tree, REST API
+- [sec.md](sec.md) — SEC EDGAR tickers and company facts, REST API, append-only raw files
 
 Web page sources:
 - [wikipedia.md](wikipedia.md) — S&P 500 constituents table, HTML parse

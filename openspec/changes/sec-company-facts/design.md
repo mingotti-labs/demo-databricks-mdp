@@ -100,9 +100,12 @@ See proposal.md. What exists and shapes this change:
   path, rescued data) are dropped from the snapshot. A company that leaves the
   index keeps its last facts as current (silver joins to membership). Keys:
   tickers `cik`, `ticker`; facts `cik`, `taxonomy`, `concept`, `unit`, `accn`,
-  `start`, `end`, `fp`, `form`, `frame`, to be confirmed by probe P1 before
-  the flow is written (missing `start` and `frame` may need an empty string in
-  the snapshot view; duplicates would follow ISO's quarantine shape).
+  `start`, `end` (P1: unique over 47,133 rows of 20 companies; `fp`, `form` and
+  `frame` add nothing). `start` is empty for point-in-time values (balance
+  sheet, shares). The docs say nothing on missing key values in snapshot Auto
+  CDC, so task 4.2 (an unchanged second run writes no version) is the check;
+  if it fails, the snapshot view fills an empty `start` with `''` and the dev
+  SCD2 table is dropped and rebuilt with the user's approval.
 - **D9 Silver Landing** via `land_changes`, one file per table in
   `src/layers/silver/landing/sec/`, own silver pipeline, as Wikipedia.
 - **D10 Verification of an append-only raw.** A new option in the bronze check
@@ -126,10 +129,21 @@ See proposal.md. What exists and shapes this change:
   with the mapped concepts, report rows per company, nulls per key column and
   duplicate keys; extrapolate to 505 companies. Decides the D8 key and confirms
   the size fits Free Edition.
+  **Result (2026-10-28, `references/poc/dividend-portfolio/p7_sec_long_form.py`):**
+  22 CIKs, 49,599 rows; about 2,250 rows and 600 KB of JSON Lines per company,
+  so about 1.14 million rows and 313 MB for 505 companies (raw SEC JSON is 3 to
+  8 MB per company). No duplicate key with or without `frame`, and none on
+  `cik`, `taxonomy`, `concept`, `unit`, `accn`, `start`, `end` (checked locally
+  on 20 companies). Missing: `start` 15,714 rows (point-in-time values),
+  `fp` 452, `frame` 32,870; no other key column. XOM's new CIK `0002115436`
+  answers with 41 rows (not a 404); the old CIK `0000034088` has 2,425.
 - **P2 `CLUSTER BY AUTO` from Python**: does `@dp.table` and
   `dp.create_streaming_table` accept automatic clustering on serverless Free
   Edition (`cluster_by_auto`)? If not, use explicit `cluster_by` on `cik`,
   `concept`.
+  **Docs (2026-10-28):** both take `cluster_by_auto` (Python reference for
+  `@dp.table` and `create_streaming_table`). Confirmed on the real tables in
+  task 4.1 (`DESCRIBE DETAIL` shows clustering columns).
 
 ## Risks / Trade-offs
 
@@ -155,3 +169,24 @@ and `run_portfolio` if their tables are stale, then `run_sec` with
 almost no new files and no new SCD2 version. Stop the SQL warehouse after query
 sessions. prd: CI deploys on merge and runs the unit. Rollback: remove the
 resources; the volume files stay.
+
+## Results (2026-10-28, dev)
+
+- **First verified run** (`run_sec` with `verify=true`, every task succeeded,
+  6 tables tagged): the fetch task wrote 501 facts files (500 index CIKs plus
+  `0000034088`), no 404. Raw, SCD2 current and Landing rows: tickers 10,430;
+  facts 1,077,402 for 500 companies. XOM's old CIK holds 2,425 current facts.
+  No rescued data. Task times: fetch 21.3 min (mostly writing about 300 MB into
+  the volume), bronze 3.2, silver 2.4.
+- **Found and fixed:** Vylor Inc. (`0002128626`, new to SEC) has only
+  filing-fee facts (`ffd`), so it wrote an empty file with no hash, which would
+  be rewritten every run. The task now writes no file for a company with no
+  mapped concept and reports it.
+- **Second run, nothing changed** (task 4.2): 0 facts files written, 500
+  unchanged, 1 with no mapped concept; tickers raw appended its second fetch
+  (20,860 rows), SCD2 still 10,430 and 1,077,402 versions with 0 closed;
+  verification passed on the latest file. The empty `start` key causes no
+  spurious versions. Fetch 1.8 min, whole run 7.5 min.
+- **P2:** `clusterByAuto` is `true` on `company_facts_raw` and
+  `company_facts_scd2`; no clustering columns yet (Databricks chooses them from
+  the queries it sees).

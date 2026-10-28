@@ -18,6 +18,7 @@ OPTIONAL = {
     "absent_columns",
     "reference_rows",
     "nullable_keys",
+    "compare_latest_file_per",
 }
 TOLERANCE = 0.02
 
@@ -36,6 +37,20 @@ def load_spec(path: str | Path) -> dict:
                 "or neither scd1 nor scd2"
             )
     return spec
+
+
+def compared_rows(table: str, spec_table: dict) -> str:
+    """What the checks count: the whole raw table, or for an append-only raw table
+    (`compare_latest_file_per`) only the latest file per group, which is what the
+    SCD snapshot is built from. An empty group list means the latest fetch overall."""
+    if "compare_latest_file_per" not in spec_table:
+        return table
+    per = spec_table["compare_latest_file_per"]
+    partition = f"PARTITION BY {', '.join(per)} " if per else ""
+    return (
+        f"(SELECT * FROM {table} QUALIFY ingested_timestamp = "
+        f"max(ingested_timestamp) OVER ({partition.strip()})) AS latest"
+    )
 
 
 def valid_distinct_keys_sql(table: str, keys: list[str], nullable: list[str] = ()) -> str:
@@ -71,5 +86,7 @@ def check_table(table: dict, counts: dict, columns: set[str]) -> list[str]:
         failures.append(f"{name}: {raw} rows but {valid} distinct non-null keys")
     for kind in ("scd2", "scd1"):
         if kind in table and counts[f"{kind}_current"] != valid:
-            failures.append(f"{table[kind]}: {counts[f'{kind}_current']} current rows, expected {valid}")
+            failures.append(
+                f"{table[kind]}: {counts[f'{kind}_current']} current rows, expected {valid}"
+            )
     return failures

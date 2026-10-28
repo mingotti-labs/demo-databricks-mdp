@@ -46,9 +46,10 @@ def current_rows(table):
 failures, summary = [], []
 for table in spec["tables"]:
     raw = f"{raw_schema}.{table['raw']}"
+    compared = bronze_checks.compared_rows(raw, table)
     counts = {
-        "raw": count(f"SELECT count(*) AS n FROM {raw}"),
-        "valid_distinct": count(bronze_checks.valid_distinct_keys_sql(raw, table["keys"], table.get("nullable_keys", []))),
+        "raw": count(f"SELECT count(*) AS n FROM {compared}"),
+        "valid_distinct": count(bronze_checks.valid_distinct_keys_sql(compared, table["keys"], table.get("nullable_keys", []))),
     }
     if "scd2" in table:
         counts["scd2_current"] = current_rows(table["scd2"])
