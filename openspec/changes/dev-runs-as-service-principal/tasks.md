@@ -21,11 +21,11 @@
 - [x] 4.2 wikipedia: drop 3 (the user ran them; the classifier blocked the agent); `run_dev.py wikipedia --param verify=true` succeeded
 - [x] 4.3 sec: drop 6 (user); SP bronze pipeline, `verify--bronze` (source sec), silver pipeline, `verify--silver--landing` (source sec), by id, all succeeded; no download
 - [x] 4.4 yahoo: drop 4 Landing (user); `ALTER TABLE mdp_dev.bronze_yahoo.fetch_state OWNER TO <sp>`; `run_dev.py yahoo --param verify=true` succeeded (incremental from the kept `fetch_state`: prices 1,035, no reloads)
-- [ ] 4.5 The user deletes the remaining human dev pipelines (`silver--yahoo`, `bronze--portfolio`, `silver--portfolio`, `bronze--wikipedia`, `silver--wikipedia`, `bronze--sec`, `silver--sec`) and jobs (`run--{portfolio,wikipedia,sec,yahoo}--dev`); every table of the four sources owned by the SP and on an SP pipeline
+- [x] 4.5 The user deletes the remaining human dev pipelines (`silver--yahoo`, `bronze--portfolio`, `silver--portfolio`, `bronze--wikipedia`, `silver--wikipedia`, `bronze--sec`, `silver--sec`) and jobs (`run--{portfolio,wikipedia,sec,yahoo}--dev`); every table of the four sources owned by the SP and on an SP pipeline
 
 ## 5. Docs and clean-up
 
-- [ ] 5.1 CONTRIBUTING step 4 (D7); CLAUDE.md Guardrails entry and Operational notes (deleted pipelines keep their tables; current human copies that own dev tables)
-- [ ] 5.2 Probes register: rows for the ownership probe (`references/poc/pipeline-ownership/`); poc README conclusion
-- [ ] 5.3 With approval: drop the scratch tables `bronze_yahoo.zz_probe_{raw,scd1,mv}`, delete `s3_raw/zz_probe/` and `/Workspace/Shared/poc/pipeline-ownership`
-- [ ] 5.4 Mark the PR ready for review
+- [x] 5.1 CONTRIBUTING step 4 (D7); CLAUDE.md Guardrails entry and Operational notes (deleted pipelines keep their tables; current human copies that own dev tables)
+- [x] 5.2 Probes register: rows for the ownership probe (`references/poc/pipeline-ownership/`); poc README conclusion
+- [x] 5.3 With approval: drop the scratch tables `bronze_yahoo.zz_probe_{raw,scd1,mv}`, delete `s3_raw/zz_probe/` and `/Workspace/Shared/poc/pipeline-ownership`
+- [x] 5.4 Mark the PR ready for review

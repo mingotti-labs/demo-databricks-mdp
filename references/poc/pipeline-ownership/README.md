@@ -124,3 +124,11 @@ its SCD2 history is rebuilt too.
   events_scd1 52,048, options_scd1 517, calendar_scd2 517 versions, 0 closed).
   Owner the SP, pipeline `21a97027`. Replaying the volume rebuilt raw, SCD1 and
   the SCD2 calendar exactly.
+
+## Clean-up (2026-10-29)
+
+- The user deleted the 7 remaining human dev pipelines and 4 human jobs of the
+  four sources; all 40 tables are owned by the SP (39 on its 8 dev pipelines,
+  plus `fetch_state`).
+- Scratch dropped (user approved): `bronze_yahoo.zz_probe_{raw,scd1,mv}`,
+  `s3_raw/zz_probe/`, `/Workspace/Shared/poc/`.
