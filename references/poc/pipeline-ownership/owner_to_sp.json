@@ -1,0 +1,8 @@
+{
+  "access_control_list": [
+    {
+      "service_principal_name": "74cc0004-a114-4e3d-aac2-d714aadb6910",
+      "permission_level": "IS_OWNER"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "run_name": "zz-probe-ownership-create-sp-pipeline",
+  "run_as": {"service_principal_name": "74cc0004-a114-4e3d-aac2-d714aadb6910"},
+  "tasks": [
+    {
+      "task_key": "create",
+      "spark_python_task": {"python_file": "/Workspace/Shared/poc/pipeline-ownership/create_sp_pipeline.py"},
+      "environment_key": "default"
+    }
+  ],
+  "environments": [{"environment_key": "default", "spec": {"environment_version": "4"}}]
+}
