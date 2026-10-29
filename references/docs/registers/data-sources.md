@@ -117,11 +117,11 @@ richer variant if it exists; fall back only when it doesn't. See
 ### portfolio
 - **What it is**: company-owned data of the dividend portfolio story: curated
   settings committed in `data/portfolio/` (concept mapping, predecessor CIKs,
-  settings, risk levels, target mix); the purchases CSV joins later
+  settings, risk levels, target mix, benchmarks); the purchases CSV joins later
 - **Design patterns**: [`bronze_volume_csv_materialized_view_python`](design-patterns.md#bronze_volume_csv_materialized_view_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
-- **Bronze raw**: `bronze_portfolio.{concept_mapping,predecessor_ciks,settings,risk_levels,target_mix}_raw`
-- **Bronze Publish** (`bronze_portfolio_publish`): the same five as `_scd2`
-- **Consumed by Silver Landing**: yes, `silver_landing_portfolio` (five tables)
+- **Bronze raw**: `bronze_portfolio.{concept_mapping,predecessor_ciks,settings,risk_levels,target_mix,benchmarks}_raw`
+- **Bronze Publish** (`bronze_portfolio_publish`): the same six as `_scd2`
+- **Consumed by Silver Landing**: yes, `silver_landing_portfolio` (six tables)
 
 ### sec
 - **What it is**: SEC EDGAR's ticker list and XBRL company facts (public domain)
@@ -136,3 +136,17 @@ richer variant if it exists; fall back only when it doesn't. See
   `unit`, `accn`, `start`, `end`
 - **Consumed by Silver Landing**: yes, `silver_landing_sec.company_tickers` and
   `silver_landing_sec.company_facts`
+
+### yahoo
+- **What it is**: Yahoo Finance (via `yfinance`, unofficial) daily prices,
+  dividends and splits, next pay dates and options activity for every symbol
+  ever in the S&P 500 list plus the `portfolio` benchmarks, the market data of
+  the dividend portfolio story
+- **Design patterns**: [`bronze_volume_append_autoloader_python`](design-patterns.md#bronze_volume_append_autoloader_python), [`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Bronze raw** (append-only, replayable from `bronze_yahoo.s3_raw`):
+  `bronze_yahoo.{prices,events,calendar,options}_raw`; `bronze_yahoo.fetch_state`
+  is the fetch notebook's progress per symbol, not source data
+- **Bronze Publish** (`bronze_yahoo_publish`): `prices_scd1` keyed by `symbol`,
+  `date`; `events_scd1` by `symbol`, `date`, `event_type`; `options_scd1` by
+  `symbol`; `calendar_scd2` by `symbol` (history of announced pay dates)
+- **Consumed by Silver Landing**: yes, `silver_landing_yahoo` (four tables)

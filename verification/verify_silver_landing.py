@@ -130,6 +130,13 @@ ENTITIES = [
         "scd2": True,
     },
     {
+        "source": "portfolio",
+        "table": "benchmarks",
+        "bronze_schema": "bronze_portfolio_publish",
+        "bronze_table": "benchmarks_scd2",
+        "scd2": True,
+    },
+    {
         "source": "wikipedia",
         "table": "sp500_constituents",
         "bronze_schema": "bronze_wikipedia_publish",
@@ -148,6 +155,34 @@ ENTITIES = [
         "table": "company_facts",
         "bronze_schema": "bronze_sec_publish",
         "bronze_table": "company_facts_scd2",
+        "scd2": True,
+    },
+    {
+        "source": "yahoo",
+        "table": "prices",
+        "bronze_schema": "bronze_yahoo_publish",
+        "bronze_table": "prices_scd1",
+        "scd2": False,
+    },
+    {
+        "source": "yahoo",
+        "table": "events",
+        "bronze_schema": "bronze_yahoo_publish",
+        "bronze_table": "events_scd1",
+        "scd2": False,
+    },
+    {
+        "source": "yahoo",
+        "table": "options",
+        "bronze_schema": "bronze_yahoo_publish",
+        "bronze_table": "options_scd1",
+        "scd2": False,
+    },
+    {
+        "source": "yahoo",
+        "table": "calendar",
+        "bronze_schema": "bronze_yahoo_publish",
+        "bronze_table": "calendar_scd2",
         "scd2": True,
     },
     {
@@ -186,7 +221,7 @@ if source:
 # Sources whose Bronze Publish SCD2 objects carry ingested_timestamp
 # (stamped at their own _raw layer) -- Silver Landing propagates it
 # unchanged, never stamps or overwrites it.
-SOURCES_WITH_INGESTED_TIMESTAMP = {"airroi", "iso", "geonames", "acnc", "wikipedia", "portfolio", "sec"}
+SOURCES_WITH_INGESTED_TIMESTAMP = {"airroi", "iso", "geonames", "acnc", "wikipedia", "portfolio", "sec", "yahoo"}
 
 
 def count(fqn: str, where: str = "1=1") -> int:

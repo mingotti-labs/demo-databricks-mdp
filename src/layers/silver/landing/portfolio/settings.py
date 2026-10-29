@@ -14,6 +14,7 @@ KEYS = {
     "settings": ["setting"],
     "risk_levels": ["level"],
     "target_mix": ["level"],
+    "benchmarks": ["symbol"],
 }
 
 

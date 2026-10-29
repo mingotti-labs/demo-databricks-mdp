@@ -13,5 +13,6 @@ fractions (0.15 is 15%); an empty cell means no rule.
 | `settings.csv` | `setting` | Tax rate, monthly amount, concentration limits, pay-date offset |
 | `risk_levels.csv` | `level` | Thresholds of each risk level |
 | `target_mix.csv` | `level` | Target share of the portfolio per risk level |
+| `benchmarks.csv` | `symbol` | Funds and indexes to compare with (Yahoo symbols); `sector` matches Wikipedia's GICS sector |
 
 Real purchases are not here and are never committed.

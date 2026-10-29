@@ -605,9 +605,9 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   `references/docs/registers/probes.md`). Wikipedia needs a contact User-Agent:
   the `http_user_agent` bundle variable, reused by the SEC source.
 - **Portfolio internal data** (`portfolio-internal-settings`, dividend portfolio
-  story) -- company-owned data, not an upstream system: five curated CSVs
+  story) -- company-owned data, not an upstream system: six curated CSVs
   committed in `data/portfolio/` (SEC concept mapping, predecessor CIKs,
-  settings, risk levels, target mix), copied by `run_portfolio`'s first task
+  settings, risk levels, target mix, benchmarks), copied by `run_portfolio`'s first task
   (`src/common/copy_repo_files.py`) into `bronze_portfolio.s3_raw/<name>/landing/`
   on every run, so the repo is the master. `bronze_portfolio.<name>_raw` text
   Materialized Views, SCD2 in `bronze_portfolio_publish` (the history of every
@@ -624,8 +624,23 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   SCD2 in `bronze_sec_publish` is built from each company's latest file; bronze
   verification compares that latest file (`compare_latest_file_per`).
   Verification is a dev tool: CI runs units with `verify=false`, prd relies on
-  the warn expectations. Yahoo follows this pattern next; Wikipedia and
-  portfolio move to it afterwards.
+  the warn expectations. Yahoo follows this pattern; Wikipedia and portfolio
+  move to it afterwards.
+- **Yahoo Finance** (`yahoo-market-data`, dividend portfolio story) -- prices,
+  dividends and splits (`events`), next pay dates (`calendar`) and options
+  activity via `yfinance` (unofficial), for every symbol ever in the Wikipedia
+  S&P 500 history plus the `portfolio` benchmarks. `run_yahoo`'s first task
+  (`src/common/fetch_yahoo.py`, the only notebook allowed `%pip`) is
+  incremental: prices from the last stored day minus one; a symbol is reloaded
+  in full when it is new, has a dividend or split in the new days (Yahoo
+  restates every earlier adjusted close, and every price and dividend on a
+  split), or is named in the `reload_symbols` job parameter. It works in
+  batches of 50 and records progress per symbol in `bronze_yahoo.fetch_state`,
+  so a repaired run skips the symbols it already fetched; it fails at the end
+  if more than 2% of current members have no prices. Append-only raw as SEC;
+  Bronze Publish by streaming Auto CDC (`prices_scd1`, `events_scd1`,
+  `options_scd1`, `calendar_scd2`). Yahoo's option open interest is 0
+  everywhere, so options volume is kept too.
 
 ## Development style
 
@@ -727,7 +742,7 @@ the decision record behind what's built.
 - No classic clusters — serverless only
 - No account-level API calls (Free Edition scope is workspace-level only)
 - No `%run` — use proper imports from `src/`
-- No `%pip install` in notebooks — declare dependencies in bundle config
+- No `%pip install` in notebooks — declare dependencies in bundle config. One exception (user, 2026-10-29): `src/common/fetch_yahoo.py` installs its pinned `yfinance`, since a notebook task cannot declare a library
 - No hardcoded secrets or connection strings — always `dbutils.secrets.get()`
 - No destructive DDL (`DROP TABLE`, `TRUNCATE`, `DELETE`) without explicit user approval
 - No direct writes to `mdp_prd` catalog from ad-hoc notebooks

@@ -6,7 +6,14 @@ from pyspark import pipelines as dp
 from pyspark.sql.functions import current_timestamp
 
 VOLUME = spark.conf.get("portfolio_volume_root")
-DATASETS = ["concept_mapping", "predecessor_ciks", "settings", "risk_levels", "target_mix"]
+DATASETS = [
+    "concept_mapping",
+    "predecessor_ciks",
+    "settings",
+    "risk_levels",
+    "target_mix",
+    "benchmarks",
+]
 
 
 def read_dataset(dataset: str):

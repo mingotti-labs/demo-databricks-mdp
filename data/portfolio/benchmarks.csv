@@ -1,0 +1,15 @@
+symbol,name,kind,sector
+SPY,SPDR S&P 500 ETF Trust,market,
+NOBL,ProShares S&P 500 Dividend Aristocrats ETF,dividend,
+^VIX,Cboe Volatility Index,volatility,
+XLK,Technology Select Sector SPDR Fund,sector,Information Technology
+XLF,Financial Select Sector SPDR Fund,sector,Financials
+XLV,Health Care Select Sector SPDR Fund,sector,Health Care
+XLE,Energy Select Sector SPDR Fund,sector,Energy
+XLI,Industrial Select Sector SPDR Fund,sector,Industrials
+XLY,Consumer Discretionary Select Sector SPDR Fund,sector,Consumer Discretionary
+XLP,Consumer Staples Select Sector SPDR Fund,sector,Consumer Staples
+XLU,Utilities Select Sector SPDR Fund,sector,Utilities
+XLB,Materials Select Sector SPDR Fund,sector,Materials
+XLRE,Real Estate Select Sector SPDR Fund,sector,Real Estate
+XLC,Communication Services Select Sector SPDR Fund,sector,Communication Services

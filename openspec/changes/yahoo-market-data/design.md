@@ -145,6 +145,19 @@ See proposal.md. What exists and shapes this change:
   a run with `reload_symbols` `AAPL`; a run cancelled after a few batches and
   repaired (`{{job.run_id}}` kept, remaining symbols only). Record rows per
   dataset and times.
+  **Result (dev, 2026-10-29, every run with `verify=true` passing both checks):**
+  | Run | Fetch output | Fetch | Total |
+  |---|---|---|---|
+  | 1 first load | 517 symbols reloaded; prices 129,753, events 52,048, calendar and options 517; none missing | 12.8 min | 21 min |
+  | 2 incremental | prices 1,034 (two days each), events 1, no reload; calendar 517 versions, all current (no new version) | 9.7 min | 18 min |
+  | 3 `reload_symbols=AAPL` | prices 1,284 (516 x 2 + 252 for AAPL), events 98 (AAPL's history), 1 reloaded | 10.0 min | 18 min |
+  | 4 cancelled, repaired | cancelled after 100 symbols; the repair kept the run id and fetched 417 (834 prices) | 2.5 + 8.1 min | |
+  After run 1, raw, Bronze Publish and Landing hold the same rows per dataset;
+  after run 2 prices raw is 130,787 and Bronze Publish still 129,753 (the
+  overlap days are overwritten). Landing spot checks: `BRK.B` as `BRK-B`,
+  AMZN with no dividend, `^VIX` with prices only and no monthly expiry, KO
+  with its next pay date (2026-12-15), XLU and SPY with dividends. Most of an
+  incremental fetch is the three per-symbol calls for calendar and options.
 
 ## Risks / Trade-offs
 
