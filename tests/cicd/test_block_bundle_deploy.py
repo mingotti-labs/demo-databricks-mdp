@@ -47,6 +47,13 @@ def test_other_commands_allowed():
     )
 
 
+def test_mention_in_text_allowed():
+    body = 'gh pr create --body "refuses `databricks bundle deploy|run|destroy`"'
+    assert refusal(body, REPO) is None
+    assert refusal("git commit -m 'no databricks bundle run here'", REPO) is None
+    assert refusal("echo ok\ndatabricks bundle run run_yahoo", REPO)
+
+
 def test_hook_exit_codes():
     def run(command):
         call = {"tool_name": "Bash", "tool_input": {"command": command}, "cwd": REPO}

@@ -11,7 +11,9 @@ import json
 import re
 import sys
 
-BUNDLE_ACTION = re.compile(r"\bdatabricks\s+bundle\s+(deploy|run|destroy)\b")
+BUNDLE_ACTION = re.compile(
+    r"(^|[;&|(])\s*databricks\s+bundle\s+(deploy|run|destroy)\b", re.MULTILINE
+)
 PATTERNS = re.compile(r"references[/\\]patterns")
 MESSAGE = (
     "Refused: do not deploy, run or destroy the main bundle locally. Push the branch "
