@@ -20,7 +20,7 @@
 - [x] 4.1 portfolio: drop 18 tables; `run_dev.py portfolio --param verify=true` succeeded; 18 tables owned by the SP
 - [x] 4.2 wikipedia: drop 3 (the user ran them; the classifier blocked the agent); `run_dev.py wikipedia --param verify=true` succeeded
 - [x] 4.3 sec: drop 6 (user); SP bronze pipeline, `verify--bronze` (source sec), silver pipeline, `verify--silver--landing` (source sec), by id, all succeeded; no download
-- [ ] 4.4 yahoo: drop 4 Landing (user); `ALTER TABLE mdp_dev.bronze_yahoo.fetch_state OWNER TO <sp>`; `run_dev.py yahoo --param verify=true`
+- [x] 4.4 yahoo: drop 4 Landing (user); `ALTER TABLE mdp_dev.bronze_yahoo.fetch_state OWNER TO <sp>`; `run_dev.py yahoo --param verify=true` succeeded (incremental from the kept `fetch_state`: prices 1,035, no reloads)
 - [ ] 4.5 The user deletes the remaining human dev pipelines (`silver--yahoo`, `bronze--portfolio`, `silver--portfolio`, `bronze--wikipedia`, `silver--wikipedia`, `bronze--sec`, `silver--sec`) and jobs (`run--{portfolio,wikipedia,sec,yahoo}--dev`); every table of the four sources owned by the SP and on an SP pipeline
 
 ## 5. Docs and clean-up
