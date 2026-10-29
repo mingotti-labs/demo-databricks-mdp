@@ -89,3 +89,46 @@ source pipeline, an SP destination, an Auto Loader table, a plain table.
   the SP move them to its own pipeline, and does the table owner become the SP
   when the SP's pipeline runs? Fallback: drop and reload (SEC and Yahoo raw
   replay from the volume files).
+
+## Pilot: real dev Yahoo bronze
+
+- The user deleted `[dev handsonessential] bronze--yahoo--dev` (`00bac0f4`):
+  all 8 tables stay, owned by the human, `pipeline_id` still `00bac0f4` (the
+  pipeline itself: `not found`).
+- Counts before the move: unchanged from the baseline.
+- `GRANT ALL PRIVILEGES, MANAGE ON TABLE ... TO <sp>` on the 8 tables, as the
+  human: allowed.
+- `move_dev_tables` run as the SP (run `130506019658393`, destination
+  `21a97027`): **refused for all 8**, nothing changed:
+  `PERMISSION_DENIED: User is not an owner of Pipeline '00bac0f4-...'` (the
+  deleted human pipeline). The source pipeline's owner is still checked after
+  it is deleted; on scratch H it passed only because the human owned both.
+
+## Conclusion
+
+**Fail.** A table built by a human-owned pipeline cannot reach an SP pipeline
+without a reload on Free Edition: the move checks the owner of the source
+pipeline (even deleted) and of the destination, a pipeline's owner cannot
+change, and the human cannot act as the SP. Moves between pipelines of one
+owner still work (acnc-two-pipelines P1-P5; O6 here, including the Auto Loader
+checkpoint). Human-owned dev tables are dropped and rebuilt by the SP's
+pipelines; append-only raw (SEC, Yahoo) replays every file from the volume, so
+its SCD2 history is rebuilt too.
+
+## Fallback on the pilot: drop and reload (user approved, 2026-10-29)
+
+- Dropped the 8 human-owned tables; started the SP's pipeline `21a97027` by id
+  (update `0e403522`, no fetch): COMPLETED.
+- Counts identical to the baseline (prices_raw 133,105 / 44 files, events_raw
+  52,148 / 15, calendar_raw and options_raw 2,068 / 44, prices_scd1 129,753,
+  events_scd1 52,048, options_scd1 517, calendar_scd2 517 versions, 0 closed).
+  Owner the SP, pipeline `21a97027`. Replaying the volume rebuilt raw, SCD1 and
+  the SCD2 calendar exactly.
+
+## Clean-up (2026-10-29)
+
+- The user deleted the 7 remaining human dev pipelines and 4 human jobs of the
+  four sources; all 40 tables are owned by the SP (39 on its 8 dev pipelines,
+  plus `fetch_state`).
+- Scratch dropped (user approved): `bronze_yahoo.zz_probe_{raw,scd1,mv}`,
+  `s3_raw/zz_probe/`, `/Workspace/Shared/poc/`.

@@ -73,6 +73,22 @@ Change `refactor-airroi-clickstream-neon` (2026-10-23).
 |---|---|---|
 | P1 | Does the change feed of an Auto CDC SCD1 target feed a Landing streaming table (inserts and updates, nothing on an unchanged run)? | Pass: 600 rows loaded; a new event gave 1 insert and a re-sent event 1 update in both tables; Landing equals SCD1; only changed rows were restamped. A first attempt looked like a failure and was a probe error: the raw `timestamp` is a string with a `T` separator, and my edited value (space separator) sorted as older. |
 
+## Moving tables from a human pipeline to the service principal
+
+Change `dev-runs-as-service-principal` (2026-10-29). Record:
+`references/poc/pipeline-ownership/README.md` (scripts and data alongside).
+
+| Probe | Question | Result |
+|---|---|---|
+| O1 | Can the human (workspace admin, table and catalog owner) move a table from its own pipeline to the SP's? | Fail: `DESTINATION_PIPELINE_PERMISSION_DENIED`; one identity must own and run both pipelines. |
+| O2 | Can the human run a job as the SP (`run_as`)? | Fail: needs `servicePrincipal.user` on the SP. |
+| O3 | Can a pipeline's owner be changed to the SP? | Fail: `Only metastore admins can change pipeline owner`; the metastore owner is `System user`. |
+| O4 | Does deleting a pipeline drop its tables? | No: the tables stay, pointing at the deleted id (regular pipelines, five times). |
+| O5 | Does a new pipeline adopt the left-behind tables? | No: `already managed by pipeline <deleted id>`. |
+| O6 | After the source is deleted, does the move work, and does a moved Auto Loader table keep its checkpoint? | Pass: only the destination's owner is checked; rows and SCD1 state kept, only the new file read. |
+| O7 | Can a pipeline table be handed over with `OWNER TO`? | Fail: `CHANGE_OWNER_NOT_ALLOWED_FOR_PIPELINE_TABLE`; the owner follows the pipeline's run-as. |
+| O8 | With the human pipeline deleted and the SP granted `ALL PRIVILEGES, MANAGE`, can the SP move the tables to its own pipeline? | Fail: `User is not an owner of Pipeline '<deleted human pipeline>'`. No human-to-SP move without a reload; dropping and replaying the volume restored Yahoo bronze with identical counts. |
+
 ## Dividend portfolio sources
 
 Change `dividend-portfolio-probes` (2026-10-25). Record: its `design.md`

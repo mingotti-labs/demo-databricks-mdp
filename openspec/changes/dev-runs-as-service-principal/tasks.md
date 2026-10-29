@@ -1,30 +1,31 @@
 ## 1. Guard and runner
 
-- [ ] 1.1 `cicd/block_bundle_deploy.py` (pure check plus stdin entry point, exit 2 with the steps to use) and `tests/cicd/test_block_bundle_deploy.py` (dev, no target, prd, patterns bundle by path and by working directory, validate, `jobs run-now`)
-- [ ] 1.2 `PreToolUse` hook on `Bash|PowerShell` in `.claude/settings.json`; check in a session that `databricks bundle deploy -t dev` is refused and `databricks bundle validate -t dev` runs
-- [ ] 1.3 `cicd/run_dev.py` and `tests/cicd/test_run_dev.py` (job name, parameters payload, job not found)
+- [x] 1.1 `cicd/block_bundle_deploy.py` (pure check plus stdin entry point, exit 2 with the steps to use) and `tests/cicd/test_block_bundle_deploy.py` (dev, no target, prd, patterns bundle by path and by working directory, validate, `jobs run-now`)
+- [x] 1.2 `PreToolUse` hook on `Bash|PowerShell` in `.claude/settings.json`; check in a session that `databricks bundle deploy -t dev` is refused and `databricks bundle validate -t dev` runs (also in the workspace folder's `.claude/settings.json`, outside the repo, since sessions start there; a first version also refused text that only mentioned the command, fixed to match a command only)
+- [x] 1.3 `cicd/run_dev.py` and `tests/cicd/test_run_dev.py` (job name, parameters payload, job not found)
 
-## 2. Move job
+## 2. Dev deploy as the SP
 
-- [ ] 2.1 `migrations/move_dev_tables.py` (D4) and the `move_dev_tables` job in the `dev` target of `cicd/databricks/free.yml` and `standard.yml`; regenerate (`uv run python cicd/apply_edition.py`); `databricks bundle validate -t dev` and `-t prd` (no job in prd)
-- [ ] 2.2 Push, open the implementation PR as a draft; wait for `deploy-dev`; confirm the SP's dev copies of `move_dev_tables` and the four units exist
+- [x] 2.1 Move job `migrations/move_dev_tables.py` in the dev target (built, then removed after O8, task 3.2)
+- [x] 2.2 Push, open the implementation PR as a draft; wait for `deploy-dev`; confirm the SP's dev copies of the four units exist
 
 ## 3. Pilot: yahoo bronze (no other run in flight)
 
-- [ ] 3.1 Record counts of the 8 tables (`references/poc/pipeline-ownership/baseline.sql`); the user deletes `[dev handsonessential] bronze--yahoo--dev` (`00bac0f4`); confirm the tables stay
-- [ ] 3.2 Grant the SP `MANAGE` and `ALL PRIVILEGES` on the 8 tables (the user runs it if the classifier blocks it); run `move_dev_tables` by id with the SP pipeline `21a97027`
-- [ ] 3.3 Start the SP pipeline by id; compare counts (raw unchanged, closed SCD2 versions unchanged); read owners from Unity Catalog; record in the poc README and design.md (D5); stop and report
+- [x] 3.1 Record counts of the 8 tables (`references/poc/pipeline-ownership/baseline.sql`); the user deletes `[dev handsonessential] bronze--yahoo--dev` (`00bac0f4`); the tables stay
+- [x] 3.2 Grant the SP `ALL PRIVILEGES, MANAGE` on the 8 tables; run `move_dev_tables` as the SP: refused for all 8 (O8, `User is not an owner of Pipeline '00bac0f4...'`); plan revised to drop and reload (user approved)
+- [x] 3.3 Drop the 8 tables; start the SP pipeline `21a97027` by id; counts identical to 3.1; owner the SP
 
-## 4. The rest (after the pilot is agreed)
+## 4. The rest (drop and reload, user approved)
 
-- [ ] 4.1 Same steps for bronze portfolio, wikipedia, sec, then silver portfolio, wikipedia, sec, yahoo (D3 order), one pipeline at a time; fallback D6 per source with explicit approval for each drop
-- [ ] 4.2 `ALTER TABLE mdp_dev.bronze_yahoo.fetch_state OWNER TO <sp>`
-- [ ] 4.3 The user deletes the four human jobs `[dev handsonessential] run--{portfolio,wikipedia,sec,yahoo}--dev`
-- [ ] 4.4 `run_dev.py` portfolio, wikipedia, sec, yahoo with `verify=true`, one at a time; all succeed; every table of the four sources owned by the SP and on an SP pipeline
+- [x] 4.1 portfolio: drop 18 tables; `run_dev.py portfolio --param verify=true` succeeded; 18 tables owned by the SP
+- [x] 4.2 wikipedia: drop 3 (the user ran them; the classifier blocked the agent); `run_dev.py wikipedia --param verify=true` succeeded
+- [x] 4.3 sec: drop 6 (user); SP bronze pipeline, `verify--bronze` (source sec), silver pipeline, `verify--silver--landing` (source sec), by id, all succeeded; no download
+- [x] 4.4 yahoo: drop 4 Landing (user); `ALTER TABLE mdp_dev.bronze_yahoo.fetch_state OWNER TO <sp>`; `run_dev.py yahoo --param verify=true` succeeded (incremental from the kept `fetch_state`: prices 1,035, no reloads)
+- [x] 4.5 The user deletes the remaining human dev pipelines (`silver--yahoo`, `bronze--portfolio`, `silver--portfolio`, `bronze--wikipedia`, `silver--wikipedia`, `bronze--sec`, `silver--sec`) and jobs (`run--{portfolio,wikipedia,sec,yahoo}--dev`); every table of the four sources owned by the SP and on an SP pipeline
 
 ## 5. Docs and clean-up
 
-- [ ] 5.1 CONTRIBUTING step 4 (D7); CLAUDE.md Guardrails entry and Operational notes (deleted pipelines keep their tables; current human copies that own dev tables)
-- [ ] 5.2 Probes register: rows for the ownership probe (`references/poc/pipeline-ownership/`); poc README conclusion
-- [ ] 5.3 With approval: drop the scratch tables `bronze_yahoo.zz_probe_{raw,scd1,mv}`, delete `s3_raw/zz_probe/` and `/Workspace/Shared/poc/pipeline-ownership`
-- [ ] 5.4 Mark the PR ready for review
+- [x] 5.1 CONTRIBUTING step 4 (D7); CLAUDE.md Guardrails entry and Operational notes (deleted pipelines keep their tables; current human copies that own dev tables)
+- [x] 5.2 Probes register: rows for the ownership probe (`references/poc/pipeline-ownership/`); poc README conclusion
+- [x] 5.3 With approval: drop the scratch tables `bronze_yahoo.zz_probe_{raw,scd1,mv}`, delete `s3_raw/zz_probe/` and `/Workspace/Shared/poc/pipeline-ownership`
+- [x] 5.4 Mark the PR ready for review

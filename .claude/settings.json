@@ -1,5 +1,19 @@
 {
   "enabledPlugins": {
     "databricks@claude-plugins-official": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run --no-project python \"$CLAUDE_PROJECT_DIR/cicd/block_bundle_deploy.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }

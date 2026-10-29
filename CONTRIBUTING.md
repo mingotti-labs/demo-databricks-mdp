@@ -36,15 +36,23 @@ open PR that drifts against `main` while implementation is pending
    (`/model`). Work through `tasks.md`, committing incrementally (see Commits
    below). If a cross-repo dependency is discovered only now, update
    `proposal.md` in this same branch (see Cross-repo dependencies below).
-   A small throwaway experiment in dev (a probe) is recorded in the change's
-   `design.md` and listed in `references/docs/registers/probes.md`.
-4. **Validate and verify** — `databricks bundle validate` before every
-   deploy; deploy to `dev`; run the change's `verification/` job against
-   real data (see Verification vs validation below). Only mark a task
+   A small throwaway experiment in dev (a probe) keeps its scripts and data
+   under `references/poc/<topic>/`, is recorded in the change's `design.md`
+   and is listed in `references/docs/registers/probes.md`.
+4. **Validate and verify in dev, as the CI/CD service principal** —
+   `databricks bundle validate` before every push; push the branch and open
+   the implementation PR as a **draft**, so `pr.yml`'s `deploy-dev` deploys
+   the bundle as the service principal; then run the unit's SP copy with
+   `uv run python cicd/run_dev.py <unit> --profile <PROFILE> [--param
+   key=value]` (for example `--param verify=true`) and check the change's
+   `verification/` job against real data (see Verification vs validation
+   below). Never `databricks bundle deploy|run` the main bundle locally: it
+   creates human-owned dev pipelines whose tables the service principal
+   cannot take over (a Claude Code hook refuses it). Only mark a task
    complete once it's verified, not just implemented.
-5. **Push and open a second PR** — this one for implementation, referencing
-   the already-merged proposal/openspec change (see Pull requests below).
-   Reference any cross-repo PR it depends on.
+5. **Mark the PR ready for review** — it is the implementation PR,
+   referencing the already-merged proposal/openspec change (see Pull
+   requests below). Reference any cross-repo PR it depends on.
 6. **Review and merge** — squash-merge only, once approved.
 7. **Archive the openspec change** — `openspec archive <name>` after this
    PR merges, so `openspec/specs/` reflects the new baseline.
