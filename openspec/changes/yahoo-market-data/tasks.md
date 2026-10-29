@@ -35,18 +35,18 @@
 
 ## 4. Verify in dev
 
-- [ ] 4.1 Deploy to dev; run `run_portfolio`, then `run_yahoo` with
+- [x] 4.1 Deploy to dev; run `run_portfolio`, then `run_yahoo` with
       `verify=true`: every task succeeds; record rows per layer and dataset,
       symbols with no prices and task times in design.md
-- [ ] 4.2 P2: second run (new days and event reloads only), a run with
+- [x] 4.2 P2: second run (new days and event reloads only), a run with
       `reload_symbols` `AAPL`, a cancelled-and-repaired run; record results
-- [ ] 4.3 Check `BRK.B` (as `BRK-B`), a non-payer, `^VIX` and a sector fund in
+- [x] 4.3 Check `BRK.B` (as `BRK-B`), a non-payer, `^VIX` and a sector fund in
       Landing
-- [ ] 4.4 Stop the SQL warehouse after any query session
+- [x] 4.4 Stop the SQL warehouse after any query session
 
 ## 5. Registers and docs
 
-- [ ] 5.1 `design-patterns.md`: `yahoo` in the "Used by" lines
-- [ ] 5.2 `data-sources.md` `yahoo` entry; `source_systems/yahoo.md`, listed in
+- [x] 5.1 `design-patterns.md`: `yahoo` in the "Used by" lines
+- [x] 5.2 `data-sources.md` `yahoo` entry; `source_systems/yahoo.md`, listed in
       its README
-- [ ] 5.3 CLAUDE.md: "Sources" entry for Yahoo
+- [x] 5.3 CLAUDE.md: "Sources" entry for Yahoo

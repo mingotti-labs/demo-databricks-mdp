@@ -13,6 +13,7 @@ API-based sources:
 - [nsw_spatial.md](nsw_spatial.md) — NSW property layer, ArcGIS FeatureServer REST API
 - [ungm.md](ungm.md) — UN Global Marketplace UNSPSC classification tree, REST API
 - [sec.md](sec.md) — SEC EDGAR tickers and company facts, REST API, append-only raw files
+- [yahoo.md](yahoo.md) — Yahoo Finance prices, events, calendar and options via `yfinance`, incremental append-only raw files
 
 Web page sources:
 - [wikipedia.md](wikipedia.md) — S&P 500 constituents table, HTML parse

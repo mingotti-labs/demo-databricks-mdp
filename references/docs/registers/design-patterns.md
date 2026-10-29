@@ -163,7 +163,9 @@ refresh of raw rebuilds it from the files without calling the source. The SCD2
 snapshot is the latest file per group (`max(ingested_timestamp)`). Bronze
 verification compares that latest file, not the whole table
 (`compare_latest_file_per`). Code: `src/common/fetch_sec.py`,
-`src/layers/bronze/sec/`. Used by: [sec](data-sources.md#sec). Evidence: `dev`.
+`src/layers/bronze/sec/`. Used by: [sec](data-sources.md#sec), [yahoo](data-sources.md#yahoo)
+(Bronze Publish by streaming Auto CDC, since each file holds only part of the
+data; `fetch_state` tracks progress per symbol). Evidence: `dev`.
 
 ### bronze_publish_scd2_autocdc_snapshot_python
 `create_auto_cdc_from_snapshot_flow` against a `_raw` source that is the full
@@ -203,8 +205,11 @@ Used by: neon `orders_scd1` and `order_items_scd1` (Landing's source) are the sa
 ### bronze_publish_scd1_autocdc_stream_python
 Streaming `create_auto_cdc_flow`. Valid only against an append-only source:
 against an upserted source it fails with `DELTA_SOURCE_TABLE_IGNORE_CHANGES`.
-Code: `src/layers/bronze/clickstream_publish/python/`.
-Used by: [clickstream](data-sources.md#clickstream). Evidence: `dev`.
+Code: `src/layers/bronze/clickstream_publish/python/`,
+`src/layers/bronze/yahoo_publish/`.
+Used by: [clickstream](data-sources.md#clickstream), [yahoo](data-sources.md#yahoo)
+(SCD1 prices, events, options; `calendar_scd2` is the same flow as SCD2, its
+platform columns left out of the target). Evidence: `dev`.
 
 ### bronze_publish_scd1_autocdc_stream_sql
 The same streaming pattern in SQL (`AUTO CDC INTO`), same append-only
@@ -255,9 +260,9 @@ A streaming table that reads only the rows changed in its Bronze Publish SCD2
 table (`readChangeFeed`) and applies them by version key with
 `create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
 rows, and sets `ingested_timestamp` to the version's `__START_AT`. Code:
-`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi,wikipedia,portfolio,sec}/`,
+`src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi,wikipedia,portfolio,sec,yahoo}/`,
 shared helper `land_changes` in `src/common/silver_landing.py`. Used by: acnc,
-ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec. Evidence: `prd`
+ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec, yahoo. Evidence: `prd`
 (acnc), `dev`.
 
 ### silver_normalised_spec_driven_python
@@ -283,7 +288,7 @@ rows that are gone are removed. Code: `src/common/keep_timestamps.py`,
 ### bronze_silver_pipeline_per_layer
 One bronze pipeline and one silver pipeline per source, building the publish and
 landing tables by qualified name, instead of one pipeline per pattern. Used by
-acnc, ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec; clickstream
+acnc, ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec, yahoo; clickstream
 and neon follow it as
 far as their sources allow. Evidence: `prd`.
 
