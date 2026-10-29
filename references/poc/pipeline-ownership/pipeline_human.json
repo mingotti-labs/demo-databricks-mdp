@@ -1,0 +1,9 @@
+{
+  "name": "zz-probe-ownership-human",
+  "catalog": "mdp_dev",
+  "schema": "bronze_yahoo",
+  "serverless": true,
+  "development": true,
+  "continuous": false,
+  "libraries": [{"notebook": {"path": "/Workspace/Shared/poc/pipeline-ownership/zz_probe_pipeline.py"}}]
+}
