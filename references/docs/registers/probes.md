@@ -87,6 +87,7 @@ Change `dev-runs-as-service-principal` (2026-10-29). Record:
 | O5 | Does a new pipeline adopt the left-behind tables? | No: `already managed by pipeline <deleted id>`. |
 | O6 | After the source is deleted, does the move work, and does a moved Auto Loader table keep its checkpoint? | Pass: only the destination's owner is checked; rows and SCD1 state kept, only the new file read. |
 | O7 | Can a pipeline table be handed over with `OWNER TO`? | Fail: `CHANGE_OWNER_NOT_ALLOWED_FOR_PIPELINE_TABLE`; the owner follows the pipeline's run-as. |
+| O8 | With the human pipeline deleted and the SP granted `ALL PRIVILEGES, MANAGE`, can the SP move the tables to its own pipeline? | Fail: `User is not an owner of Pipeline '<deleted human pipeline>'`. No human-to-SP move without a reload; dropping and replaying the volume restored Yahoo bronze with identical counts. |
 
 ## Dividend portfolio sources
 

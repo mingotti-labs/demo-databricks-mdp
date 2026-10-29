@@ -722,17 +722,18 @@ the decision record behind what's built.
   execution identity is a property of the resource, not the caller. See
   `demo-databricks-iac`'s CLAUDE.md ("CI/CD service principal pipeline
   execution") for the grants this needed.
-  - **Moving a human copy's tables to the SP without a reload**
-    (`dev-runs-as-service-principal`, probe in
-    `references/poc/pipeline-ownership/`): the move needs one identity owning
-    and running both pipelines, and a pipeline's owner cannot change on Free
-    Edition (`Only metastore admins can change pipeline owner`). So: the user
-    deletes the human pipeline (a regular pipeline's tables stay, pointing at
-    the deleted id; seen five times), the SP is granted rights on the tables,
-    and the dev-only `move_dev_tables` job (runs as the SP, by id) attaches
-    them to the SP's pipeline. The Auto Loader checkpoint moves with the
-    table. A pipeline table's owner cannot be changed with `OWNER TO`; it
-    follows the pipeline's run-as.
+  - **A human copy's tables cannot move to the SP without a reload**
+    (`dev-runs-as-service-principal`, probes O1-O8 in
+    `references/poc/pipeline-ownership/`): the move checks the owner of the
+    source pipeline, even after it is deleted, and of the destination; a
+    pipeline's owner cannot change on Free Edition (`Only metastore admins can
+    change pipeline owner`), and the human cannot act as the SP. Procedure:
+    the user deletes the human pipeline (a regular pipeline's tables stay),
+    the tables are dropped with approval, the SP's pipelines rebuild them.
+    Append-only raw (SEC, Yahoo) replays every file from the volume, SCD2
+    history included; a full-load source's dev SCD2 history restarts. A plain
+    table (`fetch_state`) is handed over with `ALTER TABLE ... OWNER TO`; a
+    pipeline table cannot be (its owner follows the pipeline's run-as).
   - An earlier note said deleting the human `neon_ecommerce_ingestion` copy
     dropped `bronze_neon.*_raw`; that was a Lakeflow Connect ingestion
     pipeline. Regular pipelines kept their tables in every test since.

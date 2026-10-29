@@ -267,23 +267,6 @@ targets:
               dependencies:
               - psycopg2-binary
               - faker
-        move_dev_tables:
-          # Dev only (openspec dev-runs-as-service-principal): runs as the SP,
-          # which owns the destination pipeline; triggered by id, never by CI.
-          name: move--dev--tables--${bundle.target}
-          parameters:
-          - name: pipeline_id
-            default: ""
-          - name: tables
-            default: ""
-          tasks:
-          - task_key: move
-            notebook_task:
-              notebook_path: migrations/move_dev_tables.py
-              base_parameters:
-                catalog: ${var.catalog}
-                pipeline_id: "{{job.parameters.pipeline_id}}"
-                tables: "{{job.parameters.tables}}"
 
   prd:
     mode: production

@@ -45,43 +45,24 @@ with a clear message when no such job exists (the PR's dev deploy has not run).
 - **WHEN** the unit has no SP dev job
 - **THEN** the script exits non-zero and says to open the PR so `deploy-dev` deploys it
 
-### Requirement: Human-owned dev tables move to the service principal without a reload
-
-A dev-only job `move_dev_tables`, deployed by CI and so run as the CI/CD
-service principal, SHALL attach each listed streaming table or materialized
-view to a given destination pipeline and SHALL confirm the new attachment from
-Unity Catalog's table metadata. It is used after the table's human pipeline has
-been deleted (its tables stay) and the service principal has been granted
-rights on the tables. A table whose move is refused SHALL be reported and left
-unchanged. After a move, the destination pipeline's next update SHALL keep the
-rows and SCD2 history and SHALL NOT read a landed file again.
-
-#### Scenario: Move after the human pipeline is deleted
-- **WHEN** the human pipeline is deleted, the SP holds rights on its tables, and `move_dev_tables` runs with those tables and the SP's pipeline id
-- **THEN** each table's Unity Catalog `pipeline_id` is the SP's pipeline
-
-#### Scenario: Move refused
-- **WHEN** a move of a listed table is refused
-- **THEN** the job fails, naming the table and the error, and that table's attachment is unchanged
-
-#### Scenario: Next update after a move
-- **WHEN** the SP's pipeline runs after the move with no new files
-- **THEN** every moved table's row count and closed SCD2 version count are unchanged
-
 ### Requirement: Dev tables of the dividend story are owned by the service principal
 
 Every dev table of wikipedia, portfolio, sec and yahoo (bronze, Bronze Publish,
 Silver Landing and `bronze_yahoo.fetch_state`) SHALL be owned by the CI/CD
 service principal and, except `fetch_state`, managed by its dev pipelines; each
-of those sources' SP `run_<unit>` dev job SHALL succeed with `verify=true`. No
-human dev pipeline or job of those sources SHALL remain. Where a source falls
-back to a reload, SEC and Yahoo raw SHALL be rebuilt from the files already in
-their volumes.
+source's bronze and Silver Landing checks SHALL pass when run as the SP. No
+human dev pipeline or job of those sources SHALL remain. SEC and Yahoo raw
+SHALL be rebuilt from the files already in their volumes, with the same rows as
+before the reload.
 
 #### Scenario: Ownership afterwards
 - **WHEN** the tables of the four sources are listed in `mdp_dev`
 - **THEN** every owner is the SP and every pipeline id is an SP dev pipeline
 
+#### Scenario: Raw replayed from the volume
+- **WHEN** the SP's Yahoo bronze pipeline rebuilds the dropped tables
+- **THEN** each table's row count, file count and closed SCD2 version count equal the counts taken before the drop
+
 #### Scenario: Units succeed as the SP
-- **WHEN** `cicd/run_dev.py` runs portfolio, wikipedia, sec and yahoo with `verify=true`, one at a time
+- **WHEN** `cicd/run_dev.py` runs portfolio, wikipedia and yahoo with `verify=true`, and SEC's two pipelines and two verify jobs run by id (no new download), one at a time
 - **THEN** each run succeeds

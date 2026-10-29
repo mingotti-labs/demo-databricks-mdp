@@ -14,6 +14,11 @@ See proposal.md, Why. The probe (`references/poc/pipeline-ownership/README.md`,
   gone, checking only the destination's owner. After the move the destination
   kept rows and SCD1 state, and its Auto Loader flow read only the new file.
 - A pipeline table's owner follows its pipeline's run-as; `OWNER TO` is refused.
+- Implementation pilot (O8): with the human pipeline deleted and the SP granted
+  `ALL PRIVILEGES, MANAGE`, the move run as the SP is refused: `User is not an
+  owner of Pipeline '<deleted human pipeline>'`. The source's owner is still
+  checked after deletion; the scratch test passed only because the human owned
+  both. No move from a human pipeline to an SP pipeline is possible here.
 
 Dev inventory (2026-10-29), human pipeline → SP pipeline:
 
@@ -36,7 +41,7 @@ Plus `bronze_yahoo.fetch_state` (plain table) and the human jobs
 **Goals:**
 - The agent cannot deploy or run the main bundle under the human identity.
 - Running a unit as the SP in dev is one command.
-- The 40 dev tables end up with the SP, without a reload where the move works.
+- The 40 dev tables end up with the SP.
 
 **Non-Goals:**
 - Older sources' human-owned dev tables (neon, clickstream silver): same
@@ -63,47 +68,31 @@ JSON; `bundle run --params` parses values as CSV), polls until it ends, prints
 the result and run page, exits 1 unless `SUCCESS`. `--profile` is required.
 Pure parts (job name, payload) are unit-tested.
 
-### D3. Delete first, then move as the SP
-Per human pipeline:
-1. Record row counts and closed SCD2 versions of its tables.
-2. The user deletes the human pipeline (the classifier blocks the agent from
-   deleting pipelines); its tables stay.
-3. The human grants the SP rights on those tables (D5); the user runs the grant
-   if the classifier blocks it.
-4. `move_dev_tables` (SP) moves them to the SP pipeline.
-5. The SP pipeline runs; counts compared with step 1; owner read from Unity
-   Catalog.
+### D3. Drop and reload under the SP (revised after O8)
+The first plan (delete the human pipeline, then a dev-only `move_dev_tables`
+job run as the SP attaches the tables to the SP's pipeline) was built and
+refused by O8; the job was removed. Per source, one at a time:
+1. The user deletes the human pipelines; the tables stay.
+2. Record counts (raw rows and files, SCD rows, closed SCD2 versions).
+3. Drop the tables (explicit approval; the user runs the drops when the
+   classifier blocks them).
+4. The SP rebuilds them: `cicd/run_dev.py <unit> --param verify=true`, or for
+   SEC its bronze and silver pipelines and two verify jobs by id, so its
+   28-minute download is skipped (the replay already restores everything).
+5. Compare counts for the replayable sources; read owners from Unity Catalog.
 
-Upstream before downstream, so an SP pipeline never reads a human table:
-yahoo bronze first (pilot, it reads only its volume), then portfolio, wikipedia
-and sec bronze, then the four silver pipelines. `fetch_state`: `ALTER TABLE ...
-OWNER TO <sp>` by the human (catalog owner). Then the human jobs are deleted by
-the user and `run_dev.py` runs portfolio, wikipedia, sec, yahoo with
-`verify=true`, one at a time.
+Order: yahoo bronze first (pilot, pipeline by id, no fetch), then portfolio,
+wikipedia, sec, and yahoo's unit last (its Landing; `fetch_state` handed over
+first with `ALTER TABLE ... OWNER TO <sp>`, which works for a plain table).
 
-### D4. `move_dev_tables` job
-A dev-only notebook job in the `dev` target of both edition sources (it never
-exists in prd), parameters `catalog`, `pipeline_id`, `tables` (comma list of
-`schema.table`). For each table: read its type from Unity Catalog, run the
-matching `ALTER`, read back `pipeline_id`; collect failures and fail at the end
-naming each. A no-op for a table already on the destination, so it can be
-rerun. Runs as the SP because CI deploys it; triggered by id
-(`databricks jobs run-now`), like the acnc migration job.
+### D4. What a reload costs
+SEC and Yahoo raw replay every landed file, and Bronze Publish is sequenced by
+the fetch time stored in the files, so raw, SCD1 and SCD2 come back with the
+same rows and versions (pilot: identical counts). Wikipedia and portfolio raw
+are full loads, so their dev SCD2 history restarts from the reload. prd is
+untouched.
 
-### D5. Which rights the SP needs
-Not known yet: the SP's `ALTER` on a table it does not own may need `MODIFY`,
-`MANAGE` or `ALL PRIVILEGES`. The pilot grants `MANAGE` and `ALL PRIVILEGES` on
-the 8 yahoo bronze tables, records the result, and the rest use what worked.
-Whether the owner becomes the SP when the SP pipeline runs is recorded too; if
-it stays the human, the grants stay and the design records it.
-
-### D6. Fallback: drop and reload, per source
-If the SP's move or its first update fails for a source, its tables are
-dropped (explicit approval each time) and the SP's `run_<unit>` rebuilds them.
-SEC and Yahoo raw replay from the volume files; the other sources re-fetch.
-Dev SCD2 history of portfolio and wikipedia would restart; prd is untouched.
-
-### D7. Draft PRs for the dev check
+### D5. Draft PRs for the dev check
 CONTRIBUTING step 4: push the implementation branch, open the PR as a draft,
 `deploy-dev` deploys as the SP, run the unit with `run_dev.py`, mark the PR
 ready once verified. CLAUDE.md: the rule moves into Guardrails; "Operational
@@ -112,12 +101,12 @@ replaces the list of human copies that own dev tables.
 
 ## Risks / Trade-offs
 
-- The SP's move may be refused even with grants (D5) → D6 per source.
-- A pipeline that has never run may not accept a moved table (an older note in
-  `acnc-two-pipelines` says the destination must have run; today's docs do not)
-  → if refused, start the SP pipeline once (it fails harmlessly on `already
-  managed by pipeline`), then move again.
-- The hook is a text match: a command built indirectly could slip past. It
-  targets the habit, not an adversary.
+- Older sources' human-owned dev tables (neon, clickstream silver) need the
+  same reload; neon's Lakeflow Connect ingestion re-reads Postgres.
+- The hook is a text match on a command at the start of a line or after
+  `;`, `&`, `|` or `(`: a command built indirectly could slip past. It targets
+  the habit, not an adversary.
+- The hook only loads for sessions whose project folder holds the settings
+  file; the workspace folder gets a copy outside the repo.
 - Free Edition runs one thing at a time: no dev runs while a prd deploy runs
   units.
