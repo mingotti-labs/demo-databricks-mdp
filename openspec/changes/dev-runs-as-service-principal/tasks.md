@@ -1,12 +1,12 @@
 ## 1. Guard and runner
 
-- [ ] 1.1 `cicd/block_bundle_deploy.py` (pure check plus stdin entry point, exit 2 with the steps to use) and `tests/cicd/test_block_bundle_deploy.py` (dev, no target, prd, patterns bundle by path and by working directory, validate, `jobs run-now`)
-- [ ] 1.2 `PreToolUse` hook on `Bash|PowerShell` in `.claude/settings.json`; check in a session that `databricks bundle deploy -t dev` is refused and `databricks bundle validate -t dev` runs
-- [ ] 1.3 `cicd/run_dev.py` and `tests/cicd/test_run_dev.py` (job name, parameters payload, job not found)
+- [x] 1.1 `cicd/block_bundle_deploy.py` (pure check plus stdin entry point, exit 2 with the steps to use) and `tests/cicd/test_block_bundle_deploy.py` (dev, no target, prd, patterns bundle by path and by working directory, validate, `jobs run-now`)
+- [x] 1.2 `PreToolUse` hook on `Bash|PowerShell` in `.claude/settings.json`; check in a session that `databricks bundle deploy -t dev` is refused and `databricks bundle validate -t dev` runs (also in the workspace folder's `.claude/settings.json`, outside the repo, since sessions start there; a first version also refused text that only mentioned the command, fixed to match a command only)
+- [x] 1.3 `cicd/run_dev.py` and `tests/cicd/test_run_dev.py` (job name, parameters payload, job not found)
 
 ## 2. Move job
 
-- [ ] 2.1 `migrations/move_dev_tables.py` (D4) and the `move_dev_tables` job in the `dev` target of `cicd/databricks/free.yml` and `standard.yml`; regenerate (`uv run python cicd/apply_edition.py`); `databricks bundle validate -t dev` and `-t prd` (no job in prd)
+- [x] 2.1 `migrations/move_dev_tables.py` (D4) and the `move_dev_tables` job in the `dev` target of `cicd/databricks/free.yml` and `standard.yml`; regenerate (`uv run python cicd/apply_edition.py`); `databricks bundle validate -t dev` and `-t prd` (no job in prd)
 - [ ] 2.2 Push, open the implementation PR as a draft; wait for `deploy-dev`; confirm the SP's dev copies of `move_dev_tables` and the four units exist
 
 ## 3. Pilot: yahoo bronze (no other run in flight)

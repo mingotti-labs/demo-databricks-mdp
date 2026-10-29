@@ -89,3 +89,9 @@ source pipeline, an SP destination, an Auto Loader table, a plain table.
   the SP move them to its own pipeline, and does the table owner become the SP
   when the SP's pipeline runs? Fallback: drop and reload (SEC and Yahoo raw
   replay from the volume files).
+
+## Pilot: real dev Yahoo bronze
+
+- The user deleted `[dev handsonessential] bronze--yahoo--dev` (`00bac0f4`):
+  all 8 tables stay, owned by the human, `pipeline_id` still `00bac0f4` (the
+  pipeline itself: `not found`).

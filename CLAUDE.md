@@ -715,27 +715,31 @@ the decision record behind what's built.
   a future paid tier that may lift it via classic clusters or a larger
   serverless budget — not yet verified, since neither is built.
 - **The CI/CD SP's `[dev svc_cicd_github] ...`-prefixed pipeline/job copies
-  are the canonical, durable dev data going forward — the
-  `[dev handsonessential] ...` (or whichever human deploys locally) copies are
-  disposable personal-iteration artifacts.** Confirmed the hard way: an
-  earlier cleanup deleted the human-identity dev copy of
-  `neon_ecommerce_ingestion`, which (per Databricks' default pipeline-delete
-  behavior) dropped `bronze_neon.*_raw` along with it — the Neon Postgres
-  source itself was untouched, but the ingested-into-Databricks copy had to be
-  rebuilt from scratch. **Not every human copy is disposable**: check what it
-  owns first (`databricks tables list <catalog> <schema>` shows each table's
-  `pipeline_id`). A human copy that owns no tables is safe to delete; one that
-  owns tables is not until ownership has moved to the SP copy (NAMING.md,
-  "Removing a pipeline"). As of 2026-10-21 four human copies still own live dev
-  tables because neon and clickstream's silver landing were last run from a
-  local deploy: `bronze--neon--scd--python`, `bronze--neon--scd--sql`,
-  `silver--landing--neon`, `silver--landing--clickstream` (15 tables). To
-  run something as the SP without local M2M credentials, just trigger the
-  SP-owned resource's ID directly (`databricks pipelines start-update
-  <pipeline_id>` / `databricks jobs run-now <job_id>`) — execution identity is
-  a property of the resource, not the caller. See
+  hold the dev data; a `[dev handsonessential] ...` copy (from a local
+  deploy, now refused by the hook) must not own tables.** Run anything as the
+  SP by triggering the SP-owned resource's id (`cicd/run_dev.py`, `databricks
+  jobs run-now <job_id>`, `databricks pipelines start-update <pipeline_id>`):
+  execution identity is a property of the resource, not the caller. See
   `demo-databricks-iac`'s CLAUDE.md ("CI/CD service principal pipeline
-  execution") for the grants this needed to actually work.
+  execution") for the grants this needed.
+  - **Moving a human copy's tables to the SP without a reload**
+    (`dev-runs-as-service-principal`, probe in
+    `references/poc/pipeline-ownership/`): the move needs one identity owning
+    and running both pipelines, and a pipeline's owner cannot change on Free
+    Edition (`Only metastore admins can change pipeline owner`). So: the user
+    deletes the human pipeline (a regular pipeline's tables stay, pointing at
+    the deleted id; seen five times), the SP is granted rights on the tables,
+    and the dev-only `move_dev_tables` job (runs as the SP, by id) attaches
+    them to the SP's pipeline. The Auto Loader checkpoint moves with the
+    table. A pipeline table's owner cannot be changed with `OWNER TO`; it
+    follows the pipeline's run-as.
+  - An earlier note said deleting the human `neon_ecommerce_ingestion` copy
+    dropped `bronze_neon.*_raw`; that was a Lakeflow Connect ingestion
+    pipeline. Regular pipelines kept their tables in every test since.
+  - Human copies that still own dev tables: `bronze--neon--scd--python`,
+    `bronze--neon--scd--sql`, `silver--landing--neon`,
+    `silver--landing--clickstream` (15 tables, as of 2026-10-21), moved later
+    with the same procedure.
 
 ## Guardrails — never do without explicit confirmation
 
@@ -746,3 +750,4 @@ the decision record behind what's built.
 - No hardcoded secrets or connection strings — always `dbutils.secrets.get()`
 - No destructive DDL (`DROP TABLE`, `TRUNCATE`, `DELETE`) without explicit user approval
 - No direct writes to `mdp_prd` catalog from ad-hoc notebooks
+- No local `databricks bundle deploy|run|destroy` of the main bundle, in any target — dev runs go through the PR's `deploy-dev` and `cicd/run_dev.py` (CONTRIBUTING step 4); a `PreToolUse` hook (`cicd/block_bundle_deploy.py`) refuses it. The patterns bundle (`references/patterns/`) is the exception
