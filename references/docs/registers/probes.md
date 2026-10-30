@@ -115,3 +115,11 @@ Change `single-silver-landing-schema` (2026-10-30). Record: its `design.md` "Pro
 | Probe | Question | Result |
 |---|---|---|
 | P1 | Does a deployed pipeline accept a new default `schema:` and keep working? | Pass: `pipelines update` accepted it, the next update completed, the qualified-name table stayed with the same pipeline. |
+
+## RBA rates
+
+Change `rba-rates` (2026-10-31). Record: its `design.md` "Probes"; scripts in `references/poc/rba-rates/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Can serverless download RBA tables F11.1, F1, F2 and F5, and does the parser read them? | Pass: HTTP 200 for all four; 18,938, 46,902, 16,298 and 7,824 rows; first dates and the named series as expected. |

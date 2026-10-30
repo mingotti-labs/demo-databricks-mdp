@@ -96,6 +96,13 @@ owner-occupier) present. Fail (a block from the RBA's network): stop
 and bring it to the user. Scripts and result in `references/poc/rba-rates/`,
 row in `references/docs/registers/probes.md`.
 
+**P1 result (2026-10-31): pass.** `references/poc/rba-rates/p1_download.py`
+on serverless: HTTP 200 for all four files and the parser read them: F11.1
+18,938 rows (21 series; AED and ZAR were discontinued in 2024 and have no
+values since 2023), F1 46,902 (17), F2 16,298 (5), F5 7,824 (30). First dates
+and the four named series as expected. A first run therefore writes 89,962
+rows. Output in `p1_result.txt`.
+
 ## Risks / Trade-offs
 
 - [The RBA changes the file layout] -> The parser fails on a missing

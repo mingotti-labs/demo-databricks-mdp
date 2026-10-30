@@ -14,7 +14,8 @@ TABLES = {
 }
 LOOKBACK_DAYS = 31
 MONTHS = {
-    m: i for i, m in enumerate("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(), 1)
+    m: i
+    for i, m in enumerate("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(), 1)
 }
 HEADER_ROWS = {
     "Title": "title",

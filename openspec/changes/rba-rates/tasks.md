@@ -1,16 +1,16 @@
 ## 1. Probe
 
-- [ ] 1.1 iac `raw-volume-rba` applied: `bronze_rba.s3_raw` exists in
+- [x] 1.1 iac `raw-volume-rba` applied: `bronze_rba.s3_raw` exists in
       `mdp_dev` and `mdp_prd`
-- [ ] 1.2 `src/common/rba_tables.py`: parse a file into long rows (header
+- [x] 1.2 `src/common/rba_tables.py`: parse a file into long rows (header
       rows, byte order mark, empty cells skipped); unit tests on a trimmed copy
       of each file in `tests/`
-- [ ] 1.3 Probe P1 from serverless (design.md); scripts and result in
+- [x] 1.3 Probe P1 from serverless (design.md); scripts and result in
       `references/poc/rba-rates/`, row in the probes register
 
 ## 2. Fetch
 
-- [ ] 2.1 `rba_tables.py`: rows from a cut-off date (31 days before the last
+- [x] 2.1 `rba_tables.py`: rows from a cut-off date (31 days before the last
       stored date), unit tested
 - [ ] 2.2 `src/common/fetch_rba.py` notebook: last stored date per table,
       `reload`, one dated JSON Lines file per table into `bronze_rba.s3_raw`

@@ -1,0 +1,9 @@
+SUCCESS https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/210061078908811/run/741897379890328
+F11.1 f11.1-data.csv HTTP 200 143091 bytes
+  18938 rows 21 series; first date 03-Jan-2023 (expected 03-Jan-2023); FXRUSD present: True
+F1 f1-data.csv HTTP 200 308712 bytes
+  46902 rows 17 series; first date 04-Jan-2011 (expected 04-Jan-2011); FIRMMCRTD present: True
+F2 f2-data.csv HTTP 200 201855 bytes
+  16298 rows 5 series; first date 20-May-2013 (expected 20-May-2013); FCMYGBAG10D present: True
+F5 f5-data.csv HTTP 200 73344 bytes
+  7824 rows 30 series; first date 31-Jan-1959 (expected 31-Jan-1959); FILRHLBVS present: True
