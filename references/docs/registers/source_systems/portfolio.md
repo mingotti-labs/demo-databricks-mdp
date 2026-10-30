@@ -11,7 +11,7 @@ of it lives in one source (`portfolio`) as CSV files in the
 - Files: `concept_mapping`, `predecessor_ciks`, `settings`, `risk_levels`,
   `target_mix` (columns and keys in `data/portfolio/README.md`).
 - Raw is text as the file shows it; SCD2 in `bronze_portfolio_publish` keeps the
-  dated history of every change; Silver Landing in `silver_landing_portfolio`.
+  dated history of every change; Silver Landing in `silver_landing.portfolio__*`.
 - Real purchases are not committed. They will be dropped into prd's volume
   (story step 11) and are never overwritten by the copy step, which only copies
   the committed files.

@@ -49,11 +49,11 @@
 
 ## 4. Docs
 
-- [ ] 4.1 NAMING.md (schema table, Landing table names),
+- [x] 4.1 NAMING.md (schema table, Landing table names),
       `references/docs/medallion/silver.md`, `references/docs/registers/`
       (design-patterns, data-sources, source_systems), normalised-spec README
       and schema.json, `silver-normalised-propose` skill and template
-- [ ] 4.2 CLAUDE.md: Landing names in "Sources"; "Operational notes" gets the
+- [x] 4.2 CLAUDE.md: Landing names in "Sources"; "Operational notes" gets the
       table quota (500 per metastore, 2 slots per streaming table or
       materialized view, orphaned twins after drops) and the schema quota (50
       per catalog, count lags after a drop)
@@ -62,6 +62,10 @@
 
 - [ ] 5.1 User deletes the empty human dev geonames pipelines `d5259087`
       (bronze) and `50dcfbf4` (silver); drop any orphaned twins they leave
+- [ ] 5.2 User deletes the seven human dev silver pipelines still pointing at
+      the old schemas (found 2026-10-30): `01125ee3` acnc, `058c25a6` ungm,
+      `182fad45` airroi, `56313b36` iso, `92ede464` nsw_spatial, `c367686f`
+      clickstream, `e20c0f21` neon; needed before iac drops the old schemas
 
 ## 6. prd
 

@@ -22,7 +22,7 @@ against; do not restate them in your output, cite them.
 
 ### 0. Check the precondition
 
-Every `silver_landing_{source}` table must have an `ingested_timestamp`
+Every `silver_landing.{source}__*` table must have an `ingested_timestamp`
 column. If any lacks it, the source needs a bronze retrofit before
 profiling: either its own change first, or as the first task group of this
 source's change, closing with the same verification either way (README,

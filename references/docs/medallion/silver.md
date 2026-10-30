@@ -61,7 +61,7 @@ Choice depends on whether the Bronze Publish source is append-only:
   adds provenance metadata.
 
 ### Naming Conventions
-- schema: `silver_landing_{source_system}`
+- schema: `silver_landing` (one for every source), table `{source_system}__{entity}`
 - tables or models: `{datasource}` - the entity's logical name only, e.g.
   `customers`, never the Bronze Publish object's SCD-suffixed name (e.g.
   not `customers_scd2`), regardless of which SCD variant precedence
@@ -95,7 +95,7 @@ Choice depends on whether the Bronze Publish source is append-only:
 
 ### Orchestration
 A source has one silver pipeline, `silver--{source}--${bundle.target}`,
-holding its Silver Landing datasets (published to `silver_landing_{source}`)
+holding its Silver Landing datasets (published to `silver_landing.{source}__*`)
 and, once the source is normalised, its Silver Normalised datasets
 (published to `silver_normalised_{source}`) by qualified name. The
 pipeline's own dependency graph orders Normalised after Landing, so
@@ -144,7 +144,7 @@ authoritative, and nothing in this layer is.
 | Authoritative dataset | A trusted list that values are matched to; never produced by this layer | ISO 3166 country codes |
 
 ### Characteristics
-- Source-aligned: reads only `silver_landing_{source}`; no cross-source joins
+- Source-aligned: reads only `silver_landing.{source}__*`; no cross-source joins
 - Structural change, not semantic change: values are never corrected or mapped
 - Deterministic: the same Landing input always gives the same rows
 - Natural keys only; surrogate keys deferred beyond this layer (Domain or later)

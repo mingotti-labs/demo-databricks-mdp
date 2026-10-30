@@ -27,7 +27,7 @@ acnc, column names illustrative until profiled:
 source_system: acnc
 base_entities:
   charity_register:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     natural_key: [abn]
     history: scd2
     columns: [charity_legal_name, charity_size, date_established]
@@ -36,12 +36,12 @@ base_entities:
       address_state: state
 bridge_entities:
   charity_register_operating_country:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     parent: charity_register
     explode: {column: operating_countries, split: ";"}
     extracted: country
   charity_register_beneficiary:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     parent: charity_register
     unpivot: {columns_like: "beneficiary_%", keep_when: "Y"}
     extracted: beneficiary_type
@@ -56,9 +56,9 @@ ignored_columns: []
 
 | Attribute | Required | Meaning |
 | --- | --- | --- |
-| `source_system` | yes | Suffix of the `silver_landing_{source}` schema the spec reads from; also the `silver_normalised_{source}` schema it writes to |
+| `source_system` | yes | Source whose `silver_landing.{source}__*` tables the spec reads; also the `silver_normalised_{source}` schema it writes to |
 | `base_entities` | yes | Base entities, keyed by table name; each keeps its Landing table's name |
-| `base_entities.{name}.from` | yes | Landing table, as `silver_landing_{source}.{table}` |
+| `base_entities.{name}.from` | yes | Landing table, as `silver_landing.{source}__{entity}` |
 | `base_entities.{name}.natural_key` | yes | Natural key columns, placed first (N1) |
 | `base_entities.{name}.history` | no | `scd2` keeps `scd_valid_from_timestamp`, `scd_valid_to_timestamp` and `is_current` (N6); omit for none |
 | `base_entities.{name}.columns` | yes | Attributes kept on the entity; every one must exist in the Landing table |
@@ -133,7 +133,7 @@ parent entity.
 The pipeline refuses to start, and the unit tests fail, when a spec breaks
 a rule the schema cannot express (`src/common/normalised_spec.py`):
 
-- every `from` is in `silver_landing_{source_system}`
+- every `from` is a `silver_landing.{source_system}__*` table
 - entity names are unique across blocks; none is `value_lineage` or ends
   in `_quarantine`
 - a bridge's `parent` is a base entity with the same `from`

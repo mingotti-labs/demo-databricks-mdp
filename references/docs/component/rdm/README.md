@@ -23,7 +23,7 @@ into Silver Domain.
 
 | Use case | When | Example | Authoritative dataset |
 | --- | --- | --- | --- |
-| Match | An external standard exists | `country` → ISO 3166 | Already landed: `silver_landing_iso.*`, `silver_landing_geonames.*` |
+| Match | An external standard exists | `country` → ISO 3166 | Already landed: `silver_landing.iso__*`, `silver_landing.geonames__*` |
 | Curate, then match | No external standard exists | `order_status` from sources A and B | Created in rdm: a steward, with gen AI suggesting clusters, builds the list from the union of source entities (e.g. `SHIPPED` covering A's `SHIPPED`/`Shipped` and B's `dispatched`); it is then owned in rdm and matched as in the first case |
 
 ## What rdm writes: `rdm.crosswalk`

@@ -27,7 +27,7 @@ richer variant if it exists; fall back only when it doesn't. See
   - the SCD1 tables of customers and products and the SQL twins moved to the
     patterns bundle
 - **Consumed by Silver Landing**: yes — `customers_scd2`, `products_scd2`,
-  `orders_scd1`, `order_items_scd1` (all Python variants) → `silver_landing_neon`
+  `orders_scd1`, `order_items_scd1` (all Python variants) → `silver_landing.neon__*`
 
 ### clickstream
 - **What it is**: Synthetic web clickstream events, file-drop via UC Volume
@@ -36,7 +36,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_clickstream_publish`): `web_events_scd1` (the SQL twin
   moved to the patterns bundle)
 - **Consumed by Silver Landing**: yes — `web_events_scd1` (Python) →
-  `silver_landing_clickstream`
+  `silver_landing.clickstream__web_events`
 
 ### ungm
 - **What it is**: UNGM UNSPSC classification, public REST API
@@ -44,7 +44,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze raw**: `bronze_ungm.unspsc_public_raw`
 - **Bronze Publish** (`bronze_ungm_publish`): `unspsc_public_scd2`
 - **Consumed by Silver Landing**: yes — `unspsc_public_scd2` →
-  `silver_landing_ungm`
+  `silver_landing.ungm__unspsc_public`
 
 ### acnc
 - **What it is**: ACNC Charity Register, data.gov.au CKAN Data API
@@ -53,7 +53,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_acnc_publish`): `charity_register_scd2` (`charity_register_valid` is a private
   pipeline-scoped intermediate, not published)
 - **Consumed by Silver Landing**: yes — `charity_register_scd2` →
-  `silver_landing_acnc`
+  `silver_landing.acnc__charity_register`
 - **Consumed by Silver Normalised**: yes — `silver_normalised_acnc` (spec
   `src/layers/silver/normalised/specs/acnc.yml`; base `charity_register`,
   4 bridges, 10 extracted entities, no address hierarchy)
@@ -65,7 +65,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze raw**: `bronze_nsw_spatial.property_raw`
 - **Bronze Publish** (`bronze_nsw_spatial_publish`): `property_scd2`
 - **Consumed by Silver Landing**: yes — `property_scd2` →
-  `silver_landing_nsw_spatial`
+  `silver_landing.nsw_spatial__property`
 
 ### airroi
 - **What it is**: AirROI short-term rental market intelligence API (4 real
@@ -74,7 +74,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze raw**: `bronze_airroi.{market_metrics_all,market_summary}_raw`
 - **Bronze Publish** (`bronze_airroi_publish`): `market_metrics_all_scd2`,
   `market_summary_scd2` (no SCD1 variant exists for either)
-- **Consumed by Silver Landing**: yes — both → `silver_landing_airroi`
+- **Consumed by Silver Landing**: yes — both → `silver_landing.airroi__*`
 - **Consumed by Silver Normalised**: yes — `silver_normalised_airroi` (spec
   `src/layers/silver/normalised/specs/airroi.yml`), rebuilt by the `normalised`
   task of `run_airroi`
@@ -90,7 +90,7 @@ richer variant if it exists; fall back only when it doesn't. See
   `subdivision_codes_deduped` is a private pipeline-scoped intermediate,
   not published)
 - **Consumed by Silver Landing**: yes — `country_codes_scd2`/
-  `subdivision_codes_scd2` → `silver_landing_iso` (`country_codes`,
+  `subdivision_codes_scd2` → `silver_landing.iso__*` (`country_codes`,
   `subdivision_codes`)
 
 ### geonames
@@ -102,7 +102,7 @@ richer variant if it exists; fall back only when it doesn't. See
   `{country_info,admin1_codes,admin2_codes,cities}_scd2` (no SCD1 variant
   for any table; all four keys confirmed unique, no quarantine needed)
 - **Consumed by Silver Landing**: yes — all four `_scd2` objects →
-  `silver_landing_geonames` (`country_info`, `admin1_codes`,
+  `silver_landing.geonames__*` (`country_info`, `admin1_codes`,
   `admin2_codes`, `cities`)
 
 ### wikipedia
@@ -112,7 +112,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze raw**: `bronze_wikipedia.sp500_constituents_raw`
 - **Bronze Publish** (`bronze_wikipedia_publish`): `sp500_constituents_scd2`
   keyed by `symbol`; its versions are the index membership history
-- **Consumed by Silver Landing**: yes, `silver_landing_wikipedia.sp500_constituents`
+- **Consumed by Silver Landing**: yes, `silver_landing.wikipedia__sp500_constituents`
 
 ### portfolio
 - **What it is**: company-owned data of the dividend portfolio story: curated
@@ -121,7 +121,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Design patterns**: [`bronze_volume_csv_materialized_view_python`](design-patterns.md#bronze_volume_csv_materialized_view_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw**: `bronze_portfolio.{concept_mapping,predecessor_ciks,settings,risk_levels,target_mix,benchmarks}_raw`
 - **Bronze Publish** (`bronze_portfolio_publish`): the same six as `_scd2`
-- **Consumed by Silver Landing**: yes, `silver_landing_portfolio` (six tables)
+- **Consumed by Silver Landing**: yes, `silver_landing.portfolio__*` (six tables)
 
 ### sec
 - **What it is**: SEC EDGAR's ticker list and XBRL company facts (public domain)
@@ -134,8 +134,8 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_sec_publish`): `company_tickers_scd2` keyed by
   `cik`, `ticker`; `company_facts_scd2` keyed by `cik`, `taxonomy`, `concept`,
   `unit`, `accn`, `start`, `end`
-- **Consumed by Silver Landing**: yes, `silver_landing_sec.company_tickers` and
-  `silver_landing_sec.company_facts`
+- **Consumed by Silver Landing**: yes, `silver_landing.sec__company_tickers` and
+  `silver_landing.sec__company_facts`
 
 ### yahoo
 - **What it is**: Yahoo Finance (via `yfinance`, unofficial) daily prices,
@@ -149,4 +149,4 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_yahoo_publish`): `prices_scd1` keyed by `symbol`,
   `date`; `events_scd1` by `symbol`, `date`, `event_type`; `options_scd1` by
   `symbol`; `calendar_scd2` by `symbol` (history of announced pay dates)
-- **Consumed by Silver Landing**: yes, `silver_landing_yahoo` (four tables)
+- **Consumed by Silver Landing**: yes, `silver_landing.yahoo__*` (four tables)
