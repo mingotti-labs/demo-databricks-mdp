@@ -137,6 +137,18 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Consumed by Silver Landing**: yes, `silver_landing.sec__company_tickers` and
   `silver_landing.sec__company_facts`
 
+### rba
+- **What it is**: Reserve Bank of Australia statistical tables F11.1 (exchange
+  rates), F1 (money market rates incl. the cash rate target), F2 (government
+  bond yields) and F5 (indicator lending rates), free CSV files, the rates of
+  the dividend portfolio story
+- **Design patterns**: [`bronze_volume_append_autoloader_python`](design-patterns.md#bronze_volume_append_autoloader_python), [`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Bronze raw** (append-only, replayable from `bronze_rba.s3_raw`):
+  `bronze_rba.observations_raw`, one row per series and date for all four tables
+- **Bronze Publish** (`bronze_rba_publish`): `observations_scd1` keyed by
+  `series_id`, `observation_date`
+- **Consumed by Silver Landing**: yes, `silver_landing.rba__observations`
+
 ### yahoo
 - **What it is**: Yahoo Finance (via `yfinance`, unofficial) daily prices,
   dividends and splits, next pay dates and options activity for every symbol

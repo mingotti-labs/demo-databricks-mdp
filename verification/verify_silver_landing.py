@@ -186,6 +186,13 @@ ENTITIES = [
         "scd2": True,
     },
     {
+        "source": "rba",
+        "table": "observations",
+        "bronze_schema": "bronze_rba_publish",
+        "bronze_table": "observations_scd1",
+        "scd2": False,
+    },
+    {
         "source": "geonames",
         "table": "country_info",
         "bronze_schema": "bronze_geonames_publish",
@@ -221,7 +228,17 @@ if source:
 # Sources whose Bronze Publish SCD2 objects carry ingested_timestamp
 # (stamped at their own _raw layer) -- Silver Landing propagates it
 # unchanged, never stamps or overwrites it.
-SOURCES_WITH_INGESTED_TIMESTAMP = {"airroi", "iso", "geonames", "acnc", "wikipedia", "portfolio", "sec", "yahoo"}
+SOURCES_WITH_INGESTED_TIMESTAMP = {
+    "airroi",
+    "iso",
+    "geonames",
+    "acnc",
+    "wikipedia",
+    "portfolio",
+    "sec",
+    "yahoo",
+    "rba",
+}
 
 
 def count(fqn: str, where: str = "1=1") -> int:

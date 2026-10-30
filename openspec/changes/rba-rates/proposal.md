@@ -31,7 +31,7 @@ serverless.
     or the job parameter `reload=true`, writes every row.
   - **Bronze raw**: one append-only Auto Loader streaming table
     `bronze_rba.observations_raw` (pattern `bronze_volume_append_autoloader_python`).
-  - **Bronze Publish**: `bronze_rba_publish.observations` as SCD1 keyed by
+  - **Bronze Publish**: `bronze_rba_publish.observations_scd1` as SCD1 keyed by
     `series_id` and `observation_date`, streaming Auto CDC from raw (pattern
     `bronze_publish_scd1_autocdc_stream_python`, as Yahoo).
   - **Silver Landing**: `silver_landing.rba__observations` via `land_changes`.

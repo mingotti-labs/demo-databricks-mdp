@@ -641,6 +641,17 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   Bronze Publish by streaming Auto CDC (`prices_scd1`, `events_scd1`,
   `options_scd1`, `calendar_scd2`). Yahoo's option open interest is 0
   everywhere, so options volume is kept too.
+- **RBA** (`rba-rates`, dividend portfolio story) -- exchange rates (F11.1),
+  money market rates with the cash rate target (F1), government bond yields (F2)
+  and indicator lending rates incl. mortgages (F5), free CSV files from
+  `rba_tables_url` (the folder returns 403; the files are fine). All four share
+  one long table (one row per `series_id` and `observation_date`, told apart by
+  `table_id`) to save table-quota slots. `run_rba`'s first task
+  (`src/common/fetch_rba.py`) downloads and parses every file before writing any;
+  after the first run it writes only the 31 days before each table's last stored
+  date (late-filled cells, revisions); `reload=true` writes everything. Append-only
+  raw as SEC; Bronze Publish `observations_scd1`; Landing `silver_landing.rba__observations`
+  with `observation_date` and `publication_date` converted to dates.
 
 ## Development style
 

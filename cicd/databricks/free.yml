@@ -62,6 +62,9 @@ variables:
   wikipedia_sp500_url:
     description: URL of Wikipedia's "List of S&P 500 companies" page -- same for every target, no test/prod split exists for this source.
     default: https://en.wikipedia.org/wiki/List_of_S%26P_500_companies
+  rba_tables_url:
+    description: Base URL of the RBA's statistical table CSV files (f11.1-data.csv, ...) -- same for every target, no test/prod split exists for this source.
+    default: https://www.rba.gov.au/statistics/tables/csv
   http_user_agent:
     description: User-Agent contact string sent to public sites that ask for one (Wikipedia, later SEC).
     default: mdp handsonessential@gmail.com

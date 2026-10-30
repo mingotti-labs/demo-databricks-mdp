@@ -56,7 +56,9 @@ per RBA table (series as columns), which breaks when the RBA adds a series.
 not data, so Auto Loader cannot read the CSV as it is. The fetch parses it in
 `src/common/rba_tables.py` (pure functions, unit tested) and writes one file
 per table per run to
-`/Volumes/<catalog>/bronze_rba/s3_raw/observations/landing/<table_id>/<UTC stamp>.jsonl`.
+`/Volumes/<catalog>/bronze_rba/s3_raw/observations/landing/<date>/observations_<table_id>_<UTC stamp>.jsonl`
+(a dated folder, as Yahoo). All four files are downloaded and parsed before any
+is written, so a bad file leaves nothing behind.
 Values stay text as the RBA wrote them, including the date (`03-Jan-2023`).
 `ingested_timestamp` is the fetch time, written into every row (one value per
 file), as SEC and Yahoo.
@@ -74,7 +76,14 @@ or `reload=true` writes every row. Rejected: writing the whole file each run
 History of revisions stays in raw. Same pattern as Yahoo's prices.
 
 **D5. Silver Landing `silver_landing.rba__observations`** through
-`land_changes`, keyed by `series_id` and `observation_date`.
+`land_changes`, keyed by `series_id` and `observation_date`. Landing turns
+`observation_date` and `publication_date` into dates (user, 2026-10-31, before
+merge); `value` and the rest stay text, as other sources' Landing tables keep
+Bronze's types. The conversion is `to_date(col, 'dd-MMM-yyyy')`, which under
+ANSI fails the update on a value that does not read as a date, and the
+"Natural key" column comment is re-applied after it. Dev's first Landing table
+had text dates, so it was rebuilt once with a full refresh of the silver
+pipeline (Landing is derived from Publish's change feed).
 
 **D6. Table list in code.** `rba_tables.py` holds
 `TABLES = {"F11.1": "f11.1-data.csv", "F1": "f1-data.csv", "F2": "f2-data.csv",
@@ -95,6 +104,41 @@ for all four, 23, 17, 5 and 30 series, the first dates `03-Jan-2023`,
 owner-occupier) present. Fail (a block from the RBA's network): stop
 and bring it to the user. Scripts and result in `references/poc/rba-rates/`,
 row in `references/docs/registers/probes.md`.
+
+**P1 result (2026-10-31): pass.** `references/poc/rba-rates/p1_download.py`
+on serverless: HTTP 200 for all four files and the parser read them: F11.1
+18,938 rows (21 series; AED and ZAR were discontinued in 2024 and have no
+values since 2023), F1 46,902 (17), F2 16,298 (5), F5 7,824 (30). First dates
+and the four named series as expected. A first run therefore writes 89,962
+rows. Output in `p1_result.txt`.
+
+## Dev results (2026-10-31)
+
+`run_rba` as the service principal with `verify=true` (draft PR #123). The
+table quota read 458/500 before the run.
+
+- First run: success, both checks passed. `observations_raw`, Publish
+  `observations_scd1` and Landing `silver_landing.rba__observations` each hold
+  89,962 rows, 73 series, 4 tables, the same count as probe P1. `FXRUSD`
+  (0.7040 on 30-Oct-2026), `FCMYGBAG10D` (5.208 on 28-Oct-2026) and `FILRHLBVS`
+  (8.77 on 30-Sep-2026) are in Landing. `FIRMMCRTD`, the cash rate target, has
+  no value on 30-Oct (F1's latest dates are still empty); its latest is 4.60
+  on 29-Oct-2026.
+- Second run: success, both checks passed. It wrote 845 rows (F1 228, F11.1 483,
+  F2 110, F5 24), each table from about 31 days before its last stored date
+  (29-Sep, 29-Sep, 28-Sep, 31-Aug). Raw grew to 90,807; Publish and Landing
+  stayed at 89,962, as no new dates arrived and no value changed.
+- Dates in Landing (user request before merge): `observation_date` and
+  `publication_date` are DATE in `silver_landing.rba__observations`. Dev's
+  Landing table had text dates, so the silver pipeline got one full refresh;
+  it came back with 89,962 rows, 1959-01-31 to 2026-10-30, publication dates
+  2026-10-08 and 2026-10-30, and `observation_date >= DATE'2026-10-28'` works.
+  A third run of `run_rba` with `verify=true` succeeded. prd needs no refresh:
+  its table is created with DATE columns on the first run.
+- `reload=true` was not run in dev: it writes the same 89,962 rows again,
+  which the first run already shows.
+- The base address `.../csv` returns 403 in a browser (the server does not list
+  its folder); every file under it returns 200.
 
 ## Risks / Trade-offs
 
