@@ -37,10 +37,13 @@ def compare(catalog: str, source: str, entity: str) -> str:
     old = f"{catalog}.silver_landing_{source}.{entity}"
     new = f"{catalog}.silver_landing.{source}__{entity}"
 
+    # Rows as JSON: set operations refuse MAP columns (airroi's metrics).
+    row = "to_json(struct(* EXCEPT(transformed_timestamp)))"
+
     def only(a: str, b: str) -> str:
         return (
-            f"(SELECT count(*) FROM (SELECT * EXCEPT(transformed_timestamp) FROM {a} "
-            f"EXCEPT ALL SELECT * EXCEPT(transformed_timestamp) FROM {b}))"
+            f"(SELECT count(*) FROM (SELECT {row} FROM {a} "
+            f"EXCEPT ALL SELECT {row} FROM {b}))"
         )
 
     return (

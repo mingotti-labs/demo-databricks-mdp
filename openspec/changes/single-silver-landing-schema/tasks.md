@@ -33,19 +33,20 @@
 
 ## 3. Dev (as the service principal)
 
-- [ ] 3.1 Draft PR; `deploy-dev` succeeds
-- [ ] 3.2 Per source, one at a time: run the unit with `cicd/run_dev.py
+- [x] 3.1 Draft PR; `deploy-dev` succeeds
+- [x] 3.2 Per source, one at a time: run the unit with `cicd/run_dev.py
       <unit> --param verify=true` (airroi: `pipelines start-update` on its
       silver pipeline only, no paid fetch; neon, clickstream: by hand);
       `verify_silver_landing` passes on the new tables
-- [ ] 3.3 acnc and airroi: Silver Normalised verifies, and the run after the
+- [x] 3.3 acnc and airroi: Silver Normalised verifies, and the run after the
       rebuild restamps 0 Normalised rows (D7)
-- [ ] 3.4 Design-pattern tags: each new table carries its pattern, no source
+- [x] 3.4 Design-pattern tags: each new table carries its pattern, no source
       tagged another's tables
-- [ ] 3.5 User approves; drop the 25 old dev Landing tables and their
-      `__materialization_mat_*` twins, and probe P1's scratch pipeline
-      `c1fe1449` and `pattern_bronze.zz_p1_default_schema`; table quota back
-      near 388
+- [x] 3.5 User approves; drop the 25 old dev Landing tables and their
+      `__materialization_mat_*` twins; table quota back near 388
+- [ ] 3.6 With approval: drop probe P1's scratch pipeline `c1fe1449`,
+      `pattern_bronze.zz_p1_default_schema` (and twin) and
+      `pattern_bronze_publish.event_log_c1fe1449_...`
 
 ## 4. Docs
 
