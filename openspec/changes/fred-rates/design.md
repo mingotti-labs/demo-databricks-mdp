@@ -15,10 +15,26 @@ scope, 2026-10-31:
   `units` (Percent) and `frequency` (Daily).
 - An unknown series returns HTTP 400 with an `error_message` in JSON.
 
+Probe P1b (`p1b_result.txt`, same day) separates the two rates people call "the
+US rate". On 2026-10-30:
+
+| Series | What it is | Latest |
+|---|---|---|
+| `DGS10` | market yield on 10-year Treasuries; set by trading | 4.98 (2026-10-29) |
+| `DFF` | effective federal funds rate (banks' overnight lending) | 3.88 (2026-10-29) |
+| `DFEDTARU` / `DFEDTARL` | the Fed's target range, upper / lower | 4 / 3.75 (2026-10-30) |
+| `FEDFUNDS` | monthly average of `DFF` | 3.75 (2026-09) |
+
+The RBA cash rate target (`FIRMMCRTD`, 4.60) is the counterpart of the Fed's
+target range, not of `DGS10`. `DFF` is daily and includes weekends (7-day);
+`DFEDTARU/L` start 2008-12-16, when the Fed moved from a single target to a
+range.
+
 ## Goals / Non-Goals
 
 **Goals:**
-- Daily `DGS10`, with room to add series by naming them.
+- Daily `DGS10` and the Fed's policy rate (`DFF`, `DFEDTARU`, `DFEDTARL`), with
+  room to add series by naming them.
 - Raw files that replay without calling FRED, as RBA, SEC and Yahoo.
 
 **Non-Goals:**
@@ -48,8 +64,9 @@ The key is read with `dbutils.secrets.get` in the notebook (the CI/CD
 principal has READ on the scope); Databricks redacts a secret's value in
 notebook output as well.
 
-**D5. Series list in code**, `SERIES = ["DGS10"]` in `fred_series.py`; the base
-address is the bundle variable `fred_api_url`.
+**D5. Series list in code**, `SERIES = ["DGS10", "DFF", "DFEDTARU", "DFEDTARL"]`
+in `fred_series.py`; the base address is the bundle variable `fred_api_url`.
+`FEDFUNDS` is left out: it is the monthly average of `DFF`.
 
 **D6. Landing converts `observation_date`** with `to_date(col)` (the format is
 the default `yyyy-MM-dd`), which fails the update under ANSI on a bad value, and

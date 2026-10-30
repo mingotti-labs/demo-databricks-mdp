@@ -32,8 +32,9 @@
 
 - [ ] 4.1 Re-read the table quota; stop and ask if above 488
 - [ ] 4.2 Draft PR deploys to dev; `run_fred` as the service principal with
-      `verify=true`: first run writes every observation; `DGS10` on 2026-10-29
-      is 4.98 in `silver_landing.fred__observations`
+      `verify=true`: first run writes every observation; in
+      `silver_landing.fred__observations` `DGS10` on 2026-10-29 is 4.98 and
+      `DFEDTARU` / `DFEDTARL` on 2026-10-30 are 4 / 3.75
 - [ ] 4.3 Second run: requests only the last 31 days; Publish row count
       unchanged apart from new dates
 - [ ] 4.4 Results in design.md

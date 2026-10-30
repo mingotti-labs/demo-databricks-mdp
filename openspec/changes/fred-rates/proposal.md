@@ -1,10 +1,13 @@
 ## Why
 
 Step 8 of the dividend portfolio story (`demo-databricks-planning`): the rate
-comparison sets the shortlist's yield against the US 10-year Treasury yield as
-well as the RBA cash rate, over time. FRED (the St. Louis Fed's database)
-publishes it as series `DGS10`, daily since 1962, through a free REST API that
-needs a key. The `fred` secret scope with `api_key` and the CI/CD principal's
+comparison sets the shortlist's yield against the RBA cash rate and the US
+10-year Treasury yield, over time. FRED (the St. Louis Fed's database)
+publishes the 10-year yield as series `DGS10`, daily since 1962, through a free
+REST API that needs a key. `DGS10` is a market yield, not a policy rate: the
+like-for-like counterpart of the RBA cash rate target is the Fed's federal funds
+target range (3.75 to 4.00 on 2026-10-30), so this change also fetches that
+(probe P1b, after the user asked why the data showed 4.98 and not 4). The `fred` secret scope with `api_key` and the CI/CD principal's
 READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
 2026-10-31, before this proposal) called the API from serverless with that key.
 
@@ -15,7 +18,9 @@ READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
   - A **fetch notebook** (`src/common/fetch_fred.py`) reads the key from
     `dbutils.secrets.get("fred", "api_key")`, calls `series` (title, units,
     frequency) and `series/observations` for each series in
-    `src/common/fred_series.py` (`DGS10` today), drops the `.` values FRED
+    `src/common/fred_series.py` (`DGS10`, the 10-year yield; `DFF`, the
+    effective federal funds rate; `DFEDTARU` and `DFEDTARL`, the upper and lower
+    limit of the federal funds target range), drops the `.` values FRED
     returns for days with no data, and writes one dated JSON Lines file into
     `bronze_fred.s3_raw`.
   - **Incremental**: after the first run only observations from 31 days before
@@ -33,7 +38,8 @@ READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
   edition files and the regenerated `databricks.yml`.
 - Verification spec, Landing verification entry, design pattern register,
   CLAUDE.md "Sources", source system file.
-- Not in this change: other FRED series (add a name to the list), any
+- Not in this change: the monthly `FEDFUNDS` (a monthly average of `DFF`),
+  other FRED series (add a name to the list), any
   conversion or calculation (silver domain), Silver Normalised.
 
 ## Capabilities
@@ -52,8 +58,9 @@ READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
   pipelines, job `run_fred`, `verification/bronze_checks/fred.yml`.
 - Tables: 3 per target, all streaming tables, 12 slots of the 500-table
   quota (422 on 2026-10-31).
-- First load 16,192 rows (16,913 less 721 days FRED has no value); about 20
-  rows a run after.
+- First load about 55,000 rows (`DGS10` 16,192 after dropping 721 `.` days;
+  `DFF` daily since 1954, about 26,000; the two target limits daily since
+  2008-12-16, about 6,500 each); about 100 rows a run after.
 - Network: two GETs of `api.stlouisfed.org` per series per run. FRED allows
   120 requests a minute.
 - Adding the Landing entry to `verification/verify_silver_landing.py`, a notebook
