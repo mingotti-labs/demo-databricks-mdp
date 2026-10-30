@@ -56,7 +56,9 @@ per RBA table (series as columns), which breaks when the RBA adds a series.
 not data, so Auto Loader cannot read the CSV as it is. The fetch parses it in
 `src/common/rba_tables.py` (pure functions, unit tested) and writes one file
 per table per run to
-`/Volumes/<catalog>/bronze_rba/s3_raw/observations/landing/<table_id>/<UTC stamp>.jsonl`.
+`/Volumes/<catalog>/bronze_rba/s3_raw/observations/landing/<date>/observations_<table_id>_<UTC stamp>.jsonl`
+(a dated folder, as Yahoo). All four files are downloaded and parsed before any
+is written, so a bad file leaves nothing behind.
 Values stay text as the RBA wrote them, including the date (`03-Jan-2023`).
 `ingested_timestamp` is the fetch time, written into every row (one value per
 file), as SEC and Yahoo.

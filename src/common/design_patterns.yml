@@ -36,6 +36,11 @@ yahoo:
     bronze_yahoo: bronze_volume_append_autoloader_python
     bronze_yahoo_publish: bronze_publish_scd1_autocdc_stream_python
     silver_landing: silver_landing_change_feed_python
+rba:
+  schemas:
+    bronze_rba: bronze_volume_append_autoloader_python
+    bronze_rba_publish: bronze_publish_scd1_autocdc_stream_python
+    silver_landing: silver_landing_change_feed_python
 wikipedia:
   schemas:
     bronze_wikipedia: bronze_file_materialized_view_python

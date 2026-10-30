@@ -1,0 +1,17 @@
+resources:
+  pipelines:
+    rba_rates_ingestion:
+      name: bronze--rba--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_rba
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        rba_volume_root: /Volumes/${var.catalog}/bronze_rba/s3_raw
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/rba/**
+        - glob:
+            include: ../../src/layers/bronze/rba_publish/**

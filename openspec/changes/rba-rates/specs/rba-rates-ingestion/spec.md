@@ -61,7 +61,7 @@ without calling the RBA.
 - **THEN** `observations_raw` holds the rows of every file in the volume
 
 ### Requirement: Bronze Publish and Silver Landing
-`bronze_rba_publish.observations` SHALL hold one row per `series_id` and
+`bronze_rba_publish.observations_scd1` SHALL hold one row per `series_id` and
 `observation_date`, the value from the latest `ingested_timestamp` (SCD1).
 `silver_landing.rba__observations` SHALL land its change feed.
 
@@ -76,6 +76,6 @@ SHALL run it after a deploy that affects it.
 
 #### Scenario: Verified run
 - **WHEN** `run_rba` runs with `verify=true`
-- **THEN** the checks find `FXRUSD`, `FIRMMCRTD`, `FCMYGBAG10D` and
-  `FILRHLBVS` rows, no null keys, no duplicate `series_id` and
-  `observation_date` in Publish, and Landing rows equal to Publish
+- **THEN** the checks find no null keys and no duplicate `series_id` and
+  `observation_date` in Publish, Publish equal to the latest raw row per key,
+  and Landing rows equal to Publish
