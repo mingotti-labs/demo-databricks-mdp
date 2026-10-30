@@ -128,6 +128,13 @@ table quota read 458/500 before the run.
   F2 110, F5 24), each table from about 31 days before its last stored date
   (29-Sep, 29-Sep, 28-Sep, 31-Aug). Raw grew to 90,807; Publish and Landing
   stayed at 89,962, as no new dates arrived and no value changed.
+- Dates in Landing (user request before merge): `observation_date` and
+  `publication_date` are DATE in `silver_landing.rba__observations`. Dev's
+  Landing table had text dates, so the silver pipeline got one full refresh;
+  it came back with 89,962 rows, 1959-01-31 to 2026-10-30, publication dates
+  2026-10-08 and 2026-10-30, and `observation_date >= DATE'2026-10-28'` works.
+  A third run of `run_rba` with `verify=true` succeeded. prd needs no refresh:
+  its table is created with DATE columns on the first run.
 - `reload=true` was not run in dev: it writes the same 89,962 rows again,
   which the first run already shows.
 - The base address `.../csv` returns 403 in a browser (the server does not list
