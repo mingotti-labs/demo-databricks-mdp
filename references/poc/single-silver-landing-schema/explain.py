@@ -16,6 +16,7 @@ from compare import cli, sql
 
 TABLES = {
     "acnc.charity_register": (["ABN"], True),
+    "geonames.cities": (["geonameid"], True),
     "sec.company_facts": (["cik", "taxonomy", "concept", "unit", "accn", "start", "end"], True),
     "sec.company_tickers": (["cik", "ticker"], True),
     "yahoo.prices": (["symbol", "date"], False),

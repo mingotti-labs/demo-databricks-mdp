@@ -44,7 +44,7 @@
       tagged another's tables
 - [x] 3.5 User approves; drop the 25 old dev Landing tables and their
       `__materialization_mat_*` twins; table quota back near 388
-- [ ] 3.6 With approval: drop probe P1's scratch pipeline `c1fe1449`,
+- [x] 3.6 With approval: drop probe P1's scratch pipeline `c1fe1449`,
       `pattern_bronze.zz_p1_default_schema` (and twin) and
       `pattern_bronze_publish.event_log_c1fe1449_...`
 
@@ -61,17 +61,17 @@
 
 ## 5. User clean-up
 
-- [ ] 5.1 User deletes the empty human dev geonames pipelines `d5259087`
+- [x] 5.1 User deletes the empty human dev geonames pipelines `d5259087`
       (bronze) and `50dcfbf4` (silver); drop any orphaned twins they leave
-- [ ] 5.2 User deletes the seven human dev silver pipelines still pointing at
+- [x] 5.2 User deletes the seven human dev silver pipelines still pointing at
       the old schemas (found 2026-10-30): `01125ee3` acnc, `058c25a6` ungm,
       `182fad45` airroi, `56313b36` iso, `92ede464` nsw_spatial, `c367686f`
       clickstream, `e20c0f21` neon; needed before iac drops the old schemas
 
 ## 6. prd
 
-- [ ] 6.1 Mark the PR ready; user merges; CI runs the units in prd
-- [ ] 6.2 Check the 22 new prd tables: row counts equal the old tables
-- [ ] 6.3 User approves; drop the 22 old prd Landing tables and their twins
-- [ ] 6.4 Confirm the twelve `silver_landing_<source>` schemas are empty in
+- [x] 6.1 Mark the PR ready; user merges; CI runs the units in prd
+- [x] 6.2 Check the 22 new prd tables: row counts equal the old tables
+- [x] 6.3 User approves; drop the 22 old prd Landing tables and their twins
+- [x] 6.4 Confirm the twelve `silver_landing_<source>` schemas are empty in
       both catalogs; hand over to the iac follow-up

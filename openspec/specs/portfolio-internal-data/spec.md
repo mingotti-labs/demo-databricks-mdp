@@ -46,7 +46,7 @@ left out of the snapshot, `pipelines.reset.allowed` false, change data feed on).
   SCD2 table, and the other datasets get no new version
 
 ### Requirement: Silver Landing
-For each dataset, `silver_landing_portfolio.<dataset>` SHALL be built by the
+For each dataset, `silver_landing.portfolio__<dataset>` SHALL be built by the
 source's silver pipeline from the SCD2 change feed with `land_changes`, keyed by
 the dataset's natural key.
 

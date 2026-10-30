@@ -1,0 +1,7 @@
+table | old_only_unexplained | new_only_unexplained
+geonames.cities | 0 | 0
+sec.company_facts | 0 | 0
+yahoo.calendar | 0 | 0
+yahoo.events | 0 | 0
+yahoo.options | 0 | 0
+yahoo.prices | 0 | 0

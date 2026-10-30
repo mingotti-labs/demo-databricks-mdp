@@ -84,7 +84,7 @@ pattern (platform columns left out of the snapshot,
   are unchanged
 
 ### Requirement: Silver Landing
-`silver_landing_sec.company_tickers` and `silver_landing_sec.company_facts`
+`silver_landing.sec__company_tickers` and `silver_landing.sec__company_facts`
 SHALL be built from the SCD2 change feeds with `land_changes`, keyed by the
 same natural keys.
 

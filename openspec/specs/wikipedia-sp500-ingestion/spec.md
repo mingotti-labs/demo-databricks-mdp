@@ -45,7 +45,7 @@ version closed, and one that appears SHALL get a new version.
 - **THEN** no version is inserted or closed
 
 ### Requirement: Silver Landing
-`silver_landing_wikipedia.sp500_constituents` SHALL be built by the source's
+`silver_landing.wikipedia__sp500_constituents` SHALL be built by the source's
 silver pipeline from the SCD2 table's change feed (`land_changes`), with
 `symbol` as the natural key and the platform conventions of Silver Landing.
 
