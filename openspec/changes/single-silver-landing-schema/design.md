@@ -102,8 +102,43 @@ unit's silver pipeline creates its new Landing tables in that run.
 |---|---|---|
 | P1 | Does a deployed pipeline accept a new default `schema:` and keep working? | A scratch pipeline in dev (`pattern_bronze`), one dataset, run; change its schema to `pattern_bronze_publish` with `databricks pipelines update`, run again. Scripts and results in `references/poc/single-silver-landing-schema/`. |
 
+**P1 result (2026-10-30): pass.** Scratch pipeline `c1fe1449` (serverless,
+one materialized view `pattern_bronze.zz_p1_default_schema` by qualified name)
+ran, accepted `databricks pipelines update` with `schema:
+pattern_bronze_publish` (`spec.schema` read back as the new value), ran again
+(COMPLETED), and the table still belonged to the same pipeline. Output in
+`references/poc/single-silver-landing-schema/p1_result.txt`. The bundle deploy
+uses the same pipeline update, so D3 needs no fallback; `deploy-dev` confirms
+it for the real pipelines.
+
 The rebuild itself (row parity with bronze) is checked by
 `verify_silver_landing`, not a separate probe.
+
+## Dev results (2026-10-30)
+
+Every unit ran as the service principal (airroi, clickstream and neon with
+`run-now --only` on their silver, normalised, tag and verify tasks: no paid or
+source fetch); every run succeeded with `verify=true`. Evidence in
+`references/poc/single-silver-landing-schema/` (`compare.py`, `explain.py`,
+`drop_old.py`, `compare_dev.txt`, `drop_dev.txt`).
+
+- iso, ungm, nsw_spatial, wikipedia, portfolio, airroi, clickstream, neon:
+  new tables identical to the old ones (every column but
+  `transformed_timestamp`). geonames had no old dev tables.
+- sec, yahoo, acnc: their runs fetched new data, which only the new tables
+  received. `explain.py` found 0 rows not explained by that fetch (an old row
+  is the same key in an earlier state).
+- D7 holds: acnc's Normalised restamped 4,815 rows, exactly the Landing rows
+  the fetch changed; airroi's (no fetch) restamped 0 of 82.
+- Tags: every new table carries `design_pattern`; none tagged by another
+  source.
+- Each pipeline's `event_log_<id>` table moved with its default schema into
+  `silver_landing` (created between 2026-09-30 and 10-23, no new slots), so
+  the old schemas end up empty.
+- With the user's approval (2026-10-30: drop once the new tables are
+  consistent and nothing downstream reads the old ones), the 25 old dev tables
+  and their twins were dropped; every `silver_landing_<source>` schema in
+  `mdp_dev` is empty. No views, dashboards or Genie spaces read them.
 
 ## Risks / Trade-offs
 

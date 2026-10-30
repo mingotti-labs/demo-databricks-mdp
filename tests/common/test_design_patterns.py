@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from common.design_patterns import load_mapping, pattern_for
+from common.design_patterns import belongs_to, load_mapping, pattern_for
 
 ROOT = Path(__file__).resolve().parents[2]
 MAPPING = load_mapping(ROOT / "src/common/design_patterns.yml")
@@ -38,3 +38,9 @@ def test_override_beats_schema_default():
         pattern_for(acnc, "bronze_acnc", "charity_register_quarantine")
         == "bronze_quarantine_null_key_python"
     )
+
+
+def test_shared_schema_keeps_sources_apart():
+    assert belongs_to("nsw_spatial", "silver_landing", "nsw_spatial__property")
+    assert not belongs_to("acnc", "silver_landing", "nsw_spatial__property")
+    assert belongs_to("acnc", "bronze_acnc", "charity_register_raw")

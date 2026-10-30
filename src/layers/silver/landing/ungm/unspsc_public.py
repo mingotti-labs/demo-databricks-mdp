@@ -17,9 +17,9 @@ def unspsc_public_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_ungm.unspsc_public")
+dp.create_streaming_table(name="silver_landing.ungm__unspsc_public")
 dp.create_auto_cdc_flow(
-    target="silver_landing_ungm.unspsc_public",
+    target="silver_landing.ungm__unspsc_public",
     source="unspsc_public_changes",
     keys=["Id", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

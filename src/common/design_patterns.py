@@ -8,6 +8,12 @@ OBJECT_TYPES = {
     "MATERIALIZED_VIEW": "MATERIALIZED VIEW",
     "MANAGED": "TABLE",
 }
+SHARED_SCHEMAS = {"silver_landing"}
+
+
+def belongs_to(source, schema, table):
+    """Whether `schema.table` is `source`'s: a shared schema prefixes each table `<source>__`."""
+    return schema not in SHARED_SCHEMAS or table.startswith(f"{source}__")
 
 
 def load_mapping(path):

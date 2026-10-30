@@ -21,9 +21,9 @@ def customers_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_neon.customers")
+dp.create_streaming_table(name="silver_landing.neon__customers")
 dp.create_auto_cdc_flow(
-    target="silver_landing_neon.customers",
+    target="silver_landing.neon__customers",
     source="customers_changes",
     keys=["id", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

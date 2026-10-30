@@ -7,5 +7,5 @@ Read `references/docs/templates/silver-normalised-propose.prompt.md` in full and
 it exactly. It is the single copy of this skill's instructions; this file
 holds none of its own, so the two cannot drift.
 
-The input is the source name (the `silver_landing_{source}` schema suffix).
+The input is the source name (the `{source}` of its `silver_landing.{source}__*` tables).
 If none was given, ask for it.

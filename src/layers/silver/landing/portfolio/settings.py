@@ -23,9 +23,9 @@ def define_landing(dataset: str, keys: list[str]) -> None:
     def changes():
         return land_changes(spark, f"bronze_portfolio_publish.{dataset}_scd2", keys, "portfolio")
 
-    dp.create_streaming_table(name=f"silver_landing_portfolio.{dataset}")
+    dp.create_streaming_table(name=f"silver_landing.portfolio__{dataset}")
     dp.create_auto_cdc_flow(
-        target=f"silver_landing_portfolio.{dataset}",
+        target=f"silver_landing.portfolio__{dataset}",
         source=f"{dataset}_changes",
         keys=[*keys, "scd_valid_from_timestamp"],
         sequence_by="_commit_version",

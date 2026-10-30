@@ -13,7 +13,7 @@ resources:
             notebook_path: ../../migrations/reset_full_load.py
             base_parameters:
               catalog: ${var.catalog}
-              landing: silver_landing_iso.country_codes,silver_landing_iso.subdivision_codes
+              landing: silver_landing.iso__country_codes,silver_landing.iso__subdivision_codes
               also_drop: bronze_iso_publish.country_codes_scd2,bronze_iso_publish.subdivision_codes_scd2
         - task_key: bronze
           depends_on:

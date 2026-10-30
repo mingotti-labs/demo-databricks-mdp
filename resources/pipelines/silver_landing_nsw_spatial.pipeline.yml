@@ -3,7 +3,7 @@ resources:
     silver_landing_nsw_spatial:
       name: silver--nsw_spatial--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_nsw_spatial
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

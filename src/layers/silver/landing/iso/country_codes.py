@@ -18,9 +18,9 @@ def country_codes_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_iso.country_codes")
+dp.create_streaming_table(name="silver_landing.iso__country_codes")
 dp.create_auto_cdc_flow(
-    target="silver_landing_iso.country_codes",
+    target="silver_landing.iso__country_codes",
     source="country_codes_changes",
     keys=["country_code_alpha2", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

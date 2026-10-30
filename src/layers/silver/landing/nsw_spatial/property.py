@@ -21,9 +21,9 @@ def property_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_nsw_spatial.property")
+dp.create_streaming_table(name="silver_landing.nsw_spatial__property")
 dp.create_auto_cdc_flow(
-    target="silver_landing_nsw_spatial.property",
+    target="silver_landing.nsw_spatial__property",
     source="property_changes",
     keys=["addressstringoid", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

@@ -19,9 +19,9 @@ def landing(table: str, keys: list[str]) -> None:
     def changes():
         return land_changes(spark, f"bronze_sec_publish.{table}_scd2", keys, "sec")
 
-    dp.create_streaming_table(name=f"silver_landing_sec.{table}")
+    dp.create_streaming_table(name=f"silver_landing.sec__{table}")
     dp.create_auto_cdc_flow(
-        target=f"silver_landing_sec.{table}",
+        target=f"silver_landing.sec__{table}",
         source=f"{table}_changes",
         keys=keys + ["scd_valid_from_timestamp"],
         sequence_by="_commit_version",

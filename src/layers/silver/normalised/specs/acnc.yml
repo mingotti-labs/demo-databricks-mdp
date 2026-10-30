@@ -3,7 +3,7 @@
 source_system: acnc
 base_entities:
   charity_register:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     natural_key: [ABN]
     history: scd2
     columns:
@@ -28,17 +28,17 @@ base_entities:
       Financial_Year_End: financial_year_end
 bridge_entities:
   charity_register_operating_state:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     parent: charity_register
     unpivot: {columns_like: "Operates_in_%", keep_when: "Y"}
     extracted: operating_state
   charity_register_operating_country:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     parent: charity_register
     explode: {column: Operating_Countries, split: ", "}
     extracted: country
   charity_register_purpose:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     parent: charity_register
     unpivot:
       keep_when: "Y"
@@ -57,7 +57,7 @@ bridge_entities:
         - Advancing_security_or_safety_of_Australia_or_Australian_public
     extracted: purpose
   charity_register_beneficiary:
-    from: silver_landing_acnc.charity_register
+    from: silver_landing.acnc__charity_register
     parent: charity_register
     unpivot:
       keep_when: "Y"

@@ -3,7 +3,7 @@
 source_system: airroi
 base_entities:
   market_summary:
-    from: silver_landing_airroi.market_summary
+    from: silver_landing.airroi__market_summary
     natural_key: [_country, _region, _locality, _district]
     history: scd2
     columns:
@@ -21,7 +21,7 @@ base_entities:
       _locality: locality
       _district: district
   market_metrics_all:
-    from: silver_landing_airroi.market_metrics_all
+    from: silver_landing.airroi__market_metrics_all
     natural_key: [_country, _region, _locality, _district, date]
     history: scd2
     columns:

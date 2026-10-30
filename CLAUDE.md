@@ -361,7 +361,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     builds `bronze_acnc.*` and, by qualified name, `bronze_acnc_publish.*`;
     the silver pipeline `silver_normalised_acnc` (`silver--acnc--<target>`)
     builds Silver Normalised and, by qualified name,
-    `silver_landing_acnc.charity_register`. The SCD and Landing pipelines
+    `silver_landing.acnc__charity_register`. The SCD and Landing pipelines
     were removed after their tables were moved (SCD2 history intact in all
     three environments). `charity_register_scd2` has
     `pipelines.reset.allowed=false`: a full refresh of the bronze pipeline
@@ -598,7 +598,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   layout change). `bronze_wikipedia.sp500_constituents_raw` (Materialized View,
   text values as the page shows them, symbols with dots), SCD2
   `bronze_wikipedia_publish.sp500_constituents_scd2` keyed by `symbol` and
-  `silver_landing_wikipedia.sp500_constituents`. SCD2 versions are the index
+  `silver_landing.wikipedia__sp500_constituents`. SCD2 versions are the index
   membership history (an exit closes a version), kept from the first load. One
   weekly run job `run_wikipedia`; no Silver Normalised. The dividend story chose
   Wikipedia because FMP's free plan refuses the list (probes in
@@ -611,7 +611,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   (`src/common/copy_repo_files.py`) into `bronze_portfolio.s3_raw/<name>/landing/`
   on every run, so the repo is the master. `bronze_portfolio.<name>_raw` text
   Materialized Views, SCD2 in `bronze_portfolio_publish` (the history of every
-  setting) and `silver_landing_portfolio`. The copy task's `source_glob` is also
+  setting) and `silver_landing.portfolio__<name>`. The copy task's `source_glob` is also
   how CI selects the unit when a CSV changes. Real purchases (later) are never
   committed and never overwritten by the copy.
 - **SEC EDGAR** (`sec-company-facts`, dividend portfolio story) -- the first
@@ -701,6 +701,18 @@ the decision record behind what's built.
   Check `databricks warehouses list` for a `RUNNING` warehouse sitting idle and
   `databricks warehouses stop <id>` it before retrying — that resolved it in
   practice, confirmed via a real retry.
+- **Free Edition quotas: 500 tables per metastore, 50 schemas per catalog.**
+  Read them with `databricks resource-quotas get-quota metastore <metastore_id>
+  table-quota` and `get-quota catalog <catalog> schema-quota`; both counts
+  refresh with a lag of minutes, so a create right after a drop can still fail
+  on the old count. Every streaming table and materialized view costs 2 table
+  slots (a hidden `__materialization_mat_<pipeline>_<table>_1` twin), a plain
+  Delta table 1, and a pipeline with a Unity Catalog event log 1 more.
+  Dropping a pipeline table, or deleting its pipeline, leaves the twin behind:
+  drop it too, or the slot stays used. Budget the slots of every new source in
+  its proposal (dev and prd). Silver Landing has one schema, `silver_landing`,
+  for every source (`single-silver-landing-schema`) to stay under the schema
+  quota.
 - **Run one pipeline/job at a time on Free Edition — never trigger two
   `bundle run` / `databricks pipelines start-update` / `databricks jobs
   run-now` calls concurrently**, including across unrelated pipelines. This

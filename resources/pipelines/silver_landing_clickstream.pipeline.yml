@@ -3,7 +3,7 @@ resources:
     silver_landing_clickstream:
       name: silver--clickstream--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_clickstream
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

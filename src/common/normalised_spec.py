@@ -41,8 +41,8 @@ def match_key(value: str | None) -> str | None:
 
 
 def landing_table(ref: str) -> str:
-    """Table name of a `silver_landing_{source}.{table}` reference."""
-    return ref.split(".", 1)[1]
+    """Entity name of a `silver_landing.{source}__{entity}` reference."""
+    return ref.split(".", 1)[1].split("__", 1)[1]
 
 
 def bridge_attribute(name: str, bridge: dict) -> str:
@@ -126,9 +126,9 @@ def check(spec: dict) -> list[str]:
     tables = [*bases.items(), *bridges.items()]
 
     for name, entity in tables:
-        if not entity["from"].startswith(f"silver_landing_{source}."):
+        if not entity["from"].startswith(f"silver_landing.{source}__"):
             problems.append(
-                f"{name}: from {entity['from']} is outside silver_landing_{source}"
+                f"{name}: from {entity['from']} is outside silver_landing.{source}__*"
             )
 
     names = [*bases, *bridges, *extracted]

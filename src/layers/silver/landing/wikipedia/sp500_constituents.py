@@ -16,9 +16,9 @@ def sp500_constituents_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_wikipedia.sp500_constituents")
+dp.create_streaming_table(name="silver_landing.wikipedia__sp500_constituents")
 dp.create_auto_cdc_flow(
-    target="silver_landing_wikipedia.sp500_constituents",
+    target="silver_landing.wikipedia__sp500_constituents",
     source="sp500_constituents_changes",
     keys=["symbol", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

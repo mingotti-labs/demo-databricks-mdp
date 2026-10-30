@@ -13,7 +13,7 @@ resources:
             notebook_path: ../../migrations/reset_full_load.py
             base_parameters:
               catalog: ${var.catalog}
-              landing: silver_landing_nsw_spatial.property
+              landing: silver_landing.nsw_spatial__property
         - task_key: bronze
           depends_on:
             - task_key: reset

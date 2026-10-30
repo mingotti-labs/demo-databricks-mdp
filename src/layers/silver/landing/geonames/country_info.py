@@ -17,9 +17,9 @@ def country_info_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_geonames.country_info")
+dp.create_streaming_table(name="silver_landing.geonames__country_info")
 dp.create_auto_cdc_flow(
-    target="silver_landing_geonames.country_info",
+    target="silver_landing.geonames__country_info",
     source="country_info_changes",
     keys=["iso_alpha2", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

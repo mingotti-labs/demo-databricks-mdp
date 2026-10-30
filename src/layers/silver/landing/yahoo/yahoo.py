@@ -24,9 +24,9 @@ def landing(table: str, keys: list[str], scd2: bool) -> None:
     def changes():
         return land_changes(spark, f"bronze_yahoo_publish.{table}_{suffix}", keys, "yahoo", scd2)
 
-    dp.create_streaming_table(name=f"silver_landing_yahoo.{table}")
+    dp.create_streaming_table(name=f"silver_landing.yahoo__{table}")
     dp.create_auto_cdc_flow(
-        target=f"silver_landing_yahoo.{table}",
+        target=f"silver_landing.yahoo__{table}",
         source=f"{table}_changes",
         keys=keys + ["scd_valid_from_timestamp"] if scd2 else keys,
         sequence_by="_commit_version",

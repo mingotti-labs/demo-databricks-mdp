@@ -18,6 +18,7 @@ sys.path.insert(0, f"{workspace_file_path}/src")
 from common.design_patterns import (  # noqa: E402
     OBJECT_TYPES,
     TAG,
+    belongs_to,
     load_mapping,
     pattern_for,
 )
@@ -30,6 +31,8 @@ client = WorkspaceClient()
 count = 0
 for schema in entry["schemas"]:
     for t in client.tables.list(catalog_name=catalog, schema_name=schema):
+        if not belongs_to(source, schema, t.name):
+            continue
         pattern = pattern_for(entry, schema, t.name)
         spark.sql(
             f"ALTER {OBJECT_TYPES[t.table_type.value]} `{catalog}`.`{schema}`.`{t.name}` "

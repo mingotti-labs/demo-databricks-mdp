@@ -107,3 +107,11 @@ Change `dividend-portfolio-probes` (2026-10-25). Record: its `design.md`
 | P7 | What do SEC company facts look like in long form for the mapped concepts? (change `sec-company-facts`, its P1) | Pass: about 2,250 rows and 600 KB per company, 1.14 million rows and 313 MB for 505; `cik, taxonomy, concept, unit, accn, start, end` is unique; `start` empty on point-in-time values. |
 | P8 | What do Yahoo prices, dividends, calendar and options look like for 20 symbols? (change `yahoo-market-data`, its P1) | Pass with a constraint: keys `symbol, date` and `symbol, ex_date` unique; calendar gives `Dividend Date` and `Ex-Dividend Date`; ETFs have no calendar; option open interest is 0 on every strike (even AAPL) while volume is filled in, so volume is the activity measure. |
 | P8b | Does the incremental Yahoo fetch work: only new days, a manual reload, resuming a repaired run? (change `yahoo-market-data`, its P2) | Pass: second run 1,034 price rows (two days per symbol), no calendar version; `reload_symbols=AAPL` reloads 252 days and AAPL's events; a run cancelled after 100 symbols and repaired keeps `{{job.run_id}}` and fetches only the other 417. |
+
+## One Silver Landing schema
+
+Change `single-silver-landing-schema` (2026-10-30). Record: its `design.md` "Probes"; scripts in `references/poc/single-silver-landing-schema/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Does a deployed pipeline accept a new default `schema:` and keep working? | Pass: `pipelines update` accepted it, the next update completed, the qualified-name table stayed with the same pipeline. |

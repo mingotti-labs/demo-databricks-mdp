@@ -13,7 +13,7 @@ scd2 = f"{catalog}.bronze_acnc_publish.charity_register_scd2"
 tables = [
     scd2,
     f"{scd2}_backup",
-    f"{catalog}.silver_landing_acnc.charity_register",
+    f"{catalog}.silver_landing.acnc__charity_register",
 ]
 
 client = WorkspaceClient()

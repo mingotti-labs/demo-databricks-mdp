@@ -1,0 +1,59 @@
+table | old | new | old_only | new_only
+iso.country_codes | 249 | 249 | 0 | 0
+iso.subdivision_codes | 6250 | 6250 | 0 | 0
+ungm.unspsc_public | 12721 | 12721 | 0 | 0
+nsw_spatial.property | 500 | 500 | 0 | 0
+wikipedia.sp500_constituents | 503 | 503 | 0 | 0
+portfolio.benchmarks | 14 | 14 | 0 | 0
+portfolio.concept_mapping | 35 | 35 | 0 | 0
+portfolio.predecessor_ciks | 1 | 1 | 0 | 0
+portfolio.risk_levels | 4 | 4 | 0 | 0
+portfolio.settings | 5 | 5 | 0 | 0
+portfolio.target_mix | 4 | 4 | 0 | 0
+table | old | new | old_only | new_only
+sec.company_facts | 1077402 | 1135460 | 53726 | 111784
+sec.company_tickers | 10430 | 10430 | 0 | 0
+yahoo.calendar | 531 | 556 | 25 | 50
+yahoo.events | 52050 | 52051 | 28 | 29
+yahoo.options | 517 | 517 | 517 | 517
+yahoo.prices | 129754 | 130271 | 1284 | 1801
+table | old_only_unexplained | new_only_unexplained
+sec.company_facts | 0 | 0
+sec.company_tickers | 0 | 0
+yahoo.prices | 0 | 0
+yahoo.events | 0 | 0
+yahoo.options | 0 | 0
+yahoo.calendar | 0 | 0
+table | old | new | old_only | new_only
+acnc.charity_register | 65907 | 68327 | 2395 | 4815
+table | old_only_unexplained | new_only_unexplained
+acnc.charity_register | 0 | 0
+table | old | new | old_only | new_only
+Traceback (most recent call last):
+  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\single-silver-landing-schema\compare.py", line 67, in <module>
+    main()
+  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\single-silver-landing-schema\compare.py", line 62, in main
+    for row in sql(args.profile, warehouse, compare(args.catalog, source, entity)):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\single-silver-landing-schema\compare.py", line 32, in sql
+    raise RuntimeError(out["status"])
+RuntimeError: {'error': {'error_code': 'BAD_REQUEST', 'message': '[UNSUPPORTED_FEATURE.SET_OPERATION_ON_MAP_TYPE] The feature is not supported: Cannot have MAP type columns in a set operation (INTERSECT, EXCEPT, etc.), but the type of column `average_daily_rate` is "MAP<STRING, DOUBLE>". SQLSTATE: 0A000; line 1 pos 206'}, 'sql_state': '0A000', 'state': 'FAILED'}
+table | old | new | old_only | new_only
+Traceback (most recent call last):
+  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\single-silver-landing-schema\compare.py", line 70, in <module>
+    main()
+  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\single-silver-landing-schema\compare.py", line 65, in main
+    for row in sql(args.profile, warehouse, compare(args.catalog, source, entity)):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\single-silver-landing-schema\compare.py", line 32, in sql
+    raise RuntimeError(out["status"])
+RuntimeError: {'error': {'error_code': 'BAD_REQUEST', 'message': '[TABLE_OR_VIEW_NOT_FOUND] The table or view `mdp_dev`.`silver_landing_iso`.`subdivision_codes` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 1 pos 54'}, 'sql_state': '42P01', 'state': 'FAILED'}
+table | old | new | old_only | new_only
+airroi.market_metrics_all | 48 | 48 | 0 | 0
+airroi.market_summary | 4 | 4 | 0 | 0
+table | old | new | old_only | new_only
+clickstream.web_events | 600 | 600 | 0 | 0
+neon.customers | 200 | 200 | 0 | 0
+neon.products | 50 | 50 | 0 | 0
+neon.orders | 500 | 500 | 0 | 0
+neon.order_items | 1240 | 1240 | 0 | 0

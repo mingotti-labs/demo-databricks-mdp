@@ -15,7 +15,7 @@ resources:
             notebook_path: ../../migrations/reset_full_load.py
             base_parameters:
               catalog: ${var.catalog}
-              landing: silver_landing_airroi.market_summary,silver_landing_airroi.market_metrics_all
+              landing: silver_landing.airroi__market_summary,silver_landing.airroi__market_metrics_all
               also_drop: bronze_airroi_publish.market_summary_scd2,bronze_airroi_publish.market_metrics_all_scd2,silver_normalised_airroi.market_summary,silver_normalised_airroi.market_metrics_all,silver_normalised_airroi.country,silver_normalised_airroi.region,silver_normalised_airroi.locality,silver_normalised_airroi.district,silver_normalised_airroi.value_lineage
         - task_key: bronze
           depends_on:

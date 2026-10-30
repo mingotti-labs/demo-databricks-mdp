@@ -20,9 +20,9 @@ def market_metrics_all_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_airroi.market_metrics_all")
+dp.create_streaming_table(name="silver_landing.airroi__market_metrics_all")
 dp.create_auto_cdc_flow(
-    target="silver_landing_airroi.market_metrics_all",
+    target="silver_landing.airroi__market_metrics_all",
     source="market_metrics_all_changes",
     keys=NATURAL_KEYS + ["scd_valid_from_timestamp"],
     sequence_by="_commit_version",

@@ -41,7 +41,7 @@ def duplicates(df, keys: list[str]) -> int:
 # Drift: every Landing column used, ignored or a platform column.
 landing_tables = {ns.landing_table(e["from"]) for e in spec["base_entities"].values()}
 landing_columns = {
-    t: [c.name for c in spark.read.table(f"silver_landing_{source}.{t}").schema]
+    t: [c.name for c in spark.read.table(f"silver_landing.{source}__{t}").schema]
     for t in landing_tables
 }
 failures += ns.drift(spec, landing_columns)

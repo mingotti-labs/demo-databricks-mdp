@@ -7,6 +7,7 @@ from common.normalised_spec import (
     SpecError,
     check,
     drift,
+    landing_table,
     load_spec,
     match_key,
     tables,
@@ -19,7 +20,7 @@ SPEC = {
     "source_system": "acme",
     "base_entities": {
         "customers": {
-            "from": "silver_landing_acme.customers",
+            "from": "silver_landing.acme__customers",
             "natural_key": ["id"],
             "columns": ["name"],
             "extracted": {"country": "country", "state": "state"},
@@ -27,13 +28,13 @@ SPEC = {
     },
     "bridge_entities": {
         "customers_tag": {
-            "from": "silver_landing_acme.customers",
+            "from": "silver_landing.acme__customers",
             "parent": "customers",
             "explode": {"column": "tags", "split": ";"},
             "extracted": "tag",
         },
         "customers_channel": {
-            "from": "silver_landing_acme.customers",
+            "from": "silver_landing.acme__customers",
             "parent": "customers",
             "unpivot": {"columns_like": "via_%", "keep_when": "Y"},
         },
@@ -61,10 +62,10 @@ def test_repo_specs_load(path):
 def test_load_spec_raises_on_problem(tmp_path):
     path = tmp_path / "bad.yml"
     path.write_text(
-        "source_system: acme\nbase_entities:\n  c:\n    from: silver_landing_other.c\n"
+        "source_system: acme\nbase_entities:\n  c:\n    from: silver_landing.other__c\n"
         "    natural_key: [id]\n    columns: []\nignored_columns: []\n"
     )
-    with pytest.raises(SpecError, match="outside silver_landing_acme"):
+    with pytest.raises(SpecError, match=r"outside silver_landing\.acme__\*"):
         load_spec(str(path))
 
 
@@ -73,7 +74,7 @@ def test_load_spec_raises_on_problem(tmp_path):
     [
         (
             lambda s: s["base_entities"]["customers"].update(
-                {"from": "silver_landing_other.customers"}
+                {"from": "silver_landing.other__customers"}
             ),
             "outside",
         ),
@@ -90,7 +91,7 @@ def test_load_spec_raises_on_problem(tmp_path):
         ),
         (
             lambda s: s["bridge_entities"]["customers_tag"].update(
-                {"from": "silver_landing_acme.orders"}
+                {"from": "silver_landing.acme__orders"}
             ),
             "differs",
         ),
@@ -225,7 +226,7 @@ SPEC_WITH_COLUMNS_UNPIVOT = spec_with(
     lambda s: s["bridge_entities"].update(
         {
             "customers_purpose": {
-                "from": "silver_landing_acme.customers",
+                "from": "silver_landing.acme__customers",
                 "parent": "customers",
                 "unpivot": {"columns": ["is_retail", "wholesale"], "keep_when": "Y"},
             }
@@ -264,3 +265,7 @@ def test_drift_columns_unpivot_missing_landing_column():
     assert drift(SPEC_WITH_COLUMNS_UNPIVOT, landing) == [
         "customers.wholesale: used by the spec but missing in Landing"
     ]
+
+
+def test_landing_table_is_the_entity_name():
+    assert landing_table("silver_landing.nsw_spatial__property") == "property"

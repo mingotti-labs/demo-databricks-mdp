@@ -3,7 +3,7 @@ resources:
     silver_landing_portfolio:
       name: silver--portfolio--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_portfolio
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:
