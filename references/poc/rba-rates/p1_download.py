@@ -9,7 +9,7 @@ import sys
 import requests
 
 sys.path.insert(0, sys.argv[1])
-from rba_tables import TABLES, parse_table  # noqa: E402
+from rba_tables import TABLES, parse_table
 
 BASE = "https://www.rba.gov.au/statistics/tables/csv"
 HEADERS = {"User-Agent": "mdp handsonessential@gmail.com"}
