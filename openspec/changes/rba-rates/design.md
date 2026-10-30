@@ -105,6 +105,27 @@ values since 2023), F1 46,902 (17), F2 16,298 (5), F5 7,824 (30). First dates
 and the four named series as expected. A first run therefore writes 89,962
 rows. Output in `p1_result.txt`.
 
+## Dev results (2026-10-31)
+
+`run_rba` as the service principal with `verify=true` (draft PR #123). The
+table quota read 458/500 before the run.
+
+- First run: success, both checks passed. `observations_raw`, Publish
+  `observations_scd1` and Landing `silver_landing.rba__observations` each hold
+  89,962 rows, 73 series, 4 tables, the same count as probe P1. `FXRUSD`
+  (0.7040 on 30-Oct-2026), `FCMYGBAG10D` (5.208 on 28-Oct-2026) and `FILRHLBVS`
+  (8.77 on 30-Sep-2026) are in Landing. `FIRMMCRTD`, the cash rate target, has
+  no value on 30-Oct (F1's latest dates are still empty); its latest is 4.60
+  on 29-Oct-2026.
+- Second run: success, both checks passed. It wrote 845 rows (F1 228, F11.1 483,
+  F2 110, F5 24), each table from about 31 days before its last stored date
+  (29-Sep, 29-Sep, 28-Sep, 31-Aug). Raw grew to 90,807; Publish and Landing
+  stayed at 89,962, as no new dates arrived and no value changed.
+- `reload=true` was not run in dev: it writes the same 89,962 rows again,
+  which the first run already shows.
+- The base address `.../csv` returns 403 in a browser (the server does not list
+  its folder); every file under it returns 200.
+
 ## Risks / Trade-offs
 
 - [The RBA changes the file layout] -> The parser fails on a missing

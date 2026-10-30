@@ -30,16 +30,16 @@
 
 ## 4. Verify in dev
 
-- [ ] 4.1 Re-read the table quota; stop and ask if above 488
-- [ ] 4.2 Draft PR deploys to dev; `run_rba` as the service principal with
+- [x] 4.1 Re-read the table quota; stop and ask if above 488
+- [x] 4.2 Draft PR deploys to dev; `run_rba` as the service principal with
       `verify=true`: first run writes every row; `FXRUSD`, `FIRMMCRTD`,
       `FCMYGBAG10D` and `FILRHLBVS` are in `silver_landing.rba__observations`
-- [ ] 4.3 Second run: writes only the last 31 days per table; Publish row
+- [x] 4.3 Second run: writes only the last 31 days per table; Publish row
       count unchanged apart from new dates
-- [ ] 4.4 Results in design.md
+- [x] 4.4 Results in design.md
 
 ## 5. Docs
 
-- [ ] 5.1 CLAUDE.md "Sources": `rba`
-- [ ] 5.2 `references/docs/registers/data-sources.md` and
+- [x] 5.1 CLAUDE.md "Sources": `rba`
+- [x] 5.2 `references/docs/registers/data-sources.md` and
       `source_systems/rba.md`
