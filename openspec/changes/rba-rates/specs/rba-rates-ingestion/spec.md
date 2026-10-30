@@ -1,14 +1,16 @@
 ## ADDED Requirements
 
 ### Requirement: Tables fetched
-Each run SHALL download RBA tables F11.1 (`f11.1-data.csv`) and F1
-(`f1-data.csv`) from the address in the bundle variable `rba_tables_url`,
+Each run SHALL download RBA tables F11.1 (`f11.1-data.csv`, exchange rates),
+F1 (`f1-data.csv`, money market rates including the cash rate target), F2
+(`f2-data.csv`, government bond yields) and F5 (`f5-data.csv`, indicator
+lending rates) from the address in the bundle variable `rba_tables_url`,
 sending the `http_user_agent` string.
 
-#### Scenario: Both files are fetched
+#### Scenario: All files are fetched
 - **WHEN** `run_rba` runs
-- **THEN** both files are downloaded and the run writes rows for table ids
-  `F11.1` and `F1`
+- **THEN** the four files are downloaded and the run writes rows for table ids
+  `F11.1`, `F1`, `F2` and `F5`
 
 #### Scenario: A file cannot be read
 - **WHEN** a file has no `Series ID` header row or the download fails
@@ -25,6 +27,11 @@ from the header rows, and `ingested_timestamp`, the fetch time.
 - **WHEN** F11.1 has `03-Jan-2023` with `0.6828` under series `FXRUSD`
 - **THEN** a row has `table_id` `F11.1`, `series_id` `FXRUSD`,
   `observation_date` `03-Jan-2023`, `value` `0.6828` and `units` `USD`
+
+#### Scenario: A bond yield and a housing rate
+- **WHEN** F2 has a value for `FCMYGBAG10D` and F5 for `FILRHLBVS`
+- **THEN** rows exist with those `series_id`s, `table_id` `F2` and `F5`, and
+  `units` `Per cent per annum`
 
 #### Scenario: An empty cell
 - **WHEN** F1's latest date has no value for `FIRMMCRTD`
@@ -69,6 +76,6 @@ SHALL run it after a deploy that affects it.
 
 #### Scenario: Verified run
 - **WHEN** `run_rba` runs with `verify=true`
-- **THEN** the checks find `FXRUSD` and `FIRMMCRTD` rows, no null keys, no
-  duplicate `series_id` and `observation_date` in Publish, and Landing rows
-  equal to Publish
+- **THEN** the checks find `FXRUSD`, `FIRMMCRTD`, `FCMYGBAG10D` and
+  `FILRHLBVS` rows, no null keys, no duplicate `series_id` and
+  `observation_date` in Publish, and Landing rows equal to Publish

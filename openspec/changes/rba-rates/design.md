@@ -1,6 +1,6 @@
 ## Context
 
-See proposal.md. The two RBA files share one layout, checked 2026-10-31:
+See proposal.md. The four RBA files share one layout, checked 2026-10-31:
 
 ```
 F11.1  EXCHANGE RATES                      <- table title
@@ -16,11 +16,19 @@ Series ID,FXRUSD,FXRTWI,...
 03-Jan-2023,0.6828,61.40,...               <- one row per date
 ```
 
-F11.1 has 23 series and about 2,170 dates (from 03-Jan-2023); F1 has 17 series
-and about 4,000 dates (from 04-Jan-2011). Recent F1 dates leave most cells
-empty until the RBA fills them. The files start with a byte order mark.
-Exchange rates before 2023 are only in Excel files (`f11hist.xls`,
-`f11hist-1969-2009.xls`).
+| Table | Content | Series | Dates | From | Frequency | Values |
+|---|---|---|---|---|---|---|
+| F11.1 | exchange rates | 23 | 962 | 03-Jan-2023 | daily | 18,938 |
+| F1 | money market, cash rate target | 17 | 4,007 | 04-Jan-2011 | daily | 46,902 |
+| F2 | government bond yields | 5 | 3,406 | 20-May-2013 | daily | 16,298 |
+| F5 | indicator lending rates, housing | 30 | 813 | 31-Jan-1959 | monthly | 7,824 |
+
+Dates are `dd-Mon-yyyy` in all four. Recent F1 dates leave most cells empty
+until the RBA fills them. The files start with a byte order mark. Exchange
+rates before 2023 are only in Excel files (`f11hist.xls`,
+`f11hist-1969-2009.xls`). Table F6 (rates on outstanding housing loans) writes
+dates as `dd/mm/yyyy` and starts in 2019, so it is left out; `F2.1` and `F1.1`
+are monthly copies of F2 and F1.
 
 The metastore table quota read 458/500 on 2026-10-31 (it counts each
 streaming table twice, for its hidden twin).
@@ -38,9 +46,9 @@ streaming table twice, for its hidden twin).
 
 ## Decisions
 
-**D1. One long table for both RBA tables.** Rows are
+**D1. One long table for all RBA tables.** Rows are
 `(table_id, series_id, observation_date, value)` plus the series metadata.
-Two tables per RBA table would double the slots (24 instead of 12) for no
+Three tables per RBA table would take 48 slots instead of 12 for no
 query gain: every consumer filters by `series_id`. Rejected: one wide table
 per RBA table (series as columns), which breaks when the RBA adds a series.
 
@@ -56,7 +64,8 @@ file), as SEC and Yahoo.
 **D3. Write only the last 31 days after the first run.** The fetch reads the
 last stored date per table from `bronze_rba.observations_raw` and writes rows
 dated from 31 days before it. That keeps late-filled F1 cells and short
-revisions, and keeps raw growth to about 1,200 rows a run. An empty raw table
+revisions (and for F5, whose dates are month ends, the previous month), and
+keeps raw growth to about 1,200 rows a run. An empty raw table
 or `reload=true` writes every row. Rejected: writing the whole file each run
 (about 120,000 rows a week, almost all repeats).
 
@@ -68,7 +77,8 @@ History of revisions stays in raw. Same pattern as Yahoo's prices.
 `land_changes`, keyed by `series_id` and `observation_date`.
 
 **D6. Table list in code.** `rba_tables.py` holds
-`TABLES = {"F11.1": "f11.1-data.csv", "F1": "f1-data.csv"}`; the bundle
+`TABLES = {"F11.1": "f11.1-data.csv", "F1": "f1-data.csv", "F2": "f2-data.csv",
+"F5": "f5-data.csv"}`; the bundle
 variable `rba_tables_url` holds the base address. Adding a table is a code
 change.
 
@@ -79,8 +89,10 @@ is free, two GETs.
 
 **P1. Serverless can download both files.** A one-time serverless job GETs
 both files with `http_user_agent` and runs the parser on them. Pass: HTTP 200
-for both, 23 and 17 series, the first dates `03-Jan-2023` and `04-Jan-2011`,
-`FXRUSD` and `FIRMMCRTD` present. Fail (a block from the RBA's network): stop
+for all four, 23, 17, 5 and 30 series, the first dates `03-Jan-2023`,
+`04-Jan-2011`, `20-May-2013` and `31-Jan-1959`, and `FXRUSD`, `FIRMMCRTD`,
+`FCMYGBAG10D` (10-year bond) and `FILRHLBVS` (standard variable housing rate,
+owner-occupier) present. Fail (a block from the RBA's network): stop
 and bring it to the user. Scripts and result in `references/poc/rba-rates/`,
 row in `references/docs/registers/probes.md`.
 
