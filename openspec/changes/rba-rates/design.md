@@ -76,7 +76,14 @@ or `reload=true` writes every row. Rejected: writing the whole file each run
 History of revisions stays in raw. Same pattern as Yahoo's prices.
 
 **D5. Silver Landing `silver_landing.rba__observations`** through
-`land_changes`, keyed by `series_id` and `observation_date`.
+`land_changes`, keyed by `series_id` and `observation_date`. Landing turns
+`observation_date` and `publication_date` into dates (user, 2026-10-31, before
+merge); `value` and the rest stay text, as other sources' Landing tables keep
+Bronze's types. The conversion is `to_date(col, 'dd-MMM-yyyy')`, which under
+ANSI fails the update on a value that does not read as a date, and the
+"Natural key" column comment is re-applied after it. Dev's first Landing table
+had text dates, so it was rebuilt once with a full refresh of the silver
+pipeline (Landing is derived from Publish's change feed).
 
 **D6. Table list in code.** `rba_tables.py` holds
 `TABLES = {"F11.1": "f11.1-data.csv", "F1": "f1-data.csv", "F2": "f2-data.csv",

@@ -63,7 +63,15 @@ without calling the RBA.
 ### Requirement: Bronze Publish and Silver Landing
 `bronze_rba_publish.observations_scd1` SHALL hold one row per `series_id` and
 `observation_date`, the value from the latest `ingested_timestamp` (SCD1).
-`silver_landing.rba__observations` SHALL land its change feed.
+`silver_landing.rba__observations` SHALL land its change feed with
+`observation_date` and `publication_date` as dates (read from `dd-Mon-yyyy`);
+every other column, `value` included, stays as in Publish. A value that does
+not read as a date SHALL fail the update instead of becoming null.
+
+#### Scenario: Dates in Landing
+- **WHEN** Publish holds `observation_date` `03-Jan-2023` and `publication_date`
+  `30-Oct-2026`
+- **THEN** Landing holds the dates 2023-01-03 and 2026-10-30, as type DATE
 
 #### Scenario: A revised value
 - **WHEN** a later run writes a different value for `FXRUSD` on a date

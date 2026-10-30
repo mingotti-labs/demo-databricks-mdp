@@ -32,7 +32,8 @@ as `dd/mm/yyyy`, from 2019), the monthly copies F2.1 and F1.1.
   one row per date written `dd-Mon-yyyy`. The file starts with a byte order
   mark and has blank lines between header rows.
 - The parser turns it into one row per series and date, empty cells skipped;
-  values and dates stay text. All four tables share one long table
+  values and dates stay text in Bronze; Landing turns `observation_date` and
+  `publication_date` into dates. All four tables share one long table
   (`observations`), told apart by `table_id`, to save table-quota slots.
 - Recent dates are filled in late: F1's latest dates leave most cells empty,
   and F11.1's AED and ZAR series stopped in 2024. So after the first run only

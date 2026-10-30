@@ -650,7 +650,8 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   (`src/common/fetch_rba.py`) downloads and parses every file before writing any;
   after the first run it writes only the 31 days before each table's last stored
   date (late-filled cells, revisions); `reload=true` writes everything. Append-only
-  raw as SEC; Bronze Publish `observations_scd1`; Landing `silver_landing.rba__observations`.
+  raw as SEC; Bronze Publish `observations_scd1`; Landing `silver_landing.rba__observations`
+  with `observation_date` and `publication_date` converted to dates.
 
 ## Development style
 
