@@ -140,6 +140,25 @@ source fetch); every run succeeded with `verify=true`. Evidence in
   and their twins were dropped; every `silver_landing_<source>` schema in
   `mdp_dev` is empty. No views, dashboards or Genie spaces read them.
 
+## prd results (2026-10-31)
+
+PR #120 merged; the Main run deployed and ran every auto-run unit in prd
+(success). Evidence: `compare_prd.txt`, `explain_prd.txt`.
+
+- All 22 old prd tables have their new table. 16 are identical (every column
+  but `transformed_timestamp`).
+- geonames.cities, sec.company_facts and the four yahoo tables differ only by
+  the run's fresh fetch: `explain.py` found 0 unexplained rows.
+- Since the merge, lineage shows only acnc's Silver Normalised tables reading
+  Landing, from the new table; no view reads the old schemas; only
+  `cicd/databricks/standard.yml` names them (standard drifts, by decision).
+- The user dropped the 22 old prd tables, their twins and event logs with
+  `drop_old.py` (the auto-mode classifier blocks drops in prd). Every
+  `silver_landing_<source>` schema is empty in `mdp_dev` and `mdp_prd`; the
+  iac follow-up drops the schemas.
+- Leftover human dev pipelines (the seven silver ones and probe P1's) were
+  deleted by the user; probe P1's scratch table and twin were dropped.
+
 ## Risks / Trade-offs
 
 - [P1 fails] -> D3's fallback: keep the old default schema, all writes are

@@ -129,7 +129,7 @@ loaded like the other `portfolio` datasets.
 - **THEN** silver can compare each Utilities company with `XLU`
 
 ### Requirement: Silver Landing
-`silver_landing_yahoo.<dataset>` SHALL be built from each Bronze Publish change
+`silver_landing.yahoo__<dataset>` SHALL be built from each Bronze Publish change
 feed with `land_changes`, keyed by the same natural keys.
 
 #### Scenario: Landing matches Bronze Publish

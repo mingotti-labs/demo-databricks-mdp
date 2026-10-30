@@ -11,12 +11,12 @@ later Silver sub-layers work from a clean, source-aligned structure.
 ### Requirement: Source-aligned schema and inputs
 Each source SHALL have its Silver Normalised tables in a schema named
 `silver_normalised_{source_system}`. Those tables SHALL read only from the
-same source's `silver_landing_{source_system}` tables: no cross-source
+same source's Silver Landing tables, `silver_landing.{source_system}__*`: no cross-source
 joins, and no reads from rdm or any other downstream component.
 
 #### Scenario: Table reads another source
 - **WHEN** a proposed Silver Normalised table for source A reads from any
-  schema other than `silver_landing_A`
+  table other than `silver_landing.A__*`
 - **THEN** the proposal is rejected in review and the table is not built
 
 ### Requirement: Structural change only
@@ -82,12 +82,13 @@ entity passes it through as its first column, ahead of the natural key.
   the natural key, and no surrogate key column exists
 
 ### Requirement: Base entities keep Landing name and row-count parity
-A base entity SHALL keep its Landing table's name and grain. Its row count
+A base entity SHALL keep its Landing table's entity name (without the
+`{source_system}__` prefix) and grain. Its row count
 plus the row count of its `{entity}_quarantine` table (if one exists)
 SHALL equal the Landing table's row count.
 
 #### Scenario: Parity check
-- **WHEN** `silver_landing_acnc.charity_register` has 500 rows and no
+- **WHEN** `silver_landing.acnc__charity_register` has 500 rows and no
   quarantine table exists
 - **THEN** `silver_normalised_acnc.charity_register` has 500 rows
 
@@ -239,7 +240,7 @@ or the dependency checks run read-only against `prd`.
 #### Scenario: First profiling pass
 - **WHEN** the profiling job runs for `acnc` with no dependency pairs
 - **THEN** it returns JSON with column statistics for every column of every
-  `silver_landing_acnc` table and the cross-table value overlaps, and no
+  `silver_landing.acnc__*` table and the cross-table value overlaps, and no
   table or volume is written
 
 #### Scenario: Dependency pass
@@ -269,7 +270,7 @@ transformation code SHALL exist.
 The pipeline SHALL load and check the normalised spec before defining any
 table, and SHALL fail without building anything when the spec breaks a
 cross-reference rule the schema cannot express: a `from` outside
-`silver_landing_{source_system}`, a duplicate or reserved entity name, a
+`silver_landing.{source_system}__*`, a duplicate or reserved entity name, a
 bridge whose parent is not a base entity or whose `from` differs from its
 parent's, an extracted target that is not declared, a declared extracted
 entity with no member column, a missing or cyclic `parent`, a parent or
