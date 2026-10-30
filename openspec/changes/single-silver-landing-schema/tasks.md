@@ -1,11 +1,11 @@
 ## 1. Probe
 
-- [ ] 1.1 P1: scratch pipeline in dev (`pattern_bronze`), run, change its
+- [x] 1.1 P1: scratch pipeline in dev (`pattern_bronze`), run, change its
       default schema to `pattern_bronze_publish`, run again; scripts and
       results in `references/poc/single-silver-landing-schema/`, a row in
-      `references/docs/registers/probes.md`, result in design.md; drop the
-      scratch objects with approval
-- [ ] 1.2 If P1 fails, apply D3's fallback (keep the old default schema) and
+      `references/docs/registers/probes.md`, result in design.md (scratch
+      pipeline `c1fe1449` and its table dropped in 3.5)
+- [x] 1.2 If P1 fails, apply D3's fallback (keep the old default schema) and
       note the follow-up in proposal.md
 
 ## 2. Code
@@ -43,7 +43,9 @@
 - [ ] 3.4 Design-pattern tags: each new table carries its pattern, no source
       tagged another's tables
 - [ ] 3.5 User approves; drop the 25 old dev Landing tables and their
-      `__materialization_mat_*` twins; table quota back near 388
+      `__materialization_mat_*` twins, and probe P1's scratch pipeline
+      `c1fe1449` and `pattern_bronze.zz_p1_default_schema`; table quota back
+      near 388
 
 ## 4. Docs
 

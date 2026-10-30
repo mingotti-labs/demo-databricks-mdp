@@ -102,6 +102,15 @@ unit's silver pipeline creates its new Landing tables in that run.
 |---|---|---|
 | P1 | Does a deployed pipeline accept a new default `schema:` and keep working? | A scratch pipeline in dev (`pattern_bronze`), one dataset, run; change its schema to `pattern_bronze_publish` with `databricks pipelines update`, run again. Scripts and results in `references/poc/single-silver-landing-schema/`. |
 
+**P1 result (2026-10-30): pass.** Scratch pipeline `c1fe1449` (serverless,
+one materialized view `pattern_bronze.zz_p1_default_schema` by qualified name)
+ran, accepted `databricks pipelines update` with `schema:
+pattern_bronze_publish` (`spec.schema` read back as the new value), ran again
+(COMPLETED), and the table still belonged to the same pipeline. Output in
+`references/poc/single-silver-landing-schema/p1_result.txt`. The bundle deploy
+uses the same pipeline update, so D3 needs no fallback; `deploy-dev` confirms
+it for the real pipelines.
+
 The rebuild itself (row parity with bronze) is checked by
 `verify_silver_landing`, not a separate probe.
 

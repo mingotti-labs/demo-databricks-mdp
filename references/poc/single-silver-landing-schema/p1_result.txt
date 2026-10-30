@@ -1,0 +1,7 @@
+pipeline c1fe1449-62fa-4293-aea3-5ff86dead9e7
+update 3cb2580a-f60a-4383-81c2-33044b5ce295: COMPLETED
+--- change default schema to pattern_bronze_publish
+update accepted
+schema now: pattern_bronze_publish
+update fb0eeec9-8847-410d-bc4c-d3df1c65c5c6: COMPLETED
+table pipelineId: c1fe1449-62fa-4293-aea3-5ff86dead9e7
