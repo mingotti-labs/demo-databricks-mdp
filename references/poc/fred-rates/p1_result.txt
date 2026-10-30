@@ -1,0 +1,9 @@
+SUCCESS https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/310584025056410/run/479393470991116
+series HTTP 200
+{'id': 'DGS10', 'realtime_start': '2026-10-30', 'realtime_end': '2026-10-30', 'title': 'Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis', 'observation_start': '1962-01-02', 'observation_end': '2026-10-29', 'frequency': 'Daily', 'frequency_short': 'D', 'units': 'Percent', 'units_short': '%', 'seasonal_adjustment': 'Not Seasonally Adjusted', 'seasonal_adjustment_short': 'NSA', 'last_updated': '2026-10-30 15:16:46-05', 'popularity': 99}
+observations HTTP 200 keys ['count', 'file_type', 'limit', 'observation_end', 'observation_start', 'observations', 'offset', 'order_by', 'output_type', 'realtime_end', 'realtime_start', 'sort_order', 'units']
+count 16913 returned 16913 limit 100000
+first {'realtime_start': '2026-10-30', 'realtime_end': '2026-10-30', 'date': '1962-01-02', 'value': '4.06'} last {'realtime_start': '2026-10-30', 'realtime_end': '2026-10-30', 'date': '2026-10-29', 'value': '4.98'}
+missing '.' values 721 example [{'realtime_start': '2026-10-30', 'realtime_end': '2026-10-30', 'date': '1962-02-12', 'value': '.'}]
+since 2026-10-01 21 rows
+unknown series HTTP 400 {'error_code': 400, 'error_message': 'Bad Request.  Invalid value for variable series_id.  Series IDs should be 25 or less alphanumeric characters.'}

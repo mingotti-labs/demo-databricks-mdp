@@ -123,3 +123,11 @@ Change `rba-rates` (2026-10-31). Record: its `design.md` "Probes"; scripts in `r
 | Probe | Question | Result |
 |---|---|---|
 | P1 | Can serverless download RBA tables F11.1, F1, F2 and F5, and does the parser read them? | Pass: HTTP 200 for all four; 18,938, 46,902, 16,298 and 7,824 rows; first dates and the named series as expected. |
+
+## FRED rates
+
+Change `fred-rates` (2026-10-31). Record: its `design.md` "Probes"; scripts in `references/poc/fred-rates/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Can serverless call the FRED API with the key from the `fred` secret scope, and what do `series` and `series/observations` return for `DGS10`? | Pass: HTTP 200; 16,913 observations in one call from 1962-01-02 to 2026-10-29, 721 with the value `.`; `realtime_start/end` echo the request day; an unknown series is HTTP 400 with a JSON message. |
