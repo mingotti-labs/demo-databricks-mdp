@@ -140,6 +140,20 @@ table quota read 458/500 before the run.
 - The base address `.../csv` returns 403 in a browser (the server does not list
   its folder); every file under it returns 200.
 
+## prd results (2026-10-31)
+
+PR #123 merged; the Main run deployed and ran `run_rba` among nine units (the
+PR edited `verification/verify_silver_landing.py`, which every unit's
+`verify_silver` step runs, so CI selected every unit reaching it).
+
+- `observations_raw`, `observations_scd1` and `silver_landing.rba__observations`
+  in `mdp_prd` each hold 89,962 rows, 73 series, 4 tables, as dev.
+  `observation_date` and `publication_date` are DATE.
+- Landing equals dev's Landing except `transformed_timestamp`, `source_file_path`
+  and `ingested_timestamp` (0 rows differ). `FXRUSD` 0.7040 (2026-10-30),
+  `FIRMMCRTD` 4.60 (2026-10-29), `FCMYGBAG10D` 5.208 (2026-10-28) and
+  `FILRHLBVS` 8.77 (2026-09-30) are the same as dev.
+
 ## Risks / Trade-offs
 
 - [The RBA changes the file layout] -> The parser fails on a missing
