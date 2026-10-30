@@ -9,12 +9,12 @@
   "required": ["source_system", "base_entities", "ignored_columns"],
   "properties": {
     "source_system": {
-      "description": "Suffix of the silver_landing_{source} schema this spec reads from.",
+      "description": "Source whose silver_landing.{source}__* tables this spec reads from.",
       "type": "string",
       "pattern": "^[a-z][a-z0-9_]*$"
     },
     "base_entities": {
-      "description": "Base entities, keyed by table name in silver_normalised_{source}; each keeps its Landing table's name and grain.",
+      "description": "Base entities, keyed by table name in silver_normalised_{source}; each keeps its Landing entity's name (without the {source}__ prefix) and grain.",
       "type": "object",
       "minProperties": 1,
       "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
@@ -46,9 +46,9 @@
   },
   "$defs": {
     "landing_table": {
-      "description": "Landing table, as silver_landing_{source}.{table}.",
+      "description": "Landing table, as silver_landing.{source}__{entity}.",
       "type": "string",
-      "pattern": "^silver_landing_[a-z0-9_]+\\.[a-z0-9_]+$"
+      "pattern": "^silver_landing\\.[a-z0-9_]+__[a-z0-9_]+$"
     },
     "base_entity": {
       "type": "object",
