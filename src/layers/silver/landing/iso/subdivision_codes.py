@@ -20,9 +20,9 @@ def subdivision_codes_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_iso.subdivision_codes")
+dp.create_streaming_table(name="silver_landing.iso__subdivision_codes")
 dp.create_auto_cdc_flow(
-    target="silver_landing_iso.subdivision_codes",
+    target="silver_landing.iso__subdivision_codes",
     source="subdivision_codes_changes",
     keys=[*NATURAL_KEYS, "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

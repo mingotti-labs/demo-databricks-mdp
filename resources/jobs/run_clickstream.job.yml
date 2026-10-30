@@ -20,7 +20,7 @@ resources:
             notebook_path: ../../migrations/reset_full_load.py
             base_parameters:
               catalog: ${var.catalog}
-              landing: silver_landing_clickstream.web_events
+              landing: silver_landing.clickstream__web_events
         - task_key: generate_enabled
           condition_task:
             op: EQUAL_TO

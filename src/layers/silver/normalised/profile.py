@@ -17,7 +17,8 @@ catalog = dbutils.widgets.get("catalog")
 source = dbutils.widgets.get("source")
 dependency_pairs = dbutils.widgets.get("dependency_pairs").strip()
 overlap_max_distinct = int(dbutils.widgets.get("overlap_max_distinct"))
-schema = f"silver_landing_{source}"
+schema = "silver_landing"
+prefix = f"{source}__"
 
 TOP_N = 20
 DELIMITERS = [";", ",", "|"]
@@ -36,12 +37,12 @@ def q(name: str) -> str:
 
 
 def fqn(table: str) -> str:
-    """Fully qualified, quoted name of a Landing table."""
-    return f"{q(catalog)}.{q(schema)}.{q(table)}"
+    """Fully qualified, quoted name of a Landing entity."""
+    return f"{q(catalog)}.{q(schema)}.{q(prefix + table)}"
 
 
 def landing_columns() -> dict[str, list[dict]]:
-    """Columns of every Landing entity in the source's schema, in order."""
+    """Columns of every Landing entity of the source, by entity name, in order."""
     types = ", ".join(f"'{t}'" for t in LANDING_TABLE_TYPES)
     rows = spark.sql(
         f"""
@@ -49,13 +50,14 @@ def landing_columns() -> dict[str, list[dict]]:
         FROM {q(catalog)}.information_schema.columns c
         JOIN {q(catalog)}.information_schema.tables t
           ON t.table_schema = c.table_schema AND t.table_name = c.table_name
-        WHERE c.table_schema = '{schema}' AND t.table_type IN ({types})
+        WHERE c.table_schema = '{schema}' AND startswith(c.table_name, '{prefix}')
+          AND t.table_type IN ({types})
         ORDER BY c.table_name, c.ordinal_position
         """
     ).collect()
     tables: dict[str, list[dict]] = {}
     for r in rows:
-        tables.setdefault(r.table_name, []).append(
+        tables.setdefault(r.table_name.removeprefix(prefix), []).append(
             {"name": r.column_name, "type": r.data_type}
         )
     return tables

@@ -10,24 +10,24 @@
 
 ## 2. Code
 
-- [ ] 2.1 Landing entity files (`src/layers/silver/landing/**`): every
+- [x] 2.1 Landing entity files (`src/layers/silver/landing/**`): every
       `create_streaming_table` / `create_auto_cdc_flow` target becomes
       `silver_landing.<source>__<entity>`
-- [ ] 2.2 Silver pipelines (`resources/pipelines/silver_*.pipeline.yml` and
+- [x] 2.2 Silver pipelines (`resources/pipelines/silver_*.pipeline.yml` and
       neon's in `cicd/databricks/free.yml`): `schema: silver_landing` (per
       P1); keys and names unchanged
-- [ ] 2.3 `landing:` job parameters in `resources/jobs/run_*.job.yml` and
+- [x] 2.3 `landing:` job parameters in `resources/jobs/run_*.job.yml` and
       `cicd/databricks/free.yml`
-- [ ] 2.4 `src/common/design_patterns.yml` (`silver_landing` per source) and
+- [x] 2.4 `src/common/design_patterns.yml` (`silver_landing` per source) and
       `src/common/tag_design_patterns.py` (prefix filter); tests in
       `tests/common/test_design_patterns.py`
-- [ ] 2.5 `src/common/normalised_spec.py` (prefix check) and its tests;
+- [x] 2.5 `src/common/normalised_spec.py` (prefix check) and its tests;
       Normalised specs `acnc.yml`, `airroi.yml` (`from:`);
       `src/layers/silver/normalised/profile.py`
-- [ ] 2.6 `verification/verify_silver_landing.py`,
+- [x] 2.6 `verification/verify_silver_landing.py`,
       `verification/verify_silver_normalised.py`,
       `migrations/acnc_reset_scd2.py`
-- [ ] 2.7 `uv run python cicd/apply_edition.py`; `uv run python -m pytest`;
+- [x] 2.7 `uv run python cicd/apply_edition.py`; `uv run python -m pytest`;
       `databricks bundle validate`; no `silver_landing_` left outside
       `standard.yml`, archives and history docs (grep)
 

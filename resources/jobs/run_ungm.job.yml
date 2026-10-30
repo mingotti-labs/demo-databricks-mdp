@@ -13,7 +13,7 @@ resources:
             notebook_path: ../../migrations/reset_full_load.py
             base_parameters:
               catalog: ${var.catalog}
-              landing: silver_landing_ungm.unspsc_public
+              landing: silver_landing.ungm__unspsc_public
         - task_key: bronze
           depends_on:
             - task_key: reset

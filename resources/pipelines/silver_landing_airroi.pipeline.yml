@@ -3,7 +3,7 @@ resources:
     silver_landing_airroi:
       name: silver--airroi--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_airroi
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

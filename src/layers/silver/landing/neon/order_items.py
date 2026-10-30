@@ -21,9 +21,9 @@ def order_items_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_neon.order_items")
+dp.create_streaming_table(name="silver_landing.neon__order_items")
 dp.create_auto_cdc_flow(
-    target="silver_landing_neon.order_items",
+    target="silver_landing.neon__order_items",
     source="order_items_changes",
     keys=["id"],
     sequence_by="_commit_version",

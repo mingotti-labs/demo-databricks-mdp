@@ -20,9 +20,9 @@ def market_summary_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_airroi.market_summary")
+dp.create_streaming_table(name="silver_landing.airroi__market_summary")
 dp.create_auto_cdc_flow(
-    target="silver_landing_airroi.market_summary",
+    target="silver_landing.airroi__market_summary",
     source="market_summary_changes",
     keys=NATURAL_KEYS + ["scd_valid_from_timestamp"],
     sequence_by="_commit_version",

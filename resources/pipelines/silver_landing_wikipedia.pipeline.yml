@@ -3,7 +3,7 @@ resources:
     silver_landing_wikipedia:
       name: silver--wikipedia--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_wikipedia
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

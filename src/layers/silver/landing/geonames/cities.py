@@ -17,9 +17,9 @@ def cities_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_geonames.cities")
+dp.create_streaming_table(name="silver_landing.geonames__cities")
 dp.create_auto_cdc_flow(
-    target="silver_landing_geonames.cities",
+    target="silver_landing.geonames__cities",
     source="cities_changes",
     keys=["geonameid", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

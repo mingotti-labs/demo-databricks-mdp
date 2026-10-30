@@ -3,7 +3,7 @@ resources:
     silver_landing_sec:
       name: silver--sec--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_sec
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

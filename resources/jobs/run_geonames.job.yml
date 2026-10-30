@@ -13,7 +13,7 @@ resources:
             notebook_path: ../../migrations/reset_full_load.py
             base_parameters:
               catalog: ${var.catalog}
-              landing: silver_landing_geonames.country_info,silver_landing_geonames.admin1_codes,silver_landing_geonames.admin2_codes,silver_landing_geonames.cities
+              landing: silver_landing.geonames__country_info,silver_landing.geonames__admin1_codes,silver_landing.geonames__admin2_codes,silver_landing.geonames__cities
               also_drop: bronze_geonames_publish.country_info_scd2,bronze_geonames_publish.admin1_codes_scd2,bronze_geonames_publish.admin2_codes_scd2,bronze_geonames_publish.cities_scd2
         - task_key: bronze
           depends_on:

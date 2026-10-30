@@ -3,7 +3,7 @@ resources:
     silver_landing_geonames:
       name: silver--geonames--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_geonames
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

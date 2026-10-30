@@ -21,9 +21,9 @@ def products_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_neon.products")
+dp.create_streaming_table(name="silver_landing.neon__products")
 dp.create_auto_cdc_flow(
-    target="silver_landing_neon.products",
+    target="silver_landing.neon__products",
     source="products_changes",
     keys=["id", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

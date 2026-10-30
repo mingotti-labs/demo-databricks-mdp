@@ -3,7 +3,7 @@ resources:
     silver_landing_ungm:
       name: silver--ungm--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_ungm
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

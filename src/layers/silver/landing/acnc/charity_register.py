@@ -17,9 +17,9 @@ def charity_register_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_acnc.charity_register")
+dp.create_streaming_table(name="silver_landing.acnc__charity_register")
 dp.create_auto_cdc_flow(
-    target="silver_landing_acnc.charity_register",
+    target="silver_landing.acnc__charity_register",
     source="charity_register_changes",
     keys=["ABN", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",

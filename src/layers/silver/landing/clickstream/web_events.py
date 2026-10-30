@@ -22,9 +22,9 @@ def web_events_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_clickstream.web_events")
+dp.create_streaming_table(name="silver_landing.clickstream__web_events")
 dp.create_auto_cdc_flow(
-    target="silver_landing_clickstream.web_events",
+    target="silver_landing.clickstream__web_events",
     source="web_events_changes",
     keys=["event_id"],
     sequence_by="_commit_version",

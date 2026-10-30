@@ -231,7 +231,7 @@ def count(fqn: str, where: str = "1=1") -> int:
 failures = []
 
 for entity in ENTITIES:
-    silver_fqn = f"{catalog}.silver_landing_{entity['source']}.{entity['table']}"
+    silver_fqn = f"{catalog}.silver_landing.{entity['source']}__{entity['table']}"
     bronze_fqn = f"{catalog}.{entity['bronze_schema']}.{entity['bronze_table']}"
     label = f"{entity['source']}.{entity['table']}"
 

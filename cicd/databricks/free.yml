@@ -153,7 +153,7 @@ targets:
         silver_landing_neon:
           name: silver--neon--${bundle.target}
           catalog: ${var.catalog}
-          schema: silver_landing_neon
+          schema: silver_landing
           serverless: true
           continuous: false
           configuration:
@@ -177,7 +177,7 @@ targets:
               notebook_path: migrations/reset_full_load.py
               base_parameters:
                 catalog: ${var.catalog}
-                landing: silver_landing_neon.customers,silver_landing_neon.products,silver_landing_neon.orders,silver_landing_neon.order_items
+                landing: silver_landing.neon__customers,silver_landing.neon__products,silver_landing.neon__orders,silver_landing.neon__order_items
           - task_key: bronze_ingestion
             depends_on:
             - task_key: reset

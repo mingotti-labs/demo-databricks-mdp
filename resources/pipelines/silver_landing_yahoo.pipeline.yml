@@ -3,7 +3,7 @@ resources:
     silver_landing_yahoo:
       name: silver--yahoo--${bundle.target}
       catalog: ${var.catalog}
-      schema: silver_landing_yahoo
+      schema: silver_landing
       serverless: true
       continuous: false
       configuration:

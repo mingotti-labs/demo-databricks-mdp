@@ -17,9 +17,9 @@ def admin2_codes_changes():
     )
 
 
-dp.create_streaming_table(name="silver_landing_geonames.admin2_codes")
+dp.create_streaming_table(name="silver_landing.geonames__admin2_codes")
 dp.create_auto_cdc_flow(
-    target="silver_landing_geonames.admin2_codes",
+    target="silver_landing.geonames__admin2_codes",
     source="admin2_codes_changes",
     keys=["code", "scd_valid_from_timestamp"],
     sequence_by="_commit_version",
