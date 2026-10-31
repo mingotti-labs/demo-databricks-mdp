@@ -1,0 +1,20 @@
+source: geonames
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: true
+tables:
+  - table: country_info
+    bronze_schema: bronze_geonames_publish
+    bronze_table: country_info_scd2
+    scd2: true
+  - table: admin1_codes
+    bronze_schema: bronze_geonames_publish
+    bronze_table: admin1_codes_scd2
+    scd2: true
+  - table: admin2_codes
+    bronze_schema: bronze_geonames_publish
+    bronze_table: admin2_codes_scd2
+    scd2: true
+  - table: cities
+    bronze_schema: bronze_geonames_publish
+    bronze_table: cities_scd2
+    scd2: true

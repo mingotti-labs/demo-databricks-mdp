@@ -1,0 +1,8 @@
+source: ungm
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: false
+tables:
+  - table: unspsc_public
+    bronze_schema: bronze_ungm_publish
+    bronze_table: unspsc_public_scd2
+    scd2: true

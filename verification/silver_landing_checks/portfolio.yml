@@ -1,0 +1,28 @@
+source: portfolio
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: true
+tables:
+  - table: concept_mapping
+    bronze_schema: bronze_portfolio_publish
+    bronze_table: concept_mapping_scd2
+    scd2: true
+  - table: predecessor_ciks
+    bronze_schema: bronze_portfolio_publish
+    bronze_table: predecessor_ciks_scd2
+    scd2: true
+  - table: settings
+    bronze_schema: bronze_portfolio_publish
+    bronze_table: settings_scd2
+    scd2: true
+  - table: risk_levels
+    bronze_schema: bronze_portfolio_publish
+    bronze_table: risk_levels_scd2
+    scd2: true
+  - table: target_mix
+    bronze_schema: bronze_portfolio_publish
+    bronze_table: target_mix_scd2
+    scd2: true
+  - table: benchmarks
+    bronze_schema: bronze_portfolio_publish
+    bronze_table: benchmarks_scd2
+    scd2: true
