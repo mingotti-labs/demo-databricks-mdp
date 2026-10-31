@@ -1,22 +1,22 @@
 ## 0. Landing checks per source
 
-- [ ] 0.1 Dev baseline: run the `verify_silver_landing` job with an empty
+- [x] 0.1 Dev baseline: run the `verify_silver_landing` job with an empty
       `source` before any change: 30 entities verified
-- [ ] 0.2 `src/common/silver_landing_checks.py`: load and validate one file or
+- [x] 0.2 `src/common/silver_landing_checks.py`: load and validate one file or
       all of `verification/silver_landing_checks/`; unit tests, including that
       every source in `design_patterns.yml` with a `silver_landing` schema has a
       file
-- [ ] 0.3 The 13 files from the current `ENTITIES` list and
+- [x] 0.3 The 13 files from the current `ENTITIES` list and
       `SOURCES_WITH_INGESTED_TIMESTAMP` (no entry changed); `verify_silver_landing.py`
       reads them and loses both constants
-- [ ] 0.4 Dev: the same job, empty `source`: 30 entities verified; one run with
+- [x] 0.4 Dev: the same job, empty `source`: 30 entities verified; one run with
       `source=yahoo` verifies 4
 
 ## 1. Probe
 
 - [x] 1.1 Probe P1 from serverless (design.md): done 2026-10-31; scripts and
       result in `references/poc/fred-rates/`, row in the probes register
-- [ ] 1.2 iac `raw-volume-fred` applied: `bronze_fred.s3_raw` exists in
+- [x] 1.2 iac `raw-volume-fred` applied: `bronze_fred.s3_raw` exists in
       `mdp_dev` and `mdp_prd`
 
 ## 2. Fetch
