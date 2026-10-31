@@ -11,6 +11,7 @@ resources:
         pipelines.maxFlowRetryAttempts: "0"
         iso3166_countries_url: ${var.iso3166_countries_url}
         iso3166_subdivisions_url: ${var.iso3166_subdivisions_url}
+        iso10383_mic_url: ${var.iso10383_mic_url}
         workspace_file_path: ${workspace.file_path}
       environment:
         dependencies:

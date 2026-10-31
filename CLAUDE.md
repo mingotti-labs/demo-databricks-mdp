@@ -566,6 +566,15 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
     `row_number()` window over the SCD key keeps rank 1 in the deduped
     path and rank > 1 in quarantine — so `raw = deduped_distinct_keys +
     quarantine` exactly, checked by `verification/verify_bronze.py` (spec: `verification/bronze_checks/iso.yml`).
+  - **ISO 10383 market identifier codes** (`iso-mic`, 2026-10): the same source
+    carries `market_identifier_codes` (2,889 rows: 1,596 operating markets, 1,293
+    segments), a full-load Materialized View from `iso10383_mic_url`, SCD2 by
+    `market_identifier_code`, Landing `silver_landing.iso__market_identifier_codes`
+    with the four date columns as DATE. `src/common/iso10383.py` decodes the bytes
+    as UTF-8 (`requests` would guess ISO-8859-1) and fails when a source column is
+    renamed. The ISO terms allow free use but not reproducing the whole list for
+    third parties; the raw table's comment says so. Read by the Silver Domain
+    `market` table (`silver-domain-investments`).
 - **GeoNames country/admin1/admin2/city gazetteer data** (Phase 3j) — the
   city/locality half of the reference-data backbone under ISO 3166's
   country/state half. Four static files from a public, unauthenticated

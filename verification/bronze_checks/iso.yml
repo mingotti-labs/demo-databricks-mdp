@@ -13,3 +13,7 @@ tables:
     quarantine: subdivision_codes_quarantine
     quarantine_not_empty: true
     scd2: subdivision_codes_scd2
+  - raw: market_identifier_codes_raw
+    keys: [market_identifier_code]
+    columns: [market_identifier_code, operating_market_identifier_code, operating_or_segment, market_name, legal_entity_name, legal_entity_identifier, market_category_code, acronym, country_code_alpha2, city, website, status, creation_date, last_update_date, last_validation_date, expiry_date, comments, ingested_timestamp]
+    scd2: market_identifier_codes_scd2
