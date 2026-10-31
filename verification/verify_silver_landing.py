@@ -4,241 +4,25 @@
 # and (for SCD2-sourced entities) is_current correctly derived from
 # scd_valid_to_timestamp. See references/docs/medallion/silver.md and
 # openspec/changes/phase4a-silver-landing/design.md for the full contract.
+import sys
+
 dbutils.widgets.text("catalog", "")
 dbutils.widgets.text("source", "")
+dbutils.widgets.text("workspace_file_path", "")
 catalog = dbutils.widgets.get("catalog")
 source = dbutils.widgets.get("source")
+workspace_file_path = dbutils.widgets.get("workspace_file_path")
 
-ENTITIES = [
-    {
-        "source": "neon",
-        "table": "customers",
-        "bronze_schema": "bronze_neon_publish",
-        "bronze_table": "customers_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "neon",
-        "table": "products",
-        "bronze_schema": "bronze_neon_publish",
-        "bronze_table": "products_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "neon",
-        "table": "orders",
-        "bronze_schema": "bronze_neon_publish",
-        "bronze_table": "orders_scd1",
-        "scd2": False,
-    },
-    {
-        "source": "neon",
-        "table": "order_items",
-        "bronze_schema": "bronze_neon_publish",
-        "bronze_table": "order_items_scd1",
-        "scd2": False,
-    },
-    {
-        "source": "clickstream",
-        "table": "web_events",
-        "bronze_schema": "bronze_clickstream_publish",
-        "bronze_table": "web_events_scd1",
-        "scd2": False,
-    },
-    {
-        "source": "ungm",
-        "table": "unspsc_public",
-        "bronze_schema": "bronze_ungm_publish",
-        "bronze_table": "unspsc_public_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "acnc",
-        "table": "charity_register",
-        "bronze_schema": "bronze_acnc_publish",
-        "bronze_table": "charity_register_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "nsw_spatial",
-        "table": "property",
-        "bronze_schema": "bronze_nsw_spatial_publish",
-        "bronze_table": "property_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "airroi",
-        "table": "market_metrics_all",
-        "bronze_schema": "bronze_airroi_publish",
-        "bronze_table": "market_metrics_all_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "airroi",
-        "table": "market_summary",
-        "bronze_schema": "bronze_airroi_publish",
-        "bronze_table": "market_summary_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "iso",
-        "table": "country_codes",
-        "bronze_schema": "bronze_iso_publish",
-        "bronze_table": "country_codes_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "iso",
-        "table": "subdivision_codes",
-        "bronze_schema": "bronze_iso_publish",
-        "bronze_table": "subdivision_codes_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "portfolio",
-        "table": "concept_mapping",
-        "bronze_schema": "bronze_portfolio_publish",
-        "bronze_table": "concept_mapping_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "portfolio",
-        "table": "predecessor_ciks",
-        "bronze_schema": "bronze_portfolio_publish",
-        "bronze_table": "predecessor_ciks_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "portfolio",
-        "table": "settings",
-        "bronze_schema": "bronze_portfolio_publish",
-        "bronze_table": "settings_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "portfolio",
-        "table": "risk_levels",
-        "bronze_schema": "bronze_portfolio_publish",
-        "bronze_table": "risk_levels_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "portfolio",
-        "table": "target_mix",
-        "bronze_schema": "bronze_portfolio_publish",
-        "bronze_table": "target_mix_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "portfolio",
-        "table": "benchmarks",
-        "bronze_schema": "bronze_portfolio_publish",
-        "bronze_table": "benchmarks_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "wikipedia",
-        "table": "sp500_constituents",
-        "bronze_schema": "bronze_wikipedia_publish",
-        "bronze_table": "sp500_constituents_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "sec",
-        "table": "company_tickers",
-        "bronze_schema": "bronze_sec_publish",
-        "bronze_table": "company_tickers_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "sec",
-        "table": "company_facts",
-        "bronze_schema": "bronze_sec_publish",
-        "bronze_table": "company_facts_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "yahoo",
-        "table": "prices",
-        "bronze_schema": "bronze_yahoo_publish",
-        "bronze_table": "prices_scd1",
-        "scd2": False,
-    },
-    {
-        "source": "yahoo",
-        "table": "events",
-        "bronze_schema": "bronze_yahoo_publish",
-        "bronze_table": "events_scd1",
-        "scd2": False,
-    },
-    {
-        "source": "yahoo",
-        "table": "options",
-        "bronze_schema": "bronze_yahoo_publish",
-        "bronze_table": "options_scd1",
-        "scd2": False,
-    },
-    {
-        "source": "yahoo",
-        "table": "calendar",
-        "bronze_schema": "bronze_yahoo_publish",
-        "bronze_table": "calendar_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "rba",
-        "table": "observations",
-        "bronze_schema": "bronze_rba_publish",
-        "bronze_table": "observations_scd1",
-        "scd2": False,
-    },
-    {
-        "source": "geonames",
-        "table": "country_info",
-        "bronze_schema": "bronze_geonames_publish",
-        "bronze_table": "country_info_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "geonames",
-        "table": "admin1_codes",
-        "bronze_schema": "bronze_geonames_publish",
-        "bronze_table": "admin1_codes_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "geonames",
-        "table": "admin2_codes",
-        "bronze_schema": "bronze_geonames_publish",
-        "bronze_table": "admin2_codes_scd2",
-        "scd2": True,
-    },
-    {
-        "source": "geonames",
-        "table": "cities",
-        "bronze_schema": "bronze_geonames_publish",
-        "bronze_table": "cities_scd2",
-        "scd2": True,
-    },
-]
-if source:
-    ENTITIES = [e for e in ENTITIES if e["source"] == source]
-    assert ENTITIES, f"no Silver Landing entities for source {source!r}"
+sys.path.insert(0, f"{workspace_file_path}/src")
+from common import silver_landing_checks  # noqa: E402
 
-# Sources whose Bronze Publish SCD2 objects carry ingested_timestamp
-# (stamped at their own _raw layer) -- Silver Landing propagates it
-# unchanged, never stamps or overwrites it.
-SOURCES_WITH_INGESTED_TIMESTAMP = {
-    "airroi",
-    "iso",
-    "geonames",
-    "acnc",
-    "wikipedia",
-    "portfolio",
-    "sec",
-    "yahoo",
-    "rba",
-}
+# One file per source in verification/silver_landing_checks/; an empty source
+# checks every file. A source whose Bronze Publish carries ingested_timestamp
+# (stamped at its own _raw layer) has it propagated unchanged by Silver Landing,
+# never stamped or overwritten.
+ENTITIES = silver_landing_checks.load_entities(
+    f"{workspace_file_path}/verification/silver_landing_checks", source
+)
 
 
 def count(fqn: str, where: str = "1=1") -> int:
@@ -277,7 +61,7 @@ for entity in ENTITIES:
                 f"{label}: {bad_is_current} rows with is_current not matching scd_valid_to_timestamp"
             )
 
-    if entity["source"] in SOURCES_WITH_INGESTED_TIMESTAMP:
+    if entity["ingested_timestamp"]:
         # Current rows only: an SCD2 version closed before a source's
         # ingested_timestamp retrofit keeps the column null (acnc has 10
         # such rows in dev; see phase4e's design.md) -- downstream `max()`

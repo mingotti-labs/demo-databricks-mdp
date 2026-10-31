@@ -1,0 +1,12 @@
+source: airroi
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: true
+tables:
+  - table: market_metrics_all
+    bronze_schema: bronze_airroi_publish
+    bronze_table: market_metrics_all_scd2
+    scd2: true
+  - table: market_summary
+    bronze_schema: bronze_airroi_publish
+    bronze_table: market_summary_scd2
+    scd2: true

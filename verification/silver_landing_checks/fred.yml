@@ -1,0 +1,8 @@
+source: fred
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: true
+tables:
+  - table: observations
+    bronze_schema: bronze_fred_publish
+    bronze_table: observations_scd1
+    scd2: false

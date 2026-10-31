@@ -1,0 +1,20 @@
+source: neon
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: false
+tables:
+  - table: customers
+    bronze_schema: bronze_neon_publish
+    bronze_table: customers_scd2
+    scd2: true
+  - table: products
+    bronze_schema: bronze_neon_publish
+    bronze_table: products_scd2
+    scd2: true
+  - table: orders
+    bronze_schema: bronze_neon_publish
+    bronze_table: orders_scd1
+    scd2: false
+  - table: order_items
+    bronze_schema: bronze_neon_publish
+    bronze_table: order_items_scd1
+    scd2: false

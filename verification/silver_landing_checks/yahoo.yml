@@ -1,0 +1,20 @@
+source: yahoo
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: true
+tables:
+  - table: prices
+    bronze_schema: bronze_yahoo_publish
+    bronze_table: prices_scd1
+    scd2: false
+  - table: events
+    bronze_schema: bronze_yahoo_publish
+    bronze_table: events_scd1
+    scd2: false
+  - table: options
+    bronze_schema: bronze_yahoo_publish
+    bronze_table: options_scd1
+    scd2: false
+  - table: calendar
+    bronze_schema: bronze_yahoo_publish
+    bronze_table: calendar_scd2
+    scd2: true

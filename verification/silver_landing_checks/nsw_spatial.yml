@@ -1,0 +1,8 @@
+source: nsw_spatial
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: false
+tables:
+  - table: property
+    bronze_schema: bronze_nsw_spatial_publish
+    bronze_table: property_scd2
+    scd2: true

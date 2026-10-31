@@ -95,6 +95,33 @@ and archive cycle.
 **P1 (done, pass).** See Context. The result is in `p1_result.txt` and the
 probes register.
 
+## Dev results (2026-10-31)
+
+Draft PR #127; everything ran as the service principal. The table quota read
+430/500 before the runs.
+
+- **Section 0, Landing checks per source.** Baseline, before any change: the
+  `verify_silver_landing` job with an empty `source` verified 30 entities. After
+  the refactor: 30 entities again; `source=yahoo` verified 4; `source=nope`
+  failed with "no Silver Landing checks for source 'nope'". The 13 files load to
+  exactly the old list (compared entry by entry: tables, SCD2 flags, timestamp
+  flags). With `fred.yml` added the empty-`source` job verifies 31.
+- **First `run_fred`** (`verify=true`): success. `observations_raw`,
+  `observations_scd1` and `silver_landing.fred__observations` each hold 55,667
+  rows: `DGS10` 16,192 (1962-01-02 to 2026-10-29, equal to P1's 16,913 less 721
+  `.` days), `DFF` 26,419 (1954-07-01 to 2026-10-29), `DFEDTARU` and `DFEDTARL`
+  6,528 each (2008-12-16 to 2026-10-30). In Landing: `DGS10` 4.98 (2026-10-29),
+  `DFF` 3.88 (2026-10-29), `DFEDTARU` 4 and `DFEDTARL` 3.75 (2026-10-30),
+  `observation_date` is DATE and `value` STRING.
+- **Second run:** success, requested from 31 days before each series' last date
+  and wrote 119 rows (`DFEDTARL` 32 from 2026-09-29, `DFEDTARU` 32 from
+  2026-09-29, `DFF` 32 from 2026-09-28, `DGS10` 23 from 2026-09-28). Raw grew to
+  55,786; Publish and Landing stayed at 55,667.
+- `reload=true` was not run in dev: it requests the same observations as the
+  first run.
+- The API key is read from the `fred` scope; unit tests prove it is in no error
+  message or traceback (`tests/common/test_fred_series.py`).
+
 ## Risks / Trade-offs
 
 - [FRED changes the payload] -> The row builder indexes the keys it needs, so a

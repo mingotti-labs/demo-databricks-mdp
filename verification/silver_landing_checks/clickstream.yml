@@ -1,0 +1,8 @@
+source: clickstream
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: false
+tables:
+  - table: web_events
+    bronze_schema: bronze_clickstream_publish
+    bronze_table: web_events_scd1
+    scd2: false

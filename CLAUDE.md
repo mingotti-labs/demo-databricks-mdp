@@ -652,6 +652,20 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   date (late-filled cells, revisions); `reload=true` writes everything. Append-only
   raw as SEC; Bronze Publish `observations_scd1`; Landing `silver_landing.rba__observations`
   with `observation_date` and `publication_date` converted to dates.
+- **FRED** (`fred-rates`, dividend portfolio story) -- the US 10-year Treasury
+  yield (`DGS10`, a market yield) and the Fed's policy rate (`DFF` effective,
+  `DFEDTARU` / `DFEDTARL` target range, the counterpart of the RBA cash rate
+  target), from the FRED API with the key in secret scope `fred`. One long table
+  as RBA. `run_fred`'s first task (`src/common/fetch_fred.py`) requests only the
+  31 days before each series' last stored date (`reload=true` for everything),
+  skips the `.` (no value) days, and writes one dated file. The key is in the
+  query string, so all requests go through `get_json`, which re-raises failures
+  without the URL. Landing `silver_landing.fred__observations` has
+  `observation_date` as a date.
+- **Landing checks per source**: `verification/silver_landing_checks/<source>.yml`
+  lists a source's Landing tables for `verify_silver_landing`; a new source adds
+  one file (a test fails if a source with a Landing schema has none) and no
+  shared notebook, so CI runs only that source.
 
 ## Development style
 

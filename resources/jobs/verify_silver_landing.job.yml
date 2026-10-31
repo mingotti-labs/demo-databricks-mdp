@@ -7,6 +7,8 @@ resources:
           default: ${var.catalog}
         - name: source
           default: ""
+        - name: workspace_file_path
+          default: ${workspace.file_path}
       tasks:
         - task_key: verify_silver_landing
           notebook_task:

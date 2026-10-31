@@ -1,0 +1,8 @@
+source: wikipedia
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: true
+tables:
+  - table: sp500_constituents
+    bronze_schema: bronze_wikipedia_publish
+    bronze_table: sp500_constituents_scd2
+    scd2: true

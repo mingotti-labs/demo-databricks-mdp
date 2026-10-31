@@ -1,0 +1,8 @@
+source: acnc
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
+ingested_timestamp: true
+tables:
+  - table: charity_register
+    bronze_schema: bronze_acnc_publish
+    bronze_table: charity_register_scd2
+    scd2: true
