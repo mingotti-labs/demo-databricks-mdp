@@ -47,6 +47,9 @@ variables:
   iso3166_subdivisions_url:
     description: URL for the ISO 3166-2 subdivision codes CSV -- same for every target, no test/prod split exists for this source.
     default: https://raw.githubusercontent.com/ipregistry/iso3166/master/subdivisions.csv
+  iso10383_mic_url:
+    description: URL for the ISO 10383 market identifier code CSV -- same for every target, no test/prod split exists for this source.
+    default: https://www.iso20022.org/sites/default/files/ISO10383_MIC/ISO10383_MIC.csv
   geonames_country_info_url:
     description: URL for GeoNames' countryInfo.txt dump -- same for every target, no test/prod split exists for this source.
     default: https://download.geonames.org/export/dump/countryInfo.txt
