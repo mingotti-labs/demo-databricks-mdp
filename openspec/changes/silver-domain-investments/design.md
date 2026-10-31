@@ -63,6 +63,22 @@ the column yet. Recorded in NAMING.md's status line.
   renumber them. Readable composite keys were rejected by the user: an id
   carries no meaning. `concat_ws` skips empty parts, so a benchmark with no
   market hashes its symbol alone until the world indexes change adds the market.
+- **Where ids live** (user, 2026-10-31): entity ids belong in the Silver Domain,
+  warehouse surrogate keys in gold. Landing and Normalised keep each source's own
+  keys (CIK, symbol, ABN); the domain layer is where sources become one set of
+  entities, so it defines one stable identity per entity, or every gold table
+  would re-solve "which CIK is this symbol" and could drift. An entity id
+  (`company_id`, `listing_id`) identifies the thing itself and is a hash of its
+  business key. A dimension surrogate key is one per version of a dimension row
+  (SCD2) so facts point at the row true at the time; that comes from how gold
+  shapes a model, so gold adds it when it builds a versioned dimension. The
+  weakness of a hash: if the business key changes (a reissued CIK, a company
+  later matched to a second registry) the id changes. A stored counter with a
+  crosswalk table survives that but needs state that outlives a rebuild, which
+  materialized views cannot hold. Revisit with a persistent crosswalk when
+  companies are matched across registries (for example an ASX company that also
+  files with the SEC); the column names do not change. The predecessor-CIK rule
+  covers the one such case known today.
 - Tables are named for what a row is; a grain suffix is added when one entity
   has a row per period (`price_daily`, `market_rate_daily`). `market_rate_daily`
   holds exchange and interest rates in one table; gold can split them into
