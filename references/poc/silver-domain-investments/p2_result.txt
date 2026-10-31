@@ -1,0 +1,7 @@
+current members 503 distinct symbols 503
+SEC fields ['cik', 'name', 'ticker', 'exchange'] rows 10430
+SEC exchange values {'NYSE': 345, 'Nasdaq': 157, 'CBOE': 1}
+SEC missing 0 []
+Yahoo exchange values {'NYQ': 345, 'NMS': 157, 'BTS': 1}
+unmapped (symbol, sec, yahoo) 0 []
+disagree 0 []
