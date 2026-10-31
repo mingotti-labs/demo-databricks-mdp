@@ -141,3 +141,11 @@ Change `iso-mic` (2026-10-31). Record: its `design.md` "Context"; scripts in `re
 |---|---|---|
 | P1 | What does the ISO 10383 CSV hold: key uniqueness, date format, rows per type and status? | Pass: 2,889 rows, `MIC` unique, 1,596 operating and 1,293 segment rows, 2,313 active, 574 expired, 2 updated; dates `YYYYMMDD`; country filled on every row. |
 | P2 | What is the file's encoding, and which rows name an operating market that has no operating row? | UTF-8 without BOM, no charset in the header (`requests` would guess ISO-8859-1); 8 expired segments name a removed operating market, no operating row does. |
+
+## Silver Domain: investments
+
+Change `silver-domain-investments` (2026-10-31). Record: its `design.md` "Probes"; scripts in `references/poc/silver-domain-investments/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P2 | Which market does each current S&P 500 symbol trade on, per SEC `company_tickers_exchange.json` and per Yahoo? | Pass: both cover all 503 and agree on every one: 345 `XNYS`, 157 `XNAS`, 1 `XCBO`; Yahoo is the chosen source (no new table). |
