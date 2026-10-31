@@ -146,3 +146,9 @@ Draft PR #127; everything ran as the service principal. The table quota read
 4. Merge; the notebook changed, so CI runs every unit in prd once.
 
 Rollback: remove the code; drop the three tables per target with approval.
+
+## Prd results (2026-10-31)
+
+- Merge of #127 ran every unit in prd once (shared Landing notebook changed). Eight units succeeded, including `fred` and `rba`.
+- `geonames` and `wikipedia` failed in `bronze` with the platform error INTERNAL_ERROR_BEHAVIOR_CHANGED ("paused because Databricks Platform found a potential regression"). Rerun by hand, one at a time, both succeeded.
+- FRED prd: raw, Publish and Landing 55,667 rows each, 0 rows differ from dev Landing. Latest: DGS10 4.98, DFF 3.88, DFEDTARU 4, DFEDTARL 3.75. `observation_date` is DATE.
