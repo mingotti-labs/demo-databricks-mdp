@@ -102,8 +102,7 @@ the column yet. Recorded in NAMING.md's status line.
 sector of the key's current version (or its latest when it left), with share
 classes resolved by taking the alphabetically first symbol's name. It has no
 index columns. `market` selects the operating markets (`OPRT`) of the ISO list.
-`listing` has a row per symbol seen in the Wikipedia versions (market from probe
-P2) and per `portfolio` benchmark; `company_id` comes from the symbol's latest
+`listing` has a row per symbol seen in the Wikipedia versions (market from Yahoo's exchange code, probe P2) and per `portfolio` benchmark; `company_id` comes from the symbol's latest
 Wikipedia version, so a symbol reused by another company would be assigned to
 the latest one (the verification fails if one symbol maps to two keys, so the
 gap is visible, not silent). `index_membership` is a typed copy of the Wikipedia
@@ -247,14 +246,24 @@ them deploys; candidates are listed in the risk below, not chosen here.
 
 ## Probes
 
-- **P2, the market of each S&P 500 symbol** (before `listing` is built): nothing
-  we hold says which market a member trades on. Candidates: SEC's
-  `company_tickers_exchange.json` (exchange name per ticker) and Yahoo's exchange
-  code in `yfinance` info (for example `NMS` for Nasdaq), each needing a small
-  mapping to operating market identifier codes (`XNAS`, `XNYS`). Check coverage
-  of all 503 current symbols and agreement between the two. Result decides the
-  source and whether the mapping is a new `portfolio` CSV. Scripts in
-  `references/poc/silver-domain-investments/`.
+- **P2, the market of each S&P 500 symbol** (done 2026-10-31; scripts and result
+  in `references/poc/silver-domain-investments/`): SEC's
+  `company_tickers_exchange.json` (10,430 tickers; `exchange` is `Nasdaq`, `NYSE`
+  or `CBOE`) and Yahoo's `fast_info["exchange"]` (`NMS`, `NYQ`, `BTS`) both cover
+  all 503 current members and agree on every one once mapped to operating market
+  identifier codes: 345 `XNYS`, 157 `XNAS`, 1 `XCBO` (Cboe Global Markets itself).
+  Decision: the market comes from Yahoo, carried on the calendar row the Yahoo
+  fetch already writes for every symbol (`exchange_code`, a column on
+  `yahoo__calendar`, SCD2 so a move between markets keeps its history), and
+  `src/common/investments.py` maps it to the operating code. This adds no table,
+  where a new SEC source would cost a raw, Publish and Landing table (12 slots).
+  Cost: `fetch_yahoo.py` changes, so CI runs `run_yahoo`, and every calendar row
+  gets one new version once (the column is new). SEC stays the cross-check, not
+  the source. Mapping: `NMS`, `NGM`, `NCM` to `XNAS`; `NYQ`, `PCX`, `ASE` to
+  `XNYS`; `BTS` to `XCBO`. The ISO list gives `BATS`, `ARCX` and `XASE` as
+  segments of `XCBO` and `XNYS`, and `market` holds operating markets only, so
+  the mapping goes to the operating code. A code with no mapping fails the
+  verification.
 - **P1, SEC coverage of the new concepts** (before the mapping rows are
   merged): for every current CIK, which of the new concepts appear in a 10-K
   for a fiscal year ending in the last 18 months. Answers how often the

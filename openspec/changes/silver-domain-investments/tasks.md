@@ -6,9 +6,8 @@
 - [ ] 1.2 Probe P1 (design.md): coverage of the new concepts per current CIK;
       scripts and result in `references/poc/silver-domain-investments/`, row in
       the probes register, result in design.md
-- [ ] 1.3 Probe P2 (design.md): the market of each S&P 500 symbol (SEC exchange
-      field and Yahoo codes, mapping to operating market codes); result in
-      design.md decides `listing`'s source
+- [x] 1.3 Probe P2 (design.md): the market of each S&P 500 symbol; done
+      2026-10-31, Yahoo's exchange code, result in design.md
 - [ ] 1.4 The `iso-mic` change implemented and its Landing table loaded in dev
       and prd
 - [ ] 1.5 Table quota read before the first deploy: stop and ask if above 452
@@ -23,11 +22,16 @@
       `run_portfolio`, then `run_sec`; the new concepts appear in
       `mdp_dev.silver_landing.sec__company_facts`
 
+- [ ] 2.3 `yahoo_market.calendar_row` adds `exchange_code` from `fast_info`
+      (unit test on a stub); dev: `run_yahoo`, then every current member has an
+      `exchange_code` in the latest `silver_landing.yahoo__calendar` version
+
 ## 3. Shared logic
 
 - [ ] 3.1 `src/common/investments.py`: figure list with instant or duration,
       concept choice (priority, latest filing), duration check, special-dividend
-      rule, rate list, id hashing (`company_id`, `listing_id`); unit tests, including that the figure list matches
+      rule, rate list, id hashing (`company_id`, `listing_id`), exchange code to
+      operating market mapping; unit tests, including that the figure list matches
       `concept_mapping.csv`
 
 ## 4. Pipeline

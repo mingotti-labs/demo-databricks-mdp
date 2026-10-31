@@ -60,6 +60,10 @@ in the fundamentals. The user also decided that Silver Domain schemas are named
   - `market_rate_daily`: AUD/USD, the RBA cash rate target, the US 10-year yield and
     the three Fed funds series, one long table.
   - `options_activity`: the latest options flag and activity per listing.
+- **Yahoo fetch**: `src/common/yahoo_market.py` adds `exchange_code` (Yahoo's
+  exchange code) to the calendar row written for every symbol, so a listing's
+  market comes with no new table (probe P2: Yahoo and SEC agree on all 503
+  current members). The Silver Domain maps the code to the operating market.
 - **New unit** `run_investments`: the pipeline, then (with `verify=true`) a
   domain verification notebook.
 - **Not in this change**: NCAV, NCAV per share, Graham's Number and every other
@@ -82,7 +86,8 @@ rows changes data, not requirements.
   rule), `resources/pipelines/silver_domain_investments.pipeline.yml`,
   `resources/jobs/run_investments.job.yml`,
   `verification/verify_silver_domain_investments.py`.
-- Changed: `data/portfolio/concept_mapping.csv` (merging it runs
+- Changed: `src/common/yahoo_market.py` (calendar rows gain `exchange_code`;
+  CI runs `run_yahoo`), `data/portfolio/concept_mapping.csv` (merging it runs
   `run_portfolio` in prd; the next `run_sec` rewrites every company's facts file
   once, about 500 files), NAMING.md, silver.md, CLAUDE.md, registers.
 - Table quota: 9 materialized views, 2 slots each, in dev and prd: 36 slots.

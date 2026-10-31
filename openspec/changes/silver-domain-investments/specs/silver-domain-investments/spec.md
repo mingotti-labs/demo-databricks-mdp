@@ -60,14 +60,20 @@ one trading symbol on one market. It SHALL carry `market_identifier_code`,
 `trading_symbol_code` (the Wikipedia form with dots, as in Landing),
 `currency_code` and `company_id` (empty for an index benchmark). Listings SHALL
 come from every symbol in the Wikipedia S&P 500 history and from the
-`portfolio` benchmarks. The market of an S&P 500 symbol SHALL be the one probe P2
-(design.md) chooses. `company_id` SHALL come from the central index key of the
+`portfolio` benchmarks. The market of an S&P 500 symbol SHALL be the operating market identifier code
+mapped from the `exchange_code` of the latest version of the symbol's Yahoo
+calendar row (`NMS`, `NGM`, `NCM` to `XNAS`; `NYQ`, `PCX`, `ASE` to `XNYS`;
+`BTS` to `XCBO`). `company_id` SHALL come from the central index key of the
 symbol's latest Wikipedia version.
 
 #### Scenario: A member resolves to a company
 - **WHEN** `KO` is in the current list
 - **THEN** `listing` has one row for `KO` whose `company_id` is the
   `company_id` of its central index key
+
+#### Scenario: A member's market
+- **WHEN** the latest Yahoo calendar row for `KO` has `exchange_code` `NYQ`
+- **THEN** the `KO` listing has `market_identifier_code` `XNYS`
 
 #### Scenario: A benchmark has no company
 - **WHEN** a `portfolio` benchmark symbol is a market index
@@ -203,7 +209,7 @@ is `true`, a verification that fails when: a table's key is not unique; a
 current index member has no `listing` row or its listing has no `company`; a
 symbol in `price_daily`, `dividend` or `options_activity` has no `listing`; one
 symbol maps to more than one central index key across Wikipedia versions; a
-listing's market is not in `market`; a current member has no price in the last 7
+listing has no market or its market is not in `market`; a current member has no price in the last 7
 days; a company's `company_fundamentals` validity ranges overlap or leave a gap,
 or it has other than one row ending 9999-12-31; fewer than 95% of companies with
 a current index membership have `net_income` on their current row; a dividend
