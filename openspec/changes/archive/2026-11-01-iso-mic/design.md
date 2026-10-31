@@ -133,3 +133,18 @@ materialization twins with it).
   current (no spurious versions).
 - `verify_silver_landing` with an empty `source` verified 32 entities (31 before).
 - Table quota before the first run: 446 of 500.
+
+## Prd results (2026-11-01)
+
+- The prd Main run for PR #131 failed for `iso` (and for `geonames`, `portfolio`
+  and `sec`) with the platform error INTERNAL_ERROR_BEHAVIOR_CHANGED
+  (`sessionConfigChanged`), not with code: `iso`'s bronze task had passed and its
+  silver task was paused by the platform. A rerun of `run--iso--prd` by job id
+  succeeded.
+- `mdp_prd`: raw, Publish and Landing each hold 2,889 rows, 1,596 `OPRT`, 576
+  with an `expiry_date`; 0 rows differ from dev Landing on key, operating
+  market, status, country, dates and name.
+- The Main run started ten units because CI takes the last successful Main run as
+  its base, and the FRED run before it had failed the same way; the diff since
+  the RBA run covered every change since.
+- Table quota: 456 of 500 after the run.
