@@ -74,6 +74,22 @@ re-applies the "Natural key" comment, as RBA's Landing.
 
 **D7. CI runs `run_fred` after a deploy** (free API, two calls per series).
 
+**D8. Landing checks per source** (user, 2026-10-31). Each source gets
+`verification/silver_landing_checks/<source>.yml`: `source`, `ingested_timestamp`
+(true for the sources whose Bronze Publish carries it: airroi, iso, geonames,
+acnc, wikipedia, portfolio, sec, yahoo, rba, fred) and `tables`, each with
+`table`, `bronze_schema`, `bronze_table`, `scd2`. `src/common/silver_landing_checks.py`
+loads and validates one file or all of them (the bronze checks' shape:
+`load_spec`, required keys, tested without Spark); the notebook keeps its
+checks and loses only the `ENTITIES` list and the
+`SOURCES_WITH_INGESTED_TIMESTAMP` set. With `source` set and no file, the
+notebook fails, as it does today for an unknown source. CI selects units from
+files a resource names or imports, and a data file read by path at run time is
+neither, so adding a file runs no other unit; this merge, which edits the
+notebook, runs all of them once. Rejected: a separate change first. The prd
+cost is the same (one all-units run), and it adds a full propose, implement
+and archive cycle.
+
 ## Probes
 
 **P1 (done, pass).** See Context. The result is in `p1_result.txt` and the
@@ -85,14 +101,21 @@ probes register.
   missing one fails the fetch before anything is written.
 - [Key rotated or revoked] -> The fetch fails with the HTTP status and FRED's
   message; no file is written (all series are requested before any file is).
-- [Verification entry runs every unit in prd] -> Accepted, as for RBA; a later
-  small change can move the Landing checks into per-source files.
+- [The refactor drops or changes an entry] -> The dev Landing job with an empty
+  `source` must report the same 30 entities before and after (31 with `fred`);
+  a unit test fails when a source in `design_patterns.yml` has no check file.
+- [This merge runs every unit in prd once] -> Accepted; it is the last time a
+  new source does.
 
 ## Migration Plan
 
 1. iac `raw-volume-fred` applied (volume `bronze_fred.s3_raw`).
-2. Draft PR deploys to dev; `run_fred` as the service principal with
-   `verify=true`, then again to check the incremental request.
-3. Merge; CI runs `run_fred` (and the other units) in prd.
+2. Landing checks per source first: with the code unchanged, run the dev
+   `verify_silver_landing` job with an empty `source` (30 entities); move the
+   entries; run it again (30 entities, same result).
+3. Draft PR deploys to dev; `run_fred` as the service principal with
+   `verify=true`, then again to check the incremental request; the Landing job
+   now reports 31 entities.
+4. Merge; the notebook changed, so CI runs every unit in prd once.
 
 Rollback: remove the code; drop the three tables per target with approval.

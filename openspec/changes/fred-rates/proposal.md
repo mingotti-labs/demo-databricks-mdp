@@ -11,6 +11,12 @@ target range (3.75 to 4.00 on 2026-10-30), so this change also fetches that
 READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
 2026-10-31, before this proposal) called the API from serverless with that key.
 
+The RBA merge also showed a cost in how Landing is checked: its Landing entry
+went into the one list in `verification/verify_silver_landing.py`, which every
+unit's `verify_silver` step runs, so CI ran nine units in prd (about 45
+minutes) for a change to one source. The user asked (2026-10-31) to move that
+list into one file per source, in this change.
+
 ## What Changes
 
 - New source `fred`, run by job `run_fred` with the `verify` and `reload`
@@ -36,8 +42,14 @@ READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
     `value` and the rest stay text.
 - Bundle variable `fred_api_url` (`https://api.stlouisfed.org/fred`) in both
   edition files and the regenerated `databricks.yml`.
-- Verification spec, Landing verification entry, design pattern register,
-  CLAUDE.md "Sources", source system file.
+- **Landing checks per source**: the 30 entries in `verify_silver_landing.py`
+  (13 sources) move into `verification/silver_landing_checks/<source>.yml`,
+  as the bronze checks already are. The notebook reads the file for its
+  `source` parameter, or all files when it is empty. `fred.yml` is the first
+  new file. A test fails when a source with a Silver Landing schema entry in
+  `design_patterns.yml` has no file.
+- Verification spec, design pattern register, CLAUDE.md "Sources", source
+  system file.
 - Not in this change: the monthly `FEDFUNDS` (a monthly average of `DFF`),
   other FRED series (add a name to the list), any
   conversion or calculation (silver domain), Silver Normalised.
@@ -49,10 +61,13 @@ READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
   files and one long table, with Bronze Publish and Silver Landing.
 
 ### Modified Capabilities
+- `silver-landing`: its checks are listed per source, in one file each.
 
 ## Impact
 
-- New: `src/common/fred_series.py` (rows from the API payloads, unit tests),
+- New: `src/common/silver_landing_checks.py` (loader, unit tests),
+  `verification/silver_landing_checks/*.yml`,
+  `src/common/fred_series.py` (rows from the API payloads, unit tests),
   `src/common/fetch_fred.py` (notebook), `src/layers/bronze/fred/`,
   `src/layers/bronze/fred_publish/`, `src/layers/silver/landing/fred/`, two
   pipelines, job `run_fred`, `verification/bronze_checks/fred.yml`.
@@ -63,9 +78,10 @@ READ on it already exist (iac `dividend-portfolio-schemas`). Probe P1 (run
   2008-12-16, about 6,500 each); about 100 rows a run after.
 - Network: two GETs of `api.stlouisfed.org` per series per run. FRED allows
   120 requests a minute.
-- Adding the Landing entry to `verification/verify_silver_landing.py`, a notebook
-  every unit's `verify_silver` step runs, makes CI run every such unit in prd
-  after the merge (about 45 minutes, as the RBA merge did).
+- This merge changes `verify_silver_landing.py`, which every unit's
+  `verify_silver` step runs, so CI runs every such unit in prd once (about 45
+  minutes, as the RBA merge did). Later sources add only their own check file,
+  which CI reads as data, so they run alone.
 
 ## Cross-repo dependencies
 
