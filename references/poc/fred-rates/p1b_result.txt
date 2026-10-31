@@ -1,0 +1,12 @@
+SUCCESS https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/582456079716491/run/300381484479130
+DGS10 | Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis | Daily | Percent
+   from 1962-01-02 last [('2026-10-29', '4.98'), ('2026-10-28', '5.05'), ('2026-10-27', '4.99')]
+DFF | Federal Funds Effective Rate | Daily, 7-Day | Percent
+   from 1954-07-01 last [('2026-10-29', '3.88'), ('2026-10-28', '3.88'), ('2026-10-27', '3.88')]
+DFEDTARU | Federal Funds Target Range - Upper Limit | Daily, 7-Day | Percent
+   from 2008-12-16 last [('2026-10-30', '4'), ('2026-10-29', '4'), ('2026-10-28', '4')]
+DFEDTARL | Federal Funds Target Range - Lower Limit | Daily, 7-Day | Percent
+   from 2008-12-16 last [('2026-10-30', '3.75'), ('2026-10-29', '3.75'), ('2026-10-28', '3.75')]
+FEDFUNDS | Federal Funds Effective Rate | Monthly | Percent
+   from 1954-07-01 last [('2026-09-01', '3.75'), ('2026-08-01', '3.63'), ('2026-07-01', '3.63')]
+
