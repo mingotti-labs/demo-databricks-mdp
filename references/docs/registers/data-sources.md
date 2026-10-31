@@ -81,17 +81,18 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ### iso
 - **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,
-  public GitHub CSV mirror (CC BY-SA 4.0)
+  public GitHub CSV mirror (CC BY-SA 4.0), and the ISO 10383 market identifier
+  code list (free to use, not to republish whole: ISO 10383 terms of use)
 - **Design patterns**: [`bronze_file_materialized_view_python`](design-patterns.md#bronze_file_materialized_view_python), [`bronze_quarantine_duplicate_key_python`](design-patterns.md#bronze_quarantine_duplicate_key_python), [`bronze_publish_scd2_autocdc_full_load_python`](design-patterns.md#bronze_publish_scd2_autocdc_full_load_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
-- **Bronze raw**: `bronze_iso.{country_codes,subdivision_codes}_raw`
+- **Bronze raw**: `bronze_iso.{country_codes,subdivision_codes,market_identifier_codes}_raw`
   (+ `subdivision_codes_quarantine`)
 - **Bronze Publish** (`bronze_iso_publish`): `country_codes_scd2`,
-  `subdivision_codes_scd2` (no SCD1 variant for either;
+  `subdivision_codes_scd2`, `market_identifier_codes_scd2` (no SCD1 variant;
   `subdivision_codes_deduped` is a private pipeline-scoped intermediate,
   not published)
 - **Consumed by Silver Landing**: yes — `country_codes_scd2`/
   `subdivision_codes_scd2` → `silver_landing.iso__*` (`country_codes`,
-  `subdivision_codes`)
+  `subdivision_codes`, `market_identifier_codes`)
 
 ### geonames
 - **What it is**: GeoNames country/admin1/admin2/city gazetteer data,

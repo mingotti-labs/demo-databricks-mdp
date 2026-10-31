@@ -32,18 +32,18 @@
 
 - [x] 4.1 Re-read the table quota; stop and ask if above 476 (12 slots to add,
       stop line 488)
-- [ ] 4.2 Draft PR deploys to dev; `run_iso` as the service principal with
+- [x] 4.2 Draft PR deploys to dev; `run_iso` as the service principal with
       `verify=true`: raw 2,889 rows (or the current count), 1,596 `OPRT`;
       Publish and Landing equal to raw; `XASX` has country `AU`, `XTKS` has
       operating market `XJPX`, `CSOB` keeps its accents; a market with an
       `expiry_date` has a DATE
-- [ ] 4.3 `verify_silver_landing` with an empty `source` verifies one more entity
+- [x] 4.3 `verify_silver_landing` with an empty `source` verifies one more entity
       than before the change
-- [ ] 4.4 Results in design.md
+- [x] 4.4 Results in design.md
 
 ## 5. Docs
 
-- [ ] 5.1 `references/docs/registers/data-sources.md` (iso entry), CLAUDE.md
+- [x] 5.1 `references/docs/registers/data-sources.md` (iso entry), CLAUDE.md
       (the ISO 3166 entry gains the MIC table and the licence limit), the probes
       register; all tests pass (`uv run python -m pytest`)
 - [ ] 5.2 After the prd run: counts equal dev's; archive the change

@@ -119,3 +119,17 @@ Rollback: remove the three table files and the variable; the tables are dropped
 with the pipeline update (a `bronze_iso_publish` SCD2 table cannot be removed by
 a refresh, so the drop is done by the user with approval, and the hidden
 materialization twins with it).
+
+## Dev results (2026-10-31)
+
+`run_iso` as the service principal with `verify=true` (draft PR #131):
+- First run succeeded. Raw, Publish and Landing each hold 2,889 rows, 1,596 of
+  them `OPRT`; 2,889 current versions in Publish.
+- Landing: `XASX` has country `AU`, `XTKS` has operating market `XJPX` and
+  country `JP`, `CSOB` has country `CZ` and its name starts with `Č`. The four
+  date columns are DATE; 576 rows have an `expiry_date`, 2,313 have none (null),
+  matching the file.
+- Second run succeeded with no source change: Publish still has 2,889 rows, all
+  current (no spurious versions).
+- `verify_silver_landing` with an empty `source` verified 32 entities (31 before).
+- Table quota before the first run: 446 of 500.
