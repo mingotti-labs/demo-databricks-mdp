@@ -6,8 +6,13 @@
 - [ ] 1.2 Probe P1 (design.md): coverage of the new concepts per current CIK;
       scripts and result in `references/poc/silver-domain-investments/`, row in
       the probes register, result in design.md
-- [ ] 1.3 Table quota read before the first deploy: stop and ask if above 460
-      (28 slots to add, stop line 488)
+- [ ] 1.3 Probe P2 (design.md): the market of each S&P 500 symbol (SEC exchange
+      field and Yahoo codes, mapping to operating market codes); result in
+      design.md decides `listing`'s source
+- [ ] 1.4 The `iso-mic` change implemented and its Landing table loaded in dev
+      and prd
+- [ ] 1.5 Table quota read before the first deploy: stop and ask if above 452
+      (36 slots to add, stop line 488); the clean-up change comes first if so
 
 ## 2. Naming and mapping
 
@@ -22,23 +27,25 @@
 
 - [ ] 3.1 `src/common/investments.py`: figure list with instant or duration,
       concept choice (priority, latest filing), duration check, special-dividend
-      rule, rate list; unit tests, including that the figure list matches
+      rule, rate list, id hashing (`company_id`, `listing_id`); unit tests, including that the figure list matches
       `concept_mapping.csv`
 
 ## 4. Pipeline
 
 - [ ] 4.1 Pipeline resource `silver_domain_investments` and folder
       `src/layers/silver/domain/investments/`; `databricks bundle validate` passes
-- [ ] 4.2 `company` and `index_membership`; dev: 500 companies in the index,
-      `GOOGL` and `GOOG` on one row
+- [ ] 4.2 `company`, `market`, `listing` and `index_membership`; dev: 500
+      companies, `GOOGL` and `GOOG` on one company row and two listings, every
+      listing's market found in `market`
 - [ ] 4.3 `price_daily` and `options_activity`; dev: row counts equal Landing's
-      (prices per symbol and date, options per symbol)
-- [ ] 4.4 `dividend`; dev: row count equals Landing's dividends, `amount_aud`
+      (prices per symbol and date, options per symbol), every symbol has a
+      listing
+- [ ] 4.4 `dividend`; dev: row count equals Landing's dividends, `amount_in_australian_dollars`
       set on every dividend since 2023-01-03, a spot check of one real and one
       estimated pay date, the special dividends listed and checked by eye
-- [ ] 4.5 `market_rate_daily`; dev: six rate codes, latest values equal Landing's
+- [ ] 4.5 `market_rate_daily`; dev: six spelled-out rate codes, latest values equal Landing's
       (cash rate 4.60, 10-year 4.98 on 2026-10-29)
-- [ ] 4.6 `company_fundamentals`; dev: one row per company and filing date,
+- [ ] 4.6 `company_fundamentals`; dev: one row per `company_id` and filing date,
       contiguous validity ranges ending 9999-12-31, `net_income` on the current
       row for at least 95% of index companies, the ExxonMobil successor has the
       predecessor's filings, three companies checked by hand against their

@@ -8,14 +8,16 @@ Six sources of the dividend story are in `silver_landing` (counts in prd,
 | `wikipedia__sp500_constituents` | 503 symbols, 500 CIKs; sector, sub-industry, date added | SCD2 (`is_current`, `scd_valid_*`), text |
 | `sec__company_facts` | about 1.3 million facts for 46 mapped concepts; `cik, taxonomy, concept, unit, start, end, val, fy, fp, form, filed, accn` | SCD2, text |
 | `yahoo__prices` | 130,273 rows, 517 symbols, 2025-10-29 to 2026-10-30 | text, `symbol` with dots |
+| `iso__market_identifier_codes` (new, `iso-mic` change) | ISO 10383 list: 1,596 operating markets and 1,293 segments | SCD2 text; name to be set in that change |
 | `yahoo__events` | 50,548 dividends (433 symbols, from 1962), 1,517 splits | text |
 | `yahoo__calendar` | next ex-date and pay date per symbol | SCD2, text |
 | `yahoo__options` | options flag and activity per symbol | text |
 | `rba__observations`, `fred__observations` | `FXRUSD` (A$1 in USD, from 2023-01-03), `FIRMMCRTD`, `DGS10`, `DFF`, `DFEDTARU`, `DFEDTARL` | long, `observation_date` DATE, `value` text |
 | `portfolio__*` | concept mapping, predecessor CIKs, settings, benchmarks | SCD2, text |
 
-The empty schema `silver_investments` exists in dev and prd (iac
-`dividend-portfolio-schemas`). The metastore held 446 of 500 table slots on
+The empty schema `silver_investments` existed in dev and prd (iac
+`dividend-portfolio-schemas`) and is replaced by `silver_domain_investments`
+(iac `silver-domain-investments-schema`). The metastore held 446 of 500 table slots on
 2026-10-31; the working stop line is 488.
 
 ## Goals / Non-Goals
@@ -52,30 +54,56 @@ for now: it needs a job task outside the pipeline and nothing downstream needs
 the column yet. Recorded in NAMING.md's status line.
 
 ### Keys and names
-- `company_key` is `sec_cik:<10-digit CIK>`: readable, stable across reloads
-  and leaves room for `asx:<code>` later. Surrogate integer keys were rejected:
-  a full recompute would renumber them.
+- `company_id` is `sha2(concat_ws(':', identifier_source, central_index_key), 256)`
+  (user, 2026-10-31): opaque, 64 hex characters, identical on every rebuild, and
+  another registry hashes its own source name and number. The source and number
+  stay as columns (`identifier_source`, `central_index_key`); nobody parses the
+  id. `listing_id` is `sha2(concat_ws(':', market_identifier_code,
+  trading_symbol_code), 256)`. Counter keys were rejected: a full recompute would
+  renumber them. Readable composite keys were rejected by the user: an id
+  carries no meaning. `concat_ws` skips empty parts, so a benchmark with no
+  market hashes its symbol alone until the world indexes change adds the market.
 - Tables are named for what a row is; a grain suffix is added when one entity
   has a row per period (`price_daily`, `market_rate_daily`). `market_rate_daily`
   holds exchange and interest rates in one table; gold can split them into
   separate facts later (user, 2026-10-31). `company_fundamentals` is
   the user's name (2026-10-31): a row is the company's fundamentals as reported
   on one date.
-- `symbol` keeps the Wikipedia form with dots (`BRK.B`), as every Landing table
-  does; the Yahoo form stays in Landing.
+- `trading_symbol_code` keeps the Wikipedia form with dots (`BRK.B`), as every
+  Landing table does (the Yahoo Landing tables already use it, so prices join on
+  the exact string); the Yahoo form stays in the raw data.
+- No abbreviations in names: `central_index_key`, `earnings_per_share`,
+  `earnings_before_interest_tax_depreciation_amortisation`,
+  `amount_in_australian_dollars`, `sector` and `sub_industry` (not `gics_*`).
+  `rate_code` values are spelled out the same way. Cryptic names that stay are
+  translated in gold.
 - Resource key `silver_domain_investments`, display name
   `silver--domain--investments--<target>`, unit `run_investments`
   (`run--investments--<target>`).
 
-### Company and membership
-`company` groups every Wikipedia version by CIK: the name and sector of the
-CIK's current version (or its latest when it left), with share classes resolved
-by taking the alphabetically first symbol's name; `in_index` is any current
-version. `index_membership` is a typed copy of the Wikipedia SCD2 versions with
-`index_code` `SP500` and `company_key`.
+### Company, market, listing and membership
+`company` groups every Wikipedia version by central index key: the name and
+sector of the key's current version (or its latest when it left), with share
+classes resolved by taking the alphabetically first symbol's name. It has no
+index columns. `market` selects the operating markets (`OPRT`) of the ISO list.
+`listing` has a row per symbol seen in the Wikipedia versions (market from probe
+P2) and per `portfolio` benchmark; `company_id` comes from the symbol's latest
+Wikipedia version, so a symbol reused by another company would be assigned to
+the latest one (the verification fails if one symbol maps to two keys, so the
+gap is visible, not silent). `index_membership` is a typed copy of the Wikipedia
+SCD2 versions with `index_code` `SP500` and `listing_id`.
+
+#### How company, prices and the rest connect
+SEC facts hold the central index key; Yahoo holds the symbol; the Wikipedia list
+holds both. So: `price_daily.listing_id = listing.listing_id`, and
+`listing.company_id = company.company_id`, where `listing` takes the central
+index key from Wikipedia. A company that was never in the S&P 500 has no join to
+Yahoo; the hierarchy `financial_instrument`, `security`, `listing` is the user's
+model (2026-10-31), but only `listing` exists, so the trading symbol code is an
+attribute of the listing for now.
 
 ### Prices
-`price_daily` types `yahoo__prices` and keeps `close` (Yahoo's raw close),
+`price_daily` types `yahoo__prices` and keeps `listing_id`, `close` (Yahoo's raw close),
 `volume` and `currency_code`. The adjusted close is dropped, as the story
 decided (raw close plus dividend events). `currency_code` is `USD` for every
 symbol now; the world indexes change adds a currency to the benchmarks and
@@ -84,7 +112,7 @@ replaces that constant.
 ### Dividends
 - Amount as Yahoo reports it. Yahoo adjusts dividends for later splits, so
   amounts over time compare like for like.
-- `amount_aud = amount / FXRUSD` at the latest RBA date on or before the
+- `amount_in_australian_dollars = amount / FXRUSD` at the latest RBA date on or before the
   ex-date (an as-of join). RBA's held history starts 2023-01-03, so older
   dividends have no AUD amount; the trailing-12-months yield needs only recent
   ones. Loading RBA's historical F11.1 file is a later RBA change if needed.
@@ -98,7 +126,7 @@ replaces that constant.
 ### Fundamentals per filing (`company_fundamentals`)
 The user's grain (2026-10-31): one row per company and reported date, so gold
 can ask "what did we know on date X". `valid_from_date` is the SEC `filed` date
-of the filing; with `company_key` it is the business key. `valid_to_date` is the
+of the filing; with `company_id` it is the business key. `valid_to_date` is the
 next row's `valid_from_date` minus one day (a `lead` over the company's rows),
 or 9999-12-31 for the latest. SEC Landing already holds the 10-Q facts (about
 725,000 current rows), so no new source is needed. In this order, all on
@@ -121,7 +149,7 @@ current SEC versions:
    - from a 10-Q: this filing's year-to-date fact (starting at the fiscal year
      start) plus the latest annual value known on the filing date minus the
      prior year's year-to-date (the comparative in the same 10-Q). Empty when
-     any of the three is missing. EPS uses the same sum, an approximation since
+     any of the three is missing. Earnings per share uses the same sum, an approximation since
      the share count changes between periods.
    SEC's `fy` labels the comparative periods inside a filing too, so periods
    are identified by `start` and `end`, never by `fy`.
@@ -131,9 +159,10 @@ current SEC versions:
 6. `total_liabilities` falls back to `liabilities_and_equity - total_equity`
    when no `Liabilities` value exists; the concept map records `derived`.
 7. Predecessors: filings of a predecessor CIK, dated before the successor's
-   first filing, are relabelled with the successor's `company_key`.
+   first filing, are relabelled with the successor's `company_id`.
 8. Derived columns: `free_cash_flow`, `total_debt` (long plus short, either
-   alone when the other is missing), `ebitda`.
+   alone when the other is missing),
+   `earnings_before_interest_tax_depreciation_amortisation`.
 
 Point in time means a restatement never changes an earlier row: a 10-K/A is a
 new row from its own filing date. Alternative considered: one row per fiscal
@@ -167,8 +196,8 @@ plain rows, with unit tests. The pipeline files only wire them.
 | `total_equity` | 1 | `StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest` |
 | `total_equity` | 2 | `StockholdersEquity` |
 | `preferred_stock` | 1 | `PreferredStockValue` |
-| `eps` | 1 | `EarningsPerShareDiluted` |
-| `eps` | 2 | `EarningsPerShareBasic` |
+| `earnings_per_share` | 1 | `EarningsPerShareDiluted` |
+| `earnings_per_share` | 2 | `EarningsPerShareBasic` |
 
 `stockholders_equity` (book value for Graham's Number) prefers the parent's
 equity; `total_equity` (for the liabilities fallback) prefers the figure that
@@ -177,13 +206,14 @@ includes them.
 
 ### Market rates
 `market_rate_daily` selects six series from the two Landing tables by a fixed list in
-code (`rate_code`, source, series id, unit): `aud_usd`, `rba_cash_rate_target`,
-`us_10y_treasury`, `fed_funds_effective`, `fed_target_upper`,
-`fed_target_lower`. The other RBA and FRED series stay in Landing; adding one is
+code (`rate_code`, source, series id, unit): `australian_dollar_in_us_dollars`,
+`rba_cash_rate_target`, `us_10_year_treasury_yield`,
+`us_federal_funds_effective_rate`, `us_federal_funds_target_upper`,
+`us_federal_funds_target_lower`. The other RBA and FRED series stay in Landing; adding one is
 one line.
 
 ### Options
-`options_activity` is the latest row per symbol of `yahoo__options`, typed.
+`options_activity` is the latest row per listing of `yahoo__options`, typed.
 
 ### Verification
 `verification/verify_silver_domain_investments.py`, run only by
@@ -192,14 +222,23 @@ checks the spec lists. It does not use the Landing checks files: those count
 Landing against Bronze, which does not apply here.
 
 ### Table quota
-Seven materialized views cost 2 slots each per target: 28 slots, about 474 of
-500 after. Merging `options_activity` into another table was considered and
-rejected: no other table has its grain (one row per symbol, now). The gold
-change after this one needs a clean-up first; candidates are listed in the risk
-below, not chosen here.
+Nine materialized views cost 2 slots each per target: 36 slots, about 482 of
+500 after (446 on 2026-10-31), and the `iso-mic` source adds about 12 more.
+Merging `options_activity` into another table was considered and rejected: no
+other table has its grain (one row per listing, now). Both changes together
+pass the 488 stop line, so a clean-up change must land before the second of
+them deploys; candidates are listed in the risk below, not chosen here.
 
 ## Probes
 
+- **P2, the market of each S&P 500 symbol** (before `listing` is built): nothing
+  we hold says which market a member trades on. Candidates: SEC's
+  `company_tickers_exchange.json` (exchange name per ticker) and Yahoo's exchange
+  code in `yfinance` info (for example `NMS` for Nasdaq), each needing a small
+  mapping to operating market identifier codes (`XNAS`, `XNYS`). Check coverage
+  of all 503 current symbols and agreement between the two. Result decides the
+  source and whether the mapping is a new `portfolio` CSV. Scripts in
+  `references/poc/silver-domain-investments/`.
 - **P1, SEC coverage of the new concepts** (before the mapping rows are
   merged): for every current CIK, which of the new concepts appear in a 10-K
   for a fiscal year ending in the last 18 months. Answers how often the
@@ -216,20 +255,25 @@ below, not chosen here.
 - [`dei:EntityCommonStockSharesOutstanding` counts one class only for some
   multi-class companies] → known gap; per-share metrics in gold flag it, not
   fixed here.
-- [Table quota: about 474 after, gold needs more] → before the gold change,
+- [Table quota: about 482 after, plus `iso-mic`, gold needs more] → before the gold change,
   a clean-up change; candidates: the dev-only pattern pipelines' tables, the
   human-owned neon and clickstream dev copies (15 tables), orphan
   materialization twins.
 - [Merging the mapping change rewrites every SEC facts file once] → about 500
   files appended to the raw volume, a one-off.
 - [`currency_code` constant `USD`] → right for S&P 500 members and current
-  benchmarks; the world indexes change replaces it.
+  benchmarks; the world indexes change replaces it, and adds the market to
+  each benchmark.
+- [`listing` has no `security` or `financial_instrument` above it] → share
+  classes are separate listings tied by `company_id`; cross-listings of one
+  share are separate rows until those tables exist.
 
 ## Migration Plan
 
 1. iac `silver-domain-investments-schema` applied (new schema and grants, old
-   empty schema dropped) in both workspaces' deployments.
-2. Probe P1.
+   empty schema dropped) in both workspaces' deployments. The `iso-mic` change
+   implemented and its Landing table loaded.
+2. Probes P1 and P2.
 3. Mapping rows merged in the implementation PR; in dev, `run_portfolio` then
    `run_sec` load the new concepts.
 4. Pipeline and job deployed by the PR; `run_investments` in dev with
