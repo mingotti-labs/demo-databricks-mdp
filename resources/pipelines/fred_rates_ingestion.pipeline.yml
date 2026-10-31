@@ -1,0 +1,17 @@
+resources:
+  pipelines:
+    fred_rates_ingestion:
+      name: bronze--fred--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_fred
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        fred_volume_root: /Volumes/${var.catalog}/bronze_fred/s3_raw
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/fred/**
+        - glob:
+            include: ../../src/layers/bronze/fred_publish/**

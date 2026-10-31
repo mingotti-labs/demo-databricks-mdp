@@ -1,0 +1,11 @@
+source: fred
+raw_schema: bronze_fred
+publish_schema: bronze_fred_publish
+# Append-only raw where each file holds only the recent days of each series: the checks
+# compare the latest row per key (what streaming Auto CDC keeps) with Bronze Publish.
+tables:
+  - raw: observations_raw
+    compare_latest_file_per: [series_id, observation_date]
+    keys: [series_id, observation_date]
+    columns: [series_id, observation_date, value, title, units, frequency, ingested_timestamp, source_file_path]
+    scd1: observations_scd1

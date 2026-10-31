@@ -65,6 +65,9 @@ variables:
   rba_tables_url:
     description: Base URL of the RBA's statistical table CSV files (f11.1-data.csv, ...) -- same for every target, no test/prod split exists for this source.
     default: https://www.rba.gov.au/statistics/tables/csv
+  fred_api_url:
+    description: Base URL of the FRED (St. Louis Fed) API -- same for every target, no test/prod split exists for this source.
+    default: https://api.stlouisfed.org/fred
   http_user_agent:
     description: User-Agent contact string sent to public sites that ask for one (Wikipedia, later SEC).
     default: mdp handsonessential@gmail.com

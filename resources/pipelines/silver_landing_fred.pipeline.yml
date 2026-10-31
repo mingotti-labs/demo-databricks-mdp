@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    silver_landing_fred:
+      name: silver--fred--${bundle.target}
+      catalog: ${var.catalog}
+      schema: silver_landing
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        workspace_file_path: ${workspace.file_path}
+      libraries:
+        - glob:
+            include: ../../src/layers/silver/landing/fred/**

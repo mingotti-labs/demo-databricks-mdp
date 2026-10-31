@@ -21,27 +21,27 @@
 
 ## 2. Fetch
 
-- [ ] 2.1 `src/common/fred_series.py`: rows from the `series` and
+- [x] 2.1 `src/common/fred_series.py`: rows from the `series` and
       `series/observations` payloads (`.` skipped, real-time columns dropped,
       a missing key fails), the request start date; unit tests on trimmed
       payloads
-- [ ] 2.2 `src/common/fetch_fred.py` notebook: key from the secret scope, last
+- [x] 2.2 `src/common/fetch_fred.py` notebook: key from the secret scope, last
       stored date per series, `reload`, errors without the URL, one dated JSON
       Lines file into `bronze_fred.s3_raw`
-- [ ] 2.3 Bundle variable `fred_api_url` in `cicd/databricks/free.yml` and
+- [x] 2.3 Bundle variable `fred_api_url` in `cicd/databricks/free.yml` and
       `standard.yml`; regenerate `databricks.yml`
 
 ## 3. Pipelines and job
 
-- [ ] 3.1 `src/layers/bronze/fred/` (Auto Loader raw) and
+- [x] 3.1 `src/layers/bronze/fred/` (Auto Loader raw) and
       `src/layers/bronze/fred_publish/` (SCD1 Auto CDC)
-- [ ] 3.2 `src/layers/silver/landing/fred/` (`silver_landing.fred__observations`,
+- [x] 3.2 `src/layers/silver/landing/fred/` (`silver_landing.fred__observations`,
       `observation_date` as DATE)
-- [ ] 3.3 Pipelines `bronze--fred--<target>`, `silver--fred--<target>`; job
+- [x] 3.3 Pipelines `bronze--fred--<target>`, `silver--fred--<target>`; job
       `run_fred` with `verify` and `reload`
-- [ ] 3.4 `verification/bronze_checks/fred.yml` and
+- [x] 3.4 `verification/bronze_checks/fred.yml` and
       `verification/silver_landing_checks/fred.yml`
-- [ ] 3.5 Design pattern register entries for `fred`
+- [x] 3.5 Design pattern register entries for `fred`
 
 ## 4. Verify in dev
 
