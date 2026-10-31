@@ -149,6 +149,18 @@ richer variant if it exists; fall back only when it doesn't. See
   `series_id`, `observation_date`
 - **Consumed by Silver Landing**: yes, `silver_landing.rba__observations`
 
+### fred
+- **What it is**: FRED (St. Louis Fed) series `DGS10` (US 10-year Treasury
+  yield), `DFF` (effective federal funds rate) and `DFEDTARU` / `DFEDTARL` (the
+  Fed's target range), free REST API with a key, the US rates of the dividend
+  portfolio story
+- **Design patterns**: [`bronze_volume_append_autoloader_python`](design-patterns.md#bronze_volume_append_autoloader_python), [`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
+- **Bronze raw** (append-only, replayable from `bronze_fred.s3_raw`):
+  `bronze_fred.observations_raw`, one row per series and date
+- **Bronze Publish** (`bronze_fred_publish`): `observations_scd1` keyed by
+  `series_id`, `observation_date`
+- **Consumed by Silver Landing**: yes, `silver_landing.fred__observations`
+
 ### yahoo
 - **What it is**: Yahoo Finance (via `yfinance`, unofficial) daily prices,
   dividends and splits, next pay dates and options activity for every symbol

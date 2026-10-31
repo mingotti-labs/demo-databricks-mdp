@@ -45,19 +45,19 @@
 
 ## 4. Verify in dev
 
-- [ ] 4.1 Re-read the table quota; stop and ask if above 488
-- [ ] 4.2 Draft PR deploys to dev; `run_fred` as the service principal with
+- [x] 4.1 Re-read the table quota; stop and ask if above 488
+- [x] 4.2 Draft PR deploys to dev; `run_fred` as the service principal with
       `verify=true`: first run writes every observation; in
       `silver_landing.fred__observations` `DGS10` on 2026-10-29 is 4.98 and
       `DFEDTARU` / `DFEDTARL` on 2026-10-30 are 4 / 3.75
-- [ ] 4.3 Second run: requests only the last 31 days; Publish row count
+- [x] 4.3 Second run: requests only the last 31 days; Publish row count
       unchanged apart from new dates
-- [ ] 4.4 The `verify_silver_landing` job with an empty `source` verifies 31
+- [x] 4.4 The `verify_silver_landing` job with an empty `source` verifies 31
       entities
-- [ ] 4.5 Results in design.md
+- [x] 4.5 Results in design.md
 
 ## 5. Docs
 
-- [ ] 5.1 CLAUDE.md "Sources": `fred`
-- [ ] 5.2 `references/docs/registers/data-sources.md` and
+- [x] 5.1 CLAUDE.md "Sources": `fred`
+- [x] 5.2 `references/docs/registers/data-sources.md` and
       `source_systems/fred.md`
