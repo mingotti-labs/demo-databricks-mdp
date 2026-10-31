@@ -6,31 +6,31 @@
 
 ## 2. Fetch
 
-- [ ] 2.1 `src/common/iso10383.py`: download, decode bytes as UTF-8, rename the
+- [x] 2.1 `src/common/iso10383.py`: download, decode bytes as UTF-8, rename the
       17 columns, fail when one is missing; unit tests on a trimmed CSV string
       (including a row with an accent and a missing-column failure)
-- [ ] 2.2 Bundle variable `iso10383_mic_url` in `cicd/databricks/free.yml` and
+- [x] 2.2 Bundle variable `iso10383_mic_url` in `cicd/databricks/free.yml` and
       `standard.yml`; `uv run python cicd/apply_edition.py`; the `bronze--iso`
       pipeline passes it in `configuration`
 
 ## 3. Tables
 
-- [ ] 3.1 `src/layers/bronze/iso/market_identifier_codes_raw.py`: Materialized
+- [x] 3.1 `src/layers/bronze/iso/market_identifier_codes_raw.py`: Materialized
       View with `ingested_timestamp` and the licence table comment
-- [ ] 3.2 `src/layers/bronze/iso_publish/market_identifier_codes_scd2.py`:
+- [x] 3.2 `src/layers/bronze/iso_publish/market_identifier_codes_scd2.py`:
       snapshot view without `ingested_timestamp`, SCD2 by
       `market_identifier_code`, reset not allowed, change data feed on
-- [ ] 3.3 `src/layers/silver/landing/iso/market_identifier_codes.py`: change feed
+- [x] 3.3 `src/layers/silver/landing/iso/market_identifier_codes.py`: change feed
       into `silver_landing.iso__market_identifier_codes` with the four dates as
       DATE
-- [ ] 3.4 `verification/bronze_checks/iso.yml` and
+- [x] 3.4 `verification/bronze_checks/iso.yml` and
       `verification/silver_landing_checks/iso.yml` list the table;
       `src/common/design_patterns.yml` needs no new entry (the iso layers already
       carry their patterns); the register tests pass
 
 ## 4. Verify in dev
 
-- [ ] 4.1 Re-read the table quota; stop and ask if above 476 (12 slots to add,
+- [x] 4.1 Re-read the table quota; stop and ask if above 476 (12 slots to add,
       stop line 488)
 - [ ] 4.2 Draft PR deploys to dev; `run_iso` as the service principal with
       `verify=true`: raw 2,889 rows (or the current count), 1,596 `OPRT`;
