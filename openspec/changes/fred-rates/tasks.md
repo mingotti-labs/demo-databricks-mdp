@@ -1,3 +1,17 @@
+## 0. Landing checks per source
+
+- [ ] 0.1 Dev baseline: run the `verify_silver_landing` job with an empty
+      `source` before any change: 30 entities verified
+- [ ] 0.2 `src/common/silver_landing_checks.py`: load and validate one file or
+      all of `verification/silver_landing_checks/`; unit tests, including that
+      every source in `design_patterns.yml` with a `silver_landing` schema has a
+      file
+- [ ] 0.3 The 13 files from the current `ENTITIES` list and
+      `SOURCES_WITH_INGESTED_TIMESTAMP` (no entry changed); `verify_silver_landing.py`
+      reads them and loses both constants
+- [ ] 0.4 Dev: the same job, empty `source`: 30 entities verified; one run with
+      `source=yahoo` verifies 4
+
 ## 1. Probe
 
 - [x] 1.1 Probe P1 from serverless (design.md): done 2026-10-31; scripts and
@@ -25,7 +39,8 @@
       `observation_date` as DATE)
 - [ ] 3.3 Pipelines `bronze--fred--<target>`, `silver--fred--<target>`; job
       `run_fred` with `verify` and `reload`
-- [ ] 3.4 `verification/bronze_checks/fred.yml` and the Silver Landing entry
+- [ ] 3.4 `verification/bronze_checks/fred.yml` and
+      `verification/silver_landing_checks/fred.yml`
 - [ ] 3.5 Design pattern register entries for `fred`
 
 ## 4. Verify in dev
@@ -37,7 +52,9 @@
       `DFEDTARU` / `DFEDTARL` on 2026-10-30 are 4 / 3.75
 - [ ] 4.3 Second run: requests only the last 31 days; Publish row count
       unchanged apart from new dates
-- [ ] 4.4 Results in design.md
+- [ ] 4.4 The `verify_silver_landing` job with an empty `source` verifies 31
+      entities
+- [ ] 4.5 Results in design.md
 
 ## 5. Docs
 
