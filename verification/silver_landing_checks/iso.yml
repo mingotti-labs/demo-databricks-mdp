@@ -10,3 +10,7 @@ tables:
     bronze_schema: bronze_iso_publish
     bronze_table: subdivision_codes_scd2
     scd2: true
+  - table: market_identifier_codes
+    bronze_schema: bronze_iso_publish
+    bronze_table: market_identifier_codes_scd2
+    scd2: true

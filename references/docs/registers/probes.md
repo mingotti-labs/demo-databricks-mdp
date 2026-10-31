@@ -132,3 +132,12 @@ Change `fred-rates` (2026-10-31). Record: its `design.md` "Probes"; scripts in `
 |---|---|---|
 | P1 | Can serverless call the FRED API with the key from the `fred` secret scope, and what do `series` and `series/observations` return for `DGS10`? | Pass: HTTP 200; 16,913 observations in one call from 1962-01-02 to 2026-10-29, 721 with the value `.`; `realtime_start/end` echo the request day; an unknown series is HTTP 400 with a JSON message. |
 | P1b | Which FRED series is the Fed's policy rate, and how does it differ from `DGS10`? | Pass: `DFEDTARU` / `DFEDTARL` (target range, daily since 2008-12-16) were 4 / 3.75 on 2026-10-30, `DFF` (effective) 3.88, `FEDFUNDS` (monthly) 3.75; `DGS10`, the 10-year market yield, was 4.98. Different measures. |
+
+## ISO market identifier codes
+
+Change `iso-mic` (2026-10-31). Record: its `design.md` "Context"; scripts in `references/poc/iso-mic/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | What does the ISO 10383 CSV hold: key uniqueness, date format, rows per type and status? | Pass: 2,889 rows, `MIC` unique, 1,596 operating and 1,293 segment rows, 2,313 active, 574 expired, 2 updated; dates `YYYYMMDD`; country filled on every row. |
+| P2 | What is the file's encoding, and which rows name an operating market that has no operating row? | UTF-8 without BOM, no charset in the header (`requests` would guess ISO-8859-1); 8 expired segments name a removed operating market, no operating row does. |
