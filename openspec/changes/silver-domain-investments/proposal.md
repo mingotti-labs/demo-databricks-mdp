@@ -45,7 +45,7 @@ in the fundamentals. The user also decided that Silver Domain schemas are named
     figure plus free cash flow, total debt and EBITDA, with the concept used
     for each figure: balance sheet figures at the filing's period end, income
     and cash flow figures as the trailing twelve months (user, 2026-10-31).
-  - `rate_daily`: AUD/USD, the RBA cash rate target, the US 10-year yield and
+  - `market_rate_daily`: AUD/USD, the RBA cash rate target, the US 10-year yield and
     the three Fed funds series, one long table.
   - `options_activity`: the latest options flag and activity per symbol.
 - **New unit** `run_investments`: the pipeline, then (with `verify=true`) a

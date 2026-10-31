@@ -137,8 +137,8 @@ first filing.
 - **THEN** the company with CIK `0002115436` has the filings made under
   `0000034088` before its own first filing
 
-### Requirement: Rates
-`rate_daily` SHALL have one row per rate and date for AUD/USD (RBA `FXRUSD`),
+### Requirement: Market rates
+`market_rate_daily` SHALL have one row per rate and date for AUD/USD (RBA `FXRUSD`),
 the RBA cash rate target (`FIRMMCRTD`), the US 10-year Treasury yield (`DGS10`),
 the effective federal funds rate (`DFF`) and the Fed target range limits
 (`DFEDTARU`, `DFEDTARL`), with a `rate_code`, the value, its unit, the source
@@ -146,7 +146,7 @@ and the source's series id.
 
 #### Scenario: The latest cash rate
 - **WHEN** RBA's latest cash rate target is 4.60
-- **THEN** `rate_daily` has that value under the cash rate's `rate_code` on its
+- **THEN** `market_rate_daily` has that value under the cash rate's `rate_code` on its
   date
 
 ### Requirement: Options activity

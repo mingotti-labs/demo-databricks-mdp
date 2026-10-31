@@ -56,7 +56,9 @@ the column yet. Recorded in NAMING.md's status line.
   and leaves room for `asx:<code>` later. Surrogate integer keys were rejected:
   a full recompute would renumber them.
 - Tables are named for what a row is; a grain suffix is added when one entity
-  has a row per period (`price_daily`, `rate_daily`). `company_fundamentals` is
+  has a row per period (`price_daily`, `market_rate_daily`). `market_rate_daily`
+  holds exchange and interest rates in one table; gold can split them into
+  separate facts later (user, 2026-10-31). `company_fundamentals` is
   the user's name (2026-10-31): a row is the company's fundamentals as reported
   on one date.
 - `symbol` keeps the Wikipedia form with dots (`BRK.B`), as every Landing table
@@ -173,8 +175,8 @@ equity; `total_equity` (for the liabilities fallback) prefers the figure that
 includes non-controlling interests, because `LiabilitiesAndStockholdersEquity`
 includes them.
 
-### Rates
-`rate_daily` selects six series from the two Landing tables by a fixed list in
+### Market rates
+`market_rate_daily` selects six series from the two Landing tables by a fixed list in
 code (`rate_code`, source, series id, unit): `aud_usd`, `rba_cash_rate_target`,
 `us_10y_treasury`, `fed_funds_effective`, `fed_target_upper`,
 `fed_target_lower`. The other RBA and FRED series stay in Landing; adding one is

@@ -36,7 +36,7 @@
 - [ ] 4.4 `dividend`; dev: row count equals Landing's dividends, `amount_aud`
       set on every dividend since 2023-01-03, a spot check of one real and one
       estimated pay date, the special dividends listed and checked by eye
-- [ ] 4.5 `rate_daily`; dev: six rate codes, latest values equal Landing's
+- [ ] 4.5 `market_rate_daily`; dev: six rate codes, latest values equal Landing's
       (cash rate 4.60, 10-year 4.98 on 2026-10-29)
 - [ ] 4.6 `company_fundamentals`; dev: one row per company and filing date,
       contiguous validity ranges ending 9999-12-31, `net_income` on the current
