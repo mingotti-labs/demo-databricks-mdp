@@ -18,9 +18,9 @@ in the fundamentals. The user also decided that Silver Domain schemas are named
 ## What Changes
 
 - **Naming**: Silver Domain schemas are `silver_domain_<domain>` (NAMING.md,
-  `references/docs/medallion/silver.md`); Silver Domain tables are singular
-  entity names, with a grain suffix when a row is one entity per period
-  (`price_daily`, `fundamental_annual`).
+  `references/docs/medallion/silver.md`); Silver Domain tables are named for
+  what a row is, with a grain suffix when a row is one entity per period
+  (`price_daily`).
 - **Concept mapping** (`data/portfolio/concept_mapping.csv`): new figures
   `current_assets`, `total_liabilities`, `liabilities_and_equity`,
   `stockholders_equity`, `total_equity`, `preferred_stock` and `eps`. The SEC
@@ -38,17 +38,20 @@ in the fundamentals. The user also decided that Silver Domain schemas are named
   - `dividend`: one row per symbol and ex-date, with amount, `currency_code`,
     the AUD amount at the RBA rate, the pay date (real from the Yahoo calendar
     or estimated from the settings offset) and a special-dividend flag.
-  - `fundamental_annual`: one row per company per fiscal year, one column per
-    mapped figure plus free cash flow, total debt and EBITDA, with the concept
-    used for each figure.
+  - `company_fundamentals`: one row per company and reported date (the
+    filing date of each 10-K or 10-Q, `valid_from_date`, the business key with
+    the company), valid until the day before the company's next filing
+    (`valid_to_date`, or 9999-12-31 for the latest). One column per mapped
+    figure plus free cash flow, total debt and EBITDA, with the concept used
+    for each figure: balance sheet figures at the filing's period end, income
+    and cash flow figures as the trailing twelve months (user, 2026-10-31).
   - `rate_daily`: AUD/USD, the RBA cash rate target, the US 10-year yield and
     the three Fed funds series, one long table.
   - `options_activity`: the latest options flag and activity per symbol.
 - **New unit** `run_investments`: the pipeline, then (with `verify=true`) a
   domain verification notebook.
 - **Not in this change**: NCAV, NCAV per share, Graham's Number and every other
-  metric (gold, next change); latest-twelve-months and quarterly figures;
-  scheduling; the world indexes (their own change).
+  metric (gold, next change); scheduling; the world indexes (their own change).
 
 ## Capabilities
 

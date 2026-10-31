@@ -85,29 +85,47 @@ previous four dividends.
   2.00
 - **THEN** that dividend has `is_special` true
 
-### Requirement: Annual fundamentals
-`fundamental_annual` SHALL have one row per company per fiscal year end, with
-one column per figure in the `portfolio` concept mapping, plus free cash flow
-(operating cash flow minus capital expenditure), total debt (long-term plus
-short-term) and EBITDA (operating income plus depreciation and amortisation),
-and a map of the concept used for each figure. Values SHALL come only from
-annual 10-K facts in USD (and `shares` or `USD/shares` for share counts and
-EPS). For each figure and year it SHALL take the highest-priority concept that
-has a value, and of that concept the value from the latest filing. When a
-company has no `Liabilities` value for a year, `total_liabilities` SHALL be
+### Requirement: Company fundamentals per filing
+`company_fundamentals` SHALL have one row per company and `valid_from_date`,
+the filing date of one of its 10-K, 10-K/A, 10-Q or 10-Q/A filings (that pair
+is the business key), with `valid_to_date` the day before the company's next
+`valid_from_date`, or 9999-12-31 for its latest filing. Each row SHALL carry
+the form, the accession number, the period end the filing reports, one column
+per figure in the `portfolio` concept mapping, free cash flow (operating cash
+flow minus capital expenditure), total debt (long-term plus short-term), EBITDA
+(operating income plus depreciation and amortisation) and a map of the concept
+used for each figure. Values SHALL come only from facts known at the filing
+date, in USD (and `shares` or `USD/shares` for share counts and EPS). Balance
+sheet figures and the share count SHALL be those the filing reports for its
+period end. Income and cash flow figures SHALL be the trailing twelve months to
+the period end: a 10-K's annual value, or for a 10-Q the latest annual value
+plus this year's year-to-date minus the prior year's year-to-date, empty when a
+part is missing. For each figure it SHALL take the highest-priority concept that
+has a value. When `Liabilities` has no value, `total_liabilities` SHALL be
 `liabilities_and_equity` minus `total_equity`. A successor CIK in the
-predecessor list SHALL take the predecessor's values for the years it has none
-of its own.
+predecessor list SHALL take the predecessor's filings dated before its own
+first filing.
 
 #### Scenario: Priority between concepts
 - **WHEN** a company reports both `NetIncomeLoss` and `ProfitLoss` for a year
 - **THEN** `net_income` is the `NetIncomeLoss` value and the concept map says
   `NetIncomeLoss`
 
-#### Scenario: A restated year
-- **WHEN** two 10-K filings report different values for the same concept and
-  fiscal year end
-- **THEN** the value from the later filing is kept
+#### Scenario: Validity between filings
+- **WHEN** a company filed a 10-Q on 2026-05-01 and its next 10-Q on 2026-08-01
+- **THEN** the row with `valid_from_date` 2026-05-01 has `valid_to_date`
+  2026-07-31, and the row from 2026-08-01, its latest, has `valid_to_date`
+  9999-12-31
+
+#### Scenario: Trailing twelve months from a 10-Q
+- **WHEN** a company's last annual net income is 100, its year-to-date net
+  income in a 10-Q is 30 and the prior year's same year-to-date is 20
+- **THEN** that row's `net_income` is 110
+
+#### Scenario: A restatement is a new row
+- **WHEN** a 10-K/A restates a 10-K's values
+- **THEN** the 10-K's row keeps its values until the day before the 10-K/A's
+  filing date, and the 10-K/A's row has the restated values
 
 #### Scenario: Liabilities not reported
 - **WHEN** a company reports `LiabilitiesAndStockholdersEquity` of 100 and
@@ -116,8 +134,8 @@ of its own.
 
 #### Scenario: A predecessor's history
 - **WHEN** the predecessor list maps `0002115436` to `0000034088`
-- **THEN** the company with CIK `0002115436` has the fiscal years reported
-  under `0000034088`
+- **THEN** the company with CIK `0002115436` has the filings made under
+  `0000034088` before its own first filing
 
 ### Requirement: Rates
 `rate_daily` SHALL have one row per rate and date for AUD/USD (RBA `FXRUSD`),
@@ -144,8 +162,9 @@ and volume, as of the latest Yahoo fetch.
 Job `run_investments` SHALL run the pipeline and, when its `verify` parameter
 is `true`, a verification that fails when: a table's key is not unique; a
 current index member has no `company` row; a current member has no price in
-the last 7 days; fewer than 95% of companies in the index have `net_income`
-for a fiscal year ending in the last 18 months; a dividend since the first
+the last 7 days; a company's `company_fundamentals` validity ranges overlap or
+leave a gap, or it has other than one row ending 9999-12-31; fewer than 95% of
+companies in the index have `net_income` on their current row; a dividend since the first
 held AUD/USD date has no `amount_aud`; or a rate's latest date is more than 7
 days old.
 

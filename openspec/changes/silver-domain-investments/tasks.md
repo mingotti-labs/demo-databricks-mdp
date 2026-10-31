@@ -38,10 +38,12 @@
       estimated pay date, the special dividends listed and checked by eye
 - [ ] 4.5 `rate_daily`; dev: six rate codes, latest values equal Landing's
       (cash rate 4.60, 10-year 4.98 on 2026-10-29)
-- [ ] 4.6 `fundamental_annual`; dev: one row per company and fiscal year end,
-      `net_income` for at least 95% of index companies, the ExxonMobil successor
-      has the predecessor's years, three companies checked by hand against
-      their 10-K (one bank, one with the liabilities fallback)
+- [ ] 4.6 `company_fundamentals`; dev: one row per company and filing date,
+      contiguous validity ranges ending 9999-12-31, `net_income` on the current
+      row for at least 95% of index companies, the ExxonMobil successor has the
+      predecessor's filings, three companies checked by hand against their
+      latest 10-Q and 10-K (one bank, one with the liabilities fallback, one
+      trailing-twelve-months sum)
 
 ## 5. Job and verification
 

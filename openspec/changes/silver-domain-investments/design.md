@@ -23,12 +23,11 @@ The empty schema `silver_investments` exists in dev and prd (iac
 **Goals:**
 - Typed, joined tables that gold can read without touching Landing.
 - Every SEC figure traceable to the concept and filing it came from.
-- The inputs NCAV and Graham's Number need, in `fundamental_annual`.
+- The inputs NCAV and Graham's Number need, in `company_fundamentals`, as
+  they were known on each date (point in time).
 
 **Non-Goals:**
 - Metrics of any kind (yield, growth, payout, NCAV, Graham's Number): gold.
-- Latest-twelve-months and quarterly figures: annual only. Graham's Number
-  and NCAV in gold start from the latest fiscal year.
 - A per-company pay-date offset: the settings default only.
 - `transformed_timestamp` (see Decisions).
 
@@ -38,7 +37,7 @@ The empty schema `silver_investments` exists in dev and prd (iac
 Every table is a materialized view in one serverless pipeline that reads
 `silver_landing` by qualified name. The inputs are small (the largest is SEC at
 about 1.3 million rows), the tables join several sources, and some rows depend
-on others (special dividends, predecessor years), which a streaming table
+on others (special dividends, validity ranges), which a streaming table
 cannot express. Alternative: streaming tables over the Landing change feeds.
 Rejected: joins across sources and window rules over history do not fit an
 append-only stream, and the volume does not need it.
@@ -56,8 +55,10 @@ the column yet. Recorded in NAMING.md's status line.
 - `company_key` is `sec_cik:<10-digit CIK>`: readable, stable across reloads
   and leaves room for `asx:<code>` later. Surrogate integer keys were rejected:
   a full recompute would renumber them.
-- Tables are singular entity names; a grain suffix is added when one entity
-  has a row per period (`price_daily`, `fundamental_annual`, `rate_daily`).
+- Tables are named for what a row is; a grain suffix is added when one entity
+  has a row per period (`price_daily`, `rate_daily`). `company_fundamentals` is
+  the user's name (2026-10-31): a row is the company's fundamentals as reported
+  on one date.
 - `symbol` keeps the Wikipedia form with dots (`BRK.B`), as every Landing table
   does; the Yahoo form stays in Landing.
 - Resource key `silver_domain_investments`, display name
@@ -92,36 +93,53 @@ replaces that constant.
   dividends (a window over ex-dates). A first dividend is never special. The
   factor is a constant in code for now, not a setting, until it proves useful.
 
-### Fundamentals: applying the concept mapping
-In this order, all on current SEC versions:
-1. Keep facts whose `form` is `10-K` or `10-K/A` and `fp` is `FY`, with unit
-   `USD`, `shares` or `USD/shares`. Other currencies (about 40 facts) are left
-   out.
-2. Duration figures (income and cash flow) need `start` and `end` about a year
-   apart (330 to 380 days); instant figures (balance sheet, shares) have no
-   `start`. Which figures are instant is a property of the figure, listed in
-   code next to the mapping columns.
-3. The fiscal year is identified by its end date: the `end` of the duration
-   facts. SEC's `fy` is the filing's year and also labels the comparative
-   years inside a filing, so it is not used.
-4. Per company, concept and period, keep the value with the latest `filed`
-   (a restatement in a later 10-K wins).
-5. Per company, figure and fiscal year end, take the concept with the lowest
-   priority number that has a value. The choice is per year, so a company that
-   switched concepts keeps a continuous series.
-6. Instant figures are matched to the fiscal year end on the same date. The
-   cover-page share count (`dei:EntityCommonStockSharesOutstanding`) is dated
-   at the filing, weeks after the year end, so it is matched to the latest
-   fiscal year end within 120 days before its date, from the same filing
-   (`accn`).
-7. `total_liabilities` falls back to `liabilities_and_equity - total_equity`
+### Fundamentals per filing (`company_fundamentals`)
+The user's grain (2026-10-31): one row per company and reported date, so gold
+can ask "what did we know on date X". `valid_from_date` is the SEC `filed` date
+of the filing; with `company_key` it is the business key. `valid_to_date` is the
+next row's `valid_from_date` minus one day (a `lead` over the company's rows),
+or 9999-12-31 for the latest. SEC Landing already holds the 10-Q facts (about
+725,000 current rows), so no new source is needed. In this order, all on
+current SEC versions:
+1. Keep facts whose `form` is `10-K`, `10-K/A`, `10-Q` or `10-Q/A`, with unit
+   `USD`, `shares` or `USD/shares`. Other currencies (about 40 facts) and other
+   forms (8-K, proxy statements) are left out.
+2. A filing is one accession number (`accn`). Its period end is the latest
+   `end` among its facts; its form and `filed` date are its own. Two filings of
+   one company on the same day keep the later accession number.
+3. Balance sheet figures and the share count: the filing's own facts dated at
+   its period end. The cover-page share count
+   (`dei:EntityCommonStockSharesOutstanding`) is dated at the filing, weeks
+   after the period end, so it is taken from the same filing whatever its date.
+   Which figures are balance sheet (instant) is a property of the figure,
+   listed in code next to the mapping columns.
+4. Income and cash flow figures, trailing twelve months to the period end:
+   - from a 10-K: the facts about a year long (330 to 380 days) ending at the
+     period end;
+   - from a 10-Q: this filing's year-to-date fact (starting at the fiscal year
+     start) plus the latest annual value known on the filing date minus the
+     prior year's year-to-date (the comparative in the same 10-Q). Empty when
+     any of the three is missing. EPS uses the same sum, an approximation since
+     the share count changes between periods.
+   SEC's `fy` labels the comparative periods inside a filing too, so periods
+   are identified by `start` and `end`, never by `fy`.
+5. Per filing and figure, the concept with the lowest priority number that has
+   a value. The choice is per filing, so a company that switched concepts keeps
+   a continuous series.
+6. `total_liabilities` falls back to `liabilities_and_equity - total_equity`
    when no `Liabilities` value exists; the concept map records `derived`.
-8. Predecessors: facts of a predecessor CIK are relabelled with the successor's
-   `company_key` and used only for fiscal years the successor has none of its
-   own.
-9. Derived columns: `free_cash_flow`, `total_debt` (long plus short, either
-   alone when the other is missing), `ebitda`. EPS stays as reported
-   (`EarningsPerShareDiluted`, else `Basic`).
+7. Predecessors: filings of a predecessor CIK, dated before the successor's
+   first filing, are relabelled with the successor's `company_key`.
+8. Derived columns: `free_cash_flow`, `total_debt` (long plus short, either
+   alone when the other is missing), `ebitda`.
+
+Point in time means a restatement never changes an earlier row: a 10-K/A is a
+new row from its own filing date. Alternative considered: one row per fiscal
+year with the latest restated values. Rejected by the user: it hides what was
+known when, and quarterly balance sheets make NCAV current.
+
+Size: about 500 companies, four filings a year since XBRL began (2009): about
+35,000 rows.
 
 The wide table has one column per figure, a fixed list in code that a test
 compares with `concept_mapping.csv`, so a figure added to the CSV without a
@@ -130,8 +148,8 @@ column fails the test rather than vanishing. `concept_used` is a
 per figure). Rejected: every gold metric would pivot it again, and a fixed
 column list is what Genie reads best.
 
-The pure parts (choosing the concept by priority and filing date, the
-duration check, the special-dividend rule) are Python functions in
+The pure parts (choosing the concept by priority, the trailing-twelve-months
+sum, the duration check, the validity dates, the special-dividend rule) are Python functions in
 `src/common/investments.py` that build Spark column expressions or work on
 plain rows, with unit tests. The pipeline files only wire them.
 
