@@ -20,11 +20,11 @@ this layout; Silver Landing tables moved once, from `silver_landing_<source>`
 to `silver_landing.<source>__<entity>` (openspec
 `single-silver-landing-schema`), keeping the pipelines' keys and display names.
 
-**Exceptions.** neon's bronze layer has two pipelines: its ingestion is a
-managed Lakeflow Connect pipeline, which cannot hold transformation code,
-so its SCD tables are built by one separate pipeline
-(`neon_scd_modeling_python`). The `normalised` task keeps
-`transformed_timestamp` on unchanged rows (openspec
+**Exceptions.** neon has only its managed Lakeflow Connect ingestion pipeline
+(`bronze--neon--<target>`) and no silver pipeline: its Bronze Publish and Silver
+Landing tables were removed to free table slots (openspec
+`neon-publish-cleanup`, backup in `references/backups/neon/`). The `normalised`
+task keeps `transformed_timestamp` on unchanged rows (openspec
 `correct-platform-timestamps`).
 
 **Exempt reference variants.** Resources kept only as documented reference
@@ -119,9 +119,9 @@ one-pipeline-per-layer layout.
 #### Scenario: airroi, clickstream and neon after refactor
 - **WHEN** the bundle is validated for any target
 - **THEN** airroi and clickstream each have exactly `bronze--<source>--<target>`
-  and `silver--<source>--<target>`, neon has its two bronze pipelines and
-  `silver--neon--<target>`, each has a `run_<source>` job, no `silver_airroi`
-  job exists, and every table keeps its schema and name
+  and `silver--<source>--<target>`, neon has only its Lakeflow Connect ingestion
+  pipeline, each has a `run_<source>` job, no `silver_airroi` job exists, and
+  every table keeps its schema and name
 
 #### Scenario: Nothing pending
 - **WHEN** the `pipeline-per-layer` and `silver-normalised` specs are read

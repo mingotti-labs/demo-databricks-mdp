@@ -50,4 +50,4 @@
 
 ## 6. Archive
 
-- [ ] 6.1 Archive the change after the merge
+- [x] 6.1 Archive the change after the merge
