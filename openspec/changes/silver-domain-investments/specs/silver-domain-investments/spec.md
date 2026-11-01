@@ -63,7 +63,7 @@ come from every symbol in the Wikipedia S&P 500 history and from the
 `portfolio` benchmarks. The market of an S&P 500 symbol SHALL be the operating market identifier code
 mapped from the `exchange_code` of the latest version of the symbol's Yahoo
 calendar row (`NMS`, `NGM`, `NCM` to `XNAS`; `NYQ`, `PCX`, `ASE` to `XNYS`;
-`BTS` to `XCBO`). `company_id` SHALL come from the central index key of the
+`BTS` and `CXI` to `XCBO`). `company_id` SHALL come from the central index key of the
 symbol's latest Wikipedia version.
 
 #### Scenario: A member resolves to a company

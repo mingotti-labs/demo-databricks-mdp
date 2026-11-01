@@ -18,11 +18,11 @@
 - [x] 2.1 NAMING.md (schema table row, Silver Domain table naming, timestamp
       status) and `references/docs/medallion/silver.md` say `silver_domain_<domain>`;
       `grep -rn silver_investments` in docs finds only archived changes
-- [ ] 2.2 The ten mapping rows in `data/portfolio/concept_mapping.csv`; dev:
+- [x] 2.2 The ten mapping rows in `data/portfolio/concept_mapping.csv`; dev:
       `run_portfolio`, then `run_sec`; the new concepts appear in
       `mdp_dev.silver_landing.sec__company_facts`
 
-- [ ] 2.3 `yahoo_market.calendar_row` adds `exchange_code` from `fast_info`
+- [x] 2.3 `yahoo_market.calendar_row` adds `exchange_code` from `fast_info`
       (unit test on a stub); dev: `run_yahoo`, then every current member has an
       `exchange_code` in the latest `silver_landing.yahoo__calendar` version
 

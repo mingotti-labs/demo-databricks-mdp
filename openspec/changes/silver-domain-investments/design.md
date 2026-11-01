@@ -260,7 +260,8 @@ them deploys; candidates are listed in the risk below, not chosen here.
   Cost: `fetch_yahoo.py` changes, so CI runs `run_yahoo`, and every calendar row
   gets one new version once (the column is new). SEC stays the cross-check, not
   the source. Mapping: `NMS`, `NGM`, `NCM` to `XNAS`; `NYQ`, `PCX`, `ASE` to
-  `XNYS`; `BTS` to `XCBO`. The ISO list gives `BATS`, `ARCX` and `XASE` as
+  `XNYS`; `BTS` to `XCBO`; `CXI` (the Cboe Volatility Index benchmark `^VIX`, found when
+  `run_yahoo` ran in dev) to `XCBO`, as Cboe's operating market. The ISO list gives `BATS`, `ARCX` and `XASE` as
   segments of `XCBO` and `XNYS`, and `market` holds operating markets only, so
   the mapping goes to the operating code. A code with no mapping fails the
   verification.

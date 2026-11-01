@@ -44,6 +44,7 @@ YAHOO_EXCHANGE_TO_MARKET = {
     "PCX": "XNYS",
     "ASE": "XNYS",
     "BTS": "XCBO",
+    "CXI": "XCBO",
 }
 
 # (rate_code, source, series_id, unit); the source is the Landing table's source.
