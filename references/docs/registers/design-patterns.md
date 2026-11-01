@@ -173,8 +173,15 @@ current state per run (an upserted table or a Materialized View). Platform
 timestamps are excluded from history tracking, but are still rewritten in place
 on every current row each run (openspec `correct-platform-timestamps`), so it is
 being replaced by `bronze_publish_scd2_autocdc_full_load_python` source by
-source. Code: `src/layers/bronze/neon_publish/`.
-Used by: neon. Evidence: `dev`.
+source. Reference only: code in the patterns bundle,
+`references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_snapshot_python.py`
+(table `pattern_bronze_publish.bronze_publish_scd2_autocdc_snapshot_python`, never run).
+Findings from Neon, kept in that file: streaming `create_auto_cdc_flow` against an
+upserted source fails with `DELTA_SOURCE_TABLE_IGNORE_CHANGES`; `skipChangeCommits`
+is not a fix, it silently drops updated rows; changing the `source` of a flow that
+has already run can insert duplicate no-op versions (a full refresh fixes it and
+discards history).
+Evidence: `dev` (Neon until 2026-11; its code is backed up in `references/backups/neon/`).
 
 ### bronze_publish_scd2_autocdc_full_load_python
 The bronze full pattern: `_raw` is a full load, so its `ingested_timestamp`
@@ -199,8 +206,8 @@ The same snapshot flow, keeping only the latest version per key. Used where a
 source also needs a "latest value" table. Reference only: code in the patterns
 bundle, `references/patterns/src/bronze_publish/bronze_publish_scd1_autocdc_snapshot_python.py`
 (table `pattern_bronze_publish.bronze_publish_scd1_autocdc_snapshot_python`).
-Used by: neon `orders_scd1` and `order_items_scd1` (Landing's source) are the same flow in
-`neon_publish/python/`. Evidence: `prd` (earlier use), `dev`.
+Evidence: `prd` (earlier use), `dev` (Neon's `orders_scd1` and `order_items_scd1` were the
+same flow until 2026-11; backup in `references/backups/neon/`).
 
 ### bronze_publish_scd1_autocdc_stream_python
 Streaming `create_auto_cdc_flow`. Valid only against an append-only source:

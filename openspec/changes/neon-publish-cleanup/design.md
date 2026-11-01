@@ -41,8 +41,11 @@ The user's choice. The raw tables are the only live example of a managed Lakeflo
 Connect query-based ingestion (`bronze_lakeflow_query`); the Publish and Landing
 tables show patterns that other sources show too
 (`bronze_publish_scd2_autocdc_full_load_python`, `silver_landing_change_feed_python`).
-`run_neon` keeps its ingestion task and the bronze verification; its Publish and
-Landing tasks go. `design_patterns.yml` keeps `bronze_neon: bronze_lakeflow_query`
+`run_neon` keeps its ingestion task and the source-versus-bronze and seed
+verifications (they compare `bronze_neon` with Postgres); its `reset`, Publish,
+Landing and `verify_bronze` tasks go. `verification/bronze_checks/neon.yml` goes
+whole: the bronze checks loader requires an SCD table for every table, and Neon
+has none left. `design_patterns.yml` keeps `bronze_neon: bronze_lakeflow_query`
 and loses the other schemas and the two table entries; with no `silver_landing`
 entry for neon, the test that requires a Landing checks file per source no longer
 needs `neon.yml`.

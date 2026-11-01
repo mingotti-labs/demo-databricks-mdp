@@ -17,17 +17,13 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ### neon
 - **What it is**: Neon Postgres e-commerce operational database
-- **Design patterns**: [`bronze_lakeflow_query`](design-patterns.md#bronze_lakeflow_query), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python), [`bronze_publish_scd1_materialized_view_sql`](design-patterns.md#bronze_publish_scd1_materialized_view_sql), [`bronze_publish_scd2_merge_sql`](design-patterns.md#bronze_publish_scd2_merge_sql), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python)
+- **Design patterns**: [`bronze_lakeflow_query`](design-patterns.md#bronze_lakeflow_query), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python) (reference only), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python) (reference only)
 - **Bronze raw**: `bronze_neon.{customers,products,orders,order_items}_raw`
-- **Bronze Publish** (`bronze_neon_publish`):
-  - customers: `customers_scd2`
-  - products: `products_scd2`
-  - orders: `orders_scd1`
-  - order_items: `order_items_scd1`
-  - the SCD1 tables of customers and products and the SQL twins moved to the
-    patterns bundle
-- **Consumed by Silver Landing**: yes — `customers_scd2`, `products_scd2`,
-  `orders_scd1`, `order_items_scd1` (all Python variants) → `silver_landing.neon__*`
+- **Bronze Publish and Silver Landing**: removed in `neon-publish-cleanup`
+  (2026-11, to free table slots); the code is backed up in
+  `references/backups/neon/` and the SCD patterns are references in the patterns
+  bundle
+- **Consumed by Silver Landing**: no
 
 ### clickstream
 - **What it is**: Synthetic web clickstream events, file-drop via UC Volume

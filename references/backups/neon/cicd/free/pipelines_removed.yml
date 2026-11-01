@@ -1,0 +1,26 @@
+# Inline resources removed from the dev target of cicd/databricks/free.yml (under resources.pipelines), indented as they were.
+        neon_scd_modeling_python:
+          name: bronze--neon--scd--python--${bundle.target}
+          catalog: ${var.catalog}
+          schema: bronze_neon_publish
+          serverless: true
+          continuous: false
+          configuration:
+            pipelines.numUpdateRetryAttempts: '0'
+            pipelines.maxFlowRetryAttempts: '0'
+          libraries:
+          - glob:
+              include: src/layers/bronze/neon_publish/python/**
+        silver_landing_neon:
+          name: silver--neon--${bundle.target}
+          catalog: ${var.catalog}
+          schema: silver_landing
+          serverless: true
+          continuous: false
+          configuration:
+            pipelines.numUpdateRetryAttempts: '0'
+            pipelines.maxFlowRetryAttempts: '0'
+            workspace_file_path: ${workspace.file_path}
+          libraries:
+          - glob:
+              include: src/layers/silver/landing/neon/**
