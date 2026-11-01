@@ -38,15 +38,15 @@
 
 ## 5. Verify and clean up
 
-- [ ] 5.1 The user deletes pipelines `bronze--neon--scd--python--dev` and
+- [x] 5.1 The user deletes pipelines `bronze--neon--scd--python--dev` and
       `silver--neon--dev` and the stale human-owned Neon copies (before the
       deploy: it refuses to delete a pipeline)
-- [ ] 5.2 Draft PR deploys to dev as the service principal; `run_neon` as the
+- [x] 5.2 Draft PR deploys to dev as the service principal; `run_neon` as the
       service principal ingests: `bronze_neon` counts equal task 1.1's
-- [ ] 5.3 With the user's approval, drop `bronze_neon_publish.*` (4),
+- [x] 5.3 With the user's approval, drop `bronze_neon_publish.*` (4),
       `silver_landing.neon__*` (4), their twins and the two `event_log_*` tables,
       listed by name first
-- [ ] 5.4 Read the quota: 438 expected; results in design.md
+- [x] 5.4 Read the quota: 440 read; results in design.md
 
 ## 6. Archive
 

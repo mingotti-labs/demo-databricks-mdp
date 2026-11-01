@@ -118,3 +118,16 @@ pipelines as backups so recovery is easier).
 5. Archive.
 
 Rollback: restore from `references/backups/neon/` as `RECOVERY.md` says.
+
+## Results (2026-11-01)
+
+- The user deleted the two service-principal pipelines and the stale human copy
+  before the deploy; `deploy-dev` then passed.
+- `run--neon--dev` as the service principal succeeded with `verify=true`;
+  `bronze_neon` counts equal the baseline: customers 200, products 50, orders 500,
+  order_items 1240.
+- Dropped with the user's approval: 8 streaming tables
+  (`bronze_neon_publish` x4, `silver_landing.neon__*` x4) and their 8 hidden
+  `__materialization_mat_*` twins, 16 tables. The two pipelines had no
+  `event_log_*` table (none found in any catalog), so the 18 estimated became 16.
+- Quota read afterwards: 440 (458 before).
