@@ -46,4 +46,4 @@
 - [x] 5.1 `references/docs/registers/data-sources.md` (iso entry), CLAUDE.md
       (the ISO 3166 entry gains the MIC table and the licence limit), the probes
       register; all tests pass (`uv run python -m pytest`)
-- [ ] 5.2 After the prd run: counts equal dev's; archive the change
+- [x] 5.2 After the prd run: counts equal dev's; archive the change
