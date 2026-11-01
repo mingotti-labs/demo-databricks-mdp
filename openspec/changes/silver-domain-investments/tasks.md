@@ -1,21 +1,21 @@
 ## 1. Before building
 
-- [ ] 1.1 iac `silver-domain-investments-schema` applied: `silver_domain_investments`
+- [x] 1.1 iac `silver-domain-investments-schema` applied: `silver_domain_investments`
       exists in `mdp_dev` and `mdp_prd` with the grants `silver_investments` had,
       and `silver_investments` is gone (`databricks schemas list`)
-- [ ] 1.2 Probe P1 (design.md): coverage of the new concepts per current CIK;
+- [x] 1.2 Probe P1 (design.md): coverage of the new concepts per current CIK;
       scripts and result in `references/poc/silver-domain-investments/`, row in
       the probes register, result in design.md
 - [x] 1.3 Probe P2 (design.md): the market of each S&P 500 symbol; done
       2026-10-31, Yahoo's exchange code, result in design.md
-- [ ] 1.4 The `iso-mic` change implemented and its Landing table loaded in dev
+- [x] 1.4 The `iso-mic` change implemented and its Landing table loaded in dev
       and prd
-- [ ] 1.5 Table quota read before the first deploy: stop and ask if above 452
+- [x] 1.5 Table quota read before the first deploy: stop and ask if above 452
       (36 slots to add, stop line 488); the clean-up change comes first if so
 
 ## 2. Naming and mapping
 
-- [ ] 2.1 NAMING.md (schema table row, Silver Domain table naming, timestamp
+- [x] 2.1 NAMING.md (schema table row, Silver Domain table naming, timestamp
       status) and `references/docs/medallion/silver.md` say `silver_domain_<domain>`;
       `grep -rn silver_investments` in docs finds only archived changes
 - [ ] 2.2 The ten mapping rows in `data/portfolio/concept_mapping.csv`; dev:
@@ -28,7 +28,7 @@
 
 ## 3. Shared logic
 
-- [ ] 3.1 `src/common/investments.py`: figure list with instant or duration,
+- [x] 3.1 `src/common/investments.py`: figure list with instant or duration,
       concept choice (priority, latest filing), duration check, special-dividend
       rule, rate list, id hashing (`company_id`, `listing_id`), exchange code to
       operating market mapping; unit tests, including that the figure list matches
@@ -36,7 +36,7 @@
 
 ## 4. Pipeline
 
-- [ ] 4.1 Pipeline resource `silver_domain_investments` and folder
+- [x] 4.1 Pipeline resource `silver_domain_investments` and folder
       `src/layers/silver/domain/investments/`; `databricks bundle validate` passes
 - [ ] 4.2 `company`, `market`, `listing` and `index_membership`; dev: 500
       companies, `GOOGL` and `GOOG` on one company row and two listings, every
@@ -62,7 +62,7 @@
       `verification/verify_silver_domain_investments.py`; dev run with
       `verify=true` passes; one deliberate failure (a check pointed at a
       missing symbol) fails and names it
-- [ ] 5.2 Design pattern register entry and `design_patterns.yml`; the register
+- [x] 5.2 Design pattern register entry and `design_patterns.yml`; the register
       tests pass
 
 ## 6. Documentation

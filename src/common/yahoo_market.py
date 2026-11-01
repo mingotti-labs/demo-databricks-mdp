@@ -91,8 +91,9 @@ def event_rows(symbol: str, frame) -> list[dict]:
     return rows
 
 
-def calendar_row(symbol: str, calendar: dict) -> dict:
-    """The next announced ex-date, pay date (Yahoo's `Dividend Date`) and earnings date."""
+def calendar_row(symbol: str, calendar: dict, exchange_code: str | None) -> dict:
+    """The next announced ex-date, pay date (Yahoo's `Dividend Date`), earnings date and
+    the exchange code Yahoo trades the symbol on (`NMS`, `NYQ`), None when unknown."""
     earnings = calendar.get("Earnings Date") or []
     return {
         "symbol": symbol,
@@ -100,6 +101,7 @@ def calendar_row(symbol: str, calendar: dict) -> dict:
         "ex_dividend_date": text(calendar.get("Ex-Dividend Date")),
         "dividend_date": text(calendar.get("Dividend Date")),
         "earnings_date": text(earnings[0]) if earnings else None,
+        "exchange_code": exchange_code,
     }
 
 

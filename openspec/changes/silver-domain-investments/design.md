@@ -264,7 +264,14 @@ them deploys; candidates are listed in the risk below, not chosen here.
   segments of `XCBO` and `XNYS`, and `market` holds operating markets only, so
   the mapping goes to the operating code. A code with no mapping fails the
   verification.
-- **P1, SEC coverage of the new concepts** (before the mapping rows are
+- **P1, SEC coverage of the new concepts** (done 2026-11-01; `p1_coverage.py` and
+  `p1_result.txt`): of the 500 current CIKs, a 10-K ending in the last 18 months
+  has `AssetsCurrent` for 417 (83 without: banks, insurers and similar),
+  `Liabilities` for 358, `LiabilitiesAndStockholdersEquity` for 497,
+  `StockholdersEquity` for 465, the including-non-controlling-interest equity
+  for 308, `PreferredStockValue` for 219 and earnings per share for 480. The
+  liabilities fallback is needed for 142 companies and its inputs exist for 139;
+  3 have no balance sheet total. `preferred_stock` stays (219 companies). Original question: (before the mapping rows are
   merged): for every current CIK, which of the new concepts appear in a 10-K
   for a fiscal year ending in the last 18 months. Answers how often the
   liabilities fallback is needed and whether `preferred_stock` is worth keeping.

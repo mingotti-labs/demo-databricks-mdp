@@ -52,7 +52,7 @@ def events_raw():
 @dp.table()
 @dp.expect("symbol_present", "symbol IS NOT NULL")
 def calendar_raw():
-    return read_landing("calendar", ["ex_dividend_date", "dividend_date", "earnings_date"])
+    return read_landing("calendar", ["ex_dividend_date", "dividend_date", "earnings_date", "exchange_code"])
 
 
 @dp.table()

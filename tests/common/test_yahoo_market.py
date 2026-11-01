@@ -107,14 +107,16 @@ def test_calendar_row():
         "Earnings Date": [date(2027, 2, 10), date(2027, 2, 14)],
         "Earnings Average": 0.7,
     }
-    assert calendar_row("KO", calendar) == {
+    assert calendar_row("KO", calendar, "NYQ") == {
         "symbol": "KO",
         "yahoo_symbol": "KO",
         "ex_dividend_date": "2026-11-28",
         "dividend_date": "2026-12-15",
         "earnings_date": "2027-02-10",
+        "exchange_code": "NYQ",
     }
-    assert calendar_row("SPY", {})["dividend_date"] is None
+    assert calendar_row("SPY", {}, None)["dividend_date"] is None
+    assert calendar_row("SPY", {}, None)["exchange_code"] is None
 
 
 def test_monthly_expiry():
