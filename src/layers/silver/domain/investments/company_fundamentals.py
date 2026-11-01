@@ -30,13 +30,17 @@ WITH figures AS (
 ), mapping AS (
   SELECT figure, taxonomy, concept, CAST(priority AS INT) AS priority
   FROM {LANDING}.portfolio__concept_mapping WHERE is_current
+), predecessors AS (
+  SELECT predecessor_cik, cik AS successor_cik
+  FROM {LANDING}.portfolio__predecessor_ciks WHERE is_current
 ), mapped AS (
-  SELECT f.cik, f.accn, f.form, to_date(f.filed) AS filed, to_date(f.start) AS start_date,
-         to_date(f.end) AS end_date, CAST(f.val AS DECIMAL(28, 6)) AS value, f.ingested_timestamp,
+  SELECT f.cik, coalesce(pc.successor_cik, f.cik) AS entity_cik, f.accn, f.form,
+         to_date(f.filed) AS filed, to_date(f.start) AS start_date, to_date(f.end) AS end_date, CAST(f.val AS DECIMAL(28, 6)) AS value, f.ingested_timestamp,
          m.figure, m.priority, m.concept, g.kind
   FROM {LANDING}.sec__company_facts f
   JOIN mapping m ON m.taxonomy = f.taxonomy AND m.concept = f.concept
   JOIN figures g ON g.figure = m.figure AND g.unit = f.unit
+  LEFT JOIN predecessors pc ON pc.predecessor_cik = f.cik
   WHERE f.is_current AND f.form IN ('10-K', '10-K/A', '10-Q', '10-Q/A')
 ), filings AS (
   SELECT cik, accn, max(form) AS form, max(filed) AS filed, max(end_date) AS period_end,
@@ -56,15 +60,15 @@ WITH figures AS (
     FROM mapped WHERE kind = 'cover'
   ) WHERE pick = 1
 ), annual AS (
-  SELECT cik, accn, figure, priority, concept, filed, end_date, value
+  SELECT cik, entity_cik, accn, figure, priority, concept, filed, end_date, value
   FROM mapped
   WHERE kind = 'duration' AND form LIKE '10-K%' AND datediff(end_date, start_date) BETWEEN 330 AND 380
 ), yearly AS (
   SELECT a.cik, a.accn, a.figure, a.priority, a.concept, a.value
   FROM annual a JOIN filings fl ON fl.cik = a.cik AND fl.accn = a.accn AND a.end_date = fl.period_end
 ), year_to_date AS (
-  SELECT cik, accn, figure, priority, concept, period_end, filed, value, days FROM (
-    SELECT m.cik, m.accn, m.figure, m.priority, m.concept, fl.period_end, fl.filed, m.value,
+  SELECT cik, entity_cik, accn, figure, priority, concept, period_end, filed, value, days FROM (
+    SELECT m.cik, m.entity_cik, m.accn, m.figure, m.priority, m.concept, fl.period_end, fl.filed, m.value,
            datediff(m.end_date, m.start_date) AS days,
            row_number() OVER (
              PARTITION BY m.cik, m.accn, m.figure, m.concept ORDER BY datediff(m.end_date, m.start_date) DESC
@@ -74,8 +78,8 @@ WITH figures AS (
       AND datediff(m.end_date, m.start_date) < 300
   ) WHERE pick = 1
 ), prior_year AS (
-  SELECT cik, accn, figure, priority, concept, period_end, filed, value, prior_value FROM (
-    SELECT y.cik, y.accn, y.figure, y.priority, y.concept, y.period_end, y.filed, y.value,
+  SELECT cik, entity_cik, accn, figure, priority, concept, period_end, filed, value, prior_value FROM (
+    SELECT y.cik, y.entity_cik, y.accn, y.figure, y.priority, y.concept, y.period_end, y.filed, y.value,
            p.value AS prior_value,
            row_number() OVER (
              PARTITION BY y.cik, y.accn, y.figure, y.concept
@@ -95,7 +99,7 @@ WITH figures AS (
              PARTITION BY y.cik, y.accn, y.figure, y.concept ORDER BY a.end_date DESC, a.filed DESC
            ) AS pick
     FROM prior_year y
-    JOIN annual a ON a.cik = y.cik AND a.figure = y.figure AND a.concept = y.concept
+    JOIN annual a ON a.entity_cik = y.entity_cik AND a.figure = y.figure AND a.concept = y.concept
      AND a.filed <= y.filed AND a.end_date < y.period_end
   ) WHERE pick = 1
 ), duration AS (
@@ -117,9 +121,6 @@ WITH figures AS (
          {figure_columns_sql()},
          map_from_entries(collect_list(struct(figure, concept))) AS concept_used
   FROM chosen GROUP BY cik, accn
-), predecessors AS (
-  SELECT predecessor_cik, cik AS successor_cik
-  FROM {LANDING}.portfolio__predecessor_ciks WHERE is_current
 ), first_filing AS (
   SELECT cik, min(filed) AS first_filed FROM filings GROUP BY cik
 ), relabelled AS (
