@@ -81,15 +81,17 @@ are never uploaded. Alternative: leave it to git. Rejected by the user (save the
 pipelines as backups so recovery is easier).
 
 ### Order, because pipeline deletes and drops are the user's
-1. The PR merges (the draft deploys to dev first): the bundle no longer defines the
-   two pipelines; `bundle deploy` will not delete a pipeline without
-   confirmation, so they stay in the workspace, idle.
-2. The user deletes the two SP-owned pipelines, `bronze--neon--scd--python--dev`
+1. The user deletes the two SP-owned pipelines, `bronze--neon--scd--python--dev`
    and `silver--neon--dev`, and their stale human-owned copies (a deleted
-   regular pipeline keeps its tables).
+   regular pipeline keeps its tables). This comes before the PR's deploy:
+   `bundle deploy` refuses to delete a pipeline without an interactive
+   confirmation, so a deploy of a bundle that drops a pipeline still in the
+   workspace fails (found on the draft PR's first `deploy-dev` run, as NAMING.md
+   already says).
+2. The PR deploys to dev as the service principal; `run_neon` runs.
 3. With the user's approval, drop the eight tables, their twins and the two
    `event_log_*` tables.
-4. Read the quota again: expected 438.
+4. Read the quota again: 440 expected (458 live on 2026-11-01).
 
 ## Risks / Trade-offs
 
@@ -107,11 +109,12 @@ pipelines as backups so recovery is easier).
 ## Migration Plan
 
 1. Merge the proposal.
-2. Implementation PR (draft): backup folder and `RECOVERY.md`, the new pattern
+2. The user deletes the two pipelines (before the PR's deploy).
+3. Implementation PR (draft): backup folder and `RECOVERY.md`, the new pattern
    file and resource, the removals, register and docs; `databricks bundle validate`
    for dev and prd, tests, a dev deploy as the service principal; check
    `run_neon` still ingests (`bronze_neon` row counts unchanged).
-3. The user deletes the two pipelines; the drops with approval; read the quota.
-4. Archive.
+4. The drops with approval; read the quota.
+5. Archive.
 
 Rollback: restore from `references/backups/neon/` as `RECOVERY.md` says.

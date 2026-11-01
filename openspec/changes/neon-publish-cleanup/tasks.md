@@ -38,10 +38,11 @@
 
 ## 5. Verify and clean up
 
-- [ ] 5.1 Draft PR deploys to dev as the service principal; `run_neon` as the
+- [ ] 5.1 The user deletes pipelines `bronze--neon--scd--python--dev` and
+      `silver--neon--dev` and the stale human-owned Neon copies (before the
+      deploy: it refuses to delete a pipeline)
+- [ ] 5.2 Draft PR deploys to dev as the service principal; `run_neon` as the
       service principal ingests: `bronze_neon` counts equal task 1.1's
-- [ ] 5.2 The user deletes pipelines `bronze--neon--scd--python--dev` and
-      `silver--neon--dev` and the stale human-owned Neon copies
 - [ ] 5.3 With the user's approval, drop `bronze_neon_publish.*` (4),
       `silver_landing.neon__*` (4), their twins and the two `event_log_*` tables,
       listed by name first
