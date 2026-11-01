@@ -89,6 +89,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Consumed by Silver Landing**: yes — `country_codes_scd2`/
   `subdivision_codes_scd2` → `silver_landing.iso__*` (`country_codes`,
   `subdivision_codes`, `market_identifier_codes`)
+- **Consumed by Silver Domain**: `silver_domain_investments` `market` (operating markets of `market_identifier_codes`)
 
 ### geonames
 - **What it is**: GeoNames country/admin1/admin2/city gazetteer data,
@@ -110,6 +111,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_wikipedia_publish`): `sp500_constituents_scd2`
   keyed by `symbol`; its versions are the index membership history
 - **Consumed by Silver Landing**: yes, `silver_landing.wikipedia__sp500_constituents`
+- **Consumed by Silver Domain**: `silver_domain_investments` `company`, `listing` and `index_membership`
 
 ### portfolio
 - **What it is**: company-owned data of the dividend portfolio story: curated
@@ -119,6 +121,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze raw**: `bronze_portfolio.{concept_mapping,predecessor_ciks,settings,risk_levels,target_mix,benchmarks}_raw`
 - **Bronze Publish** (`bronze_portfolio_publish`): the same six as `_scd2`
 - **Consumed by Silver Landing**: yes, `silver_landing.portfolio__*` (six tables)
+- **Consumed by Silver Domain**: `silver_domain_investments` `listing` (benchmarks), `dividend` (settings) and `company_fundamentals` (concept mapping, predecessors)
 
 ### sec
 - **What it is**: SEC EDGAR's ticker list and XBRL company facts (public domain)
@@ -133,6 +136,7 @@ richer variant if it exists; fall back only when it doesn't. See
   `unit`, `accn`, `start`, `end`
 - **Consumed by Silver Landing**: yes, `silver_landing.sec__company_tickers` and
   `silver_landing.sec__company_facts`
+- **Consumed by Silver Domain**: `silver_domain_investments` `company_fundamentals`
 
 ### rba
 - **What it is**: Reserve Bank of Australia statistical tables F11.1 (exchange
@@ -145,6 +149,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_rba_publish`): `observations_scd1` keyed by
   `series_id`, `observation_date`
 - **Consumed by Silver Landing**: yes, `silver_landing.rba__observations`
+- **Consumed by Silver Domain**: `silver_domain_investments` `market_rate_daily` and `dividend` (A$ rate)
 
 ### fred
 - **What it is**: FRED (St. Louis Fed) series `DGS10` (US 10-year Treasury
@@ -157,6 +162,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_fred_publish`): `observations_scd1` keyed by
   `series_id`, `observation_date`
 - **Consumed by Silver Landing**: yes, `silver_landing.fred__observations`
+- **Consumed by Silver Domain**: `silver_domain_investments` `market_rate_daily`
 
 ### yahoo
 - **What it is**: Yahoo Finance (via `yfinance`, unofficial) daily prices,
@@ -171,3 +177,5 @@ richer variant if it exists; fall back only when it doesn't. See
   `date`; `events_scd1` by `symbol`, `date`, `event_type`; `options_scd1` by
   `symbol`; `calendar_scd2` by `symbol` (history of announced pay dates)
 - **Consumed by Silver Landing**: yes, `silver_landing.yahoo__*` (four tables)
+- **Consumed by Silver Domain**: `silver_domain_investments` `listing` (exchange code), `price_daily`, `dividend` and `options_activity`
+

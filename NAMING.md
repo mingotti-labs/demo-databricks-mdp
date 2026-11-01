@@ -10,7 +10,7 @@ Catalogs: `mdp_dev`, `mdp_tst`, `mdp_prd`
 | Bronze publish | `bronze_<source>_publish` | Validated bronze, safe for downstream reads — includes `<table>_scd1`/`<table>_scd2` tables |
 | Silver Landing | `silver_landing` | Source-aligned foundational data product; one schema for every source, tables `<source>__<entity>` (double underscore; the standard edition keeps `silver_landing_<source>`) — see `references/docs/medallion/silver.md` |
 | Silver Normalised | `silver_normalised_<source>` | Source-aligned, restructured to 3NF with extracted entities; values unchanged — see `references/docs/medallion/silver.md` |
-| Silver Domain/Marts | `silver_<domain>` | Conformed, domain-modelled (domains TBD — decide when the first one is actually built) |
+| Silver Domain | `silver_domain_<domain>` | Conformed, domain-modelled; first domain `silver_domain_investments`. Marts (later) are not named yet |
 | Gold | `gold_analytics_gateway` | BI / reporting consumers |
 | Gold | `gold_integration_gateway` | Operational / API consumers |
 | Gold | `gold_ai_gateway` | ML and GenAI consumers |
@@ -68,8 +68,13 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
   (`phase3d-acnc-charity-register-ingestion`'s design.md) for the first
   use of this pattern — introduced when needed, not applied speculatively
   to sources that haven't shown the problem.
-- Naming for `silver_<domain>` and `gold_*` tables is TBD (domains not yet
-  defined) — decide when the first one is actually built, not speculatively here.
+- **Silver Domain tables** (`silver_domain_<domain>`): named for what a row is, in
+  singular spelled-out words with no abbreviations (`company`, `listing`,
+  `central_index_key`); a grain suffix when one entity has a row per period
+  (`price_daily`). Entity ids are `<entity>_id`, the 64-character SHA-256 hash of
+  the entity's business key (`company_id`, `listing_id`); dimension surrogate keys
+  belong in gold. Cryptic names that must stay are translated in gold.
+  `gold_*` table naming is TBD until the first gold table is built.
 
 ## Silver Normalised tables
 
@@ -131,6 +136,9 @@ the upstream API/system). Corrected definition (openspec
   those tables were reloaded from one fetch (2026-10). A source whose `_raw`
   table has no `ingested_timestamp` (ungm, nsw_spatial) needs none: Silver
   Landing takes it from `__START_AT`.
+  Silver Domain tables (materialized views, `silver-domain-investments`) carry
+  `ingested_timestamp` only, the earliest of their input rows; there is no
+  `transformed_timestamp` because a full recompute cannot tell which rows changed.
 
 ## Volume paths
 

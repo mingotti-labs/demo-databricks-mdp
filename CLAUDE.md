@@ -66,7 +66,9 @@ demo-databricks-mdp/
                             # SCD2 only, no SCD1; all four keys confirmed unique against
                             # real data, no quarantine table needed
       silver/
-        <domain>/        # domains TBD, per Phase 4
+        domain/
+          investments/   # silver_domain_investments: nine materialized views
+                         # (entities.py, market_data.py, company_fundamentals.py)
       gold/
         analytics_gateway/
         integration_gateway/
@@ -647,6 +649,24 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   query string, so all requests go through `get_json`, which re-raises failures
   without the URL. Landing `silver_landing.fred__observations` has
   `observation_date` as a date.
+- **Silver Domain investments** (`silver-domain-investments`, dividend portfolio
+  story) -- schema `silver_domain_investments`, one serverless pipeline of nine
+  materialized views reading `silver_landing` only: `company` (SEC central index
+  key), `market` (ISO operating markets), `listing` (a trading symbol on a market;
+  market from Yahoo's `exchange_code`), `index_membership`, `price_daily`,
+  `dividend` (A$ amount, pay date, `is_special`), `company_fundamentals` (a row
+  per 10-K or 10-Q filing, point in time: `valid_from_date` is the filing date;
+  trailing twelve months and balance sheet figures from SEC facts),
+  `market_rate_daily` (six rates) and `options_activity`. Ids are hashes:
+  `company_id = sha2('sec:' + central_index_key)`, `listing_id = sha2(market:
+  symbol)`; surrogate keys belong in gold. Join: `price_daily.listing_id =
+  listing.listing_id`, `listing.company_id = company.company_id`. Shared logic in
+  `src/common/investments.py` (figure list, rates, exchange mapping, SQL
+  snippets). `run_investments` runs the pipeline and, with `verify=true`,
+  `verification/verify_silver_domain_investments.py` (CI runs it with
+  `verify=false`; the `check_symbol` parameter adds a deliberate-failure check).
+  Run the source units first. Findings: `CXI` (the VIX benchmark) maps to `XCBO`;
+  `is_special` flags step changes as well as one-offs.
 - **Landing checks per source**: `verification/silver_landing_checks/<source>.yml`
   lists a source's Landing tables for `verify_silver_landing`; a new source adds
   one file (a test fails if a source with a Landing schema has none) and no

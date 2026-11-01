@@ -235,3 +235,12 @@ When proposing a source for this layer, follow
 binding, and the source's normalised spec must validate against the
 normalised spec schema,
 [`references/docs/normalised-spec/schema.json`](../normalised-spec/schema.json).
+
+## Silver Domain
+Sources become one set of entities: typed, joined tables in
+`silver_domain_<domain>` (first: `silver_domain_investments`, openspec
+`silver-domain-investments`). Unlike Landing and Normalised it defines identity:
+an entity id is a hash of the entity's business key, so it is identical on every
+rebuild. Dimension surrogate keys are gold's. Tables are materialized views in one
+pipeline, read `silver_landing` by qualified name and carry `ingested_timestamp`
+only (no `transformed_timestamp`: a full recompute cannot tell which rows changed).

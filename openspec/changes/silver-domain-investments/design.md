@@ -260,11 +260,19 @@ them deploys; candidates are listed in the risk below, not chosen here.
   Cost: `fetch_yahoo.py` changes, so CI runs `run_yahoo`, and every calendar row
   gets one new version once (the column is new). SEC stays the cross-check, not
   the source. Mapping: `NMS`, `NGM`, `NCM` to `XNAS`; `NYQ`, `PCX`, `ASE` to
-  `XNYS`; `BTS` to `XCBO`. The ISO list gives `BATS`, `ARCX` and `XASE` as
+  `XNYS`; `BTS` to `XCBO`; `CXI` (the Cboe Volatility Index benchmark `^VIX`, found when
+  `run_yahoo` ran in dev) to `XCBO`, as Cboe's operating market. The ISO list gives `BATS`, `ARCX` and `XASE` as
   segments of `XCBO` and `XNYS`, and `market` holds operating markets only, so
   the mapping goes to the operating code. A code with no mapping fails the
   verification.
-- **P1, SEC coverage of the new concepts** (before the mapping rows are
+- **P1, SEC coverage of the new concepts** (done 2026-11-01; `p1_coverage.py` and
+  `p1_result.txt`): of the 500 current CIKs, a 10-K ending in the last 18 months
+  has `AssetsCurrent` for 417 (83 without: banks, insurers and similar),
+  `Liabilities` for 358, `LiabilitiesAndStockholdersEquity` for 497,
+  `StockholdersEquity` for 465, the including-non-controlling-interest equity
+  for 308, `PreferredStockValue` for 219 and earnings per share for 480. The
+  liabilities fallback is needed for 142 companies and its inputs exist for 139;
+  3 have no balance sheet total. `preferred_stock` stays (219 companies). Original question: (before the mapping rows are
   merged): for every current CIK, which of the new concepts appear in a 10-K
   for a fiscal year ending in the last 18 months. Answers how often the
   liabilities fallback is needed and whether `preferred_stock` is worth keeping.
@@ -310,3 +318,46 @@ them deploys; candidates are listed in the risk below, not chosen here.
 
 Rollback: delete the pipeline (its tables go with it) and revert the mapping
 rows; nothing upstream changes.
+
+## Dev results (2026-11-01)
+
+Run as the service principal after `run_portfolio`, `run_sec` and `run_yahoo`.
+
+- **Counts:** `company` 500, `market` 1,596, `listing` 517, `index_membership`
+  503, `price_daily` 130,787, `dividend` 50,548, `company_fundamentals` 30,655
+  (499 companies), `market_rate_daily` 60,635, `options_activity` 517. Prices,
+  dividends and options equal their Landing tables row for row.
+- **Entities:** `GOOGL` and `GOOG` are two listings of one company (named after
+  `GOOG`, the alphabetically first symbol). All 517 current calendar rows carry an
+  exchange code: `NYQ` 345, `NMS` 157, `PCX` 12, `BTS` 2, `CXI` 1. `CXI` is the Cboe
+  Volatility Index benchmark `^VIX`, not covered by probe P2 (members only); it
+  maps to `XCBO`. Verification found it on the first run.
+- **Dividends:** 300 pay dates come from Yahoo's calendar (for example `STZ`
+  2026-10-30 ex, 2026-11-13 pay, equal to Landing) and 50,248 are the ex-date plus
+  14 days; no dividend since 2023-01-03 lacks an Australian dollar amount. 607
+  are `is_special`. The rule flags step changes too: `NVDA` went from 0.01 to 0.25
+  in 2026, and both 0.25 payments are flagged, because the median of the previous
+  four stays at 0.01 for the second one. Real one-offs are also flagged (`TDG`
+  90.00, `CME` 5.80 and 7.45, `PGR` 13.60). Gold decides what to do with it.
+- **Rates:** six `rate_code` values; latest cash rate 4.60 and 10-year 4.98 on
+  2026-10-29.
+- **Fundamentals:** 499 current rows (`Vylor`, a new central index key, has no
+  filings yet); 496 of 499 had `net_income` on the first run, 497 after the
+  predecessor fix. The two without are Honeywell Aerospace (a new spin-off, one
+  filing) and Viatris. 141 current rows use the liabilities fallback. ExxonMobil's
+  successor holds 70 filings back to 2009 from its predecessor; its trailing twelve
+  months first lacked a value because the annual figure was under the
+  predecessor's key, fixed by joining annual values on the successor key.
+- **By hand against the raw facts:** Apple's latest 10-Q net income 128,930
+  million = 112,010 (FY2025) + 101,464 (nine months) - 84,544 (prior nine
+  months); JPMorgan Chase has no current assets and liabilities 4,640 billion +
+  equity 374.6 billion = total 5,015 billion; Lilly has no `Liabilities`, so
+  148,072 - 40,271 = 107,801 million is derived and marked `derived`.
+- **Verification:** the first run failed on the `^VIX` market only, naming it;
+  after the `CXI` mapping every check passed.
+- **Deliberate failure:** `run_investments` with `verify=true` and
+  `check_symbol=ZZZZ` failed with `symbol ZZZZ has no listing: ['ZZZZ']`; without
+  the parameter the next run passed.
+- **Quota:** 459 live after the dev deploy (440 before: 18 for the nine views, 1
+  for the pipeline's event log). The prd deploy adds the same 19, about 478 of 500,
+  under the 488 stop line.

@@ -126,11 +126,19 @@ def fetch_prices(batch: list[str], today: date) -> tuple[dict, set[str]]:
     return frames, reloads
 
 
+def exchange_code(ticker) -> str | None:
+    """Yahoo's exchange code for the ticker; a symbol Yahoo no longer knows has none."""
+    try:
+        return ticker.fast_info["exchange"]
+    except Exception:  # noqa: BLE001 - a missing code never costs the symbol its calendar
+        return None
+
+
 def fetch_details(symbol: str, reload: bool, today: date) -> tuple[list, list, list]:
     """Full events (on reload), calendar and options for one symbol."""
     ticker = yf.Ticker(yahoo_symbol(symbol))
     events = event_rows(symbol, ticker.actions) if reload else []
-    calendar = [calendar_row(symbol, ticker.calendar)]
+    calendar = [calendar_row(symbol, ticker.calendar, exchange_code(ticker))]
     expiries = ticker.options
     expiry = monthly_expiry(expiries, today)
     chain = ticker.option_chain(expiry) if expiry else None
