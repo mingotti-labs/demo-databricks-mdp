@@ -70,5 +70,5 @@
 - [x] 6.1 CLAUDE.md (Silver Domain entry), `references/docs/registers/data-sources.md`
       if it lists consumers, design.md dev results; all tests pass
       (`uv run python -m pytest`)
-- [ ] 6.2 The story's design doc in `demo-databricks-planning`: steps 7 and 8
+- [x] 6.2 The story's design doc in `demo-databricks-planning`: steps 7 and 8
       done, step 9 split (this change, then gold), the schema renamed
