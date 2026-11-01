@@ -38,18 +38,18 @@
 
 - [x] 4.1 Pipeline resource `silver_domain_investments` and folder
       `src/layers/silver/domain/investments/`; `databricks bundle validate` passes
-- [ ] 4.2 `company`, `market`, `listing` and `index_membership`; dev: 500
+- [x] 4.2 `company`, `market`, `listing` and `index_membership`; dev: 500
       companies, `GOOGL` and `GOOG` on one company row and two listings, every
       listing's market found in `market`
-- [ ] 4.3 `price_daily` and `options_activity`; dev: row counts equal Landing's
+- [x] 4.3 `price_daily` and `options_activity`; dev: row counts equal Landing's
       (prices per symbol and date, options per symbol), every symbol has a
       listing
-- [ ] 4.4 `dividend`; dev: row count equals Landing's dividends, `amount_in_australian_dollars`
+- [x] 4.4 `dividend`; dev: row count equals Landing's dividends, `amount_in_australian_dollars`
       set on every dividend since 2023-01-03, a spot check of one real and one
       estimated pay date, the special dividends listed and checked by eye
-- [ ] 4.5 `market_rate_daily`; dev: six spelled-out rate codes, latest values equal Landing's
+- [x] 4.5 `market_rate_daily`; dev: six spelled-out rate codes, latest values equal Landing's
       (cash rate 4.60, 10-year 4.98 on 2026-10-29)
-- [ ] 4.6 `company_fundamentals`; dev: one row per `company_id` and filing date,
+- [x] 4.6 `company_fundamentals`; dev: one row per `company_id` and filing date,
       contiguous validity ranges ending 9999-12-31, `net_income` on the current
       row for at least 95% of index companies, the ExxonMobil successor has the
       predecessor's filings, three companies checked by hand against their
@@ -58,7 +58,7 @@
 
 ## 5. Job and verification
 
-- [ ] 5.1 `run_investments` with the `verify` parameter and
+- [x] 5.1 `run_investments` with the `verify` parameter and
       `verification/verify_silver_domain_investments.py`; dev run with
       `verify=true` passes; one deliberate failure (a check pointed at a
       missing symbol) fails and names it
@@ -67,7 +67,7 @@
 
 ## 6. Documentation
 
-- [ ] 6.1 CLAUDE.md (Silver Domain entry), `references/docs/registers/data-sources.md`
+- [x] 6.1 CLAUDE.md (Silver Domain entry), `references/docs/registers/data-sources.md`
       if it lists consumers, design.md dev results; all tests pass
       (`uv run python -m pytest`)
 - [ ] 6.2 The story's design doc in `demo-databricks-planning`: steps 7 and 8
