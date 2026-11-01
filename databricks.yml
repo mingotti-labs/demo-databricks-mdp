@@ -148,31 +148,6 @@ targets:
                 destination_schema: bronze_neon
           target: bronze_neon
           catalog: ${var.catalog}
-        neon_scd_modeling_python:
-          name: bronze--neon--scd--python--${bundle.target}
-          catalog: ${var.catalog}
-          schema: bronze_neon_publish
-          serverless: true
-          continuous: false
-          configuration:
-            pipelines.numUpdateRetryAttempts: '0'
-            pipelines.maxFlowRetryAttempts: '0'
-          libraries:
-          - glob:
-              include: src/layers/bronze/neon_publish/python/**
-        silver_landing_neon:
-          name: silver--neon--${bundle.target}
-          catalog: ${var.catalog}
-          schema: silver_landing
-          serverless: true
-          continuous: false
-          configuration:
-            pipelines.numUpdateRetryAttempts: '0'
-            pipelines.maxFlowRetryAttempts: '0'
-            workspace_file_path: ${workspace.file_path}
-          libraries:
-          - glob:
-              include: src/layers/silver/landing/neon/**
       jobs:
         run_neon:
           name: run--neon--${bundle.target}
@@ -182,36 +157,14 @@ targets:
           - name: verify
             default: 'false'
           tasks:
-          - task_key: reset
-            notebook_task:
-              notebook_path: migrations/reset_full_load.py
-              base_parameters:
-                catalog: ${var.catalog}
-                landing: silver_landing.neon__customers,silver_landing.neon__products,silver_landing.neon__orders,silver_landing.neon__order_items
           - task_key: bronze_ingestion
-            depends_on:
-            - task_key: reset
             pipeline_task:
               pipeline_id: ${resources.pipelines.neon_ecommerce_ingestion.id}
-          - task_key: bronze_scd
-            depends_on:
-            - task_key: bronze_ingestion
-            pipeline_task:
-              pipeline_id: ${resources.pipelines.neon_scd_modeling_python.id}
           - task_key: verify_enabled
             condition_task:
               op: EQUAL_TO
               left: '{{job.parameters.verify}}'
               right: 'true'
-          - task_key: verify_bronze
-            depends_on:
-            - task_key: bronze_scd
-            - task_key: verify_enabled
-              outcome: 'true'
-            run_job_task:
-              job_id: ${resources.jobs.verify_bronze.id}
-              job_parameters:
-                source: neon
           - task_key: verify_seed_data
             depends_on:
             - task_key: verify_enabled
@@ -221,7 +174,7 @@ targets:
             environment_key: default
           - task_key: verify_source_vs_bronze
             depends_on:
-            - task_key: bronze_scd
+            - task_key: bronze_ingestion
             - task_key: verify_enabled
               outcome: 'true'
             notebook_task:
@@ -229,27 +182,9 @@ targets:
               base_parameters:
                 catalog: ${var.catalog}
             environment_key: default
-          - task_key: silver
-            depends_on:
-            - task_key: bronze_scd
-            - task_key: verify_bronze
-            - task_key: verify_seed_data
-            - task_key: verify_source_vs_bronze
-            run_if: NONE_FAILED
-            pipeline_task:
-              pipeline_id: ${resources.pipelines.silver_landing_neon.id}
-          - task_key: verify_silver
-            depends_on:
-            - task_key: silver
-            - task_key: verify_enabled
-              outcome: 'true'
-            run_job_task:
-              job_id: ${resources.jobs.verify_silver_landing.id}
-              job_parameters:
-                source: neon
           - task_key: tag_patterns
             depends_on:
-            - task_key: silver
+            - task_key: bronze_ingestion
             notebook_task:
               notebook_path: src/common/tag_design_patterns.py
               base_parameters:

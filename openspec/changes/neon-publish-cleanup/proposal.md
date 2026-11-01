@@ -20,9 +20,9 @@ the removed pipelines are backed up so they are easy to recover.
   `silver_landing_neon` (`silver--neon--dev`), and the `bronze_scd`, `silver`
   and verification-of-Landing tasks of `run_neon`; delete
   `src/layers/bronze/neon_publish/` and `src/layers/silver/landing/neon/`,
-  `verification/silver_landing_checks/neon.yml`, and the Landing and Publish
-  parts of `verification/bronze_checks/neon.yml`. `run_neon` keeps its ingestion
-  task and the bronze verification.
+  `verification/silver_landing_checks/neon.yml` and `verification/bronze_checks/neon.yml`
+  (the loader needs an SCD table per table). `run_neon` keeps its ingestion task
+  and the source-versus-bronze and seed verifications.
 - **Keep**: `bronze_neon.*_raw` (4 streaming tables), the pipeline
   `neon_ecommerce_ingestion` (`bronze--neon--lakeflow--dev`), the seed job and
   `run_neon`.

@@ -41,8 +41,11 @@ The user's choice. The raw tables are the only live example of a managed Lakeflo
 Connect query-based ingestion (`bronze_lakeflow_query`); the Publish and Landing
 tables show patterns that other sources show too
 (`bronze_publish_scd2_autocdc_full_load_python`, `silver_landing_change_feed_python`).
-`run_neon` keeps its ingestion task and the bronze verification; its Publish and
-Landing tasks go. `design_patterns.yml` keeps `bronze_neon: bronze_lakeflow_query`
+`run_neon` keeps its ingestion task and the source-versus-bronze and seed
+verifications (they compare `bronze_neon` with Postgres); its `reset`, Publish,
+Landing and `verify_bronze` tasks go. `verification/bronze_checks/neon.yml` goes
+whole: the bronze checks loader requires an SCD table for every table, and Neon
+has none left. `design_patterns.yml` keeps `bronze_neon: bronze_lakeflow_query`
 and loses the other schemas and the two table entries; with no `silver_landing`
 entry for neon, the test that requires a Landing checks file per source no longer
 needs `neon.yml`.
@@ -78,15 +81,17 @@ are never uploaded. Alternative: leave it to git. Rejected by the user (save the
 pipelines as backups so recovery is easier).
 
 ### Order, because pipeline deletes and drops are the user's
-1. The PR merges (the draft deploys to dev first): the bundle no longer defines the
-   two pipelines; `bundle deploy` will not delete a pipeline without
-   confirmation, so they stay in the workspace, idle.
-2. The user deletes the two SP-owned pipelines, `bronze--neon--scd--python--dev`
+1. The user deletes the two SP-owned pipelines, `bronze--neon--scd--python--dev`
    and `silver--neon--dev`, and their stale human-owned copies (a deleted
-   regular pipeline keeps its tables).
+   regular pipeline keeps its tables). This comes before the PR's deploy:
+   `bundle deploy` refuses to delete a pipeline without an interactive
+   confirmation, so a deploy of a bundle that drops a pipeline still in the
+   workspace fails (found on the draft PR's first `deploy-dev` run, as NAMING.md
+   already says).
+2. The PR deploys to dev as the service principal; `run_neon` runs.
 3. With the user's approval, drop the eight tables, their twins and the two
    `event_log_*` tables.
-4. Read the quota again: expected 438.
+4. Read the quota again: 440 expected (458 live on 2026-11-01).
 
 ## Risks / Trade-offs
 
@@ -104,11 +109,25 @@ pipelines as backups so recovery is easier).
 ## Migration Plan
 
 1. Merge the proposal.
-2. Implementation PR (draft): backup folder and `RECOVERY.md`, the new pattern
+2. The user deletes the two pipelines (before the PR's deploy).
+3. Implementation PR (draft): backup folder and `RECOVERY.md`, the new pattern
    file and resource, the removals, register and docs; `databricks bundle validate`
    for dev and prd, tests, a dev deploy as the service principal; check
    `run_neon` still ingests (`bronze_neon` row counts unchanged).
-3. The user deletes the two pipelines; the drops with approval; read the quota.
-4. Archive.
+4. The drops with approval; read the quota.
+5. Archive.
 
 Rollback: restore from `references/backups/neon/` as `RECOVERY.md` says.
+
+## Results (2026-11-01)
+
+- The user deleted the two service-principal pipelines and the stale human copy
+  before the deploy; `deploy-dev` then passed.
+- `run--neon--dev` as the service principal succeeded with `verify=true`;
+  `bronze_neon` counts equal the baseline: customers 200, products 50, orders 500,
+  order_items 1240.
+- Dropped with the user's approval: 8 streaming tables
+  (`bronze_neon_publish` x4, `silver_landing.neon__*` x4) and their 8 hidden
+  `__materialization_mat_*` twins, 16 tables. The two pipelines had no
+  `event_log_*` table (none found in any catalog), so the 18 estimated became 16.
+- Quota read afterwards: 440 (458 before).
