@@ -163,3 +163,15 @@ def test_a_connection_error_never_leaks_the_key_in_the_message_or_traceback(
     rendered = "".join(traceback.format_exception(error.value))
     assert "ConnectionError" in rendered
     assert KEY not in rendered
+
+
+def test_series_list_holds_rates_and_consumer_prices():
+    assert fred_series.SERIES == [
+        "DGS10",
+        "DFF",
+        "DFEDTARU",
+        "DFEDTARL",
+        "CPIAUCSL",
+        "CPIAUCNS",
+        "CPILFESL",
+    ]

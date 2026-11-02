@@ -7,7 +7,7 @@ from datetime import date, timedelta
 
 import requests
 
-SERIES = ["DGS10", "DFF", "DFEDTARU", "DFEDTARL"]
+SERIES = ["DGS10", "DFF", "DFEDTARU", "DFEDTARL", "CPIAUCSL", "CPIAUCNS", "CPILFESL"]
 LOOKBACK_DAYS = 31
 MISSING = "."
 
