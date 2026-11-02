@@ -1,0 +1,17 @@
+Saudi      TASI.SR    EMPTY
+Saudi      ^TASI      EMPTY
+Saudi      KSA        rows   2797 2015-09-17 -> 2026-10-30 close 34.22
+Saudi      2222.SR    rows   1718 2019-12-11 -> 2026-10-29 close 25.92
+Thailand   ^SET       EMPTY
+Thailand   ^SET.BK    rows      1 2026-10-30 -> 2026-10-30 close 1518.59
+Thailand   THD        rows   4677 2008-04-01 -> 2026-10-30 close 68.46
+Russia     IMOEX.ME   EMPTY
+Russia     ^IMOEX     EMPTY
+Russia     MOEX.ME    rows   2312 2013-02-15 -> 2026-07-09 close nan
+Russia     RSX        EMPTY
+Russia     ERUS       EMPTY
+Sweden     ^OMX       rows   4501 2008-11-20 -> 2026-10-30 close 3271.40
+Sweden     ^OMXSPI    rows   3418 2013-03-05 -> 2026-10-30 close 1133.31
+Sweden     EWD        rows   7706 1996-03-18 -> 2026-10-30 close 52.16
+Argentina  ^MERV      rows   7347 1996-10-08 -> 2026-10-16 close 2848945.00
+Argentina  ARGT       rows   3940 2011-03-03 -> 2026-10-30 close 79.18

@@ -150,3 +150,12 @@ Change `silver-domain-investments` (2026-10-31). Record: its `design.md` "Probes
 |---|---|---|
 | P1 | For each current S&P 500 CIK, which new concepts appear in a 10-K ending in the last 18 months? | Pass: of 500, `Liabilities` 358, `AssetsCurrent` 417, `PreferredStockValue` 219, earnings per share 480; the liabilities fallback inputs exist for 139 of the 142 without `Liabilities`. |
 | P2 | Which market does each current S&P 500 symbol trade on, per SEC `company_tickers_exchange.json` and per Yahoo? | Pass: both cover all 503 and agree on every one: 345 `XNYS`, 157 `XNAS`, 1 `XCBO`; Yahoo is the chosen source (no new table). |
+
+## world-indexes (exploration, before a proposal)
+
+Scripts and results in `references/poc/world-indexes/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Does Yahoo serve a daily price series for one index per major exchange? | 31 of 36 symbols return full history to 2026-10-30 (e.g. `^GSPC` from 1927, `^N225`, `^FTSE`, `^HSI`, `^BVSP`, `^AXJO`, `^NZ50`, `FTSEMIB.MI`). Failed or nearly empty: Saudi `^TASI.SR` (1 row), Thailand `^SET.BK` (1 row), Russia `IMOEX.ME` (empty), Sweden `^OMXS30` (empty); Argentina `^MERV` stops on 2026-10-16 and has no currency. Index volume is 0 on many days. |
+| P2 | Are there other Yahoo symbols for those five gaps? | Sweden `^OMX` works (from 2008). Saudi, Thailand, Argentina only through USD ETFs (`KSA`, `THD`, `ARGT`) or one stock (`2222.SR`); Russia has nothing current (`MOEX.ME` stops 2026-07-09 with no close). |
