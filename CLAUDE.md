@@ -642,7 +642,9 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
 - **FRED** (`fred-rates`, dividend portfolio story) -- the US 10-year Treasury
   yield (`DGS10`, a market yield) and the Fed's policy rate (`DFF` effective,
   `DFEDTARU` / `DFEDTARL` target range, the counterpart of the RBA cash rate
-  target), from the FRED API with the key in secret scope `fred`. One long table
+  target), and the monthly US consumer price index (`fred-cpi`: `CPIAUCSL` and
+  `CPIAUCNS` all items seasonally adjusted and not, `CPILFESL` core), from the FRED
+  API with the key in secret scope `fred`. One long table
   as RBA. `run_fred`'s first task (`src/common/fetch_fred.py`) requests only the
   31 days before each series' last stored date (`reload=true` for everything),
   skips the `.` (no value) days, and writes one dated file. The key is in the
