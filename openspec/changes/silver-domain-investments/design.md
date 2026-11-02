@@ -392,3 +392,17 @@ Run as the service principal after `run_portfolio`, `run_sec` and `run_yahoo`.
 - **Quota:** 459 live after the dev deploy (440 before: 18 for the nine views, 1
   for the pipeline's event log). The prd deploy adds the same 19, about 478 of 500,
   under the 488 stop line.
+
+## Dev results after the review renames (2026-11-02)
+
+`run_portfolio` (new figure names in the mapping), then `run_investments` with
+`verify=true`, as the service principal: every check passed, including the new one
+that a membership version is current exactly when it ends 9999-12-31.
+
+- `listing` 517 rows, 516 with `has_options`; `price_daily` 130,787 rows, all with open and
+  adjusted close; `index_membership` 503 current versions end 9999-12-31;
+  `company_fundamentals` has `net_income` on 29,390 rows and `earnings_per_share_amount`
+  on 27,597.
+- The removed `options_activity` view was not dropped by the pipeline update: it
+  stays in `mdp_dev.silver_domain_investments` as an orphan (with its twin) until it is
+  dropped by hand. Live table count 459 with it.
