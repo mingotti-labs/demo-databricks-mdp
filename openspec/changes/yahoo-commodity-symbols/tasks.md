@@ -1,11 +1,11 @@
 ## 1. Settings and mapping
 
-- [ ] 1.1 `data/portfolio/benchmarks.csv`: the 8 rows (design.md table), kinds
+- [x] 1.1 `data/portfolio/benchmarks.csv`: the 8 rows (design.md table), kinds
       `commodity_index`, `commodity_future`, `commodity_fund`, empty sector
-- [ ] 1.2 `src/common/investments.py`: `CMX` and `NYM` to `XNYM`, `FGI` and `SNP` to
+- [x] 1.2 `src/common/investments.py`: `CMX` and `NYM` to `XNYM`, `FGI` and `SNP` to
       `XXXX`; unit test of the four entries
-- [ ] 1.3 `uv run python -m pytest tests/common` passes; `databricks bundle validate`
-- [ ] 1.4 `cicd/affected_units.py` for the branch: expect `portfolio` and
+- [x] 1.3 `uv run python -m pytest tests/common` passes; `databricks bundle validate`
+- [x] 1.4 `cicd/affected_units.py` for the branch: expect `portfolio` and
       `investments`, not `yahoo`
 
 ## 2. Documentation
