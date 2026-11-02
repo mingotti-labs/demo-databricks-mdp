@@ -85,5 +85,5 @@
 - [x] 7.4 `price_daily` adds open, high, low and adjusted close; `rate_name` added
       to the rate list and `market_rate_daily`
 - [x] 7.5 `index_membership.valid_to_timestamp` is 9999-12-31 for current rows
-- [ ] 7.6 Dev: `run_investments` with `verify=true` passes on the renamed tables;
+- [x] 7.6 Dev: `run_investments` with `verify=true` passes on the renamed tables;
       table count is 8; counts as in the first dev results; quota read after
