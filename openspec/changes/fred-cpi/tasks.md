@@ -7,11 +7,11 @@
 
 ## 2. Documentation
 
-- [ ] 2.1 `references/docs/registers/source_systems/fred.md`: the three series in
+- [x] 2.1 `references/docs/registers/source_systems/fred.md`: the three series in
       "Series fetched", monthly dates, the yearly `reload=true` after February (D3)
-- [ ] 2.2 `references/docs/registers/data-sources.md` and CLAUDE.md "Sources": FRED
+- [x] 2.2 `references/docs/registers/data-sources.md` and CLAUDE.md "Sources": FRED
       also carries US CPI
-- [ ] 2.3 The macro-prices probes in `references/poc/macro-prices/` and the probes
+- [x] 2.3 The macro-prices probes in `references/poc/macro-prices/` and the probes
       register (committed with the proposal)
 
 ## 3. Dev

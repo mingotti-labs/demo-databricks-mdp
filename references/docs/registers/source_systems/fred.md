@@ -21,6 +21,16 @@ CI/CD service principal has READ). Rate limit: 120 requests a minute.
 | `DFF` | effective federal funds rate (banks' overnight lending) | 1954-07-01 | daily, 7 days |
 | `DFEDTARU` | Fed target range, upper limit (the counterpart of the RBA cash rate target) | 2008-12-16 | daily, 7 days |
 | `DFEDTARL` | Fed target range, lower limit | 2008-12-16 | daily, 7 days |
+| `CPIAUCSL` | US consumer price index (CPI-U), all items, seasonally adjusted | 1947-01-01 | monthly |
+| `CPIAUCNS` | CPI-U, all items, not seasonally adjusted (never revised) | 1913-01-01 | monthly |
+| `CPILFESL` | CPI-U less food and energy ("core"), seasonally adjusted | 1957-01-01 | monthly |
+
+The CPI series are dated the first day of the month they measure (index base
+1982-84 = 100); a month's value is published in the middle of the next month. The
+BLS revises the seasonally adjusted series each February for the previous five
+years: run `run_fred` with `reload=true` after that release (the 31-day lookback
+does not reach them). Added in `fred-cpi`; a series with no stored rows loads in full
+on its first run.
 
 Not fetched: `FEDFUNDS`, the monthly average of `DFF`. Add a series by naming it in
 `SERIES` in `fred_series.py`.
