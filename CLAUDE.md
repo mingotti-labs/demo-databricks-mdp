@@ -671,6 +671,8 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   `verification/verify_silver_domain_investments.py` (CI runs it with
   `verify=false`; the `check_symbol` parameter adds a deliberate-failure check).
   Run the source units first. Findings: `CXI` (the VIX benchmark) maps to `XCBO`;
+  commodity futures (`CMX`, `NYM`) to `XNYM`, index providers (`FGI`, `SNP`) to `XXXX`
+  ("no market", already in `market`; `yahoo-commodity-symbols`);
   `is_special` flags step changes as well as one-offs.
 - **Landing checks per source**: `verification/silver_landing_checks/<source>.yml`
   lists a source's Landing tables for `verify_silver_landing`; a new source adds

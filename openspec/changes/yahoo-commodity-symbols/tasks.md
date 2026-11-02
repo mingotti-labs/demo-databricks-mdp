@@ -10,10 +10,10 @@
 
 ## 2. Documentation
 
-- [ ] 2.1 `data/portfolio/README.md` and the Yahoo source system file: the new kinds
+- [x] 2.1 `data/portfolio/README.md` and the Yahoo source system file: the new kinds
       and symbols, `XXXX` for indexes
-- [ ] 2.2 CLAUDE.md "Sources" (Yahoo, Silver Domain investments findings)
-- [ ] 2.3 Probe P5 in the probes register (committed with the proposal)
+- [x] 2.2 CLAUDE.md "Sources" (Yahoo, Silver Domain investments findings)
+- [x] 2.3 Probe P5 in the probes register (committed with the proposal)
 
 ## 3. Dev
 
