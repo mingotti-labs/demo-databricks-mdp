@@ -1,0 +1,12 @@
+CPIAUCSL: header ['observation_date', 'CPIAUCSL'], rows 957, 1947-01-01 -> 2026-09-01, days of month ['01']
+  2026-07-01 332.813
+  2026-08-01 334.131
+  2026-09-01 336.298
+CPIAUCNS: header ['observation_date', 'CPIAUCNS'], rows 1365, 1913-01-01 -> 2026-09-01, days of month ['01']
+  2026-07-01 333.918
+  2026-08-01 334.980
+  2026-09-01 336.940
+CPILFESL: header ['observation_date', 'CPILFESL'], rows 837, 1957-01-01 -> 2026-09-01, days of month ['01']
+  2026-07-01 336.789
+  2026-08-01 337.765
+  2026-09-01 338.896

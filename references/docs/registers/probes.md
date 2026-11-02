@@ -159,3 +159,14 @@ Scripts and results in `references/poc/world-indexes/`.
 |---|---|---|
 | P1 | Does Yahoo serve a daily price series for one index per major exchange? | 31 of 36 symbols return full history to 2026-10-30 (e.g. `^GSPC` from 1927, `^N225`, `^FTSE`, `^HSI`, `^BVSP`, `^AXJO`, `^NZ50`, `FTSEMIB.MI`). Failed or nearly empty: Saudi `^TASI.SR` (1 row), Thailand `^SET.BK` (1 row), Russia `IMOEX.ME` (empty), Sweden `^OMXS30` (empty); Argentina `^MERV` stops on 2026-10-16 and has no currency. Index volume is 0 on many days. |
 | P2 | Are there other Yahoo symbols for those five gaps? | Sweden `^OMX` works (from 2008). Saudi, Thailand, Argentina only through USD ETFs (`KSA`, `THD`, `ARGT`) or one stock (`2222.SR`); Russia has nothing current (`MOEX.ME` stops 2026-07-09 with no close). |
+
+## macro-prices (exploration, before a proposal)
+
+Daily gold and commodity prices, US and Australian CPI (2026-11-02). Scripts and results in `references/poc/macro-prices/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Which Yahoo symbols give daily gold and commodity prices, and does their exchange map to a market? | CRB is `^TRCCRB` (from 1994, exchange `FGI`); `^CRB` and `^BCOM` fail. Daily: `GC=F`, `SI=F`, `HG=F` (`CMX`), `CL=F` (`NYM`), `^SPGSCI` (`SNP`), all from 2000 or earlier. ETFs `GLD`, `IAU`, `DBC`, `GSG` map to `XNYS` (`PCX`); `CMX`, `NYM`, `FGI`, `SNP` are not in `YAHOO_EXCHANGE_TO_MARKET`. |
+| P2 | What do the FRED US CPI series hold? | `CPIAUCSL` (from 1947), `CPIAUCNS` (from 1913), `CPILFESL` (from 1957): monthly, dated the 1st of the month, last 2026-09-01. |
+| P3 | What does RBA table G1 hold, and does the RBA parser read it? | Quarterly only (CPI index `GCPIAG`, base Sep 2025 month = 100, and four year-ended % series), from 1922, dated the quarter's last day as `30/09/2026`, with empty future rows. `parse_table` fails: it expects `03-Jan-2023` dates. |
+| P4 | Does the ABS Data API (no key) serve the complete monthly CPI? | Yes, dataflow `ABS,CPI,2.0.0`, key `MEASURE.INDEX.TSEST.REGION.FREQ`: monthly all groups Australia `1.10001.10.50.M` from 2024-04 only (30 rows to 2026-09); quarterly `1.10001.10.50.Q` from 1948-Q3. No seasonally adjusted monthly series under `TSEST` 20. Structure URLs take `/ABS/CPI/2.0.0`, data URLs `ABS,CPI,2.0.0`. |
