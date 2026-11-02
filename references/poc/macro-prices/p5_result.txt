@@ -1,0 +1,16 @@
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ^TRCCRB"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ^SPGSCI"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GC=F"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SI=F"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HG=F"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CL=F"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DBC"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GSG"}}}
+^TRCCRB   prices   7 events    0 exchange FGI -> UNMAPPED has_options False expiry None
+^SPGSCI   prices   7 events    0 exchange SNP -> UNMAPPED has_options False expiry None
+GC=F      prices   7 events    0 exchange CMX -> UNMAPPED has_options False expiry None
+SI=F      prices   7 events    0 exchange CMX -> UNMAPPED has_options False expiry None
+HG=F      prices   7 events    0 exchange CMX -> UNMAPPED has_options False expiry None
+CL=F      prices   7 events    0 exchange NYM -> UNMAPPED has_options False expiry None
+DBC       prices   7 events    9 exchange PCX -> XNYS has_options True expiry 2026-11-20
+GSG       prices   7 events    0 exchange PCX -> XNYS has_options True expiry 2026-11-20
