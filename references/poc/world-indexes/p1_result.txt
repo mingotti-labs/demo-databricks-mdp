@@ -1,0 +1,457 @@
+Downloading pandas (10.3MiB)
+Downloading numpy (12.0MiB)
+Downloading lxml (3.8MiB)
+Downloading curl-cffi (2.0MiB)
+ Downloaded curl-cffi
+ Downloaded lxml
+ Downloaded numpy
+ Downloaded pandas
+Installed 24 packages in 3.78s
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+$^MERV: possibly delisted; no price data found  (period=5d)
+$IMOEX.ME: possibly delisted; no timezone found
+$IMOEX.ME: No data found, symbol may be delisted
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+^OMXS30: Period 'max' is invalid, must be one of: 1d, 5d
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:514: Pandas4Warning: The inplace keyword in DataFrame.drop is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.drop(
+C:\Users\leand\AppData\Local\uv\cache\archive-v0\xvVq6Fn4tf9aXYfoOsmy1\Lib\site-packages\yfinance\utils.py:518: Pandas4Warning: The inplace keyword in DataFrame.rename is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  df.rename(columns={
+NYSE/Nasdaq                  ^GSPC        rows  24826 1927-12-30 -> 2026-10-30 close      7580.07 USD novol 5497
+Nasdaq                       ^IXIC        rows  14052 1971-02-05 -> 2026-10-30 close     25437.00 USD novol 3457
+Shanghai                     000001.SS    rows   7104 1997-07-02 -> 2026-10-30 close      3599.02 CNY novol 1361
+Shenzhen                     399001.SZ    rows   7071 1997-08-22 -> 2026-10-30 close     10833.78 CNY novol 1570
+Hong Kong                    ^HSI         rows   9830 1986-12-31 -> 2026-10-30 close     23294.42 HKD novol 3599
+Tokyo                        ^N225        rows  15197 1965-01-05 -> 2026-10-30 close     63290.11 JPY novol 9237
+India NSE                    ^NSEI        rows   4691 2007-09-17 -> 2026-10-30 close     23053.10 INR novol 1333
+India BSE                    ^BSESN       rows   7226 1997-07-01 -> 2026-10-30 close     74459.53 INR novol 1498
+Euronext Paris               ^FCHI        rows   9314 1990-03-01 -> 2026-10-30 close      7969.42 EUR novol 3748
+Euronext Amsterdam           ^AEX         rows   8690 1992-10-12 -> 2026-10-30 close      1134.44 EUR novol 3046
+Euronext Brussels            ^BFX         rows   9032 1991-04-09 -> 2026-10-30 close      5840.99 EUR novol 1922
+Euronext Lisbon              PSI20.LS     rows   3442 2013-04-30 -> 2026-10-30 close      9276.13 EUR novol 770
+Euronext Amsterdam/Paris area ^STOXX50E    rows   4911 2007-03-30 -> 2026-10-30 close      6131.31 EUR novol 1600
+London                       ^FTSE        rows  10820 1984-01-03 -> 2026-10-30 close     10729.80 GBP novol 3791
+Frankfurt                    ^GDAXI       rows   9822 1987-12-30 -> 2026-10-30 close     25818.21 EUR novol 2978
+Toronto                      ^GSPTSE      rows  11886 1979-06-29 -> 2026-10-30 close     35620.00 CAD novol 1343
+Switzerland                  ^SSMI        rows   9034 1990-11-09 -> 2026-10-30 close     14810.66 CHF novol 3039
+Korea                        ^KS11        rows   7355 1996-12-11 -> 2026-10-30 close      5730.74 KRW novol 2
+Taiwan                       ^TWII        rows   7186 1997-07-02 -> 2026-10-30 close     45211.83 TWD novol 1356
+Australia                    ^AXJO        rows   8581 1992-11-23 -> 2026-10-30 close      8908.10 AUD novol 6240
+Saudi                        ^TASI.SR     rows      1 2026-10-29 -> 2026-10-29 close      9921.50 SAR novol 0
+Brazil                       ^BVSP        rows   8302 1993-04-27 -> 2026-10-30 close    167922.00 BRL novol 3367
+Italy                        FTSEMIB.MI   rows   7365 1997-12-31 -> 2026-10-30 close     49501.00 EUR novol 870
+Spain                        ^IBEX        rows   8441 1993-07-12 -> 2026-10-30 close     18652.90 EUR novol 2008
+Mexico                       ^MXX         rows   8761 1991-11-08 -> 2026-10-30 close     69779.20 MXN novol 2381
+Indonesia                    ^JKSE        rows   8902 1990-04-06 -> 2026-10-30 close      5057.05 IDR novol 1267
+South Africa                 ^J203.JO     rows   3701 2012-02-08 -> 2026-10-30 close    107621.70 ZAR novol 3701
+Turkey                       XU100.IS     rows   7326 1997-07-01 -> 2026-10-30 close     10759.60 TRY novol 27
+Argentina                    ^MERV        rows   7347 1996-10-08 -> 2026-10-16 close   2848945.00  novol 7346
+Russia                       IMOEX.ME     EMPTY
+New Zealand                  ^NZ50        rows   5882 2003-01-03 -> 2026-10-30 close     13797.00 NZD novol 533
+Sweden                       ^OMXS30      EMPTY
+Singapore                    ^STI         rows   9708 1987-12-28 -> 2026-10-30 close      5376.74 SGD novol 3327
+Thailand                     ^SET.BK      rows      1 2026-10-30 -> 2026-10-30 close      1518.59 THB novol 1
+Malaysia                     ^KLSE        rows   8085 1993-12-03 -> 2026-10-30 close      1615.60 MYR novol 1124
+Israel                       ^TA125.TA    rows   7984 1992-10-08 -> 2026-10-30 close      3936.27 ILS novol 4968
