@@ -46,7 +46,16 @@ def test_market_code_sql_maps_every_exchange_code():
     sql = market_code_sql("exchange_code")
     for code, market in YAHOO_EXCHANGE_TO_MARKET.items():
         assert f"WHEN '{code}' THEN '{market}'" in sql
-    assert set(YAHOO_EXCHANGE_TO_MARKET.values()) == {"XNAS", "XNYS", "XCBO"}
+    assert set(YAHOO_EXCHANGE_TO_MARKET.values()) == {"XNAS", "XNYS", "XCBO", "XNYM", "XXXX"}
+
+
+def test_commodity_exchanges_map_to_a_market_or_to_no_market():
+    assert {c: YAHOO_EXCHANGE_TO_MARKET[c] for c in ("CMX", "NYM", "FGI", "SNP")} == {
+        "CMX": "XNYM",
+        "NYM": "XNYM",
+        "FGI": "XXXX",
+        "SNP": "XXXX",
+    }
 
 
 def test_rate_codes_are_unique_and_spelled_out():

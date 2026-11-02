@@ -35,7 +35,9 @@ FIGURES = [
     ("shares_outstanding_count", "cover", "shares"),
 ]
 
-# Yahoo exchange code to ISO 10383 operating market identifier code (probe P2).
+# Yahoo exchange code to ISO 10383 operating market identifier code (probe P2). CMX and NYM
+# are COMEX and NYMEX futures (XNYM); FGI and SNP are index providers, not markets (XXXX, "no
+# market"), probe P1 of macro-prices.
 YAHOO_EXCHANGE_TO_MARKET = {
     "NMS": "XNAS",
     "NGM": "XNAS",
@@ -45,6 +47,10 @@ YAHOO_EXCHANGE_TO_MARKET = {
     "ASE": "XNYS",
     "BTS": "XCBO",
     "CXI": "XCBO",
+    "CMX": "XNYM",
+    "NYM": "XNYM",
+    "FGI": "XXXX",
+    "SNP": "XXXX",
 }
 
 # (rate_code, rate_name, source, series_id, unit); the source is the Landing table's source.

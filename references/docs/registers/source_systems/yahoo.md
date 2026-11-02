@@ -6,7 +6,12 @@ key; may break or rate-limit without notice.
 
 - Symbols: every symbol ever in the Wikipedia S&P 500 history (a dot becomes a
   dash: `BRK.B` is `BRK-B`) plus the `portfolio` benchmarks (SPY, NOBL, `^VIX`,
-  the 11 SPDR sector funds): 517 in the first load.
+  the 11 SPDR sector funds): 517 in the first load. `yahoo-commodity-symbols` adds
+  8 commodity benchmarks: the CRB (`^TRCCRB`) and S&P GSCI (`^SPGSCI`) indexes, gold,
+  silver, copper and WTI oil front-month futures (`GC=F`, `SI=F`, `HG=F`, `CL=F`) and
+  the funds `DBC` and `GSG`. Futures report exchange `CMX` or `NYM` (market `XNYM`);
+  an index provider's code (`FGI` FTSE, `SNP` S&P) maps to `XXXX`, ISO 10383's "no
+  market". Front-month futures jump when the contract rolls.
 - Code: `src/common/yahoo_market.py` (plan, rows, monthly expiry),
   `src/common/fetch_yahoo.py` (first task of `run_yahoo`, the only notebook
   allowed `%pip`), `src/layers/bronze/yahoo/`, `src/layers/bronze/yahoo_publish/`,

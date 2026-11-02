@@ -13,3 +13,11 @@ XLU,Utilities Select Sector SPDR Fund,sector,Utilities
 XLB,Materials Select Sector SPDR Fund,sector,Materials
 XLRE,Real Estate Select Sector SPDR Fund,sector,Real Estate
 XLC,Communication Services Select Sector SPDR Fund,sector,Communication Services
+^TRCCRB,CRB commodity index (FTSE CoreCommodity CRB total return),commodity_index,
+^SPGSCI,S&P GSCI commodity index,commodity_index,
+GC=F,Gold futures (COMEX front month),commodity_future,
+SI=F,Silver futures (COMEX front month),commodity_future,
+HG=F,Copper futures (COMEX front month),commodity_future,
+CL=F,WTI crude oil futures (NYMEX front month),commodity_future,
+DBC,Invesco DB Commodity Index Tracking Fund,commodity_fund,
+GSG,iShares S&P GSCI Commodity-Indexed Trust,commodity_fund,
