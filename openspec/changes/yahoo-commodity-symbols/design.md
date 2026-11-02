@@ -60,6 +60,13 @@ in the mapping.
 `commodity_fund` sit next to `market`, `dividend`, `sector` and `volatility`, so gold
 can pick a measure (index) or a holding (fund).
 
+**D5. One year of prices, like every other symbol.** The fetch loads a new symbol's
+last 365 days (`NEW_SYMBOL_DAYS`), and `reload_symbols` reloads from the first stored
+day, so it cannot go further back. Found in dev: each new symbol has about 250 days
+from 2025-11-03, enough for a 200-day average. Longer history (probe P1 shows 1984 to
+2000 starts) would need a per-symbol start day or a reset of those symbols' rows in
+`bronze_yahoo.fetch_state`; it is a separate decision, not part of this change.
+
 ## Risks / Trade-offs
 
 - [Front-month futures jump on the roll to the next contract] -> they are a price

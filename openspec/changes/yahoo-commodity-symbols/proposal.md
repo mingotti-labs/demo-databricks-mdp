@@ -48,8 +48,10 @@ MARKET (E.G. UNLISTED)". Both are already rows of `silver_domain_investments.mar
 ## Impact
 
 - Tables: none new; 0 slots of the 500-table quota.
-- Rows: the full price history of 8 symbols on their first fetch (probe P1: about
-  55,000 price rows, back to 1984 for `^SPGSCI`), then about 8 a day.
+- Rows: a new symbol loads one year of prices (`NEW_SYMBOL_DAYS` in `yahoo_market.py`,
+  as every S&P 500 symbol and `^VIX`): about 250 rows per symbol, 2,000 for the 8, then
+  about 8 a day. (The proposal first said the full history, about 55,000 rows, from probe
+  P1, which asked Yahoo for `max`; corrected during implementation, design D5.)
 - CI: the merge changes `data/portfolio/*.csv` and `src/common/investments.py`, which
   select `run_portfolio` and `run_investments`. `run_yahoo` is not selected (its code
   does not change), and CI runs units in alphabetical order with no dependency order,

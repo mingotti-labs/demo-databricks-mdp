@@ -17,11 +17,11 @@
 
 ## 3. Dev
 
-- [ ] 3.1 Draft PR (deploy-dev as the service principal); run in order
+- [x] 3.1 Draft PR (deploy-dev as the service principal); run in order
       `run_dev.py portfolio`, `run_dev.py yahoo`, `run_dev.py investments --param verify=true`
-- [ ] 3.2 `listing` has the 8 symbols with markets `XXXX` (2) and `XNYM` (4) and
-      `XNYS` (2); `price_daily` holds each from the first date in the design table;
-      verification passes with no new failure
+- [x] 3.2 `listing` has the 8 symbols with markets `XXXX` (2) and `XNYM` (4) and
+      `XNYS` (2); `price_daily` holds about one year (about 250 days) of each, as the
+      other symbols; verification passes with no new failure
 - [ ] 3.3 A second `run_yahoo` fetches only recent days for the 8 symbols
 - [ ] 3.4 Mark the PR ready; after merge and the CI run, run `run_yahoo` then
       `run_investments` in prd; check the same in `mdp_prd`; archive
