@@ -22,6 +22,7 @@
 - [x] 3.2 `listing` has the 8 symbols with markets `XXXX` (2) and `XNYM` (4) and
       `XNYS` (2); `price_daily` holds about one year (about 250 days) of each, as the
       other symbols; verification passes with no new failure
-- [ ] 3.3 A second `run_yahoo` fetches only recent days for the 8 symbols
+- [x] 3.3 Skipped by decision (user, 2026-11-03): the fetch is unchanged and its incremental
+      run is proven for 500+ symbols (prd 2026-11-02); the 8 new symbols took the same path
 - [ ] 3.4 Mark the PR ready; after merge and the CI run, run `run_yahoo` then
       `run_investments` in prd; check the same in `mdp_prd`; archive
