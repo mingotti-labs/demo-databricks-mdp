@@ -1,9 +1,9 @@
 ## 1. Series
 
-- [ ] 1.1 `src/common/fred_series.py`: add `CPIAUCSL`, `CPIAUCNS`, `CPILFESL` to
+- [x] 1.1 `src/common/fred_series.py`: add `CPIAUCSL`, `CPIAUCNS`, `CPILFESL` to
       `SERIES`; unit test that the list holds the seven series
-- [ ] 1.2 `uv run python -m pytest tests/common` passes; `databricks bundle validate`
-- [ ] 1.3 `cicd/affected_units.py` for the branch lists `run_fred` only
+- [x] 1.2 `uv run python -m pytest tests/common` passes; `databricks bundle validate`
+- [x] 1.3 `cicd/affected_units.py` for the branch lists `run_fred` only
 
 ## 2. Documentation
 
