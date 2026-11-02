@@ -177,5 +177,5 @@ richer variant if it exists; fall back only when it doesn't. See
   `date`; `events_scd1` by `symbol`, `date`, `event_type`; `options_scd1` by
   `symbol`; `calendar_scd2` by `symbol` (history of announced pay dates)
 - **Consumed by Silver Landing**: yes, `silver_landing.yahoo__*` (four tables)
-- **Consumed by Silver Domain**: `silver_domain_investments` `listing` (exchange code), `price_daily`, `dividend` and `options_activity`
+- **Consumed by Silver Domain**: `silver_domain_investments` `listing` (exchange code), `price_daily` and `dividend`; the options are `listing`'s `option_*` columns
 

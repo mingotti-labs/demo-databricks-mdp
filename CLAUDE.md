@@ -650,15 +650,18 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   without the URL. Landing `silver_landing.fred__observations` has
   `observation_date` as a date.
 - **Silver Domain investments** (`silver-domain-investments`, dividend portfolio
-  story) -- schema `silver_domain_investments`, one serverless pipeline of nine
-  materialized views reading `silver_landing` only: `company` (SEC central index
+  story) -- schema `silver_domain_investments`, one serverless pipeline of eight
+  materialized views, one file per table in `src/layers/silver/domain/investments/` reading `silver_landing` only: `company` (SEC central index
   key), `market` (ISO operating markets), `listing` (a trading symbol on a market;
-  market from Yahoo's `exchange_code`), `index_membership`, `price_daily`,
+  market from Yahoo's `exchange_code`; the `option_*` columns are the latest Yahoo
+  options activity), `index_membership` (current versions end 9999-12-31), `price_daily`,
   `dividend` (A$ amount, pay date, `is_special`), `company_fundamentals` (a row
   per 10-K or 10-Q filing, point in time: `valid_from_date` is the filing date;
   trailing twelve months and balance sheet figures from SEC facts),
-  `market_rate_daily` (six rates) and `options_activity`. Ids are hashes:
-  `company_id = sha2('sec:' + central_index_key)`, `listing_id = sha2(market:
+  `market_rate_daily` (six rates, with `rate_name`). Column names end in what they
+  are (`_id`, `_key`, `_code`, `_name`, `_date`, `_amount`, `_count`; rule in
+  `references/docs/medallion/silver.md`). Ids are hashes:
+  `company_id = sha2('sec:' + central_index_key)`, `listing_id = sha2(market_code:
   symbol)`; surrogate keys belong in gold. Join: `price_daily.listing_id =
   listing.listing_id`, `listing.company_id = company.company_id`. Shared logic in
   `src/common/investments.py` (figure list, rates, exchange mapping, SQL

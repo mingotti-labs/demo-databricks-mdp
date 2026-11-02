@@ -54,11 +54,11 @@ for now: it needs a job task outside the pipeline and nothing downstream needs
 the column yet. Recorded in NAMING.md's status line.
 
 ### Keys and names
-- `company_id` is `sha2(concat_ws(':', identifier_source, central_index_key), 256)`
+- `company_id` is `sha2(concat_ws(':', identifier_source_system_code, central_index_key), 256)`
   (user, 2026-10-31): opaque, 64 hex characters, identical on every rebuild, and
   another registry hashes its own source name and number. The source and number
-  stay as columns (`identifier_source`, `central_index_key`); nobody parses the
-  id. `listing_id` is `sha2(concat_ws(':', market_identifier_code,
+  stay as columns (`identifier_source_system_code`, `central_index_key`); nobody parses the
+  id. `listing_id` is `sha2(concat_ws(':', market_code,
   trading_symbol_code), 256)`. Counter keys were rejected: a full recompute would
   renumber them. Readable composite keys were rejected by the user: an id
   carries no meaning. `concat_ws` skips empty parts, so a benchmark with no
@@ -88,11 +88,31 @@ the column yet. Recorded in NAMING.md's status line.
 - `trading_symbol_code` keeps the Wikipedia form with dots (`BRK.B`), as every
   Landing table does (the Yahoo Landing tables already use it, so prices join on
   the exact string); the Yahoo form stays in the raw data.
-- No abbreviations in names: `central_index_key`, `earnings_per_share`,
+- No abbreviations in names: `central_index_key`, `earnings_per_share_amount`,
   `earnings_before_interest_tax_depreciation_amortisation`,
-  `amount_in_australian_dollars`, `sector` and `sub_industry` (not `gics_*`).
+  `dividend_amount_in_australian_dollars`.
   `rate_code` values are spelled out the same way. Cryptic names that stay are
   translated in gold.
+- **Column suffix rule** (user, 2026-11-02, replacing the earlier plain names such
+  as `sector`): a column name says what the value is. Allowed suffixes: `_id`,
+  `_key` (so `central_index_key` stays), `_code`, `_name`, `_url`, `_date`,
+  `_timestamp`, `_amount`, `_count`; flags start `is_` or `has_`. A fundamentals
+  figure whose meaning is clear (`net_income`, `capex`, `cash`) stays plain; the
+  three that could be an amount or a count carry a suffix
+  (`earnings_per_share_amount`, `shares_outstanding_count`,
+  `depreciation_and_amortisation_amount`). `dividend_amount` has no currency in
+  its name because `currency_code` sits beside it; the Australian dollar column
+  names its currency. The rule is for the Silver Domain; Landing keeps the
+  source's names. It is written in `silver.md` and `NAMING.md`.
+- **Renames from review** (2026-11-02): `market_identifier_code` is `market_code`
+  (ISO 10383, said in the comment); `city`, `status`, `website` are `city_name`,
+  `status_name`, `website_url`; `country_code_alpha2` is `country_code`; `form` is
+  `form_code`; `trade_date` is `price_date`; `source` is `source_system_code`;
+  `series_id` is `source_series_id`; rates also get `rate_name`, `rate_value` and
+  `unit_name`.
+- **One file per entity**: `src/layers/silver/domain/investments/<table>.py`, the
+  file named after the table it defines, so the pipeline folder reads as the
+  table list.
 - Resource key `silver_domain_investments`, display name
   `silver--domain--investments--<target>`, unit `run_investments`
   (`run--investments--<target>`).
@@ -118,16 +138,19 @@ model (2026-10-31), but only `listing` exists, so the trading symbol code is an
 attribute of the listing for now.
 
 ### Prices
-`price_daily` types `yahoo__prices` and keeps `listing_id`, `close` (Yahoo's raw close),
-`volume` and `currency_code`. The adjusted close is dropped, as the story
-decided (raw close plus dividend events). `currency_code` is `USD` for every
+`price_daily` types `yahoo__prices` (Bronze already carries all the columns) and keeps
+`listing_id`, `price_date`, `price_open`, `price_high`, `price_low`, `price_close`
+(Yahoo's raw close), `price_close_adjusted`, `price_volume_count` and
+`currency_code`. Review 2026-11-02 added open, high, low and the adjusted close;
+the story's yield work still uses the raw close plus dividend events.
+`currency_code` is `USD` for every
 symbol now; the world indexes change adds a currency to the benchmarks and
 replaces that constant.
 
 ### Dividends
 - Amount as Yahoo reports it. Yahoo adjusts dividends for later splits, so
   amounts over time compare like for like.
-- `amount_in_australian_dollars = amount / FXRUSD` at the latest RBA date on or before the
+- `dividend_amount_in_australian_dollars = dividend_amount / FXRUSD` at the latest RBA date on or before the
   ex-date (an as-of join). RBA's held history starts 2023-01-03, so older
   dividends have no AUD amount; the trailing-12-months yield needs only recent
   ones. Loading RBA's historical F11.1 file is a later RBA change if needed.
@@ -221,14 +244,21 @@ includes them.
 
 ### Market rates
 `market_rate_daily` selects six series from the two Landing tables by a fixed list in
-code (`rate_code`, source, series id, unit): `australian_dollar_in_us_dollars`,
+code (`rate_code`, `rate_name`, source, series id, unit); `rate_name` is a readable
+name such as "RBA cash rate target", so a consumer needs no lookup: `australian_dollar_in_us_dollars`,
 `rba_cash_rate_target`, `us_10_year_treasury_yield`,
 `us_federal_funds_effective_rate`, `us_federal_funds_target_upper`,
 `us_federal_funds_target_lower`. The other RBA and FRED series stay in Landing; adding one is
 one line.
 
 ### Options
-`options_activity` is the latest row per listing of `yahoo__options`, typed.
+Review 2026-11-02: there is no `options_activity` table. The latest row per symbol of
+`yahoo__options`, typed, is left-joined onto `listing` as `has_options`,
+`option_expiry_count`, `option_nearest_monthly_expiry_date`,
+`option_open_interest` and `option_volume`. It is one row per listing and latest only, so
+the join is 1:1. Consequence: `listing` holds a snapshot that changes on every Yahoo fetch
+beside the stable identity columns; if options history is wanted, it needs its own table
+then.
 
 ### Verification
 `verification/verify_silver_domain_investments.py`, run only by
@@ -239,8 +269,9 @@ Landing against Bronze, which does not apply here.
 ### Table quota
 Nine materialized views cost 2 slots each per target: 36 slots, about 482 of
 500 after (446 on 2026-10-31), and the `iso-mic` source adds about 12 more.
-Merging `options_activity` into another table was considered and rejected: no
-other table has its grain (one row per listing, now). Both changes together
+Merging `options_activity` into `listing` was first rejected; the review of
+2026-11-02 reversed it (one row per listing, so the grain matches), leaving eight
+tables and saving 2 slots. Both changes together
 pass the 488 stop line, so a clean-up change must land before the second of
 them deploys; candidates are listed in the risk below, not chosen here.
 

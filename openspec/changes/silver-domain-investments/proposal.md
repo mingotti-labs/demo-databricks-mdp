@@ -35,7 +35,7 @@ in the fundamentals. The user also decided that Silver Domain schemas are named
 - **New pipeline** `silver_domain_investments` (`silver--domain--investments--<target>`),
   materialized views in `silver_domain_investments` read only `silver_landing`:
   - `company`: one row per company (hashed `company_id` from the SEC central
-    index key), share classes linked, sector. No index columns: a company can
+    index key), share classes linked, GICS sector and sub-industry names. No index columns: a company can
     be in many indexes.
   - `market`: one row per ISO 10383 operating market (`market_identifier_code`),
     from the new `iso-mic` Landing table.
@@ -45,8 +45,8 @@ in the fundamentals. The user also decided that Silver Domain schemas are named
     the trading symbol code sits on the listing until they exist.
   - `index_membership`: the S&P 500 membership history per listing, from the
     Wikipedia SCD2 versions.
-  - `price_daily`: daily close and volume per listing, members and benchmarks,
-    typed, with `currency_code`.
+  - `price_daily`: daily open, high, low, close, adjusted close and volume per
+    listing, members and benchmarks, typed, with `currency_code`.
   - `dividend`: one row per listing and ex-date, with amount, `currency_code`,
     the AUD amount at the RBA rate, the pay date (real from the Yahoo calendar
     or estimated from the settings offset) and a special-dividend flag.
@@ -59,7 +59,8 @@ in the fundamentals. The user also decided that Silver Domain schemas are named
     and cash flow figures as the trailing twelve months (user, 2026-10-31).
   - `market_rate_daily`: AUD/USD, the RBA cash rate target, the US 10-year yield and
     the three Fed funds series, one long table.
-  - `options_activity`: the latest options flag and activity per listing.
+  - Options (latest flag and activity per listing) are columns of `listing`
+    (`option_*`), not a table (user review, 2026-11-02).
 - **Yahoo fetch**: `src/common/yahoo_market.py` adds `exchange_code` (Yahoo's
   exchange code) to the calendar row written for every symbol, so a listing's
   market comes with no new table (probe P2: Yahoo and SEC agree on all 503

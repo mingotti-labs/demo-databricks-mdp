@@ -72,3 +72,18 @@
       (`uv run python -m pytest`)
 - [x] 6.2 The story's design doc in `demo-databricks-planning`: steps 7 and 8
       done, step 9 split (this change, then gold), the schema renamed
+
+## 7. Review changes (user, 2026-11-02)
+
+- [x] 7.1 Naming rule (suffixes `_id`, `_key`, `_code`, `_name`, `_url`, `_date`,
+      `_timestamp`, `_amount`, `_count`; flags `is_`/`has_`) written in
+      `references/docs/medallion/silver.md` and `NAMING.md`
+- [x] 7.2 One file per entity in `src/layers/silver/domain/investments/` (named
+      after the table); `options_activity` becomes columns of `listing`
+- [x] 7.3 Renames in code, `src/common/investments.py`, tests, the verification
+      notebook, CLAUDE.md and the registers, as listed in design.md
+- [x] 7.4 `price_daily` adds open, high, low and adjusted close; `rate_name` added
+      to the rate list and `market_rate_daily`
+- [x] 7.5 `index_membership.valid_to_timestamp` is 9999-12-31 for current rows
+- [ ] 7.6 Dev: `run_investments` with `verify=true` passes on the renamed tables;
+      table count is 8; counts as in the first dev results; quota read after

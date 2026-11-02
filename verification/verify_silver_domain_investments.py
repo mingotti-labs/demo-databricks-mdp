@@ -21,17 +21,16 @@ LANDING = f"{catalog}.silver_landing"
 MIN_NET_INCOME_COVERAGE = 0.95
 KEYS = {
     "company": ["company_id"],
-    "market": ["market_identifier_code"],
+    "market": ["market_code"],
     "listing": ["listing_id"],
     "index_membership": ["listing_id", "valid_from_timestamp"],
-    "price_daily": ["listing_id", "trade_date"],
+    "price_daily": ["listing_id", "price_date"],
     "dividend": ["listing_id", "ex_dividend_date"],
     "company_fundamentals": ["company_id", "valid_from_date"],
     "market_rate_daily": ["rate_code", "observation_date"],
-    "options_activity": ["listing_id"],
 }
 CURRENT_MEMBERS = f"""
-  SELECT l.listing_id, l.trading_symbol_code, l.company_id, l.market_identifier_code
+  SELECT l.listing_id, l.trading_symbol_code, l.company_id, l.market_code
   FROM {DOMAIN}.listing l JOIN {DOMAIN}.index_membership m
     ON m.listing_id = l.listing_id AND m.is_current
 """
@@ -66,16 +65,19 @@ checks["one symbol maps to more than one central index key"] = f"""
   GROUP BY symbol HAVING count(DISTINCT cik) > 1"""
 checks["listing has no known market"] = f"""
   SELECT l.trading_symbol_code FROM {DOMAIN}.listing l
-  LEFT JOIN {DOMAIN}.market m ON m.market_identifier_code = l.market_identifier_code
-  WHERE m.market_identifier_code IS NULL"""
+  LEFT JOIN {DOMAIN}.market m ON m.market_code = l.market_code
+  WHERE m.market_code IS NULL"""
 checks["Yahoo exchange code has no market mapping"] = f"""
   SELECT concat_ws(' ', symbol, exchange_code) FROM {LANDING}.yahoo__calendar
   WHERE is_current AND exchange_code IS NOT NULL AND {market_code_sql("exchange_code")} IS NULL"""
 checks["current member has no price in the last 7 days"] = f"""
   SELECT m.trading_symbol_code FROM ({CURRENT_MEMBERS}) m
-  LEFT JOIN (SELECT listing_id, max(trade_date) AS last_date FROM {DOMAIN}.price_daily
+  LEFT JOIN (SELECT listing_id, max(price_date) AS last_date FROM {DOMAIN}.price_daily
              GROUP BY listing_id) p ON p.listing_id = m.listing_id
   WHERE p.last_date IS NULL OR p.last_date < date_sub(current_date(), 7)"""
+checks["membership version is current but does not end 9999-12-31, or the reverse"] = f"""
+  SELECT trading_symbol_code FROM {DOMAIN}.index_membership
+  WHERE is_current != (valid_to_timestamp = TIMESTAMP '9999-12-31')"""
 checks["fundamentals validity ranges overlap or leave a gap"] = f"""
   SELECT company_id FROM (
     SELECT company_id, valid_to_date,
@@ -87,11 +89,11 @@ checks["company does not have exactly one fundamentals row ending 9999-12-31"] =
   GROUP BY company_id HAVING sum(CASE WHEN valid_to_date = DATE '9999-12-31' THEN 1 ELSE 0 END) != 1"""
 checks["dividend since the first held AUD/USD date has no Australian dollar amount"] = f"""
   SELECT concat_ws(' ', trading_symbol_code, CAST(ex_dividend_date AS STRING)) FROM {DOMAIN}.dividend
-  WHERE amount_in_australian_dollars IS NULL AND ex_dividend_date >= (
+  WHERE dividend_amount_in_australian_dollars IS NULL AND ex_dividend_date >= (
     SELECT min(observation_date) FROM {DOMAIN}.market_rate_daily
     WHERE rate_code = 'australian_dollar_in_us_dollars')"""
 checks["rate is missing or its latest date is more than 7 days old"] = f"""
-  SELECT r.rate_code FROM (SELECT * FROM VALUES {", ".join(f"('{c}')" for c, _, _, _ in RATES)} AS r(rate_code)) r
+  SELECT r.rate_code FROM (SELECT * FROM VALUES {", ".join(f"('{c}')" for c, *_ in RATES)} AS r(rate_code)) r
   LEFT JOIN (SELECT rate_code, max(observation_date) AS last_date FROM {DOMAIN}.market_rate_daily
              GROUP BY rate_code) d ON d.rate_code = r.rate_code
   WHERE d.last_date IS NULL OR d.last_date < date_sub(current_date(), 7)"""

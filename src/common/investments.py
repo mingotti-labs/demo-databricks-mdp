@@ -20,9 +20,9 @@ FIGURES = [
     ("capex", "duration", "USD"),
     ("dividends_paid", "duration", "USD"),
     ("operating_income", "duration", "USD"),
-    ("depreciation_and_amortisation", "duration", "USD"),
+    ("depreciation_and_amortisation_amount", "duration", "USD"),
     ("interest_expense", "duration", "USD"),
-    ("earnings_per_share", "duration", "USD/shares"),
+    ("earnings_per_share_amount", "duration", "USD/shares"),
     ("long_term_debt", "instant", "USD"),
     ("short_term_debt", "instant", "USD"),
     ("cash", "instant", "USD"),
@@ -32,7 +32,7 @@ FIGURES = [
     ("stockholders_equity", "instant", "USD"),
     ("total_equity", "instant", "USD"),
     ("preferred_stock", "instant", "USD"),
-    ("shares_outstanding", "cover", "shares"),
+    ("shares_outstanding_count", "cover", "shares"),
 ]
 
 # Yahoo exchange code to ISO 10383 operating market identifier code (probe P2).
@@ -47,14 +47,50 @@ YAHOO_EXCHANGE_TO_MARKET = {
     "CXI": "XCBO",
 }
 
-# (rate_code, source, series_id, unit); the source is the Landing table's source.
+# (rate_code, rate_name, source, series_id, unit); the source is the Landing table's source.
 RATES = [
-    ("australian_dollar_in_us_dollars", "rba", "FXRUSD", "us_dollars_per_australian_dollar"),
-    ("rba_cash_rate_target", "rba", "FIRMMCRTD", "percent"),
-    ("us_10_year_treasury_yield", "fred", "DGS10", "percent"),
-    ("us_federal_funds_effective_rate", "fred", "DFF", "percent"),
-    ("us_federal_funds_target_upper", "fred", "DFEDTARU", "percent"),
-    ("us_federal_funds_target_lower", "fred", "DFEDTARL", "percent"),
+    (
+        "australian_dollar_in_us_dollars",
+        "Australian dollar in US dollars (RBA)",
+        "rba",
+        "FXRUSD",
+        "us_dollars_per_australian_dollar",
+    ),
+    (
+        "rba_cash_rate_target",
+        "RBA cash rate target",
+        "rba",
+        "FIRMMCRTD",
+        "percent",
+    ),
+    (
+        "us_10_year_treasury_yield",
+        "US 10-year Treasury yield",
+        "fred",
+        "DGS10",
+        "percent",
+    ),
+    (
+        "us_federal_funds_effective_rate",
+        "US federal funds effective rate",
+        "fred",
+        "DFF",
+        "percent",
+    ),
+    (
+        "us_federal_funds_target_upper",
+        "US federal funds target range, upper limit",
+        "fred",
+        "DFEDTARU",
+        "percent",
+    ),
+    (
+        "us_federal_funds_target_lower",
+        "US federal funds target range, lower limit",
+        "fred",
+        "DFEDTARL",
+        "percent",
+    ),
 ]
 
 
@@ -83,14 +119,14 @@ def figure_values_sql() -> str:
 
 
 def rate_values_sql() -> str:
-    """VALUES rows (rate_code, source, series_id, unit)."""
-    return ", ".join(f"('{c}', '{s}', '{i}', '{u}')" for c, s, i, u in RATES)
+    """VALUES rows (rate_code, rate_name, source, series_id, unit)."""
+    return ", ".join(f"('{c}', '{n}', '{s}', '{i}', '{u}')" for c, n, s, i, u in RATES)
 
 
 def figure_columns_sql() -> str:
     """One column per figure from rows (figure, value): the value when the figure matches."""
     columns = []
     for figure, _, _ in FIGURES:
-        value = "CAST(ROUND(value) AS BIGINT)" if figure == "shares_outstanding" else "value"
+        value = "CAST(ROUND(value) AS BIGINT)" if figure == "shares_outstanding_count" else "value"
         columns.append(f"max(CASE WHEN figure = '{figure}' THEN {value} END) AS {figure}")
     return ",\n  ".join(columns)

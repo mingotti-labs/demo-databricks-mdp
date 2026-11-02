@@ -143,7 +143,7 @@ SELECT {entity_id_sql(f"'{IDENTIFIER_SOURCE}'", "r.central_index_key")} AS compa
          date_sub(lead(r.filed) OVER (PARTITION BY r.central_index_key ORDER BY r.filed), 1),
          DATE '{FAR_FUTURE_DATE}'
        ) AS valid_to_date,
-       r.form,
+       r.form AS form_code,
        r.accn AS accession_number,
        r.period_end AS period_end_date,
        'USD' AS currency_code,
@@ -152,7 +152,7 @@ SELECT {entity_id_sql(f"'{IDENTIFIER_SOURCE}'", "r.central_index_key")} AS compa
        w.operating_cash_flow - w.capex AS free_cash_flow,
        CASE WHEN w.long_term_debt IS NULL AND w.short_term_debt IS NULL THEN NULL
             ELSE coalesce(w.long_term_debt, 0) + coalesce(w.short_term_debt, 0) END AS total_debt,
-       w.operating_income + w.depreciation_and_amortisation
+       w.operating_income + w.depreciation_and_amortisation_amount
          AS earnings_before_interest_tax_depreciation_amortisation,
        CASE WHEN w.total_liabilities IS NULL
              AND w.liabilities_and_equity IS NOT NULL AND w.total_equity IS NOT NULL

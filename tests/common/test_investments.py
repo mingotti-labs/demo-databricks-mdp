@@ -50,7 +50,7 @@ def test_market_code_sql_maps_every_exchange_code():
 
 
 def test_rate_codes_are_unique_and_spelled_out():
-    codes = [code for code, _, _, _ in RATES]
+    codes = [code for code, _, _, _, _ in RATES]
     assert len(codes) == len(set(codes)) == 6
     assert "australian_dollar_in_us_dollars" in codes
 

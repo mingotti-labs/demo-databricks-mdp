@@ -74,6 +74,9 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
   (`price_daily`). Entity ids are `<entity>_id`, the 64-character SHA-256 hash of
   the entity's business key (`company_id`, `listing_id`); dimension surrogate keys
   belong in gold. Cryptic names that must stay are translated in gold.
+  Column names end in what they are (`_id`, `_key`, `_code`, `_name`, `_url`, `_date`,
+  `_timestamp`, `_amount`, `_count`; flags start `is_` or `has_`), see
+  `references/docs/medallion/silver.md`. One pipeline file per table, named after it.
   `gold_*` table naming is TBD until the first gold table is built.
 
 ## Silver Normalised tables
