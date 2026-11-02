@@ -148,4 +148,5 @@ Change `silver-domain-investments` (2026-10-31). Record: its `design.md` "Probes
 
 | Probe | Question | Result |
 |---|---|---|
+| P1 | For each current S&P 500 CIK, which new concepts appear in a 10-K ending in the last 18 months? | Pass: of 500, `Liabilities` 358, `AssetsCurrent` 417, `PreferredStockValue` 219, earnings per share 480; the liabilities fallback inputs exist for 139 of the 142 without `Liabilities`. |
 | P2 | Which market does each current S&P 500 symbol trade on, per SEC `company_tickers_exchange.json` and per Yahoo? | Pass: both cover all 503 and agree on every one: 345 `XNYS`, 157 `XNAS`, 1 `XCBO`; Yahoo is the chosen source (no new table). |

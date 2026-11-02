@@ -1,0 +1,42 @@
+resources:
+  jobs:
+    run_investments:
+      name: run--investments--${bundle.target}
+      parameters:
+        # Verification is opt-in: run with verify=true to include the checks.
+        - name: verify
+          default: "false"
+        # Optional: a symbol the verification must find a listing for.
+        - name: check_symbol
+          default: ""
+      tasks:
+        # Reads silver_landing only; run the source units first (wikipedia,
+        # portfolio, sec, yahoo, rba, fred, iso).
+        - task_key: silver
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.silver_domain_investments.id}
+        - task_key: verify_enabled
+          condition_task:
+            op: EQUAL_TO
+            left: "{{job.parameters.verify}}"
+            right: "true"
+        - task_key: verify_silver_domain
+          depends_on:
+            - task_key: silver
+            - task_key: verify_enabled
+              outcome: "true"
+          notebook_task:
+            notebook_path: ../../verification/verify_silver_domain_investments.py
+            base_parameters:
+              catalog: ${var.catalog}
+              workspace_file_path: ${workspace.file_path}
+              check_symbol: "{{job.parameters.check_symbol}}"
+        - task_key: tag_patterns
+          depends_on:
+            - task_key: silver
+          notebook_task:
+            notebook_path: ../../src/common/tag_design_patterns.py
+            base_parameters:
+              catalog: ${var.catalog}
+              source: investments
+              workspace_file_path: ${workspace.file_path}

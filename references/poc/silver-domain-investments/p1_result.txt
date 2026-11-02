@@ -1,0 +1,20 @@
+current CIKs 500 cutoff 2025-05-02
+fetched 0
+fetched 100
+fetched 200
+fetched 300
+fetched 400
+CIKs with facts 500 without 0
+AssetsCurrent: 417 of 500
+Liabilities: 358 of 500
+LiabilitiesAndStockholdersEquity: 497 of 500
+StockholdersEquity: 465 of 500
+StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest: 308 of 500
+PreferredStockValue: 219 of 500
+EarningsPerShareDiluted: 480 of 500
+EarningsPerShareBasic: 480 of 500
+no Liabilities in a recent 10-K: 142
+  of those the fallback inputs exist: 139
+  no figure at all (no balance sheet total): 3
+no AssetsCurrent (banks, insurers, others): 83
+no earnings per share (either): 19

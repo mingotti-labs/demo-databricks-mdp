@@ -14,6 +14,12 @@ catalog and SHALL be built by one pipeline, `silver_domain_investments`
 rates as DECIMAL, counts as BIGINT). Every money amount SHALL have a
 `currency_code` column. Each table SHALL carry `ingested_timestamp`: the
 Landing row's, or the earliest of its input rows when a row combines several.
+A column name SHALL say what the value is, ending in `_id`, `_key`, `_code`,
+`_name`, `_url`, `_date`, `_timestamp`, `_amount` or `_count`; a flag starts
+with `is_` or `has_`. A figure whose meaning is clear from its name and table
+(`net_income`, `capex`) MAY stay plain; a figure that could be an amount or a
+count SHALL carry the suffix. Each entity SHALL be defined in its own file,
+named after its table.
 
 #### Scenario: A domain table is read
 - **WHEN** a user reads any table in `silver_domain_investments`
@@ -27,9 +33,10 @@ Landing row's, or the earliest of its input rows when a row combines several.
 ### Requirement: Companies
 `company` SHALL have one row per SEC central index key that is or was in the
 S&P 500 list, keyed by `company_id`: the SHA-256 hash (64 hex characters) of
-`identifier_source` and the registry's number joined by `:` (`sec` and the
-10-digit central index key). The row SHALL also carry `identifier_source`,
-`central_index_key`, the company name, `sector` and `sub_industry`. `company_id`
+`identifier_source_system_code` and the registry's number joined by `:` (`sec` and the
+10-digit central index key). The row SHALL also carry
+`identifier_source_system_code`, `central_index_key`, `company_name`,
+`gics_sector_name` and `gics_sub_industry_name`. `company_id`
 SHALL be treated as opaque. `company` SHALL NOT carry index columns: a company
 can be in many indexes. Share classes of one company (one central index key)
 SHALL share one row.
@@ -45,9 +52,10 @@ SHALL share one row.
 
 ### Requirement: Markets
 `market` SHALL have one row per ISO 10383 operating market, keyed by
-`market_identifier_code`, from the ISO market identifier code Landing table
-(the `iso-mic` change), with the market name, legal entity name, country code
-(ISO 3166), city, website and status. Market segments SHALL NOT be rows.
+`market_code` (the ISO 10383 market identifier code), from the ISO market
+identifier code Landing table (the `iso-mic` change), with `market_name`,
+`legal_entity_name`, `country_code` (ISO 3166), `city_name`, `website_url` and
+`status_name`. Market segments SHALL NOT be rows.
 
 #### Scenario: A known market
 - **WHEN** the ISO list holds operating market `XASX`
@@ -55,15 +63,16 @@ SHALL share one row.
 
 ### Requirement: Listings
 `listing` SHALL have one row per `listing_id`: the SHA-256 hash of
-`market_identifier_code` and `trading_symbol_code` joined by `:`. A listing is
-one trading symbol on one market. It SHALL carry `market_identifier_code`,
+`market_code` and `trading_symbol_code` joined by `:`. A listing is
+one trading symbol on one market. It SHALL carry `market_code`,
 `trading_symbol_code` (the Wikipedia form with dots, as in Landing),
-`currency_code` and `company_id` (empty for an index benchmark). Listings SHALL
+`currency_code`, `company_id` (empty for an index benchmark) and the options
+columns below. Listings SHALL
 come from every symbol in the Wikipedia S&P 500 history and from the
 `portfolio` benchmarks. The market of an S&P 500 symbol SHALL be the operating market identifier code
 mapped from the `exchange_code` of the latest version of the symbol's Yahoo
 calendar row (`NMS`, `NGM`, `NCM` to `XNAS`; `NYQ`, `PCX`, `ASE` to `XNYS`;
-`BTS` to `XCBO`). `company_id` SHALL come from the central index key of the
+`BTS` and `CXI` to `XCBO`). `company_id` SHALL come from the central index key of the
 symbol's latest Wikipedia version.
 
 #### Scenario: A member resolves to a company
@@ -73,7 +82,7 @@ symbol's latest Wikipedia version.
 
 #### Scenario: A member's market
 - **WHEN** the latest Yahoo calendar row for `KO` has `exchange_code` `NYQ`
-- **THEN** the `KO` listing has `market_identifier_code` `XNYS`
+- **THEN** the `KO` listing has `market_code` `XNYS`
 
 #### Scenario: A benchmark has no company
 - **WHEN** a `portfolio` benchmark symbol is a market index
@@ -81,27 +90,33 @@ symbol's latest Wikipedia version.
 
 ### Requirement: Index membership history
 `index_membership` SHALL have one row per listing per membership version, with
-`index_code` (`SP500`), `listing_id`, `trading_symbol_code`, the date added, the
-membership's valid-from and valid-to timestamps and `is_current`.
+`index_code` (`SP500`), `listing_id`, `trading_symbol_code`, `date_added`, the
+membership's `valid_from_timestamp` and `valid_to_timestamp` and `is_current`.
+A current version SHALL have `valid_to_timestamp` 9999-12-31 (Landing's empty
+value is replaced).
 
 #### Scenario: A symbol leaves the index
 - **WHEN** a weekly list no longer contains a symbol
-- **THEN** its version has a valid-to timestamp and `is_current` false
+- **THEN** its version has a real `valid_to_timestamp` and `is_current` false
+
+#### Scenario: A current member
+- **WHEN** a symbol is in the current list
+- **THEN** its version has `valid_to_timestamp` 9999-12-31 and `is_current` true
 
 ### Requirement: Daily prices
 `price_daily` SHALL have one row per listing and trading date fetched from Yahoo
-(index members and benchmarks), with `listing_id`, `trading_symbol_code`, the
-close as Yahoo reports it (not the adjusted close), the volume and
-`currency_code`.
+(index members and benchmarks), with `listing_id`, `trading_symbol_code`,
+`price_date`, `price_open`, `price_high`, `price_low`, `price_close` (as Yahoo
+reports it), `price_close_adjusted`, `price_volume_count` and `currency_code`.
 
 #### Scenario: A member's latest price
 - **WHEN** `run_yahoo` has fetched a trading day for `KO`
 - **THEN** `price_daily` has one row for the `KO` listing on that date with a
-  DECIMAL close and `currency_code` `USD`
+  DECIMAL `price_close` and `currency_code` `USD`
 
 ### Requirement: Dividends
-`dividend` SHALL have one row per listing and ex-date, with the amount as Yahoo
-reports it, `currency_code`, `amount_in_australian_dollars` converted at the RBA
+`dividend` SHALL have one row per listing and ex-date, with `dividend_amount` as Yahoo
+reports it, `currency_code`, `dividend_amount_in_australian_dollars` converted at the RBA
 AUD/USD rate of the latest RBA date on or before the ex-date (empty when no such
 rate is held), the pay date with `pay_date_is_estimated`, and `is_special`. The
 pay date SHALL be the Yahoo calendar's pay date when a calendar version has the
@@ -131,8 +146,10 @@ same listing's previous four dividends.
 the filing date of one of its 10-K, 10-K/A, 10-Q or 10-Q/A filings (that pair
 is the business key), with `valid_to_date` the day before the company's next
 `valid_from_date`, or 9999-12-31 for its latest filing. Each row SHALL carry
-the form, the accession number, the period end the filing reports, one column
-per figure in the `portfolio` concept mapping, free cash flow (operating cash
+`form_code`, `accession_number`, the period end the filing reports, one column
+per figure in the `portfolio` concept mapping (`earnings_per_share_amount`,
+`shares_outstanding_count` and `depreciation_and_amortisation_amount` carry a
+suffix; the others are plain), free cash flow (operating cash
 flow minus capital expenditure), total debt (long-term plus short-term),
 `earnings_before_interest_tax_depreciation_amortisation` (operating income
 plus depreciation and amortisation) and a map of the concept
@@ -186,34 +203,36 @@ US 10-year Treasury yield (`DGS10`), the effective federal funds rate (`DFF`)
 and the Fed target range limits (`DFEDTARU`, `DFEDTARL`), with a `rate_code`
 (`australian_dollar_in_us_dollars`, `rba_cash_rate_target`,
 `us_10_year_treasury_yield`, `us_federal_funds_effective_rate`,
-`us_federal_funds_target_upper`, `us_federal_funds_target_lower`), the value, its unit, the source
-and the source's series id.
+`us_federal_funds_target_upper`, `us_federal_funds_target_lower`), `rate_name`,
+`observation_date`, `rate_value`, `unit_name`, `source_system_code` and
+`source_series_id`.
 
 #### Scenario: The latest cash rate
 - **WHEN** RBA's latest cash rate target is 4.60
 - **THEN** `market_rate_daily` has that value under the cash rate's `rate_code` on its
   date
 
-### Requirement: Options activity
-`options_activity` SHALL have one row per listing with whether options are
-listed, the number of expiries, the nearest monthly expiry, its open interest
-and volume, as of the latest Yahoo fetch.
+### Requirement: Options on the listing
+`listing` SHALL carry, as of the latest Yahoo fetch, `has_options`,
+`option_expiry_count`, `option_nearest_monthly_expiry_date`,
+`option_open_interest` and `option_volume`. There SHALL be no separate options
+table. A listing Yahoo has no options row for SHALL have these columns empty.
 
 #### Scenario: A listing without options
 - **WHEN** Yahoo lists no options for a symbol
-- **THEN** its row has options listed false
+- **THEN** its listing has `has_options` false
 
 ### Requirement: Run job and verification
 Job `run_investments` SHALL run the pipeline and, when its `verify` parameter
 is `true`, a verification that fails when: a table's key is not unique; a
 current index member has no `listing` row or its listing has no `company`; a
-symbol in `price_daily`, `dividend` or `options_activity` has no `listing`; one
+symbol in Landing's Yahoo prices, events or options has no `listing`; one
 symbol maps to more than one central index key across Wikipedia versions; a
 listing has no market or its market is not in `market`; a current member has no price in the last 7
 days; a company's `company_fundamentals` validity ranges overlap or leave a gap,
 or it has other than one row ending 9999-12-31; fewer than 95% of companies with
 a current index membership have `net_income` on their current row; a dividend
-since the first held AUD/USD date has no `amount_in_australian_dollars`; or a
+since the first held AUD/USD date has no `dividend_amount_in_australian_dollars`; or a
 rate's latest date is more than 7 days old.
 
 #### Scenario: Verification passes in dev

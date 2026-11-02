@@ -235,3 +235,33 @@ When proposing a source for this layer, follow
 binding, and the source's normalised spec must validate against the
 normalised spec schema,
 [`references/docs/normalised-spec/schema.json`](../normalised-spec/schema.json).
+
+## Silver Domain
+Sources become one set of entities: typed, joined tables in
+`silver_domain_<domain>` (first: `silver_domain_investments`, openspec
+`silver-domain-investments`). Unlike Landing and Normalised it defines identity:
+an entity id is a hash of the entity's business key, so it is identical on every
+rebuild. Dimension surrogate keys are gold's. Tables are materialized views in one
+pipeline, read `silver_landing` by qualified name and carry `ingested_timestamp`
+only (no `transformed_timestamp`: a full recompute cannot tell which rows changed).
+
+### Column names in the Silver Domain
+A column name says what the value is, by its ending:
+
+| Ending | Meaning | Example |
+|---|---|---|
+| `_id` | hashed entity id | `company_id` |
+| `_key` | a registry's own key | `central_index_key` |
+| `_code` | a code from a list | `market_code`, `currency_code` |
+| `_name` | a name | `company_name`, `gics_sector_name` |
+| `_url` | a web address | `website_url` |
+| `_date`, `_timestamp` | a date, a point in time | `price_date`, `valid_from_timestamp` |
+| `_amount` | money | `dividend_amount` |
+| `_count` | a number of things | `price_volume_count` |
+
+A flag starts with `is_` or `has_`. A figure whose meaning is clear from its
+name and table (`net_income`, `capex`) stays plain; one that could be an amount
+or a count carries the ending. A name carries a currency only when it
+differs from the table's `currency_code` (`dividend_amount_in_australian_dollars`
+beside `dividend_amount`). Landing keeps the source's names; the
+rule starts here. Each entity is one file named after its table.

@@ -290,6 +290,16 @@ rows that are gone are removed. Code: `src/common/keep_timestamps.py`,
 `src/layers/silver/normalised/rebuild.py`. Used by:
 [acnc](data-sources.md#acnc), [airroi](data-sources.md#airroi). Evidence: `dev`.
 
+### silver_domain_materialized_view_sql
+One serverless pipeline of materialized views that reads `silver_landing` by
+qualified name and joins several sources into typed domain entities. A full
+recompute each run (the inputs are small), so entity ids are hashes of the
+business key (`sha2` of the joined key parts) and rows carry `ingested_timestamp`
+only. Point in time history (`company_fundamentals`) is a `valid_from_date` and a
+`lead` over each company's rows. Code: `src/layers/silver/domain/investments/`,
+shared SQL snippets in `src/common/investments.py`. Used by: investments
+(`silver_domain_investments`). Evidence: `dev`.
+
 ## Operations
 
 ### bronze_silver_pipeline_per_layer
