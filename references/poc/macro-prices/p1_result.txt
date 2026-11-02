@@ -1,0 +1,20 @@
+Installed 24 packages in 2.67s
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ^CRB"}}}
+$^CRB: possibly delisted; no timezone found
+$^CRB: No data found, symbol may be delisted
+$^CRB: No data found, symbol may be delisted
+$^BCOM: possibly delisted; no timezone found
+$^BCOM: No data found, symbol may be delisted
+$^BCOM: No data found, symbol may be delisted
+Gold futures COMEX           GC=F      rows   6569 2000-08-30 -> 2026-11-02 close    3908.40 USD exchange CMX -> UNMAPPED
+Gold ETF SPDR                GLD       rows   5522 2004-11-18 -> 2026-10-30 close     355.78 USD exchange PCX -> XNYS
+Gold ETF iShares             IAU       rows   5474 2005-01-28 -> 2026-10-30 close      72.92 USD exchange PCX -> XNYS
+Silver futures COMEX         SI=F      rows   6570 2000-08-30 -> 2026-11-02 close      50.37 USD exchange CMX -> UNMAPPED
+CRB index (guess)            ^CRB      ERROR KeyError: 'currentTradingPeriod'
+CRB TR index (guess)         ^TRCCRB   rows   8173 1994-01-03 -> 2026-10-30 close     411.10 USD exchange FGI -> UNMAPPED
+Bloomberg Commodity index    ^BCOM     ERROR KeyError: 'currentTradingPeriod'
+S&P GSCI index               ^SPGSCI   rows  10792 1984-01-03 -> 2026-11-02 close     736.76 USD exchange SNP -> UNMAPPED
+Invesco DB Commodity ETF     DBC       rows   5217 2006-02-06 -> 2026-10-30 close      33.61 USD exchange PCX -> XNYS
+iShares S&P GSCI ETF         GSG       rows   5102 2006-07-21 -> 2026-10-30 close      37.02 USD exchange PCX -> XNYS
+Crude oil WTI futures        CL=F      rows   6577 2000-08-23 -> 2026-11-02 close      99.68 USD exchange NYM -> UNMAPPED
+Copper futures               HG=F      rows   6573 2000-08-30 -> 2026-11-02 close       6.53 USD exchange CMX -> UNMAPPED

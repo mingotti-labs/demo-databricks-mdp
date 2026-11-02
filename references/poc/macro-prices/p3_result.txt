@@ -1,0 +1,18 @@
+['G1 CONSUMER PRICE INFLATION']
+['Title', 'Consumer price index', 'Year-ended inflation', 'Year-ended inflation – excluding interest charges and tax changes', 'Year-ended inflation – excluding volatile items, interest charges and tax changes', 'Year-ended tradables inflation – excluding tax changes']
+['Description', 'Consumer price index; All groups', 'Consumer price index; All groups; Year-ended change (in per cent)', 'Consumer price index; All groups excluding interest charges and tax changes of 1999–2000; Year-ended change (in per cent)', 'Consumer price index; All groups excluding volatile items, interest charges and tax changes of 1999–2000; Year-ended change (in per cent)', 'Consumer price index; Tradables excluding tax changes of 1999–2000; Year-ended change (in per cent)']
+['Frequency', 'Quarterly', 'Quarterly', 'Quarterly', 'Quarterly', 'Quarterly']
+['Type', 'Original', 'Original', 'Original', 'Original', 'Original']
+['Units', 'Index, September 2025 month = 100', 'Per cent', 'Per cent', 'Per cent', 'Per cent']
+[]
+[]
+['Source', 'ABS / RBA', 'ABS / RBA', 'ABS / RBA', 'RBA', 'RBA']
+['Publication date', '29-Oct-2026', '29-Oct-2026', '29-Oct-2026', '29-Oct-2026', '29-Oct-2026']
+['Series ID', 'GCPIAG', 'GCPIAGYP', 'GCPIEITCYP', 'GCPIXVIYP', 'GCPITIYP']
+['30/06/1922', '1.93']
+data rows 421: 30/06/1922 -> 30/06/2027
+['30/09/2026', '103.64', '3.9', '3.9', '3.8', '3.1']
+['31/12/2026']
+['31/03/2027']
+['30/06/2027']
+parse_table FAILED: ValueError: not enough values to unpack (expected 3, got 1)
