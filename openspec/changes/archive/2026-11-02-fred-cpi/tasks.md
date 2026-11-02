@@ -22,5 +22,5 @@
       `frequency` `Monthly`, first and last dates and row counts as probe P2 (plus
       any newer month); the four rate series' counts unchanged apart from new days
 - [x] 3.3 A second run writes only the recent rows (about 3 per CPI series)
-- [ ] 3.4 Mark the PR ready; after merge, check the prd run of `run_fred` and the
+- [x] 3.4 Mark the PR ready; after merge, check the prd run of `run_fred` and the
       same counts in `mdp_prd`; archive
