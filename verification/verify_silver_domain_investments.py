@@ -3,7 +3,8 @@
 # silver-domain-investments): unique keys, every symbol has a listing and a company,
 # one company per symbol, every listing has a known market, recent prices and rates,
 # contiguous fundamentals validity ranges, net income coverage and an Australian
-# dollar amount on every dividend the held rates reach. Each check lists the
+# dollar amount on every dividend the held rates reach, and CPI on business days only
+# with a changed value only on a row that is not carried forward. Each check lists the
 # offenders it finds; the notebook fails with all of them. Run only by run_investments.
 import sys
 
@@ -14,7 +15,7 @@ catalog = dbutils.widgets.get("catalog")
 check_symbol = dbutils.widgets.get("check_symbol")
 
 sys.path.insert(0, f"{dbutils.widgets.get('workspace_file_path')}/src")
-from common.investments import RATES, market_code_sql  # noqa: E402
+from common.investments import CPI_RATES, RATES, market_code_sql  # noqa: E402
 
 DOMAIN = f"{catalog}.silver_domain_investments"
 LANDING = f"{catalog}.silver_landing"
@@ -97,6 +98,20 @@ checks["rate is missing or its latest date is more than 7 days old"] = f"""
   LEFT JOIN (SELECT rate_code, max(observation_date) AS last_date FROM {DOMAIN}.market_rate_daily
              GROUP BY rate_code) d ON d.rate_code = r.rate_code
   WHERE d.last_date IS NULL OR d.last_date < date_sub(current_date(), 7)"""
+checks["CPI series has no rows"] = f"""
+  SELECT c.rate_code FROM (SELECT * FROM VALUES {", ".join(f"('{c}')" for c, *_ in CPI_RATES)} AS c(rate_code)) c
+  LEFT JOIN (SELECT DISTINCT rate_code FROM {DOMAIN}.market_rate_daily) d ON d.rate_code = c.rate_code
+  WHERE d.rate_code IS NULL"""
+checks["CPI row is on a Saturday or Sunday"] = f"""
+  SELECT concat_ws(' ', rate_code, CAST(observation_date AS STRING)) FROM {DOMAIN}.market_rate_daily
+  WHERE rate_code IN ({", ".join(f"'{c}'" for c, *_ in CPI_RATES)}) AND dayofweek(observation_date) IN (1, 7)"""
+checks["CPI value changes on a row marked as carried forward"] = f"""
+  SELECT concat_ws(' ', rate_code, CAST(observation_date AS STRING)) FROM (
+    SELECT rate_code, observation_date, rate_value, is_carried_forward,
+           lag(rate_value) OVER (PARTITION BY rate_code ORDER BY observation_date) AS previous_value
+    FROM {DOMAIN}.market_rate_daily
+    WHERE rate_code IN ({", ".join(f"'{c}'" for c, *_ in CPI_RATES)}))
+  WHERE is_carried_forward AND rate_value != previous_value"""
 if check_symbol:
     checks[f"symbol {check_symbol} has no listing"] = f"""
       SELECT '{check_symbol}' WHERE NOT EXISTS (

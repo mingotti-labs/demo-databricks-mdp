@@ -3,6 +3,7 @@ import hashlib
 from pathlib import Path
 
 from common.investments import (
+    CPI_RATES,
     FIGURES,
     RATES,
     YAHOO_EXCHANGE_TO_MARKET,
@@ -62,6 +63,13 @@ def test_rate_codes_are_unique_and_spelled_out():
     codes = [code for code, _, _, _, _ in RATES]
     assert len(codes) == len(set(codes)) == 6
     assert "australian_dollar_in_us_dollars" in codes
+
+
+def test_cpi_rate_codes_are_unique_and_do_not_overlap_the_daily_rates():
+    cpi_codes = [code for code, *_ in CPI_RATES]
+    assert len(cpi_codes) == len(set(cpi_codes)) == 5
+    assert not set(cpi_codes) & {code for code, *_ in RATES}
+    assert all(unit == "index_points" for *_, unit in CPI_RATES)
 
 
 def test_figure_columns_sql_has_one_column_per_figure():

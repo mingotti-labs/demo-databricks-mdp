@@ -162,7 +162,9 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_fred_publish`): `observations_scd1` keyed by
   `series_id`, `observation_date`
 - **Consumed by Silver Landing**: yes, `silver_landing.fred__observations`
-- **Consumed by Silver Domain**: `silver_domain_investments` `market_rate_daily`
+- **Consumed by Silver Domain**: `silver_domain_investments` `market_rate_daily` (the
+  daily rates, and the three CPI series carried onto business days with
+  `is_carried_forward`)
 
 ### abs
 - **What it is**: Australian Bureau of Statistics all groups CPI for Australia,
@@ -174,6 +176,8 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_abs_publish`): `observations_scd2` keyed by
   `series_key`, `time_period`
 - **Consumed by Silver Landing**: yes, `silver_landing.abs__observations`
+- **Consumed by Silver Domain**: `market_rate_daily` (current versions only; the monthly
+  and quarterly all-groups CPI carried onto business days from the period start)
 
 ### yahoo
 - **What it is**: Yahoo Finance (via `yfinance`, unofficial) daily prices,
