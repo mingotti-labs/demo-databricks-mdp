@@ -52,7 +52,7 @@ fred:
 abs:
   schemas:
     bronze_abs: bronze_volume_append_autoloader_python
-    bronze_abs_publish: bronze_publish_scd2_autocdc_full_load_python
+    bronze_abs_publish: bronze_publish_scd1_autocdc_snapshot_python
     silver_landing: silver_landing_change_feed_python
 wikipedia:
   schemas:

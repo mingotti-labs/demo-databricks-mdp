@@ -65,20 +65,20 @@ is the bundle variable `abs_api_url`.
 
 **D6. CI runs `run_abs` after a deploy.** The API is free, and a run is two calls.
 
-**D7. Bronze Publish is SCD2 by the bronze full pattern, not SCD1 (changed during
-implementation).** The first version copied `fred`'s streaming SCD1, sequenced by the
-fetch time. That suits a source whose files hold only part of the data. The ABS sends
-the whole history every run, so the fetch time changes on every row and SCD1 rewrote
-all 343 rows, and Landing restamped `transformed_timestamp` on all of them, with no
-value changed (seen in the second dev run). The repo's rule is that a step stamps only
-rows it changes, and its pattern for a full-load source is
-`bronze_publish_scd2_autocdc_full_load_python` (SEC's tickers): the snapshot is the
-latest file without the fetch time, Auto CDC versions it with the update's time, and
-Landing reads the change feed. A run with the same values writes nothing; a rebase
-closes the old versions, so the earlier values stay queryable in Publish. Names:
-`bronze_abs_publish.observations_scd2`; Landing keys add `scd_valid_from_timestamp`.
-Rejected: keeping SCD1 and filtering unchanged rows in the pipeline, which re-invents
-what the snapshot flow does.
+**D7. Bronze Publish is an SCD1 snapshot of the latest file, not `fred`'s streaming
+SCD1 (changed during implementation).** The first version copied `fred`'s streaming SCD1,
+sequenced by the fetch time. That suits a source whose files hold only part of the data.
+The ABS sends the whole history every run, so the fetch time changes on every row and
+SCD1 rewrote all 343 rows, and Landing restamped `transformed_timestamp` on all of them,
+with no value changed (seen in the second dev run). The repo's rule is that a step stamps
+only rows it changes. For a full load the fix is a snapshot flow
+(`create_auto_cdc_from_snapshot_flow`) from a view over the latest file without the
+fetch time; Auto CDC then writes only changed rows and Landing reads the change feed.
+SCD2 (the bronze full pattern, as acnc and SEC) was tried first and rejected by the user:
+the series is a full-load latest-value table, raw already keeps every earlier fetch, so
+closed versions add little. Consequence: Publish and Landing carry no `ingested_timestamp`
+(it would change every row every run); raw keeps it. The pattern is
+`bronze_publish_scd1_autocdc_snapshot_python`. A removed period is deleted from Publish.
 
 ## Risks / Trade-offs
 
@@ -86,7 +86,7 @@ what the snapshot flow does.
   re-runs P4's two series requests from serverless before any code is written.
 - [The ABS changes the dataflow version, for example to 2.1.0] -> The request fails
   with 404, and the version is bumped in code.
-- [A label changes, for example after a rebase] -> the SCD2 current version takes the latest and the earlier one is closed; raw keeps the
+- [A label changes, for example after a rebase] -> SCD1 takes the latest; raw keeps the
   history.
 - [The quota after this change is about 486 of 500] -> Change 4 should use a temporary
   view or join inside `market_rate_daily` (no new materialized table), or a clean-up

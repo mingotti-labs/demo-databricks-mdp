@@ -172,7 +172,7 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Design patterns**: [`bronze_volume_append_autoloader_python`](design-patterns.md#bronze_volume_append_autoloader_python), [`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python), [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python), [`bronze_silver_pipeline_per_layer`](design-patterns.md#bronze_silver_pipeline_per_layer)
 - **Bronze raw** (append-only, replayable from `bronze_abs.s3_raw`):
   `bronze_abs.observations_raw`, one row per series and period per fetch
-- **Bronze Publish** (`bronze_abs_publish`): `observations_scd2` keyed by
+- **Bronze Publish** (`bronze_abs_publish`): `observations_scd1` keyed by
   `series_key`, `time_period`
 - **Consumed by Silver Landing**: yes, `silver_landing.abs__observations`
 

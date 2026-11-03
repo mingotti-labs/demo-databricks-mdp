@@ -1,8 +1,8 @@
 source: abs
-# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
-ingested_timestamp: true
+# Bronze Publish is an SCD1 snapshot without the fetch time, so Landing has no ingested_timestamp.
+ingested_timestamp: false
 tables:
   - table: observations
     bronze_schema: bronze_abs_publish
-    bronze_table: observations_scd2
-    scd2: true
+    bronze_table: observations_scd1
+    scd2: false
