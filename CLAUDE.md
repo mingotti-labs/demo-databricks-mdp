@@ -619,7 +619,8 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   S&P 500 history plus the `portfolio` benchmarks. `run_yahoo`'s first task
   (`src/common/fetch_yahoo.py`, the only notebook allowed `%pip`) is
   incremental: prices from the last stored day minus one; a symbol is reloaded
-  in full when it is new, has a dividend or split in the new days (Yahoo
+  in full when it is new (one year; a new `portfolio` benchmark gets all its
+  history), has a dividend or split in the new days (Yahoo
   restates every earlier adjusted close, and every price and dividend on a
   split), or is named in the `reload_symbols` job parameter. It works in
   batches of 50 and records progress per symbol in `bronze_yahoo.fetch_state`,

@@ -6,6 +6,7 @@ import math
 from datetime import date, timedelta
 
 NEW_SYMBOL_DAYS = 365
+FULL_HISTORY_START = date(1970, 1, 1)
 PRICE_COLUMNS = {
     "Open": "open",
     "High": "high",
@@ -30,15 +31,22 @@ def text(value) -> str | None:
 
 
 def plan(
-    state: dict | None, reload_symbols: set[str], symbol: str, today: date
+    state: dict | None,
+    reload_symbols: set[str],
+    symbol: str,
+    today: date,
+    benchmarks: set[str] = frozenset(),
 ) -> tuple[date, bool]:
     """First day to fetch and whether it is a full reload.
 
-    A new symbol loads one year; a symbol named in reload_symbols (or `*`) reloads
+    A new benchmark loads all the history Yahoo has (requested from 1970-01-01); any
+    other new symbol loads one year; a symbol named in reload_symbols (or `*`) reloads
     from its first stored day; otherwise fetch from the last stored day minus one,
     which rewrites a day stored while the market was open.
     """
     if not state or not state.get("last_price_date"):
+        if symbol in benchmarks:
+            return FULL_HISTORY_START, True
         return today - timedelta(days=NEW_SYMBOL_DAYS), True
     if symbol in reload_symbols or "*" in reload_symbols:
         return date.fromisoformat(state["first_price_date"]), True

@@ -67,15 +67,22 @@ members = {
         WHERE __END_AT IS NULL"""
     ).collect()
 }
-symbols = sorted(
+benchmarks = {
     row.symbol
     for row in spark.sql(
-        f"""
-        SELECT DISTINCT symbol FROM {catalog}.bronze_wikipedia_publish.sp500_constituents_scd2
-        UNION
-        SELECT symbol FROM {catalog}.bronze_portfolio_publish.benchmarks_scd2 WHERE __END_AT IS NULL
-        """
+        f"""SELECT symbol FROM {catalog}.bronze_portfolio_publish.benchmarks_scd2
+        WHERE __END_AT IS NULL"""
     ).collect()
+}
+symbols = sorted(
+    {
+        row.symbol
+        for row in spark.sql(
+            f"""SELECT DISTINCT symbol FROM
+            {catalog}.bronze_wikipedia_publish.sp500_constituents_scd2"""
+        ).collect()
+    }
+    | benchmarks
 )
 state = {row.symbol: row.asDict() for row in spark.table(STATE).collect()}
 pending = [s for s in symbols if state.get(s, {}).get("last_run_id") != run_id]
@@ -111,7 +118,7 @@ def download(group: list[str], start: date, today: date) -> dict:
 
 def fetch_prices(batch: list[str], today: date) -> tuple[dict, set[str]]:
     """Prices per symbol and the symbols reloaded in full."""
-    plans = {s: plan(state.get(s), reload_symbols, s, today) for s in batch}
+    plans = {s: plan(state.get(s), reload_symbols, s, today, benchmarks) for s in batch}
     frames, reloads = {}, {s for s, (_, reload) in plans.items() if reload}
     for start in sorted({start for s, (start, reload) in plans.items() if not reload}):
         group = [s for s, (begin, reload) in plans.items() if not reload and begin == start]
@@ -121,7 +128,7 @@ def fetch_prices(batch: list[str], today: date) -> tuple[dict, set[str]]:
             else:
                 frames[symbol] = frame
     for symbol in reloads:
-        start = plan(state.get(symbol), {"*"}, symbol, today)[0]
+        start = plan(state.get(symbol), {"*"}, symbol, today, benchmarks)[0]
         frames.update(download([symbol], start, today))
     return frames, reloads
 
