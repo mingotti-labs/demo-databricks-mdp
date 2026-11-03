@@ -1,0 +1,8 @@
+^TRCCRB   rows   8174 1994-01-03 -> 2026-11-02 dividends 0
+^SPGSCI   rows  10792 1984-01-03 -> 2026-11-02 dividends 0
+GC=F      rows   6569 2000-08-30 -> 2026-11-02 dividends 0
+SI=F      rows   6570 2000-08-30 -> 2026-11-02 dividends 0
+HG=F      rows   6573 2000-08-30 -> 2026-11-02 dividends 0
+CL=F      rows   6577 2000-08-23 -> 2026-11-02 dividends 0
+DBC       rows   5218 2006-02-06 -> 2026-11-02 dividends 9
+GSG       rows   5103 2006-07-21 -> 2026-11-02 dividends 0
