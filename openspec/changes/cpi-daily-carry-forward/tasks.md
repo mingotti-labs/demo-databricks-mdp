@@ -14,7 +14,7 @@
 - [x] 2.1 `verify_silver_domain_investments.py`: key unique still holds; each CPI code has
       rows; no weekend dates among CPI rows; the first row of each period is not carried
       forward
-- [ ] 2.2 Dev: run `run_investments` with `verify=true`; compare the latest CPI values with
+- [x] 2.2 Dev (run 213406249111980, success, the three new checks passed): compare the latest CPI values with
       Landing (103.64, 104.34, 336.940)
 
 ## 3. Docs
