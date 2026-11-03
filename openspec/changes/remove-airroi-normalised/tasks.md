@@ -1,10 +1,13 @@
+## 0. Backup
+
+- [x] 0.1 Backup in `references/backups/airroi-normalised/` (spec, job, pattern entry,
+      RECOVERY.md), done in the proposal PR
+
 ## 1. Remove
 
 - [ ] 1.1 `run_airroi`: drop `normalised`, `tag`; `tag_patterns` depends on `silver`;
       `verify_silver` runs `verify_silver_landing`; remove the `silver_normalised_airroi.*`
       entries from `also_drop`
-- [x] 0.1 Backup in `references/backups/airroi-normalised/` (spec, job, pattern entry,
-      RECOVERY.md), done in the proposal PR
 - [ ] 1.2 Remove `specs/airroi.yml`
 - [ ] 1.3 Remove `silver_normalised_airroi` from `src/common/design_patterns.yml`
 
