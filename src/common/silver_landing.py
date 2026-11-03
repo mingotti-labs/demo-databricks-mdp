@@ -33,21 +33,15 @@ def land_changes(
     Reads the table's change feed, so `land()`'s run-time stamp lands only on
     changed rows. For an SCD2 table `ingested_timestamp` is the version's
     `__START_AT`: the table carries no platform timestamps (openspec
-    correct-platform-timestamps). An SCD1 table that carries `ingested_timestamp`
-    keeps it. One that does not (a snapshot of a full load, which cannot carry a
-    column that changes on every run) gets the change's commit time: the moment
-    Bronze Publish genuinely inserted or changed the row, the SCD1 counterpart of
-    `__START_AT`.
+    correct-platform-timestamps). An SCD1 table has no versions, so Landing
+    keeps its columns as they are.
     """
     df = (
         spark.readStream.option("readChangeFeed", "true")
         .table(table)
         .where("_change_type IN ('insert', 'update_postimage')")
-        .drop("_change_type")
+        .drop("_change_type", "_commit_timestamp")
     )
     if scd2:
         df = df.withColumn("ingested_timestamp", F.col("__START_AT"))
-    elif "ingested_timestamp" not in df.columns:
-        df = df.withColumn("ingested_timestamp", F.col("_commit_timestamp"))
-    df = df.drop("_commit_timestamp")
     return land(df, natural_keys=natural_keys, source_name=source_name, scd2=scd2)

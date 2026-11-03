@@ -82,14 +82,11 @@ Choice depends on whether the Bronze Publish source is append-only:
   one, it must remain the first column of any object in this layer
 - natural keys must come right after the surrogate key, when avaiable, e.g., mdp_prd.`bronze_airroi_publish.market_metrics_all_scd2` has five columns as natural keys `_country, _region, _locality, _district, date` and they must be right after the surrogate key if available. if not they would be the first five columns of the object.
 - comments on natural key columns must clearly mention it.
-- `ingested_timestamp` is never stamped with the run time by Silver Landing; if
-  the Bronze Publish source object already carries one (propagated from `_raw`),
-  pass it through unchanged. If Publish has none because it is an SCD2 table
-  (bronze full pattern), Landing sets it to the version's `__START_AT`; if it is
-  an SCD1 snapshot of a full load, Landing sets it to the change feed's commit
-  time (when Publish genuinely inserted or changed the row). Both are done by
-  `land_changes`. Otherwise (not yet retrofitted for that source, per `NAMING.md`)
-  the column is simply absent — Silver Landing does not backfill it.
+- `ingested_timestamp` is never stamped by Silver Landing; if the Bronze
+  Publish source object already carries one (propagated from `_raw`), pass
+  it through unchanged. If it doesn't (not yet retrofitted for that
+  source, per `NAMING.md`), the column is simply absent — Silver Landing
+  does not backfill it.
 - `transformed_timestamp` marks the rows this layer inserted, modified or
   closed; a row it did not change keeps its previous value (NAMING.md
   "Platform-added timestamp columns"). acnc reads only Bronze's changed rows

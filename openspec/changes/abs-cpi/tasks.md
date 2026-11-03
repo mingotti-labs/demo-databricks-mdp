@@ -20,7 +20,7 @@
 ## 3. Pipelines and job
 
 - [x] 3.1 `src/layers/bronze/abs/` (Auto Loader raw) and
-      `src/layers/bronze/abs_publish/` (SCD1 snapshot Auto CDC by `series_key`, `time_period`)
+      `src/layers/bronze/abs_publish/` (SCD2 snapshot Auto CDC by `series_key`, `time_period`, bronze full pattern)
 - [x] 3.2 `src/layers/silver/landing/abs/` (`silver_landing.abs__observations`, no
       type change)
 - [x] 3.3 Pipelines `bronze--abs--<target>` and `silver--abs--<target>`; job `run_abs`

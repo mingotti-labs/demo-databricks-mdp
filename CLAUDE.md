@@ -655,9 +655,8 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
 - **ABS** (`abs-cpi`, macro prices story) -- the Australian all groups CPI, quarterly
   (from 1948-Q3) and monthly (from 2024-04), from the ABS Data API (no key). One long
   table as FRED. `run_abs`'s first task (`src/common/fetch_abs.py`) fetches the whole
-  history every run and writes one dated file; Bronze Publish is SCD1 by `series_key`,
-  `time_period` (snapshot of the latest file without the fetch time, so only changed
-  rows are written; Landing's `ingested_timestamp` is the change's commit time). Landing `silver_landing.abs__observations` keeps `time_period` as
+  history every run and writes one dated file; Bronze Publish is SCD2 by `series_key`,
+  `time_period` (bronze full pattern, snapshot = the latest file). Landing `silver_landing.abs__observations` keeps `time_period` as
   text (`1948-Q3`, `2024-04`).
 - **Silver Domain investments** (`silver-domain-investments`, dividend portfolio
   story) -- schema `silver_domain_investments`, one serverless pipeline of eight

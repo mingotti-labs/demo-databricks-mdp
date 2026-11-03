@@ -1,6 +1,7 @@
 # ABS (Australian Bureau of Statistics)
 
-Consumer Price Index through the ABS Data API (SDMX REST, `data.api.abs.gov.au/rest`).
+Consumer Price Index (reference data: a published index, restated now and then, so
+SCD2) through the ABS Data API (SDMX REST, `data.api.abs.gov.au/rest`).
 No key, no stated rate limit; a run makes two requests.
 
 - URL: bundle variable `abs_api_url`, same for every target.
@@ -28,10 +29,8 @@ only exists from 2024-04. A seasonally adjusted monthly series (`TSEST` 20) answ
   Rows come back unsorted; `value` is text and `time_period` is a quarter or month
   (`1948-Q3`, `2024-04`), kept as text in every layer.
 - Every run fetches the whole history (the ABS restates it when it rebases the index),
-  so raw grows by 343 rows a run. Bronze Publish is SCD1 by `series_key`, `time_period`
-  (snapshot of the latest file without its fetch time, so a run with the same values
-  writes nothing and a rebase replaces the values; raw keeps the old ones). Publish has
-  no `ingested_timestamp` (raw keeps the fetch time); Landing sets it from the change's
-  commit time, when Publish last genuinely changed the row.
+  so raw grows by 343 rows a run. Bronze Publish is SCD2 by `series_key`, `time_period`
+  (bronze full pattern: the snapshot is the latest file without its fetch time, so a
+  run with the same values writes nothing and a rebase closes the old versions).
 - A non-200 status or an empty answer fails the task with the key and status.
 - Probes: P4 (laptop) and P7 (serverless) in `references/docs/registers/probes.md`.

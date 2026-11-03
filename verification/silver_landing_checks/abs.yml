@@ -1,9 +1,8 @@
 source: abs
-# Publish is an SCD1 snapshot without the fetch time; Landing sets ingested_timestamp
-# from the change's commit time (land_changes).
+# Whether this source's Bronze Publish carries ingested_timestamp, which Landing keeps.
 ingested_timestamp: true
 tables:
   - table: observations
     bronze_schema: bronze_abs_publish
-    bronze_table: observations_scd1
-    scd2: false
+    bronze_table: observations_scd2
+    scd2: true

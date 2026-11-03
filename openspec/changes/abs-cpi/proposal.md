@@ -20,7 +20,7 @@ Neither is in RBA's or FRED's tables, so this is a new source, `abs`.
     incremental request and no `reload` parameter. When the ABS rebases the index, it
     restates every earlier value; a full fetch keeps them right.
   - **Bronze raw**: append-only Auto Loader `bronze_abs.observations_raw`.
-  - **Bronze Publish**: `bronze_abs_publish.observations_scd1`, SCD1 by `series_key`
+  - **Bronze Publish**: `bronze_abs_publish.observations_scd2`, SCD2 by `series_key`
     and `time_period`.
   - **Silver Landing**: `silver_landing.abs__observations` via `land_changes`.
     `time_period` stays text (`1948-Q3`, `2024-04`) because it is a quarter or a
