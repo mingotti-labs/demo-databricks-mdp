@@ -14,12 +14,12 @@ stays.
   `airroi`, like `run_abs`.
 - The one-off `reset` task keeps its name but its `also_drop` list loses the
   `silver_normalised_airroi.*` entries (the tables are gone).
-- The airroi spec moves from `src/layers/silver/normalised/specs/airroi.yml` to
-  `references/docs/normalised-spec/examples/airroi.yml`, a backup of how a second
-  source was specified. The decisions stay in the archived `phase4d` change.
+- The airroi spec is removed from `src/layers/silver/normalised/specs/`. A backup of the
+  spec, the whole job file and the design-pattern entry, with `RECOVERY.md`, is in
+  `references/backups/airroi-normalised/` (same layout as `references/backups/neon/`).
 - `src/common/design_patterns.yml` loses `silver_normalised_airroi`.
 - Docs: `data-sources.md` (airroi block), `design-patterns.md` used-by lists,
-  `silver.md` pending-refactor sentence, the `normalised-spec` README example.
+  `silver.md` pending-refactor sentence, CLAUDE.md pointer to the backup.
 - Not in this change: airroi bronze and Landing (kept), acnc Normalised (kept), prd
   (never had airroi Normalised).
 
@@ -33,7 +33,7 @@ stays.
 - Frees about 7 quota slots in dev (already dropped). No prd table changes.
 - CI: `airroi` is opted out of auto run (`ci_auto_run: false`); the changed job still
   puts `airroi` in the affected set, which does not run it.
-- Reversible: restore the spec file and the three job tasks, then run `run_airroi`.
+- Reversible: follow `references/backups/airroi-normalised/RECOVERY.md`.
 
 ## Model
 
