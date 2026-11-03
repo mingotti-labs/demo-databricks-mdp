@@ -77,7 +77,9 @@ fetch time; Auto CDC then writes only changed rows and Landing reads the change 
 SCD2 (the bronze full pattern, as acnc and SEC) was tried first and rejected by the user:
 the series is a full-load latest-value table, raw already keeps every earlier fetch, so
 closed versions add little. Consequence: Publish and Landing carry no `ingested_timestamp`
-(it would change every row every run); raw keeps it. The pattern is
+(it would change every row every run); raw keeps it. This follows the Silver Landing rule in
+`references/docs/medallion/silver.md` (never backfilled; absent when Publish has none), as for
+clickstream's SCD1 Landing. The pattern is
 `bronze_publish_scd1_autocdc_snapshot_python`. A removed period is deleted from Publish.
 
 ## Risks / Trade-offs
