@@ -43,9 +43,10 @@ Each run SHALL fetch, values kept as Yahoo returned them:
 ### Requirement: Incremental prices and reloads
 For a symbol already fetched, prices SHALL be fetched from its last stored
 price date minus one day, and those days overwritten. A symbol SHALL be
-reloaded in full (prices from its first stored date, or one year for a new
-symbol, and all its events) when it has no stored prices, when a dividend or
-split falls in the newly fetched days, or when the job parameter
+reloaded in full (prices from its first stored date, or for a new symbol one
+year, or all the history Yahoo has when the new symbol is in `portfolio`
+`benchmarks`, and all its events) when it has no stored prices, when a dividend
+or split falls in the newly fetched days, or when the job parameter
 `reload_symbols` names it (`*` reloads every symbol).
 
 #### Scenario: A day stored while the market was open
@@ -65,6 +66,15 @@ split falls in the newly fetched days, or when the job parameter
 #### Scenario: A manual reload
 - **WHEN** the job runs with `reload_symbols` `AAPL`
 - **THEN** AAPL is reloaded in full and the other symbols are fetched as usual
+
+#### Scenario: A new index member
+- **WHEN** a symbol with no stored prices is not in `benchmarks`
+- **THEN** the run loads its last year of prices and all its events
+
+#### Scenario: A new benchmark
+- **WHEN** a symbol with no stored prices is in `benchmarks`, for example `^TRCCRB`
+- **THEN** the run requests prices from 1970-01-01, stores every day Yahoo has from
+  the symbol's first trading day, and all its events; later runs are incremental
 
 ### Requirement: Fetch state and resuming
 The fetch SHALL keep one row per symbol in `bronze_yahoo.fetch_state`: Yahoo
@@ -120,13 +130,19 @@ from its raw table sequenced by `ingested_timestamp`, with change data feed on.
 
 ### Requirement: Benchmarks setting
 `portfolio` SHALL have a dataset `benchmarks` (`data/portfolio/benchmarks.csv`,
-key `symbol`) with name, kind (`market`, `dividend`, `sector`, `volatility`)
-and sector (the GICS sector name as Wikipedia writes it, for sector funds),
-loaded like the other `portfolio` datasets.
+key `symbol`) with name, kind (`market`, `dividend`, `sector`, `volatility`,
+`commodity_index`, `commodity_future`, `commodity_fund`) and sector (the GICS
+sector name as Wikipedia writes it, for sector funds), loaded like the other
+`portfolio` datasets.
 
 #### Scenario: A sector fund matches its sector
 - **WHEN** `benchmarks` lists `XLU` with sector `Utilities`
 - **THEN** silver can compare each Utilities company with `XLU`
+
+#### Scenario: Commodity prices are fetched
+- **WHEN** `benchmarks` lists `^TRCCRB` (`commodity_index`), `GC=F`
+  (`commodity_future`) and `DBC` (`commodity_fund`)
+- **THEN** `run_yahoo` fetches their daily prices like any other symbol
 
 ### Requirement: Silver Landing
 `silver_landing.yahoo__<dataset>` SHALL be built from each Bronze Publish change

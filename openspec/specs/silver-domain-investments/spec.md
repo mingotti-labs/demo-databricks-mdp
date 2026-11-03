@@ -70,11 +70,12 @@ one trading symbol on one market. It SHALL carry `market_code`,
 `currency_code`, `company_id` (empty for an index benchmark) and the options
 columns below. Listings SHALL
 come from every symbol in the Wikipedia S&P 500 history and from the
-`portfolio` benchmarks. The market of an S&P 500 symbol SHALL be the operating market identifier code
+`portfolio` benchmarks. The market of a symbol SHALL be the operating market identifier code
 mapped from the `exchange_code` of the latest version of the symbol's Yahoo
 calendar row (`NMS`, `NGM`, `NCM` to `XNAS`; `NYQ`, `PCX`, `ASE` to `XNYS`;
-`BTS` and `CXI` to `XCBO`). `company_id` SHALL come from the central index key of the
-symbol's latest Wikipedia version.
+`BTS` and `CXI` to `XCBO`; `CMX` and `NYM` to `XNYM`; `FGI` and `SNP`, index
+providers, to `XXXX`, ISO 10383's "no market"). `company_id` SHALL come from the
+central index key of the symbol's latest Wikipedia version.
 
 #### Scenario: A member resolves to a company
 - **WHEN** `KO` is in the current list
@@ -88,6 +89,14 @@ symbol's latest Wikipedia version.
 #### Scenario: A benchmark has no company
 - **WHEN** a `portfolio` benchmark symbol is a market index
 - **THEN** its `listing` row has an empty `company_id`
+
+#### Scenario: A futures contract's market
+- **WHEN** the latest Yahoo calendar row for `GC=F` has `exchange_code` `CMX`
+- **THEN** the `GC=F` listing has `market_code` `XNYM`
+
+#### Scenario: An index is not traded on a market
+- **WHEN** the latest Yahoo calendar row for `^TRCCRB` has `exchange_code` `FGI`
+- **THEN** the `^TRCCRB` listing has `market_code` `XXXX`, a row of `market`
 
 ### Requirement: Index membership history
 `index_membership` SHALL have one row per listing per membership version, with
