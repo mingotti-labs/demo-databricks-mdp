@@ -22,7 +22,13 @@
 
 ## Risks
 
-- Look-ahead (see the proposal). The flag shows repeats but not the publication date.
+- Look-ahead, accepted (decided 2026-11-03, options for a lag or release dates rejected).
+  A value sits on the dates of the period it measures, not the date it was published. The
+  table is descriptive data, not point-in-time: it must not be used to ask what was known
+  on a date, nor to predict. Raw data holds no release date: FRED's `realtime_start` and
+  `realtime_end` echo the request day (not kept), the ABS CSV has none. Release dates would
+  need a new fetch (FRED vintage data, ABS release calendar) and belong to the change that
+  first predicts with the table.
 - ABS rebasing restates earlier values: all history changes at once and the view follows,
   as Landing does.
 - The US and Australian index levels use different bases and cannot be compared by value.

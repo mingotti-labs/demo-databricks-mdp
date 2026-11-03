@@ -41,9 +41,9 @@ business days.
   rows a year). Existing rows are untouched.
 - Runs: `run_investments` only (it reads Landing; `run_fred` and `run_abs` are not
   affected).
-- Look-ahead: carrying from the period start means a month's CPI is on dates before it
-  was published (the ABS and BLS publish weeks after the period ends). Anyone testing a
-  strategy must not use it as known on that date. Recorded in the design.
+- Look-ahead, accepted: a value sits on the dates of the period it measures, not its
+  publication date, which the raw data does not hold. The table describes; it is not
+  point-in-time and must not be used for prediction. Recorded in the design.
 
 ## Model
 
