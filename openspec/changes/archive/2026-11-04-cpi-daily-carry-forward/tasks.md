@@ -23,4 +23,4 @@
 
 ## 4. Prd
 
-- [ ] 4.1 After the merge CI runs `run_investments` in prd; check counts against dev; archive
+- [x] 4.1 After the merge CI runs `run_investments` in prd; check counts against dev; archive
