@@ -669,7 +669,9 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   `dividend` (A$ amount, pay date, `is_special`), `company_fundamentals` (a row
   per 10-K or 10-Q filing, point in time: `valid_from_date` is the filing date;
   trailing twelve months and balance sheet figures from SEC facts),
-  `market_rate_daily` (six rates, with `rate_name`). Column names end in what they
+  `market_rate_daily` (six daily rates plus five CPI series on business days, with
+  `rate_name` and `is_carried_forward`; CPI sits on the dates of the period it measures,
+  not its publication date, so it is not for prediction). Column names end in what they
   are (`_id`, `_key`, `_code`, `_name`, `_date`, `_amount`, `_count`; rule in
   `references/docs/medallion/silver.md`). Ids are hashes:
   `company_id = sha2('sec:' + central_index_key)`, `listing_id = sha2(market_code:

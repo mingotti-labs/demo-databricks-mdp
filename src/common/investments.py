@@ -100,6 +100,47 @@ RATES = [
 ]
 
 
+# (rate_code, rate_name, source, series_id, unit) of the CPI series carried onto business days.
+# The series id is FRED's id, or the ABS `series_key`.
+CPI_RATES = [
+    (
+        "au_cpi_all_groups_monthly",
+        "Australian CPI, all groups, monthly (ABS)",
+        "abs",
+        "1.10001.10.50.M",
+        "index_points",
+    ),
+    (
+        "au_cpi_all_groups_quarterly",
+        "Australian CPI, all groups, quarterly (ABS)",
+        "abs",
+        "1.10001.10.50.Q",
+        "index_points",
+    ),
+    (
+        "us_cpi_all_items_not_seasonally_adjusted",
+        "US CPI, all items, not seasonally adjusted",
+        "fred",
+        "CPIAUCNS",
+        "index_points",
+    ),
+    (
+        "us_cpi_all_items_seasonally_adjusted",
+        "US CPI, all items, seasonally adjusted",
+        "fred",
+        "CPIAUCSL",
+        "index_points",
+    ),
+    (
+        "us_cpi_excluding_food_and_energy_seasonally_adjusted",
+        "US CPI excluding food and energy, seasonally adjusted",
+        "fred",
+        "CPILFESL",
+        "index_points",
+    ),
+]
+
+
 def figure_names() -> list[str]:
     return [figure for figure, _, _ in FIGURES]
 
@@ -127,6 +168,11 @@ def figure_values_sql() -> str:
 def rate_values_sql() -> str:
     """VALUES rows (rate_code, rate_name, source, series_id, unit)."""
     return ", ".join(f"('{c}', '{n}', '{s}', '{i}', '{u}')" for c, n, s, i, u in RATES)
+
+
+def cpi_values_sql() -> str:
+    """VALUES rows (rate_code, rate_name, source, series_id, unit) of the CPI series."""
+    return ", ".join(f"('{c}', '{n}', '{s}', '{i}', '{u}')" for c, n, s, i, u in CPI_RATES)
 
 
 def figure_columns_sql() -> str:
