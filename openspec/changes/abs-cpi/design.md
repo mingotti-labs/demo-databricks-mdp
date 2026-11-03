@@ -120,4 +120,20 @@ Rollback: remove the code; drop the three tables per target, with approval.
 
 ## Dev results (2026-11-03)
 
-Filled in after the SCD2 correction (D7) is verified.
+Final shape (SCD2, D7), on clean tables, as the service principal.
+
+- Run 1 (`run_abs`, `verify=true`): all tasks SUCCESS, both verification jobs passed. Raw
+  gained 343 rows; Publish `observations_scd2` 343 current rows; Landing
+  `abs__observations` 343 rows, every row current, no duplicate key.
+- Landing: `1.10001.10.50.Q` 313 rows, 1948-Q3 to 2026-Q3, latest 103.64;
+  `1.10001.10.50.M` 30 rows, 2024-04 to 2026-09, latest 104.34. These match P4 and P7.
+  `ingested_timestamp` is filled on all 343 rows and equals `scd_valid_from_timestamp`
+  (`__START_AT`).
+- Run 2 (same data): raw 2,744 -> 3,087 (+343), Publish 343, Landing 343. Publish history:
+  the second MERGE inserted 0 and updated 0 rows. Landing's `ingested_timestamp` (one value)
+  and `transformed_timestamp` (one value) are unchanged, so nothing was rewritten.
+- Along the way (earlier shapes, dropped tables with approval each time): the streaming
+  SCD1 rewrote and restamped all 343 rows on a repeat run; a snapshot SCD1 written over
+  the old streaming table exposed Auto CDC's reserved columns (`__UpsertVersion` ...) and
+  broke Landing; changing a Landing stream's source table needs a new checkpoint (full
+  refresh or a new table).

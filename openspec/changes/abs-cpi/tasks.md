@@ -34,12 +34,12 @@
 ## 4. Verify in dev
 
 - [x] 4.1 Re-read the table quota; stop and ask if it is above 488
-- [ ] 4.2 Draft PR deploys to dev. `run_dev.py abs --param verify=true`: Landing holds 313
+- [x] 4.2 Draft PR deploys to dev. `run_dev.py abs --param verify=true`: Landing holds 313
       quarterly rows (from 1948-Q3) and the monthly rows (from 2024-04), with the
       latest values matching the ABS
-- [ ] 4.3 A second run: raw doubles; Publish and Landing write no row (counts and every
+- [x] 4.3 A second run: raw doubles; Publish and Landing write no row (counts and every
       `transformed_timestamp` unchanged)
-- [ ] 4.4 Write the results into design.md
+- [x] 4.4 Write the results into design.md
 
 ## 5. Docs
 
