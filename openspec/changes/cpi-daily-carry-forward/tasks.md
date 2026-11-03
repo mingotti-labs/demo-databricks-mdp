@@ -1,0 +1,24 @@
+## 1. Build
+
+- [ ] 1.1 `CPI_RATES` in `src/common/investments.py` with a unit test (codes unique, no
+      overlap with `RATES`)
+- [ ] 1.2 `market_rate_daily.py`: add `is_carried_forward`; CPI rows from FRED and ABS
+      Landing (ABS `is_current` only), period start, weekday spine to the latest daily
+      date
+- [ ] 1.3 Unit test for the period parsing and spine, using small inputs
+
+## 2. Verify
+
+- [ ] 2.1 `verify_silver_domain_investments.py`: key unique still holds; each CPI code has
+      rows; no weekend dates among CPI rows; the first row of each period is not carried
+      forward
+- [ ] 2.2 Dev: run `run_investments` with `verify=true`; compare the latest CPI values with
+      Landing (103.64, 104.34, 336.940)
+
+## 3. Docs
+
+- [ ] 3.1 `data-sources.md` (fred and abs consumers), `silver.md`, `CLAUDE.md` rates note
+
+## 4. Prd
+
+- [ ] 4.1 After the merge CI runs `run_investments` in prd; check counts against dev; archive
