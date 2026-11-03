@@ -1,0 +1,12 @@
+SUCCESS https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/105976393184322/run/947525261870100
+1.10001.10.50.Q: status 200, 58704 bytes, 0.3s
+  rows 313, 1948-Q3 -> 2026-Q3, last value 103.64
+  columns: ['STRUCTURE', 'STRUCTURE_ID', 'STRUCTURE_NAME', 'ACTION', 'MEASURE', 'Measure', 'INDEX', 'Index', 'TSEST', 'Adjustment Type', 'REGION', 'Region', 'FREQ', 'Frequency', 'TIME_PERIOD', 'Time Period', 'OBS_VALUE', 'Observation Value', 'UNIT_MEASURE', 'Unit of Measure', 'OBS_STATUS', 'Observation Status', 'DECIMALS', 'Decimals', 'OBS_COMMENT', 'Observation Comment', 'BASE_PERIOD', 'Reference Base Period']
+  labels: {'Measure': 'Index numbers', 'Index': 'All groups CPI', 'Adjustment Type': 'Original', 'Region': 'Australia', 'Frequency': 'Quarterly', 'Unit of Measure': 'Index Numbers', 'Reference Base Period': 'Sep 2025 = 100.0'}
+  empty OBS_VALUE: 0
+1.10001.10.50.M: status 200, 5875 bytes, 0.3s
+  rows 30, 2024-04 -> 2026-09, last value 104.34
+  columns: ['STRUCTURE', 'STRUCTURE_ID', 'STRUCTURE_NAME', 'ACTION', 'MEASURE', 'Measure', 'INDEX', 'Index', 'TSEST', 'Adjustment Type', 'REGION', 'Region', 'FREQ', 'Frequency', 'TIME_PERIOD', 'Time Period', 'OBS_VALUE', 'Observation Value', 'UNIT_MEASURE', 'Unit of Measure', 'OBS_STATUS', 'Observation Status', 'DECIMALS', 'Decimals', 'OBS_COMMENT', 'Observation Comment', 'BASE_PERIOD', 'Reference Base Period']
+  labels: {'Measure': 'Index numbers', 'Index': 'All groups CPI', 'Adjustment Type': 'Original', 'Region': 'Australia', 'Frequency': 'Monthly', 'Unit of Measure': 'Index Numbers', 'Reference Base Period': 'Sep 2025 = 100.0'}
+  empty OBS_VALUE: 0
+

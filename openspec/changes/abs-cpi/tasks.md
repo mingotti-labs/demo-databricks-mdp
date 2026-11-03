@@ -1,10 +1,10 @@
 ## 1. Probe and infrastructure
 
-- [ ] 1.1 Probe P7 from serverless: P4's two series requests (`1.10001.10.50.Q`,
+- [x] 1.1 Probe P7 from serverless: P4's two series requests (`1.10001.10.50.Q`,
       `1.10001.10.50.M`, CSV with labels), the row counts and the label columns. Put the
       script and its result in `references/poc/macro-prices/` and add a row to the probes
       register
-- [ ] 1.2 iac `abs-schemas-volume` applied: `bronze_abs`, `bronze_abs_publish` and
+- [x] 1.2 iac `abs-schemas-volume` applied: `bronze_abs`, `bronze_abs_publish` and
       `bronze_abs.s3_raw` exist in `mdp_dev` and `mdp_prd`, with the CI/CD grants
 
 ## 2. Fetch
