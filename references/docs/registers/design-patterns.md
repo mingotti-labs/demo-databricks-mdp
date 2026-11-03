@@ -278,8 +278,8 @@ schema; extracted entities, bridges, quarantine and value lineage are generated,
 not hand-written. Code: `src/layers/silver/normalised/`,
 `src/common/normalised_spec.py`. Contract:
 [normalised-spec](../normalised-spec/README.md).
-Used by: [acnc](data-sources.md#acnc) (`prd`), [airroi](data-sources.md#airroi)
-(`dev`). Tables are built by `silver_rebuild_keep_timestamps_python`; the
+Used by: [acnc](data-sources.md#acnc) (`prd`). airroi used it until 2026-11
+(backup: `references/backups/airroi-normalised/`). Tables are built by `silver_rebuild_keep_timestamps_python`; the
 pipeline entry point was retired.
 
 ### silver_rebuild_keep_timestamps_python
@@ -288,7 +288,7 @@ each row with the previous table (every column but `transformed_timestamp`):
 unchanged rows keep their stamp, new or changed rows get `current_timestamp()`,
 rows that are gone are removed. Code: `src/common/keep_timestamps.py`,
 `src/layers/silver/normalised/rebuild.py`. Used by:
-[acnc](data-sources.md#acnc), [airroi](data-sources.md#airroi). Evidence: `dev`.
+[acnc](data-sources.md#acnc). Evidence: `dev`.
 
 ### silver_domain_materialized_view_sql
 One serverless pipeline of materialized views that reads `silver_landing` by
