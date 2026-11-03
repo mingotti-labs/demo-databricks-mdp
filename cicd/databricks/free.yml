@@ -71,6 +71,9 @@ variables:
   fred_api_url:
     description: Base URL of the FRED (St. Louis Fed) API -- same for every target, no test/prod split exists for this source.
     default: https://api.stlouisfed.org/fred
+  abs_api_url:
+    description: Base URL of the Australian Bureau of Statistics Data API -- same for every target, no test/prod split exists for this source.
+    default: https://data.api.abs.gov.au/rest
   http_user_agent:
     description: User-Agent contact string sent to public sites that ask for one (Wikipedia, later SEC).
     default: mdp handsonessential@gmail.com
