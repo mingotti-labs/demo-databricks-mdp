@@ -137,3 +137,22 @@ Final shape (SCD2, D7), on clean tables, as the service principal.
   the old streaming table exposed Auto CDC's reserved columns (`__UpsertVersion` ...) and
   broke Landing; changing a Landing stream's source table needs a new checkpoint (full
   refresh or a new table).
+
+## Prd finding (2026-11-03) and fix
+
+The first prd run (CI, `verify=false`) succeeded but left Publish and Landing empty (raw had
+343 rows). Evidence: the bronze pipeline's own event log warned that `abs_scd2.py` uses the
+Spark action `DataFrame.collect`, at the moment the graph was built, before the raw flow
+started. The snapshot view found the latest fetch with `.first()`, which ran while raw was
+still empty, so the snapshot was empty. Dev passed because its raw already held earlier
+files (the same warning appeared there and was not read). The same lookup would also have
+used the previous run's latest file, so Publish would have lagged one run. Fix: find the
+latest fetch with a window expression, as SEC's tickers do, which is evaluated at run time.
+`tests/common/test_pipeline_sources.py` now fails if a pipeline source calls `.first()`,
+`.collect()` or `.toPandas()`. Verified in dev from an empty start (task 7.2).
+
+Dev proof of the fix (2026-11-03): raw, Publish and Landing dropped (with approval), then
+`run_abs` with `verify=true` from that empty start, the condition prd had. All tasks
+SUCCESS. Raw replayed the 10 files in the volume (3,430 rows); Publish 343 and Landing 343
+(313 quarterly, 30 monthly; latest 103.64 and 104.34; `ingested_timestamp` on all 343). The
+event log of that update has no `DataFrame.collect` warning (the last one was before the fix).
