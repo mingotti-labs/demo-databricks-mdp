@@ -652,6 +652,12 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   query string, so all requests go through `get_json`, which re-raises failures
   without the URL. Landing `silver_landing.fred__observations` has
   `observation_date` as a date.
+- **ABS** (`abs-cpi`, macro prices story) -- the Australian all groups CPI, quarterly
+  (from 1948-Q3) and monthly (from 2024-04), from the ABS Data API (no key). One long
+  table as FRED. `run_abs`'s first task (`src/common/fetch_abs.py`) fetches the whole
+  history every run and writes one dated file; Bronze Publish is SCD1 by `series_key`,
+  `time_period`. Landing `silver_landing.abs__observations` keeps `time_period` as
+  text (`1948-Q3`, `2024-04`).
 - **Silver Domain investments** (`silver-domain-investments`, dividend portfolio
   story) -- schema `silver_domain_investments`, one serverless pipeline of eight
   materialized views, one file per table in `src/layers/silver/domain/investments/` reading `silver_landing` only: `company` (SEC central index

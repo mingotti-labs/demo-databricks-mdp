@@ -86,3 +86,17 @@ is the bundle variable `abs_api_url`.
 3. Merge. CI runs `run_abs` in prd.
 
 Rollback: remove the code; drop the three tables per target, with approval.
+
+## Dev results (2026-11-03)
+
+Two runs of `run_abs` as the service principal (the first by an interrupted command, the
+second with `verify=true`; both SUCCESS, verification passed).
+
+- Raw: 343 rows per file, 686 after two runs. Publish 343, Landing 343, no duplicate key.
+- Landing: `1.10001.10.50.Q` 313 rows, 1948-Q3 to 2026-Q3, latest 103.64;
+  `1.10001.10.50.M` 30 rows, 2024-04 to 2026-09, latest 104.34. These match P4 and P7.
+- Finding: the second run rewrote every Landing row. Each file carries a new
+  `ingested_timestamp`, Publish (SCD1 sequenced by it) updates all 343 rows although no
+  value changed, so Landing's `transformed_timestamp` is stamped on all 343 rows again
+  (one value, later than the second run's fetch). Counts stay equal, which is all task 4.3
+  asks for. `fred` behaves the same on the days its 31-day lookback re-fetches.
