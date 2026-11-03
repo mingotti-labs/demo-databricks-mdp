@@ -22,7 +22,7 @@
 - [x] 3.2 Run `run_dev.py yahoo` once: the rule changes nothing for symbols with state
       (the 8 and the others are fetched incrementally); the new-benchmark path is proved
       by the unit tests and, in prd, by the first load
-- [ ] 3.3 Mark the PR ready; after merge CI loads the 8 in prd; then run `run_investments`
+- [x] 3.3 Mark the PR ready; after merge CI loads the 8 in prd; then run `run_investments`
       in prd by hand; check `mdp_prd`: first dates 1984 (`^SPGSCI`), 1994 (`^TRCCRB`),
       2000 (futures), 2006 (`DBC`, `GSG`), the `fetch_state` rows, markets `XNYM` 4,
       `XXXX` 2, `XNYS` 2; archive `yahoo-commodity-symbols` and this change
