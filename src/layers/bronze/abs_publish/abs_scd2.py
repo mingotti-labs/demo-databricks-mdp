@@ -8,6 +8,7 @@
 # pipeline update's time (__START_AT, __END_AT) and Silver Landing reads the change
 # feed.
 from pyspark import pipelines as dp
+from pyspark.sql import Window
 from pyspark.sql.functions import col, max
 
 PLATFORM_COLUMNS = ["ingested_timestamp", "source_file_path", "_rescued_data"]
@@ -15,10 +16,19 @@ PLATFORM_COLUMNS = ["ingested_timestamp", "source_file_path", "_rescued_data"]
 
 @dp.temporary_view()
 def observations_snapshot():
-    """Rows of the latest fetch."""
-    raw = spark.read.table("bronze_abs.observations_raw")
-    latest = raw.agg(max("ingested_timestamp")).first()[0]
-    return raw.where(col("ingested_timestamp") == latest).drop(*PLATFORM_COLUMNS)
+    """Rows of the latest fetch, found with a window so it is evaluated at run time.
+
+    An action such as `.first()` here would run while the pipeline graph is built,
+    before this update has loaded raw: on a new environment raw is empty then and
+    the snapshot would be empty.
+    """
+    latest = max("ingested_timestamp").over(Window.partitionBy())
+    return (
+        spark.read.table("bronze_abs.observations_raw")
+        .withColumn("_latest", latest)
+        .where(col("ingested_timestamp") == col("_latest"))
+        .drop("_latest", *PLATFORM_COLUMNS)
+    )
 
 
 dp.create_streaming_table(

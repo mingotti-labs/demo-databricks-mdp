@@ -59,6 +59,11 @@ changed rows SHALL get a new `transformed_timestamp`. Every column, `time_period
 - **THEN** Publish and Landing hold the later value and base period as the current
   version and the earlier one as a closed version, and raw keeps both
 
+#### Scenario: First load on a new environment
+- **WHEN** `run_abs` runs for the first time, so raw is empty when the update starts
+- **THEN** after the run Publish holds one current version per `series_key` and
+  `time_period` from that run's fetch, and Landing holds the same rows
+
 #### Scenario: A run with no changes
 - **WHEN** a run fetches the same values as the run before
 - **THEN** Publish and Landing write no row and keep every `transformed_timestamp`
