@@ -48,7 +48,7 @@
 
 ## 6. Prd
 
-- [ ] 6.1 Mark the PR ready. After the merge, CI runs `run_abs` in prd; check its counts
+- [x] 6.1 Mark the PR ready. After the merge, CI runs `run_abs` in prd; check its counts
       against dev; then archive
 
 ## 7. Prd fix
@@ -57,5 +57,5 @@
       actions in pipeline sources
 - [x] 7.2 Dev from an empty start (raw, Publish and Landing dropped, with approval): the
       first run gives 343 Publish and 343 Landing rows
-- [ ] 7.3 After the merge CI runs `run_abs` in prd: Publish 343, Landing 343, latest values
+- [x] 7.3 After the merge CI runs `run_abs` in prd: Publish 343, Landing 343, latest values
       103.64 and 104.34, `ingested_timestamp` filled; then archive
