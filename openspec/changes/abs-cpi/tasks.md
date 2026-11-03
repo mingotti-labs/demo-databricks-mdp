@@ -20,7 +20,7 @@
 ## 3. Pipelines and job
 
 - [x] 3.1 `src/layers/bronze/abs/` (Auto Loader raw) and
-      `src/layers/bronze/abs_publish/` (SCD1 Auto CDC by `series_key`, `time_period`)
+      `src/layers/bronze/abs_publish/` (SCD2 snapshot Auto CDC by `series_key`, `time_period`, bronze full pattern)
 - [x] 3.2 `src/layers/silver/landing/abs/` (`silver_landing.abs__observations`, no
       type change)
 - [x] 3.3 Pipelines `bronze--abs--<target>` and `silver--abs--<target>`; job `run_abs`
@@ -34,11 +34,12 @@
 ## 4. Verify in dev
 
 - [x] 4.1 Re-read the table quota; stop and ask if it is above 488
-- [x] 4.2 Draft PR deploys to dev. `run_dev.py abs --param verify=true`: Landing holds 313
+- [ ] 4.2 Draft PR deploys to dev. `run_dev.py abs --param verify=true`: Landing holds 313
       quarterly rows (from 1948-Q3) and the monthly rows (from 2024-04), with the
       latest values matching the ABS
-- [x] 4.3 A second run: raw doubles; Publish and Landing counts are unchanged
-- [x] 4.4 Write the results into design.md
+- [ ] 4.3 A second run: raw doubles; Publish and Landing write no row (counts and every
+      `transformed_timestamp` unchanged)
+- [ ] 4.4 Write the results into design.md
 
 ## 5. Docs
 

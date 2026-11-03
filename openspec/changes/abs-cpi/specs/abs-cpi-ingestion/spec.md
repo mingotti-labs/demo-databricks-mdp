@@ -47,16 +47,21 @@ Loader, so a full refresh replays the volume without calling the ABS.
 - **THEN** `observations_raw` holds the rows of every file in the volume
 
 ### Requirement: Bronze Publish and Silver Landing
-`bronze_abs_publish.observations_scd1` SHALL hold one row per `series_key` and
-`time_period`, with the value from the latest `ingested_timestamp` (SCD1).
-`silver_landing.abs__observations` SHALL land its change feed. Every column,
-`time_period` and `value` included, SHALL stay as it is in Publish.
+`bronze_abs_publish.observations_scd2` SHALL be built by snapshot Auto CDC from the
+rows of the latest fetch, without the fetch time, so a run whose values did not change
+writes no row. `silver_landing.abs__observations` SHALL land its change feed, and only
+changed rows SHALL get a new `transformed_timestamp`. Every column, `time_period` and
+`value` included, SHALL stay as it is in Publish.
 
 #### Scenario: A rebase
 - **WHEN** a later run returns a different value for an earlier quarter, because the
   ABS moved the index to a new base period
-- **THEN** Publish and Landing hold the later value and base period, and raw keeps
-  both
+- **THEN** Publish and Landing hold the later value and base period as the current
+  version and the earlier one as a closed version, and raw keeps both
+
+#### Scenario: A run with no changes
+- **WHEN** a run fetches the same values as the run before
+- **THEN** Publish and Landing write no row and keep every `transformed_timestamp`
 
 ### Requirement: Run job and verification
 Job `run_abs` SHALL run the fetch, the bronze pipeline and the silver pipeline, in that

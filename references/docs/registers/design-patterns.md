@@ -198,7 +198,7 @@ exact fetch time (it cannot read a dataset of its own pipeline). Code:
 Used by: [acnc](data-sources.md#acnc), [ungm](data-sources.md#ungm),
 [iso](data-sources.md#iso), [geonames](data-sources.md#geonames),
 [nsw_spatial](data-sources.md#nsw_spatial), [wikipedia](data-sources.md#wikipedia),
-[portfolio](data-sources.md#portfolio), [sec](data-sources.md#sec) (snapshot from
+[portfolio](data-sources.md#portfolio), [sec](data-sources.md#sec) and [abs](data-sources.md#abs) (snapshot from
 the latest file of an append-only raw table). Evidence: `prd` (acnc), `dev`.
 
 ### bronze_publish_scd1_autocdc_snapshot_python

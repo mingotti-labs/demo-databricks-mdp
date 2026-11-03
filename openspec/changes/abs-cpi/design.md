@@ -65,13 +65,28 @@ is the bundle variable `abs_api_url`.
 
 **D6. CI runs `run_abs` after a deploy.** The API is free, and a run is two calls.
 
+**D7. Bronze Publish is SCD2 by the bronze full pattern, not SCD1 (changed during
+implementation).** The first version copied `fred`'s streaming SCD1, sequenced by the
+fetch time. That suits a source whose files hold only part of the data. The ABS sends
+the whole history every run, so the fetch time changes on every row and SCD1 rewrote
+all 343 rows, and Landing restamped `transformed_timestamp` on all of them, with no
+value changed (seen in the second dev run). The repo's rule is that a step stamps only
+rows it changes, and its pattern for a full-load source is
+`bronze_publish_scd2_autocdc_full_load_python` (SEC's tickers): the snapshot is the
+latest file without the fetch time, Auto CDC versions it with the update's time, and
+Landing reads the change feed. A run with the same values writes nothing; a rebase
+closes the old versions, so the earlier values stay queryable in Publish. Names:
+`bronze_abs_publish.observations_scd2`; Landing keys add `scd_valid_from_timestamp`.
+Rejected: keeping SCD1 and filtering unchanged rows in the pipeline, which re-invents
+what the snapshot flow does.
+
 ## Risks / Trade-offs
 
 - [Serverless cannot reach `data.api.abs.gov.au`, or it is slow to answer] -> Task 1.1
   re-runs P4's two series requests from serverless before any code is written.
 - [The ABS changes the dataflow version, for example to 2.1.0] -> The request fails
   with 404, and the version is bumped in code.
-- [A label changes, for example after a rebase] -> SCD1 takes the latest; raw keeps the
+- [A label changes, for example after a rebase] -> the SCD2 current version takes the latest and the earlier one is closed; raw keeps the
   history.
 - [The quota after this change is about 486 of 500] -> Change 4 should use a temporary
   view or join inside `market_rate_daily` (no new materialized table), or a clean-up
@@ -89,14 +104,4 @@ Rollback: remove the code; drop the three tables per target, with approval.
 
 ## Dev results (2026-11-03)
 
-Two runs of `run_abs` as the service principal (the first by an interrupted command, the
-second with `verify=true`; both SUCCESS, verification passed).
-
-- Raw: 343 rows per file, 686 after two runs. Publish 343, Landing 343, no duplicate key.
-- Landing: `1.10001.10.50.Q` 313 rows, 1948-Q3 to 2026-Q3, latest 103.64;
-  `1.10001.10.50.M` 30 rows, 2024-04 to 2026-09, latest 104.34. These match P4 and P7.
-- Finding: the second run rewrote every Landing row. Each file carries a new
-  `ingested_timestamp`, Publish (SCD1 sequenced by it) updates all 343 rows although no
-  value changed, so Landing's `transformed_timestamp` is stamped on all 343 rows again
-  (one value, later than the second run's fetch). Counts stay equal, which is all task 4.3
-  asks for. `fred` behaves the same on the days its 31-day lookback re-fetches.
+Filled in after the SCD2 correction (D7) is verified.
