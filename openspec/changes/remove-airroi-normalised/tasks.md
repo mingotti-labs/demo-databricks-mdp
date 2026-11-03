@@ -19,5 +19,5 @@
 ## 3. Verify
 
 - [x] 3.1 `uv run pytest`, `openspec validate`, bundle validate for both editions
-- [ ] 3.2 Dev: run `run_airroi` as the SP copy with `verify=true`; the schema
-      `silver_normalised_airroi` stays empty and Landing checks pass
+- [x] 3.2 Skipped by the user's decision: the dev run calls the paid AirROI API, and
+      `bundle validate` plus the unchanged Landing check cover the change
