@@ -1,17 +1,17 @@
 ## 1. Rule
 
-- [ ] 1.1 `src/common/yahoo_market.py`: `FULL_HISTORY_START`, `plan(..., benchmarks)`;
+- [x] 1.1 `src/common/yahoo_market.py`: `FULL_HISTORY_START`, `plan(..., benchmarks)`;
       unit tests: a new benchmark loads from 1970-01-01 as a reload; a new non-benchmark
       loads one year; a benchmark with stored prices is fetched incrementally
-- [ ] 1.2 `src/common/fetch_yahoo.py`: pass the current benchmark symbols (already read
+- [x] 1.2 `src/common/fetch_yahoo.py`: pass the current benchmark symbols (already read
       for the symbol list) to every `plan()` call
-- [ ] 1.3 `verification/bronze_checks/portfolio.yml`: `benchmarks_raw` `reference_rows` 22
-- [ ] 1.4 `uv run python -m pytest tests` passes; `databricks bundle validate`
-- [ ] 1.5 `cicd/affected_units.py` for the branch: expect `yahoo` and `portfolio`
+- [x] 1.3 `verification/bronze_checks/portfolio.yml`: `benchmarks_raw` `reference_rows` 22
+- [x] 1.4 `uv run python -m pytest tests` passes; `databricks bundle validate`
+- [x] 1.5 `cicd/affected_units.py` for the branch: expect `yahoo` and `portfolio`
 
 ## 2. Documentation
 
-- [ ] 2.1 Yahoo source system file and CLAUDE.md "Sources": a new benchmark loads its
+- [x] 2.1 Yahoo source system file and CLAUDE.md "Sources": a new benchmark loads its
       full history, the S&P symbols one year
 - [ ] 2.2 Probe P6 in the probes register (committed with the proposal)
 

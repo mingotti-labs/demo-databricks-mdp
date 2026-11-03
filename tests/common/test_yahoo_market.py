@@ -53,6 +53,14 @@ def test_plan():
     assert plan(state, {"AAPL"}, "KO", TODAY) == (date(2026, 10, 22), False)
 
 
+def test_plan_benchmarks():
+    benchmarks = {"^TRCCRB"}
+    assert plan(None, set(), "^TRCCRB", TODAY, benchmarks) == (date(1970, 1, 1), True)
+    assert plan(None, set(), "KO", TODAY, benchmarks) == (date(2025, 10, 29), True)
+    state = {"first_price_date": "2025-10-29", "last_price_date": "2026-10-23"}
+    assert plan(state, set(), "^TRCCRB", TODAY, benchmarks) == (date(2026, 10, 22), False)
+
+
 def test_has_new_event_only_after_last_stored_day():
     frame = prices(["2026-10-22", "2026-10-23", "2026-10-26"], dividends=[0.51, 0.0, 0.0])
     assert not has_new_event(frame, "2026-10-23")

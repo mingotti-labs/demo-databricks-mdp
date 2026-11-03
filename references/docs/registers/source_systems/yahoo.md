@@ -38,7 +38,8 @@ its first stored day, all events); anything else Yahoo corrects needs the
   `bronze_yahoo.s3_raw` for `prices`, `events`, `calendar`, `options`. Files are
   never overwritten or deleted.
 - Prices are fetched from the last stored day minus one, so a day stored while
-  the market was open is rewritten; a new symbol loads one year.
+  the market was open is rewritten; a new symbol loads one year, a new `portfolio`
+  benchmark all the history Yahoo has (requested from 1970-01-01).
 - `bronze_yahoo.fetch_state` (one row per symbol: first and last stored day,
   last run id, outcome) is written after each batch's files. A repair of the
   same job run skips symbols whose `last_run_id` is that run. Losing it only
