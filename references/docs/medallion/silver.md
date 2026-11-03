@@ -110,7 +110,7 @@ it (a materialized view cannot read its own previous result, which keeping
 timestamps needs). Other sources still on a separate Landing pipeline
 (`silver--landing--{source}--${bundle.target}`), a separate Normalised
 pipeline and a `silver--{source}` chaining job are listed as pending
-refactor in the `pipeline-per-layer` and `silver-normalised` specs (airroi
+refactor in the `pipeline-per-layer` and `silver-normalised` specs (none
 today); a source not yet normalised has just the Landing datasets in its
 silver pipeline.
 

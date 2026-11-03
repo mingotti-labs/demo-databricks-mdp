@@ -71,9 +71,8 @@ richer variant if it exists; fall back only when it doesn't. See
 - **Bronze Publish** (`bronze_airroi_publish`): `market_metrics_all_scd2`,
   `market_summary_scd2` (no SCD1 variant exists for either)
 - **Consumed by Silver Landing**: yes — both → `silver_landing.airroi__*`
-- **Consumed by Silver Normalised**: yes — `silver_normalised_airroi` (spec
-  `src/layers/silver/normalised/specs/airroi.yml`), rebuilt by the `normalised`
-  task of `run_airroi`
+- **Consumed by Silver Normalised**: no — removed 2026-11 to free table slots;
+  backup and recovery in `references/backups/airroi-normalised/`
 
 ### iso
 - **What it is**: ISO 3166-1/3166-2 country and subdivision reference data,
