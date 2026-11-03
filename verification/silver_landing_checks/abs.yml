@@ -1,6 +1,7 @@
 source: abs
-# Bronze Publish is an SCD1 snapshot without the fetch time, so Landing has no ingested_timestamp.
-ingested_timestamp: false
+# Publish is an SCD1 snapshot without the fetch time; Landing sets ingested_timestamp
+# from the change's commit time (land_changes).
+ingested_timestamp: true
 tables:
   - table: observations
     bronze_schema: bronze_abs_publish

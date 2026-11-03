@@ -30,7 +30,8 @@ only exists from 2024-04. A seasonally adjusted monthly series (`TSEST` 20) answ
 - Every run fetches the whole history (the ABS restates it when it rebases the index),
   so raw grows by 343 rows a run. Bronze Publish is SCD1 by `series_key`, `time_period`
   (snapshot of the latest file without its fetch time, so a run with the same values
-  writes nothing and a rebase replaces the values; raw keeps the old ones). Publish and
-  Landing have no `ingested_timestamp`: the fetch time lives in raw.
+  writes nothing and a rebase replaces the values; raw keeps the old ones). Publish has
+  no `ingested_timestamp` (raw keeps the fetch time); Landing sets it from the change's
+  commit time, when Publish last genuinely changed the row.
 - A non-200 status or an empty answer fails the task with the key and status.
 - Probes: P4 (laptop) and P7 (serverless) in `references/docs/registers/probes.md`.

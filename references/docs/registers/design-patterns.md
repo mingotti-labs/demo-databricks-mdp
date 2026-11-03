@@ -206,7 +206,7 @@ The same snapshot flow, keeping only the latest version per key. Used where a
 source also needs a "latest value" table, or where a full load is a latest-value
 series: [abs](data-sources.md#abs) feeds it the latest file of its append-only raw
 table without the fetch time (`src/layers/bronze/abs_publish/abs_scd1.py`), so only
-changed rows are written; Landing then has no `ingested_timestamp`. Reference code in the patterns
+changed rows are written; Landing takes `ingested_timestamp` from the change's commit time. Reference code in the patterns
 bundle, `references/patterns/src/bronze_publish/bronze_publish_scd1_autocdc_snapshot_python.py`
 (table `pattern_bronze_publish.bronze_publish_scd1_autocdc_snapshot_python`).
 Evidence: `prd` (earlier use), `dev` (Neon's `orders_scd1` and `order_items_scd1` were the
@@ -269,7 +269,8 @@ Used by: no source since airroi moved to `silver_landing_change_feed_python`; ca
 A streaming table that reads only the rows changed in its Bronze Publish SCD2
 table (`readChangeFeed`) and applies them by version key with
 `create_auto_cdc_flow`, so `transformed_timestamp` is stamped only on changed
-rows, and sets `ingested_timestamp` to the version's `__START_AT`. Code:
+rows, and sets `ingested_timestamp` to the version's `__START_AT` (for an SCD1 table
+without the column, to the change's commit time). Code:
 `src/layers/silver/landing/{acnc,ungm,iso,geonames,nsw_spatial,airroi,wikipedia,portfolio,sec,yahoo,rba,fred}/`,
 shared helper `land_changes` in `src/common/silver_landing.py`. Used by: acnc,
 ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec, yahoo, rba, fred. Evidence: `prd`

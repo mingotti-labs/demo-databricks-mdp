@@ -116,7 +116,9 @@ the upstream API/system). Corrected definition (openspec
     the versions it inserts and `__END_AT` on the ones it closes. The SCD2
     table has no platform timestamp columns.
   - Silver Landing sets `ingested_timestamp = __START_AT`: the update that
-    created the version (seconds to minutes after the fetch), fixed forever. Aggregating tables (a Silver Normalised
+    created the version (seconds to minutes after the fetch), fixed forever. An
+    SCD1 snapshot of a full load (abs) has no versions: Landing sets it to the
+    change's commit time, when Publish genuinely inserted or changed the row. Aggregating tables (a Silver Normalised
     extracted entity, `value_lineage`) carry the `min()` of their input rows.
 - **`transformed_timestamp`** — when this table's own step inserted, modified or
   closed the row. A row the step did not touch keeps its previous value.

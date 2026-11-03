@@ -657,7 +657,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   table as FRED. `run_abs`'s first task (`src/common/fetch_abs.py`) fetches the whole
   history every run and writes one dated file; Bronze Publish is SCD1 by `series_key`,
   `time_period` (snapshot of the latest file without the fetch time, so only changed
-  rows are written; no `ingested_timestamp` in Publish or Landing). Landing `silver_landing.abs__observations` keeps `time_period` as
+  rows are written; Landing's `ingested_timestamp` is the change's commit time). Landing `silver_landing.abs__observations` keeps `time_period` as
   text (`1948-Q3`, `2024-04`).
 - **Silver Domain investments** (`silver-domain-investments`, dividend portfolio
   story) -- schema `silver_domain_investments`, one serverless pipeline of eight

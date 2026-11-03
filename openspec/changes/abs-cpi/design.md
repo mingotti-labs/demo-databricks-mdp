@@ -76,10 +76,13 @@ only rows it changes. For a full load the fix is a snapshot flow
 fetch time; Auto CDC then writes only changed rows and Landing reads the change feed.
 SCD2 (the bronze full pattern, as acnc and SEC) was tried first and rejected by the user:
 the series is a full-load latest-value table, raw already keeps every earlier fetch, so
-closed versions add little. Consequence: Publish and Landing carry no `ingested_timestamp`
-(it would change every row every run); raw keeps it. This follows the Silver Landing rule in
-`references/docs/medallion/silver.md` (never backfilled; absent when Publish has none), as for
-clickstream's SCD1 Landing. The pattern is
+closed versions add little. Consequence: Publish carries no `ingested_timestamp` (it would change every row every
+run); raw keeps it. Landing still needs one (Silver Normalised requires it, and Silver Domain
+carries the earliest of its inputs'). The other SCD1 sources (fred, rba, yahoo) get it by
+carrying raw's fetch time through a streaming flow, which a snapshot cannot do; only
+clickstream, synthetic, has none. So `land_changes` sets it, for an SCD1 table without the
+column, to the change feed's commit time: when Publish genuinely inserted or changed the
+row, the SCD1 counterpart of `__START_AT`. It changes only when the row changes. The pattern is
 `bronze_publish_scd1_autocdc_snapshot_python`. A removed period is deleted from Publish.
 
 ## Risks / Trade-offs
