@@ -17,9 +17,9 @@
 
 ## 3. Dev
 
-- [ ] 3.1 Draft PR (deploy-dev as the service principal);
+- [x] 3.1 Draft PR (deploy-dev as the service principal);
       `run_dev.py portfolio --param verify=true` passes with 22 `benchmarks_raw` rows
-- [ ] 3.2 Run `run_dev.py yahoo` once: the rule changes nothing for symbols with state
+- [x] 3.2 Run `run_dev.py yahoo` once: the rule changes nothing for symbols with state
       (the 8 and the others are fetched incrementally); the new-benchmark path is proved
       by the unit tests and, in prd, by the first load
 - [ ] 3.3 Mark the PR ready; after merge CI loads the 8 in prd; then run `run_investments`
