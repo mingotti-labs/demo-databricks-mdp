@@ -5,7 +5,7 @@
       loads one year; a benchmark with stored prices is fetched incrementally
 - [x] 1.2 `src/common/fetch_yahoo.py`: pass the current benchmark symbols (already read
       for the symbol list) to every `plan()` call
-- [x] 1.3 `verification/bronze_checks/portfolio.yml`: `benchmarks_raw` `reference_rows` 22
+- [x] 1.3 `verification/bronze_checks/portfolio.yml`: `benchmarks_raw` `reference_rows` 22 and `concept_mapping_raw` 35 to 45 (stale since #136, found by the dev check)
 - [x] 1.4 `uv run python -m pytest tests` passes; `databricks bundle validate`
 - [x] 1.5 `cicd/affected_units.py` for the branch: expect `yahoo` and `portfolio`
 
