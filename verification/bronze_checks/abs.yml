@@ -1,0 +1,11 @@
+source: abs
+raw_schema: bronze_abs
+publish_schema: bronze_abs_publish
+# Append-only raw where every file holds the whole history: the checks compare the
+# latest fetch with the SCD2 current rows.
+tables:
+  - raw: observations_raw
+    compare_latest_file_per: []
+    keys: [series_key, time_period]
+    columns: [series_key, time_period, value, measure, index, adjustment_type, region, frequency, unit, base_period, obs_status, ingested_timestamp, source_file_path]
+    scd2: observations_scd2

@@ -14,6 +14,7 @@ API-based sources:
 - [ungm.md](ungm.md) — UN Global Marketplace UNSPSC classification tree, REST API
 - [sec.md](sec.md) — SEC EDGAR tickers and company facts, REST API, append-only raw files
 - [fred.md](fred.md) — FRED US Treasury yield and Fed policy rate, REST API with a key, incremental append-only raw files
+- [abs.md](abs.md) — ABS Australian CPI (quarterly, monthly), Data API without a key, whole history fetched every run
 - [yahoo.md](yahoo.md) — Yahoo Finance prices, events, calendar and options via `yfinance`, incremental append-only raw files
 - [rba.md](rba.md) — Reserve Bank of Australia exchange rates, cash rate, bond yields and lending rates, CSV files, incremental append-only raw files
 

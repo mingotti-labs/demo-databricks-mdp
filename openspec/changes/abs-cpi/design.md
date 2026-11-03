@@ -65,13 +65,44 @@ is the bundle variable `abs_api_url`.
 
 **D6. CI runs `run_abs` after a deploy.** The API is free, and a run is two calls.
 
+**D7. Bronze Publish is SCD2 by the bronze full pattern, not `fred`'s streaming SCD1
+(changed during implementation).** The first version copied `fred`'s streaming SCD1,
+sequenced by the fetch time. That suits a source whose files hold only part of the data.
+The ABS sends the whole history every run, so the fetch time changes on every row and
+SCD1 rewrote all 343 rows, and Landing restamped `transformed_timestamp` on all of them,
+with no value changed (seen in the second dev run). The repo's rule is that a step stamps
+only rows it changes, and its pattern for a full-load source is
+`bronze_publish_scd2_autocdc_full_load_python` (acnc, SEC's tickers): the snapshot is the
+latest file without the fetch time, Auto CDC versions it with the update's time, and
+Landing reads the change feed. A run with the same values writes nothing; a rebase closes
+the old versions. Names: `bronze_abs_publish.observations_scd2`; Landing keys add
+`scd_valid_from_timestamp`.
+
+The ABS CPI is classed as reference data (a published index that is restated now and
+then, not a stream of transactions), which is where SCD2 fits; for transactional data
+the closed versions would grow without a use. SCD2 also gives Landing a durable
+`ingested_timestamp`: `__START_AT` is a stored column, so it survives a Landing rebuild.
+
+Tried and rejected, with the evidence (dev, 2026-11-03):
+- **SCD1 snapshot of the latest file** (`bronze_publish_scd1_autocdc_snapshot_python`)
+  writes only changes (empty merges on unchanged runs) but cannot carry the fetch time, so
+  Landing had no `ingested_timestamp`, which Silver Normalised and Silver Domain need. The
+  other SCD1 sources get it by carrying raw's fetch time through a streaming flow, which
+  would rewrite every row here. Taking it from the change feed's commit time works day to
+  day, but a Landing full refresh resets every row to the refresh moment, because a new
+  change-feed checkpoint starts from a snapshot of the latest table version.
+- **A `transformed_timestamp` in Publish.** Auto CDC has no stamp-if-changed hook; an
+  excluded column is updated in place on every row (`correct-platform-timestamps`).
+- Not probed: an SCD1 snapshot carrying the first fetch time of the current value, computed
+  from raw. It would need raw's files kept, which they are.
+
 ## Risks / Trade-offs
 
 - [Serverless cannot reach `data.api.abs.gov.au`, or it is slow to answer] -> Task 1.1
   re-runs P4's two series requests from serverless before any code is written.
 - [The ABS changes the dataflow version, for example to 2.1.0] -> The request fails
   with 404, and the version is bumped in code.
-- [A label changes, for example after a rebase] -> SCD1 takes the latest; raw keeps the
+- [A label changes, for example after a rebase] -> the SCD2 current version takes the latest and the earlier one is closed; raw keeps the
   history.
 - [The quota after this change is about 486 of 500] -> Change 4 should use a temporary
   view or join inside `market_rate_daily` (no new materialized table), or a clean-up
@@ -86,3 +117,23 @@ is the bundle variable `abs_api_url`.
 3. Merge. CI runs `run_abs` in prd.
 
 Rollback: remove the code; drop the three tables per target, with approval.
+
+## Dev results (2026-11-03)
+
+Final shape (SCD2, D7), on clean tables, as the service principal.
+
+- Run 1 (`run_abs`, `verify=true`): all tasks SUCCESS, both verification jobs passed. Raw
+  gained 343 rows; Publish `observations_scd2` 343 current rows; Landing
+  `abs__observations` 343 rows, every row current, no duplicate key.
+- Landing: `1.10001.10.50.Q` 313 rows, 1948-Q3 to 2026-Q3, latest 103.64;
+  `1.10001.10.50.M` 30 rows, 2024-04 to 2026-09, latest 104.34. These match P4 and P7.
+  `ingested_timestamp` is filled on all 343 rows and equals `scd_valid_from_timestamp`
+  (`__START_AT`).
+- Run 2 (same data): raw 2,744 -> 3,087 (+343), Publish 343, Landing 343. Publish history:
+  the second MERGE inserted 0 and updated 0 rows. Landing's `ingested_timestamp` (one value)
+  and `transformed_timestamp` (one value) are unchanged, so nothing was rewritten.
+- Along the way (earlier shapes, dropped tables with approval each time): the streaming
+  SCD1 rewrote and restamped all 343 rows on a repeat run; a snapshot SCD1 written over
+  the old streaming table exposed Auto CDC's reserved columns (`__UpsertVersion` ...) and
+  broke Landing; changing a Landing stream's source table needs a new checkpoint (full
+  refresh or a new table).

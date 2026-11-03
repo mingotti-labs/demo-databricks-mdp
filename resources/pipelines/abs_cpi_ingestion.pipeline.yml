@@ -1,0 +1,17 @@
+resources:
+  pipelines:
+    abs_cpi_ingestion:
+      name: bronze--abs--${bundle.target}
+      catalog: ${var.catalog}
+      schema: bronze_abs
+      serverless: true
+      continuous: false
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+        abs_volume_root: /Volumes/${var.catalog}/bronze_abs/s3_raw
+      libraries:
+        - glob:
+            include: ../../src/layers/bronze/abs/**
+        - glob:
+            include: ../../src/layers/bronze/abs_publish/**
