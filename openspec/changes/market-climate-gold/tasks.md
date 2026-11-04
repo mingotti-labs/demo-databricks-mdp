@@ -32,9 +32,9 @@
 
 ## 6. Run and check in dev
 
-- [ ] 6.1 Draft PR deploy-dev; `run_investments verify=true` (polled); results against story probe P1
+- [x] 6.1 Draft PR deploy-dev; `run_investments verify=true` (polled); results against story probe P1
       (record as a probe)
-- [ ] 6.2 Descriptions visible in Unity Catalog for both tables
+- [x] 6.2 Descriptions visible in Unity Catalog for both tables
 
 ## 7. After merge
 

@@ -1,0 +1,21 @@
+== valuation rows, first day, last day
+   256 | 2025-10-28 | 2026-11-03
+== latest valuation day
+   2026-11-03 | 500 | 489 | 8 | 52 | 66.538 | 2723.0 | 1412.0 | 1662.0 | 24.4350 | 47.1092 | 40.0458 | 336.940000
+== signal rows per lens and signal: first, last, rows
+   long_run | climate | 2025-10-28 | 2026-11-03 | 256
+   long_run | fed_in_the_way | 2008-12-16 | 2026-11-03 | 4498
+   long_run | market_going_up | 1970-10-14 | 2026-11-03 | 14133
+   long_run | too_expensive | 2025-10-28 | 2026-11-03 | 256
+   modern | climate | 2025-10-28 | 2026-11-03 | 256
+   modern | fed_in_the_way | 2008-12-16 | 2026-11-03 | 4498
+   modern | market_going_up | 1970-10-14 | 2026-11-03 | 14133
+   modern | too_expensive | 2025-10-28 | 2026-11-03 | 256
+== latest climate rows
+   2026-11-03 | Market climate long run | red | 3 | sell | Market climate long run is red (sell): 3 of 3 answers are yes.
+   2026-11-03 | Market climate modern | red | 3 | sell | Market climate modern is red (sell): 3 of 3 answers are yes.
+== climate lights over the valuation history: lens, light, days
+   long_run | red | 243
+   long_run | yellow | 13
+   modern | red | 243
+   modern | yellow | 13
