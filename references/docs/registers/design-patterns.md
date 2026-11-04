@@ -300,6 +300,19 @@ only. Point in time history (`company_fundamentals`) is a `valid_from_date` and 
 shared SQL snippets in `src/common/investments.py`. Used by: investments
 (`silver_domain_investments`). Evidence: `dev`.
 
+## Gold
+
+### gold_materialized_view_sql
+One serverless pipeline of materialized views that reads `silver_domain_*` tables by qualified name
+and turns them into figures and decisions for a reader: a daily valuation of an index, and a long
+signals table (one row per day, monitor, lens and signal) that every monitoring story adds rows to.
+Thresholds are constants in `src/common/market_climate.py`; the queries are plain strings in
+`src/common/market_climate_sql.py` and `market_climate_signals_sql.py`, so a probe can run the
+exact text. Each view declares its full schema with a description per column (a view must list
+every column to describe any), the types taken from the query. Gold runs inside the silver domain's
+run job, after silver. Code: `src/layers/gold/analytics_gateway/`. Used by: investments
+(`gold_analytics_gateway`). Evidence: `dev`.
+
 ## Operations
 
 ### bronze_silver_pipeline_per_layer

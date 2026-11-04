@@ -202,3 +202,15 @@ Column descriptions on materialized views (2026-11-04, dev, throwaway pipeline).
 | Probe | Question | Result |
 |---|---|---|
 | P1 | Can `@dp.materialized_view(schema=...)` describe only some columns? | No: a partial `schema=` fails ("user-specified schema that is incompatible with the schema inferred from its query"). Listing every column with a `COMMENT` works and the comments reach Unity Catalog. || P2 | Do the new silver columns give the expected values in dev? | Yes (2026-11-04): Apple's FY2025 10-K row has 10 years, CPI 324.8, plain average 76.35 bn and inflation-adjusted 87.55 bn, equal to the story probe's figures; its FY2026 row (filed 2026-11-03) 84.99 / 97.66 bn at CPI 336.94. 444 of the current rows have 10 years. A period ending 2025-10-31 uses CPI 324.8 (September, October has no value). `^GSPC`: 14,332 rows from 1970-01-02 to 2026-11-03, close 7,568.92 above its 200-day average 7,315.89, slope +1.10%. |
+
+## market-climate-gold
+
+The gold queries and tables with real data (2026-11-04, dev). Scripts and results in `references/poc/market-climate-gold/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Does the valuation query give sensible figures? | Yes: 256 days from 2025-10-28; on 2026-11-03 489 of 500 members used (8 without a share count, 52 with fewer than 10 years), market value 66.5 tn, trailing P/E 24.4, plain 10-year 47.1, inflation-adjusted 10-year 40.0. The story probe (2026-11-02, 458 members) had 40.8 and 24.7. |
+| P2 | Do the signals follow the rules? | Yes: no light disagrees with its yes count; the 2022-2023 Fed hike run is 2022-03-17 to 2024-01-26 (last hike 2023-07-27 plus 6 months). Found: the Fed series lags a few days, so the answer uses the latest observation up to 7 days old; climate rows then reach the last valuation day. |
+| P3 | What do the built tables hold? | 256 valuation rows; signals from 1970 (trend), 2008-12 (Fed), 2025-10-28 (valuation, climate). Latest day red (sell) in both lenses, 3 of 3 yes. Over the 256 days both lenses are red on 243 days and yellow on 13: the 10-year ratio stays above 30. |
+| P4 | Are the tags and descriptions in Unity Catalog? | Yes: `design_pattern = gold_materialized_view_sql` on both tables; 16 of 16 and 15 of 15 columns described. |
+

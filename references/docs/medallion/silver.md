@@ -260,6 +260,7 @@ A column name says what the value is, by its ending:
 | `_count` | a number of things | `price_volume_count` |
 | `_ratio` | a quotient of two quantities | `close_adjusted_two_hundred_day_average_slope_ratio`, `price_earnings_ten_year_average_inflation_adjusted_ratio` |
 | `_value` | a measured level that is not money | `consumer_price_index_value`, `rate_value` |
+| `_text` | a sentence for a reader | `reason_text` |
 
 Numbers in names are words (`ten_year`, `two_hundred_day`). A flag starts with `is_` or `has_`. A figure whose meaning is clear from its
 name and table (`net_income`, `capex`) stays plain; one that could be an amount

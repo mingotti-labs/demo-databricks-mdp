@@ -1,0 +1,47 @@
+== rows per lens and signal: first date, last date, rows
+   long_run | climate | 2025-10-28 | 2026-11-03 | 256
+   long_run | fed_in_the_way | 2008-12-16 | 2026-11-03 | 4498
+   long_run | market_going_up | 1970-10-14 | 2026-11-03 | 14133
+   long_run | too_expensive | 2025-10-28 | 2026-11-03 | 256
+   modern | climate | 2025-10-28 | 2026-11-03 | 256
+   modern | fed_in_the_way | 2008-12-16 | 2026-11-03 | 4498
+   modern | market_going_up | 1970-10-14 | 2026-11-03 | 14133
+   modern | too_expensive | 2025-10-28 | 2026-11-03 | 256
+== latest day, every row (lens, signal, yes, band, measured, threshold, yes_count, action)
+   long_run | climate | None | red | None | None | 3 | sell
+   long_run | fed_in_the_way | true | red | 4.000000 | 3.750000 | None | None
+   long_run | market_going_up | true | green | 7568.919922 | 7315.886362 | None | None
+   long_run | too_expensive | true | red | 40.045800 | 22.000000 | None | None
+   modern | climate | None | red | None | None | 3 | sell
+   modern | fed_in_the_way | true | red | 4.000000 | 3.750000 | None | None
+   modern | market_going_up | true | green | 7568.919922 | 7315.886362 | None | None
+   modern | too_expensive | true | red | 40.045800 | 30.000000 | None | None
+== reason texts of the latest day (long run)
+   climate | Market climate long run is red (sell): 3 of 3 answers are yes.
+   fed_in_the_way | The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.
+   market_going_up | The S&P 500 closed at 7,568.92, above its 200-day average of 7,315.89 (the average moved 1.1% over the last 20 days).
+   too_expensive | The S&P 500 price/earnings ratio on 10-year inflation-adjusted earnings is 40.0, above 22 (the line of the long run lens).
+== climate rows whose light does not follow the yes count (must be empty)
+== climate rows whose yes count differs from the answers (must be empty)
+== Fed answers: days in the way per year (long run lens)
+   2008 | 0 | 11
+   2009 | 0 | 252
+   2010 | 0 | 252
+   2011 | 0 | 252
+   2012 | 0 | 250
+   2013 | 0 | 252
+   2014 | 0 | 252
+   2015 | 11 | 252
+   2016 | 126 | 252
+   2017 | 251 | 251
+   2018 | 251 | 251
+   2019 | 117 | 252
+   2020 | 0 | 253
+   2021 | 0 | 252
+   2022 | 200 | 251
+   2023 | 250 | 250
+   2024 | 18 | 252
+   2025 | 0 | 250
+   2026 | 34 | 211
+== Fed: first and last day of the 2022-2023 hike run (is_yes)
+   2022-03-17 | 2024-01-26

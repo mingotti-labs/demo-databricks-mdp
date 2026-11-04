@@ -31,9 +31,31 @@ resources:
               catalog: ${var.catalog}
               workspace_file_path: ${workspace.file_path}
               check_symbol: "{{job.parameters.check_symbol}}"
+        # Gold reads the silver tables, so it runs after silver in this one unit (CI runs units
+        # alphabetically and does not follow data dependencies). NONE_FAILED: it also runs when
+        # the verification is off (excluded), but not after a failed one.
+        - task_key: gold
+          depends_on:
+            - task_key: silver
+            - task_key: verify_silver_domain
+          run_if: NONE_FAILED
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.gold_analytics_gateway.id}
+        - task_key: verify_gold
+          depends_on:
+            - task_key: gold
+            - task_key: verify_enabled
+              outcome: "true"
+          notebook_task:
+            notebook_path: ../../verification/verify_gold_market_climate.py
+            base_parameters:
+              catalog: ${var.catalog}
+              workspace_file_path: ${workspace.file_path}
         - task_key: tag_patterns
           depends_on:
             - task_key: silver
+            - task_key: gold
+          run_if: NONE_FAILED
           notebook_task:
             notebook_path: ../../src/common/tag_design_patterns.py
             base_parameters:
