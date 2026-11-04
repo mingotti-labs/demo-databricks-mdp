@@ -38,4 +38,4 @@
 
 ## 7. After merge
 
-- [ ] 7.1 prd: CI runs `investments`; prd = dev for the latest valuation day and both lights
+- [x] 7.1 prd: CI runs `investments`; prd = dev for the latest valuation day and both lights

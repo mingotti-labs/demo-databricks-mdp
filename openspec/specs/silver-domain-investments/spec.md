@@ -292,7 +292,9 @@ table. A listing Yahoo has no options row for SHALL have these columns empty.
 - **THEN** its listing has `has_options` false
 
 ### Requirement: Run job and verification
-Job `run_investments` SHALL run the pipeline and, when its `verify` parameter
+Job `run_investments` SHALL run the pipeline, then the gold pipeline
+`gold_analytics_gateway` (after the silver verification when it runs, and not after
+a failed one), and, when its `verify` parameter
 is `true`, a verification that fails when: a table's key is not unique; a
 current index member has no `listing` row or its listing has no `company`; a
 symbol in Landing's Yahoo prices, events or options has no `listing`; one
@@ -312,6 +314,11 @@ rate's latest date is more than 7 days old.
 #### Scenario: A missing company
 - **WHEN** a current member's listing has no `company` row
 - **THEN** the verification fails and names the symbol
+
+#### Scenario: Gold after silver
+- **WHEN** `run_investments` runs, with `verify` true or false
+- **THEN** the gold pipeline starts only after the silver pipeline (and the silver
+  verification, when it runs) has succeeded
 
 ### Requirement: Price indicators
 `price_indicator_daily` SHALL have one row per `listing_id` and `price_date` of `price_daily`, with
