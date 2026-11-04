@@ -1,4 +1,4 @@
-# Gold analytics gateway: monitor_signal_daily (openspec market-climate-gold). One long table for every
+# Gold analytics gateway: monitor_daily_signal (openspec market-climate-gold, market-climate-dashboard). One long table for every
 # monitoring story: a row per day, monitor, lens and signal. The market climate writes three yes/no
 # answers and a result per lens. The query is in common/market_climate_signals_sql.py.
 import sys
@@ -8,7 +8,7 @@ from pyspark import pipelines as dp
 sys.path.insert(0, f"{spark.conf.get('workspace_file_path')}/src")
 from common.investments import schema_with_comments  # noqa: E402
 from common.market_climate_signals_sql import monitor_signal_query  # noqa: E402
-from common.market_climate_sql import index_valuation_query  # noqa: E402
+from common.market_climate_sql import index_member_valuation_query, index_valuation_query  # noqa: E402
 
 COMMENTS = {
     "signal_date": "Trading day the signal is as of (point in time).",
@@ -53,7 +53,9 @@ COMMENTS = {
 
 COLUMNS = [
     (f.name, f.dataType.simpleString())
-    for f in spark.sql(monitor_signal_query(f"({index_valuation_query()})")).schema.fields
+    for f in spark.sql(
+        monitor_signal_query(f"({index_valuation_query(f'({index_member_valuation_query()})')})")
+    ).schema.fields
 ]
 
 
@@ -62,5 +64,5 @@ COLUMNS = [
     "yes/no answers (too expensive, Fed in the way, market going up) and the resulting light per lens.",
     schema=schema_with_comments(COLUMNS, COMMENTS),
 )
-def monitor_signal_daily():
+def monitor_daily_signal():
     return spark.sql(monitor_signal_query())

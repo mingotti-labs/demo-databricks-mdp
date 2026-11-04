@@ -696,9 +696,11 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
 - **Gold analytics gateway** (`market-climate-gold`, market climate story) -- schema
   `gold_analytics_gateway`, one serverless pipeline `gold--analytics_gateway--<target>`, run as the
   `gold` task of `run_investments` right after silver (CI runs units alphabetically and does not follow
-  data dependencies, so one unit keeps the order). `index_valuation_daily`: the S&P 500's market value,
+  data dependencies, so one unit keeps the order). `valuation_daily_index`: the S&P 500's market value,
   trailing 12-month and 10-year (plain and inflation-adjusted) earnings and the three price/earnings
-  ratios per day from 2025-10-28, with member counts. `monitor_signal_daily`: long table (day, monitor,
+  ratios per day from 2025-10-28, with member counts, summed from `valuation_daily_index_member` (every
+  current member per day: inputs, `is_used` and why not, share of market value, P/E without it and its
+  effect; `market-climate-dashboard`). `monitor_daily_signal`: long table (day, monitor,
   lens, signal) holding the market climate's three yes/no answers and its result ("Market climate long
   run" and "Market climate modern": red 2-3 yes = sell, yellow 1 = buy and hold, green 0 = strong buy);
   further monitors add rows. Thresholds in `src/common/market_climate.py`, queries in
