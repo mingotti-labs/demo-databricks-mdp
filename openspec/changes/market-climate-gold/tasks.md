@@ -1,10 +1,10 @@
 ## 0. Before
 
-- [ ] 0.1 iac `gold-analytics-gateway-grants` (#79) implemented and applied; grants checked on both catalogs
+- [x] 0.1 iac `gold-analytics-gateway-grants` (#79) implemented and applied; grants checked on both catalogs
 
 ## 1. Thresholds
 
-- [ ] 1.1 `src/common/market_climate.py`: lines, bands, Fed window, flat slope, light and action per yes
+- [x] 1.1 `src/common/market_climate.py`: lines, bands, Fed window, flat slope, light and action per yes
       count; tests in `tests/common/test_market_climate.py`
 
 ## 2. Gold pipeline
