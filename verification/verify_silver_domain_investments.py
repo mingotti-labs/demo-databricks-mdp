@@ -27,6 +27,7 @@ KEYS = {
     "listing": ["listing_id"],
     "index_membership": ["listing_id", "valid_from_timestamp"],
     "price_daily": ["listing_id", "price_date"],
+    "price_indicator_daily": ["listing_id", "price_date"],
     "dividend": ["listing_id", "ex_dividend_date"],
     "company_fundamentals": ["company_id", "valid_from_date"],
     "market_rate_daily": ["rate_code", "observation_date"],
@@ -113,6 +114,39 @@ checks["CPI value changes on a row marked as carried forward"] = f"""
     FROM {DOMAIN}.market_rate_daily
     WHERE rate_code IN ({", ".join(f"'{c}'" for c, *_ in CPI_RATES)}))
   WHERE is_carried_forward AND rate_value != previous_value"""
+checks["^GSPC has no prices before 2000"] = f"""
+  SELECT '^GSPC' WHERE NOT EXISTS (
+    SELECT 1 FROM {DOMAIN}.price_daily WHERE trading_symbol_code = '^GSPC' AND price_date < DATE '2000-01-01')"""
+checks["^GSPC has no 200-day average on its latest day"] = f"""
+  SELECT '^GSPC' FROM (
+    SELECT max_by(close_adjusted_two_hundred_day_average_amount, price_date) AS average
+    FROM {DOMAIN}.price_indicator_daily WHERE trading_symbol_code = '^GSPC')
+  WHERE average IS NULL"""
+checks["Apple's ten-year average differs from a recomputation (plain, inflation-adjusted, year count)"] = f"""
+  WITH r AS (
+    SELECT f.* FROM {DOMAIN}.company_fundamentals f JOIN {DOMAIN}.company c ON c.company_id = f.company_id
+    WHERE c.company_name = 'Apple Inc.' AND f.valid_to_date = DATE '9999-12-31'),
+  y AS (
+    SELECT f.period_end_date, max_by(f.net_income, f.valid_from_date) AS net_income
+    FROM {DOMAIN}.company_fundamentals f JOIN r ON r.company_id = f.company_id
+    WHERE f.form_code LIKE '10-K%' AND f.net_income IS NOT NULL AND f.valid_from_date <= r.valid_from_date
+    GROUP BY f.period_end_date ORDER BY f.period_end_date DESC LIMIT 10),
+  m AS (
+    SELECT date_trunc('MONTH', observation_date) AS month_date, max(rate_value) AS cpi_value
+    FROM {DOMAIN}.market_rate_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted' GROUP BY 1),
+  recomputed AS (
+    SELECT count(*) AS year_count, avg(y.net_income) AS plain_average,
+           avg(y.net_income * now_m.cpi_value / then_m.cpi_value) AS adjusted_average
+    FROM y CROSS JOIN r
+    JOIN m now_m ON now_m.month_date = date_trunc('MONTH', r.period_end_date)
+    JOIN m then_m ON then_m.month_date = date_trunc('MONTH', y.period_end_date))
+  SELECT concat('table ', r.earnings_year_count, ' ', r.earnings_ten_year_average_amount, ' ',
+                r.earnings_ten_year_average_inflation_adjusted_amount, ' recomputed ', x.year_count, ' ',
+                x.plain_average, ' ', x.adjusted_average)
+  FROM r CROSS JOIN recomputed x
+  WHERE r.earnings_year_count != x.year_count
+     OR abs(r.earnings_ten_year_average_amount - x.plain_average) > 1000000
+     OR abs(r.earnings_ten_year_average_inflation_adjusted_amount - x.adjusted_average) > 1000000"""
 if check_symbol:
     checks[f"symbol {check_symbol} has no listing"] = f"""
       SELECT '{check_symbol}' WHERE NOT EXISTS (

@@ -1,0 +1,9 @@
+P1 (2026-11-04, dev, throwaway pipeline poc--market-climate-silver--p1, human identity, schema pattern_bronze)
+1. @dp.materialized_view(schema="amount DECIMAL(10, 2) COMMENT '...'") over a query returning amount and label:
+   FAILED. "Table has a user-specified schema that is incompatible with the schema inferred from its query.
+   Declared: amount. Inferred: amount, label (nullable = false)."  A partial schema= is rejected.
+2. Same view with schema= listing both columns, each with COMMENT: COMPLETED. tables get shows both
+   comments ("first column, described", "second column, described") and the declared types.
+Conclusion: every column must be listed to describe any; DDL is generated from the query's inferred schema.
+Leftovers (dev only, to be dropped with approval): pipeline poc--market-climate-silver--p1 (b4691d12-f9fc-48f0-bfa1-3020478e99e8),
+mdp_dev.pattern_bronze.p1_full and its hidden twin.

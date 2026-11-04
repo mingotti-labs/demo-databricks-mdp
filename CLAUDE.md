@@ -665,7 +665,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   `time_period` (bronze full pattern, snapshot = the latest file). Landing `silver_landing.abs__observations` keeps `time_period` as
   text (`1948-Q3`, `2024-04`).
 - **Silver Domain investments** (`silver-domain-investments`, dividend portfolio
-  story) -- schema `silver_domain_investments`, one serverless pipeline of eight
+  story) -- schema `silver_domain_investments`, one serverless pipeline of nine
   materialized views, one file per table in `src/layers/silver/domain/investments/` reading `silver_landing` only: `company` (SEC central index
   key), `market` (ISO operating markets), `listing` (a trading symbol on a market;
   market from Yahoo's `exchange_code`; the `option_*` columns are the latest Yahoo
@@ -674,11 +674,13 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   per 10-K or 10-Q filing, point in time: `valid_from_date` is the filing date;
   trailing twelve months and balance sheet figures from SEC facts; the share count is the cover-page
   `shares_outstanding_count`, plus `weighted_average_shares_basic_count` for companies with several
-  share classes, whose cover total SEC no longer sends),
-  `market_rate_daily` (six daily rates plus five CPI series on business days, with
+  share classes, whose cover total SEC no longer sends; four more columns hold the rolling
+  10-year average of annual earnings, plain and inflation-adjusted, and the CPI of the period end),
+  `price_indicator_daily` (200-day moving average of the adjusted close and its 20-day slope,
+  `market-climate-silver`), `market_rate_daily` (six daily rates plus five CPI series on business days, with
   `rate_name` and `is_carried_forward`; CPI sits on the dates of the period it measures,
   not its publication date, so it is not for prediction). Column names end in what they
-  are (`_id`, `_key`, `_code`, `_name`, `_date`, `_amount`, `_count`; rule in
+  are (`_id`, `_key`, `_code`, `_name`, `_date`, `_amount`, `_count`, `_ratio`, `_value`; rule in
   `references/docs/medallion/silver.md`). Ids are hashes:
   `company_id = sha2('sec:' + central_index_key)`, `listing_id = sha2(market_code:
   symbol)`; surrogate keys belong in gold. Join: `price_daily.listing_id =
