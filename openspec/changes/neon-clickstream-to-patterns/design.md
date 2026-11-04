@@ -73,6 +73,18 @@ confirms both behaviours.
 `databricks bundle validate` run in `references/patterns/`. Validate only: CI never
 deploys the patterns bundle.
 
+## Probe results (2026-11-04, dev, as the human)
+
+- **P1** (deploy the patterns bundle from the branch and run both patterns): neon seed wrote
+  200/50/500/1,240 rows, the Lakeflow Connect pipeline ran as the human through `neon_dev`,
+  `verify--pattern--lakeflow--query--postgresql` passed (counts equal Neon's). The generator wrote
+  batch 3 (new field), the Auto Loader pipeline completed, `verify--pattern--autoloader` passed
+  (800 rows, 600 with `device_type`). The pattern pipelines used 9 slots; quota went 483 to 492.
+- **P2** (`bundle destroy`): 19 resources deleted. The 4 neon pattern tables went with their
+  pipeline, but their hidden twins stayed (4 orphans); the Auto Loader table and its twin stayed.
+  Both were dropped with approval (`references/poc/table-cleanup/drop_p2.txt`), so the README's
+  remove steps must include dropping the twins `find_orphans.py` lists.
+
 ## Risks / Trade-offs
 
 - [The Lakeflow Connect pattern needs a live Neon branch] -> the README says so; if Neon's

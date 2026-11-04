@@ -33,8 +33,9 @@ databricks bundle run pattern_verify_lakeflow_query_postgresql --profile <PROFIL
 ```
 
 Remove: `databricks bundle destroy -t dev --profile <PROFILE>` deletes the pipeline, and
-Lakeflow Connect drops its tables with it. Then run `references/poc/table-cleanup/find_orphans.py`
-and drop any `ORPHAN` it lists.
+Lakeflow Connect drops its tables with it, but not their hidden `__materialization_mat_*`
+twins. Run `references/poc/table-cleanup/find_orphans.py --profile <PROFILE>` and drop the
+`ORPHAN` twins it lists (`drop_tables.py` in the same folder).
 
 ## Auto Loader, `addNewColumns` (`bronze_autoloader_add_new_columns_python`)
 

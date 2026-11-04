@@ -161,8 +161,8 @@ ever needed, add a sibling folder via Auto Loader's own
 ## Bundle resources
 
 - **Resource key** (the YAML key under `resources.jobs`/`resources.pipelines`):
-  `<what>_<detail>`, snake_case (e.g. `seed_neon_ecommerce`,
-  `neon_ecommerce_ingestion`). This is DAB's actual resource identity —
+  `<what>_<detail>`, snake_case (e.g. `pattern_seed_neon`,
+  `pattern_bronze_lakeflow_query_postgresql`). This is DAB's actual resource identity —
   **never rename it on an existing resource** once it's been deployed and has
   real data: DAB treats a changed key as "delete the old, create the new,"
   and deleting a Lakeflow Declarative Pipeline drops its managed tables by
@@ -189,19 +189,17 @@ ever needed, add a sibling folder via Auto Loader's own
   level and never name the dataset (`bronze--acnc--ingestion--dev`, not
   `bronze--acnc--charity-register-ingestion--dev`). Double-dash (`--`)
   between every segment, including before `${bundle.target}` — e.g.
-  `seed--neon--ecommerce--dev`, `verify--bronze--clickstream--tst`,
-  `bronze--neon--lakeflow--prd`. Unit jobs (`run_<unit>`, resource key
+  `seed--pattern--neon--dev`, `verify--bronze--acnc--tst`,
+  `bronze--acnc--prd`. Unit jobs (`run_<unit>`, resource key
   prefix `run_`) are named `run--<unit>--${bundle.target}`; their optional
   `ci_auto_run: "false"` tag excludes them from CI runs. A source on one
   pipeline per layer (acnc so far) has `bronze--<source>--${bundle.target}`
   and `silver--<source>--${bundle.target}`, with no pattern segment.
-  Reference variants outside a source's official flow use the source system
-  `pattern` (`bronze--pattern--autoloader--python--rescue--<target>`):
-  clickstream's seven non-canonical Auto Loader pipelines, defined in the
-  separate patterns bundle at `references/patterns/`. neon's bronze
-  layer keeps two pipelines, as an exception: its ingestion is a managed
-  Lakeflow Connect pipeline, which cannot hold the SCD code. The
-  `pipeline-per-layer` spec lists every source still pending refactor.
+  Reference patterns outside any source's flow use the source system
+  `pattern` (`bronze--pattern--autoloader--python--rescue--<target>`,
+  `bronze--pattern--lakeflow--query--postgresql--<target>`): all of them live in
+  the separate patterns bundle at `references/patterns/`. Seed and verify jobs there are
+  `seed--pattern--<name>--<target>` and `verify--pattern--<name>--<target>`.
   Verification jobs are named by layer: `verify--<layer>--<source>--${bundle.target}`
   (e.g. `verify--bronze--acnc--dev`), or `verify--<layer>--<check>--${bundle.target}`
   for a check shared by sources, which takes the source as a parameter
