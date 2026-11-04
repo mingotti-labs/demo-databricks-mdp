@@ -34,6 +34,7 @@ sec:
 investments:
   schemas:
     silver_domain_investments: silver_domain_materialized_view_sql
+    gold_analytics_gateway: gold_materialized_view_sql
 yahoo:
   schemas:
     bronze_yahoo: bronze_volume_append_autoloader_python

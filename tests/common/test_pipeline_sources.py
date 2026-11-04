@@ -9,7 +9,7 @@ import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PIPELINE_DIRS = ["bronze", "silver/landing", "silver/domain"]
+PIPELINE_DIRS = ["bronze", "silver/landing", "silver/domain", "gold"]
 ACTIONS = {"first", "collect", "toPandas"}
 
 
