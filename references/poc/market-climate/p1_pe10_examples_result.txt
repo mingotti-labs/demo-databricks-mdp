@@ -1,0 +1,37 @@
+CPI today: 336.940000 (2026-10)
+Apple: year | earnings bn | CPI | factor | today's money bn
+  2016 | 45.69 | 241.428000 | 1.396 | 63.76
+  2017 | 48.35 | 246.819000 | 1.365 | 66.01
+  2018 | 59.53 | 252.439000 | 1.335 | 79.46
+  2019 | 55.26 | 256.759000 | 1.312 | 72.51
+  2020 | 57.41 | 260.280000 | 1.295 | 74.32
+  2021 | 94.68 | 274.310000 | 1.228 | 116.3
+  2022 | 99.8 | 296.808000 | 1.135 | 113.3
+  2023 | 97.0 | 307.789000 | 1.095 | 106.18
+  2024 | 93.74 | 315.301000 | 1.069 | 100.17
+  2025 | 112.01 | 324.800000 | 1.037 | 116.2
+Apple on 2026-11-02: close 338.320007, shares 14,594,180,000, market value 4,937.5 bn; 10-year average in today's money 90.82 bn; P/E (10-year) 54.4; trailing P/E 38.3
+Index today: 458 members used, fewer than 10 years 45; market value 62.72 tn, trailing earnings 2,537 bn, 10-year average real earnings 1,536 bn; trailing P/E 24.7, P/E (10-year) 40.8
+Members excluded: no market value 41, no 10-K earnings 3 (of 500)
+Top 10 by market value: name | symbol | mv bn | avg real earnings bn | years | P/E10
+  Apple Inc. | AAPL | 4938.0 | 90.8 | 10 | 54.4
+  Nvidia | NVDA | 4870.0 | 27.2 | 10 | 179.0
+  Microsoft | MSFT | 3766.0 | 73.5 | 10 | 51.2
+  Alphabet Inc. (Class C) | GOOGL | 3430.0 | 66.8 | 10 | 51.3
+  Amazon | AMZN | 2656.0 | 27.8 | 10 | 95.4
+  Tesla, Inc. | TSLA | 1596.0 | 4.4 | 10 | 364.6
+  Broadcom | AVGO | 1538.0 | 11.3 | 8 | 135.6
+  Lilly (Eli) | LLY | 1327.0 | 7.9 | 10 | 167.7
+  Walmart | WMT | 1013.0 | 16.8 | 10 | 60.3
+  Micron Technology | MU | 943.0 | 14.3 | 10 | 66.0
+Companies with several listings: name | symbols | SEC shares | concept
+  News Corp (Class B) | NWS,NWSA | none | None
+  Fox Corporation (Class B) | FOX,FOXA | none | None
+  Alphabet Inc. (Class C) | GOOG,GOOGL | 12,294,000,000 | CommonStockSharesOutstanding
+History: date | members | fewer than 10 years | average years | trailing P/E | P/E10
+  2019-12-31 | 0 | 0 | none | none | none
+  2020-03-23 | 0 | 0 | none | none | none
+  2021-12-31 | 0 | 0 | none | none | none
+  2022-10-12 | 0 | 0 | none | none | none
+  2023-12-29 | 0 | 0 | none | none | none
+  2024-12-31 | 0 | 0 | none | none | none

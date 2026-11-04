@@ -1,0 +1,14 @@
+== price history per member (min first date, members starting before 2020, max first date, members)
+   ['2025-10-28', '0', '2026-10-01', '503']
+== AAPL and ^GSPC-like benchmarks first price dates
+   ['AAPL', '2025-10-28', '255']
+   ['MSFT', '2025-10-28', '255']
+   ['SPY', '2025-10-28', '255']
+== members without market value: reason
+   ['has shares', '460', '["BAX","CEG","CIEN","CNC","DE","DUK","FTV","GIS","IR","L","LII","MCD"]']
+   ['no shares on latest filing', '42', '["DASH","ERIE","RDDT","SPG","UHS","HSY","MA","CME","HOOD","NKE","STZ","UPS"]']
+   ['no fundamentals row', '1', '["VYLR"]']
+== members with shares on an older filing but not the latest
+   ['24']
+== 10-K years available per member (min years, median years, max years, earliest year end, members with a year end by 2016)
+   ['1', '16.0', '17', '2009-09-25', '444']
