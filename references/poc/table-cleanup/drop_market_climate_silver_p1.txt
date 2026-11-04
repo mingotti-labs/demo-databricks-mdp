@@ -1,0 +1,2 @@
+dropped mdp_dev.pattern_bronze.p1_full
+dropped mdp_dev.pattern_bronze.__materialization_mat_b4691d12_f9fc_48f0_bfa1_3020478e99e8_p1_full_1

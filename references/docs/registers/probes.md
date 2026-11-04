@@ -194,3 +194,11 @@ neon and clickstream moved to the patterns bundle (2026-11-04). Scripts and logs
 | P3 | Why do share-class companies have no share count? | SEC sent no share facts for the latest filings of MA, NKE, UPS, FOXA, HSY; their last cover totals are from 2010 (MA, UPS), 2015 (NKE), 2019 (FOXA). HSY's `CommonStockSharesOutstanding` is one class only. Company facts leave out per-class values. |
 | P4 | Does SEC report weighted average basic shares for them? | Yes, current to 2026: MA 883 m, NKE 1.48 bn, UPS 850 m, FOXA 421 m, GOOGL 12.17 bn, AAPL 14.66 bn; not HSY (stops 2015). |
 | P5 | After `shares-outstanding-all-classes`, how many index members still have no share count? | 8 of 500 (dev, 2026-11-04; was 42): ARES, BRK.B, ERIE, HSY, STZ, TSN, V and VYLR (no SEC data). 459 have a cover count, 485 a weighted average, 492 either. MA 875 m, NKE 1.48 bn, UPS 851 m, FOXA 421 m. GOOGL's two counts (12.29 bn cover, 12.26 bn average) agree. |
+
+## market-climate-silver
+
+Column descriptions on materialized views (2026-11-04, dev, throwaway pipeline). Script and result in `references/poc/market-climate-silver/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Can `@dp.materialized_view(schema=...)` describe only some columns? | No: a partial `schema=` fails ("user-specified schema that is incompatible with the schema inferred from its query"). Listing every column with a `COMMENT` works and the comments reach Unity Catalog. || P2 | Do the new silver columns give the expected values in dev? | Yes (2026-11-04): Apple's FY2025 10-K row has 10 years, CPI 324.8, plain average 76.35 bn and inflation-adjusted 87.55 bn, equal to the story probe's figures; its FY2026 row (filed 2026-11-03) 84.99 / 97.66 bn at CPI 336.94. 444 of the current rows have 10 years. A period ending 2025-10-31 uses CPI 324.8 (September, October has no value). `^GSPC`: 14,332 rows from 1970-01-02 to 2026-11-03, close 7,568.92 above its 200-day average 7,315.89, slope +1.10%. |

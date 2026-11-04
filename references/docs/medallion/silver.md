@@ -258,8 +258,10 @@ A column name says what the value is, by its ending:
 | `_date`, `_timestamp` | a date, a point in time | `price_date`, `valid_from_timestamp` |
 | `_amount` | money | `dividend_amount` |
 | `_count` | a number of things | `price_volume_count` |
+| `_ratio` | a quotient of two quantities | `close_adjusted_two_hundred_day_average_slope_ratio`, `price_earnings_ten_year_average_inflation_adjusted_ratio` |
+| `_value` | a measured level that is not money | `consumer_price_index_value`, `rate_value` |
 
-A flag starts with `is_` or `has_`. A figure whose meaning is clear from its
+Numbers in names are words (`ten_year`, `two_hundred_day`). A flag starts with `is_` or `has_`. A figure whose meaning is clear from its
 name and table (`net_income`, `capex`) stays plain; one that could be an amount
 or a count carries the ending. A name carries a currency only when it
 differs from the table's `currency_code` (`dividend_amount_in_australian_dollars`

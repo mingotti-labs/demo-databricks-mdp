@@ -2,6 +2,8 @@ import csv
 import hashlib
 from pathlib import Path
 
+import pytest
+
 from common.investments import (
     CPI_RATES,
     FIGURES,
@@ -11,6 +13,9 @@ from common.investments import (
     entity_id_sql,
     figure_columns_sql,
     figure_names,
+    schema_with_comments,
+    COMPANY_FUNDAMENTALS_COMMENTS,
+    US_CPI_SERIES_ID,
     market_code_sql,
 )
 
@@ -77,3 +82,18 @@ def test_figure_columns_sql_has_one_column_per_figure():
     for figure in figure_names():
         assert f"AS {figure}" in sql
     assert "CAST(ROUND(value) AS BIGINT)" in sql
+
+
+def test_schema_with_comments_describes_only_the_named_columns_and_escapes_quotes():
+    ddl = schema_with_comments([("a", "decimal(10,2)"), ("b", "string")], {"a": "the company's amount"})
+    assert ddl == "`a` decimal(10,2) COMMENT 'the company" + chr(92) + "'s amount', `b` string"
+
+
+def test_schema_with_comments_rejects_a_description_for_a_missing_column():
+    with pytest.raises(ValueError):
+        schema_with_comments([("a", "string")], {"gone": "x"})
+
+
+def test_us_cpi_series_is_one_of_the_cpi_series():
+    assert US_CPI_SERIES_ID in [series for _, _, _, series, _ in CPI_RATES]
+    assert COMPANY_FUNDAMENTALS_COMMENTS["earnings_ten_year_average_amount"]

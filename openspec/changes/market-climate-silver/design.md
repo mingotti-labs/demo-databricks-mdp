@@ -40,11 +40,15 @@ fixed here. Columns: `listing_id`, `trading_symbol_code`, `price_date`, `price_c
 `close_adjusted_day_count` (rows in the window, up to 200), `currency_code`, `ingested_timestamp`.
 
 ### D4. Column descriptions in the view definition
-`@dp.materialized_view(schema=...)` accepts Spark DDL with `COMMENT` per column, so descriptions are
-written with the table, not by a separate ALTER (which a refresh could overwrite). Probe P1 (this
-change, first task): whether `schema=` may list only the new columns or must list all of them. If all,
-the DDL is generated from one column list in `src/common/investments.py` (types and descriptions in one
-place), so `company_fundamentals` does not carry a hand-written 40-column string.
+`@dp.materialized_view(schema=...)` takes Spark DDL with `COMMENT` per column, so descriptions are written
+with the table, not by a separate ALTER (which a refresh could overwrite). Probe P1 (2026-11-04, dev,
+`references/poc/market-climate-silver/`): a `schema=` listing only some columns is rejected ("incompatible
+with the schema inferred from its query"); listing every column works and the comments reach Unity Catalog.
+So `company_fundamentals` takes its DDL from the query's inferred schema (`spark.sql(FILINGS).schema`, an
+analysis of Landing tables only, no data read) with descriptions merged in from one dictionary in
+`src/common/investments.py`; columns without an entry keep no description. `price_indicator_daily` reads
+`price_daily`, a dataset of the same pipeline that does not exist yet while the graph is built, so its
+(short) schema is written out.
 
 ### D5. Naming endings
 `_ratio` for a quotient, `_value` for a measured level that is not money (CPI points; `rate_value`
@@ -56,7 +60,9 @@ already uses it). Numbers in names are words (`ten_year`, `two_hundred_day`).
   70 filings x 10 years; small.
 - [A company's first years have fewer than 10 annual earnings] -> `earnings_year_count` shows it; gold
   counts such members.
-- [Partial `schema=` may not be allowed] -> P1 decides; D4 has the fallback.
+- [A declared schema must match the query] -> the DDL is generated from the inferred schema, so a new
+  column cannot be forgotten; a column renamed in the query without its description entry keeps no comment
+  (a test lists the described columns that no longer exist).
 
 ## Migration Plan
 

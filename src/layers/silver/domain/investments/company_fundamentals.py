@@ -12,12 +12,15 @@ from pyspark import pipelines as dp
 
 sys.path.insert(0, f"{spark.conf.get('workspace_file_path')}/src")
 from common.investments import (  # noqa: E402
+    COMPANY_FUNDAMENTALS_COMMENTS,
     FAR_FUTURE_DATE,
     IDENTIFIER_SOURCE,
+    US_CPI_SERIES_ID,
     entity_id_sql,
     figure_columns_sql,
     figure_names,
     figure_values_sql,
+    schema_with_comments,
 )
 
 LANDING = "silver_landing"
@@ -145,39 +148,90 @@ WITH figures AS (
     SELECT *, row_number() OVER (PARTITION BY central_index_key, filed ORDER BY accn DESC) AS pick
     FROM relabelled
   ) WHERE pick = 1
+), base AS (
+  SELECT {entity_id_sql(f"'{IDENTIFIER_SOURCE}'", "r.central_index_key")} AS company_id,
+         r.central_index_key,
+         r.filed AS valid_from_date,
+         coalesce(
+           date_sub(lead(r.filed) OVER (PARTITION BY r.central_index_key ORDER BY r.filed), 1),
+           DATE '{FAR_FUTURE_DATE}'
+         ) AS valid_to_date,
+         r.form AS form_code,
+         r.accn AS accession_number,
+         r.period_end AS period_end_date,
+         'USD' AS currency_code,
+         {FIGURE_SELECT},
+         coalesce(w.total_liabilities, w.liabilities_and_equity - w.total_equity) AS total_liabilities,
+         w.operating_cash_flow - w.capex AS free_cash_flow,
+         CASE WHEN w.long_term_debt IS NULL AND w.short_term_debt IS NULL THEN NULL
+              ELSE coalesce(w.long_term_debt, 0) + coalesce(w.short_term_debt, 0) END AS total_debt,
+         w.operating_income + w.depreciation_and_amortisation_amount
+           AS earnings_before_interest_tax_depreciation_amortisation,
+         CASE WHEN w.total_liabilities IS NULL
+               AND w.liabilities_and_equity IS NOT NULL AND w.total_equity IS NOT NULL
+              THEN map_concat(w.concept_used, map('total_liabilities', 'derived'))
+              ELSE w.concept_used END AS concept_used,
+         r.ingested_timestamp
+  FROM one_per_day r
+  JOIN wide w ON w.cik = r.cik AND w.accn = r.accn
+), annual_filings AS (
+  SELECT company_id, valid_from_date AS filed_date, period_end_date, net_income
+  FROM base WHERE form_code LIKE '10-K%' AND net_income IS NOT NULL
+), known_years AS (
+  SELECT b.company_id, b.valid_from_date, a.period_end_date, a.net_income,
+         row_number() OVER (
+           PARTITION BY b.company_id, b.valid_from_date, a.period_end_date ORDER BY a.filed_date DESC
+         ) AS version_rank
+  FROM base b JOIN annual_filings a ON a.company_id = b.company_id AND a.filed_date <= b.valid_from_date
+), last_years AS (
+  SELECT company_id, valid_from_date, period_end_date, net_income FROM (
+    SELECT *, row_number() OVER (
+             PARTITION BY company_id, valid_from_date ORDER BY period_end_date DESC
+           ) AS year_rank
+    FROM known_years WHERE version_rank = 1
+  ) WHERE year_rank <= 10
+), cpi_months AS (
+  SELECT observation_date AS month_date, CAST(value AS DECIMAL(18, 6)) AS cpi_value
+  FROM {LANDING}.fred__observations
+  WHERE series_id = '{US_CPI_SERIES_ID}' AND try_cast(value AS DECIMAL(18, 6)) IS NOT NULL
+), cpi_at AS (
+  SELECT period_end_date, cpi_value FROM (
+    SELECT d.period_end_date, c.cpi_value,
+           row_number() OVER (PARTITION BY d.period_end_date ORDER BY c.month_date DESC) AS pick
+    FROM (SELECT DISTINCT period_end_date FROM base) d
+    JOIN cpi_months c ON c.month_date <= d.period_end_date
+  ) WHERE pick = 1
+), ten_year AS (
+  SELECT y.company_id, y.valid_from_date,
+         count(*) AS earnings_year_count,
+         CAST(avg(y.net_income) AS DECIMAL(28, 6)) AS earnings_ten_year_average_amount,
+         CAST(avg(y.net_income * current_cpi.cpi_value / year_cpi.cpi_value) AS DECIMAL(28, 6))
+           AS earnings_ten_year_average_inflation_adjusted_amount
+  FROM last_years y
+  JOIN base b ON b.company_id = y.company_id AND b.valid_from_date = y.valid_from_date
+  LEFT JOIN cpi_at current_cpi ON current_cpi.period_end_date = b.period_end_date
+  LEFT JOIN cpi_at year_cpi ON year_cpi.period_end_date = y.period_end_date
+  GROUP BY y.company_id, y.valid_from_date
 )
-SELECT {entity_id_sql(f"'{IDENTIFIER_SOURCE}'", "r.central_index_key")} AS company_id,
-       r.central_index_key,
-       r.filed AS valid_from_date,
-       coalesce(
-         date_sub(lead(r.filed) OVER (PARTITION BY r.central_index_key ORDER BY r.filed), 1),
-         DATE '{FAR_FUTURE_DATE}'
-       ) AS valid_to_date,
-       r.form AS form_code,
-       r.accn AS accession_number,
-       r.period_end AS period_end_date,
-       'USD' AS currency_code,
-       {FIGURE_SELECT},
-       coalesce(w.total_liabilities, w.liabilities_and_equity - w.total_equity) AS total_liabilities,
-       w.operating_cash_flow - w.capex AS free_cash_flow,
-       CASE WHEN w.long_term_debt IS NULL AND w.short_term_debt IS NULL THEN NULL
-            ELSE coalesce(w.long_term_debt, 0) + coalesce(w.short_term_debt, 0) END AS total_debt,
-       w.operating_income + w.depreciation_and_amortisation_amount
-         AS earnings_before_interest_tax_depreciation_amortisation,
-       CASE WHEN w.total_liabilities IS NULL
-             AND w.liabilities_and_equity IS NOT NULL AND w.total_equity IS NOT NULL
-            THEN map_concat(w.concept_used, map('total_liabilities', 'derived'))
-            ELSE w.concept_used END AS concept_used,
-       r.ingested_timestamp
-FROM one_per_day r
-JOIN wide w ON w.cik = r.cik AND w.accn = r.accn
+SELECT b.*,
+       cpi.cpi_value AS consumer_price_index_value,
+       t.earnings_year_count,
+       t.earnings_ten_year_average_amount,
+       t.earnings_ten_year_average_inflation_adjusted_amount
+FROM base b
+LEFT JOIN cpi_at cpi ON cpi.period_end_date = b.period_end_date
+LEFT JOIN ten_year t ON t.company_id = b.company_id AND t.valid_from_date = b.valid_from_date
 """
+
+
+COLUMNS = [(field.name, field.dataType.simpleString()) for field in spark.sql(FILINGS).schema.fields]
 
 
 @dp.materialized_view(
     comment="Company fundamentals as reported on each 10-K or 10-Q filing date. Income and cash "
     "flow figures are trailing twelve months; valid_from_date and valid_to_date give the range "
-    "the row was the latest known."
+    "the row was the latest known. The 10-year earnings averages roll one fiscal year per 10-K.",
+    schema=schema_with_comments(COLUMNS, COMPANY_FUNDAMENTALS_COMMENTS),
 )
 def company_fundamentals():
     return spark.sql(FILINGS)
