@@ -17,13 +17,13 @@
 
 ## 3. Run and check in dev
 
-- [ ] 3.1 Draft PR deploy-dev; `run_portfolio`, `run_sec`, `run_investments verify=true` in that order
+- [x] 3.1 Draft PR deploy-dev; `run_portfolio`, `run_sec`, `run_investments verify=true` in that order
       (`cicd/run_dev.py`)
-- [ ] 3.2 Re-run P2's share query: members with neither count, before 42 (record the number)
+- [x] 3.2 Re-run P2's share query: members with neither count, before 42, now 8 (probe P5)
 
 ## 4. Docs
 
-- [ ] 4.1 CLAUDE.md "Silver Domain investments" and the SEC entry; `data-sources.md` if it lists figures
+- [x] 4.1 CLAUDE.md "Silver Domain investments" and the SEC entry; `data-sources.md` if it lists figures
 
 ## 5. After merge
 
