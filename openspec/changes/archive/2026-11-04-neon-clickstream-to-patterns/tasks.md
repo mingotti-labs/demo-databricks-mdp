@@ -46,4 +46,4 @@
 ## 5. Verify
 
 - [x] 5.1 `uv run pytest`, `openspec validate --strict`, bundle validate (both editions and patterns)
-- [ ] 5.2 Draft PR deploy-dev succeeds; quota API re-read after the drops (counted 465 on 2026-11-04; the API lagged at 492)
+- [x] 5.2 Draft PR deploy-dev succeeds; quota API re-read after the drops (466 on 2026-11-04 after the API caught up; prd deploy succeeded)
