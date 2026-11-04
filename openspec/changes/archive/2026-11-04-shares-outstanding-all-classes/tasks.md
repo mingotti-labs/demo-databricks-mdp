@@ -27,4 +27,4 @@
 
 ## 5. After merge
 
-- [ ] 5.1 prd: CI runs `investments`, `portfolio`; then `run_sec`, `run_investments` by hand; prd = dev counts
+- [x] 5.1 prd: CI runs `investments`, `portfolio`; then `run_sec`, `run_investments` by hand; prd = dev counts
