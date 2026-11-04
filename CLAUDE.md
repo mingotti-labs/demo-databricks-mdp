@@ -672,7 +672,9 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   options activity), `index_membership` (current versions end 9999-12-31), `price_daily`,
   `dividend` (A$ amount, pay date, `is_special`), `company_fundamentals` (a row
   per 10-K or 10-Q filing, point in time: `valid_from_date` is the filing date;
-  trailing twelve months and balance sheet figures from SEC facts),
+  trailing twelve months and balance sheet figures from SEC facts; the share count is the cover-page
+  `shares_outstanding_count`, plus `weighted_average_shares_basic_count` for companies with several
+  share classes, whose cover total SEC no longer sends),
   `market_rate_daily` (six daily rates plus five CPI series on business days, with
   `rate_name` and `is_carried_forward`; CPI sits on the dates of the period it measures,
   not its publication date, so it is not for prediction). Column names end in what they

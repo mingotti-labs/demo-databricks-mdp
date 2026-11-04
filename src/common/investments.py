@@ -13,7 +13,9 @@ SPECIAL_DIVIDEND_LOOKBACK = 4
 
 # (figure, kind, unit). `instant` figures are balance sheet values dated at the
 # filing's period end; `duration` figures are trailing twelve months to it;
-# `cover` is the cover-page share count, taken from the filing whatever its date.
+# `cover` is the cover-page share count, taken from the filing whatever its date;
+# `period` is the filing's own value for its shortest period ending at the period end
+# (the quarter on a 10-Q, the year on a 10-K), never a sum of periods.
 FIGURES = [
     ("net_income", "duration", "USD"),
     ("operating_cash_flow", "duration", "USD"),
@@ -33,6 +35,7 @@ FIGURES = [
     ("total_equity", "instant", "USD"),
     ("preferred_stock", "instant", "USD"),
     ("shares_outstanding_count", "cover", "shares"),
+    ("weighted_average_shares_basic_count", "period", "shares"),
 ]
 
 # Yahoo exchange code to ISO 10383 operating market identifier code (probe P2). CMX and NYM
@@ -179,6 +182,7 @@ def figure_columns_sql() -> str:
     """One column per figure from rows (figure, value): the value when the figure matches."""
     columns = []
     for figure, _, _ in FIGURES:
-        value = "CAST(ROUND(value) AS BIGINT)" if figure == "shares_outstanding_count" else "value"
+        counted = figure in ("shares_outstanding_count", "weighted_average_shares_basic_count")
+        value = "CAST(ROUND(value) AS BIGINT)" if counted else "value"
         columns.append(f"max(CASE WHEN figure = '{figure}' THEN {value} END) AS {figure}")
     return ",\n  ".join(columns)

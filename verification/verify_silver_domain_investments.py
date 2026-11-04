@@ -19,6 +19,7 @@ from common.investments import CPI_RATES, RATES, market_code_sql  # noqa: E402
 
 DOMAIN = f"{catalog}.silver_domain_investments"
 LANDING = f"{catalog}.silver_landing"
+MIN_SHARE_COUNT_COVERAGE = 0.97
 MIN_NET_INCOME_COVERAGE = 0.95
 KEYS = {
     "company": ["company_id"],
@@ -123,7 +124,8 @@ failures = [f"{name}: {found}" for name, sql in checks.items() if (found := offe
 
 coverage = spark.sql(
     f"""
-    SELECT count(*) AS companies, count(f.net_income) AS with_net_income
+    SELECT count(*) AS companies, count(f.net_income) AS with_net_income,
+           count_if(coalesce(f.shares_outstanding_count, f.weighted_average_shares_basic_count) IS NOT NULL) AS with_share_count
     FROM (SELECT DISTINCT company_id FROM ({CURRENT_MEMBERS})) m
     LEFT JOIN {DOMAIN}.company_fundamentals f
       ON f.company_id = m.company_id AND f.valid_to_date = DATE '9999-12-31'
@@ -135,7 +137,13 @@ if coverage.with_net_income < MIN_NET_INCOME_COVERAGE * coverage.companies:
         f"{coverage.companies} index companies (needs {MIN_NET_INCOME_COVERAGE:.0%})"
     )
 
+if coverage.with_share_count < MIN_SHARE_COUNT_COVERAGE * coverage.companies:
+    failures.append(
+        f"share count (cover page or weighted average) on the current row for {coverage.with_share_count} of "
+        f"{coverage.companies} index companies (needs {MIN_SHARE_COUNT_COVERAGE:.0%})"
+    )
+
 assert not failures, "\n".join(failures)
 dbutils.notebook.exit(
-    f"{len(checks) + 1} checks passed; net income on {coverage.with_net_income} of {coverage.companies}"
+    f"{len(checks) + 1} checks passed; net income on {coverage.with_net_income}, share count on {coverage.with_share_count} of {coverage.companies}"
 )

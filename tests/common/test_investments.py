@@ -25,7 +25,7 @@ def test_figure_list_matches_concept_mapping():
 
 
 def test_every_figure_kind_and_unit_is_known():
-    assert {kind for _, kind, _ in FIGURES} == {"instant", "duration", "cover"}
+    assert {kind for _, kind, _ in FIGURES} == {"instant", "duration", "cover", "period"}
     assert {unit for _, _, unit in FIGURES} == {"USD", "USD/shares", "shares"}
 
 

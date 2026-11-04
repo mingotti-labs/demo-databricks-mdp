@@ -1,0 +1,19 @@
+== current members: companies, with cover count, with weighted average, with either, with neither
+   ['500', '459', '485', '492', '8']
+== members with neither count
+   ['ARES', '10-Q', '2026-08-07']
+   ['BRK.B', '10-Q', '2026-08-10']
+   ['ERIE', '10-Q', '2026-10-29']
+   ['HSY', '10-Q', '2026-10-29']
+   ['STZ', '10-Q', '2026-10-07']
+   ['TSN', '10-Q', '2026-08-03']
+   ['V', '10-Q', '2026-04-29']
+   ['VYLR', None, None]
+== sample (MA, NKE, UPS, FOXA, HSY, GOOGL, AAPL): form, filed, cover, weighted average
+   ['AAPL', '10-K', '2026-11-03', '14532182000', '14661935000']
+   ['FOXA', '10-Q', '2026-11-02', None, '421000000']
+   ['GOOGL', '10-Q', '2026-10-29', '12294000000', '12256000000']
+   ['HSY', '10-Q', '2026-10-29', None, None]
+   ['MA', '10-Q', '2026-10-29', None, '875000000']
+   ['NKE', '10-Q', '2026-10-02', None, '1483600000']
+   ['UPS', '10-Q', '2026-08-05', None, '851000000']
