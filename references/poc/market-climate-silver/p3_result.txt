@@ -1,0 +1,2 @@
+mdp_prd price_daily rows, indicator rows, SPY rows, SPY first date, listings: ['201227', '201227', '255', '2025-10-29', '526']
+mdp_dev price_daily rows, indicator rows, SPY rows, SPY first date, listings: ['148169', '148169', '256', '2025-10-28', '526']
