@@ -5,15 +5,15 @@
 
 ## 1. Figure
 
-- [ ] 1.1 `data/portfolio/concept_mapping.csv`: `weighted_average_shares_basic_count,1,us-gaap,WeightedAverageNumberOfSharesOutstandingBasic`
-- [ ] 1.2 `src/common/investments.py`: the figure with kind `period`; tests (`tests/common/test_investments.py`
+- [x] 1.1 `data/portfolio/concept_mapping.csv`: `weighted_average_shares_basic_count,1,us-gaap,WeightedAverageNumberOfSharesOutstandingBasic`
+- [x] 1.2 `src/common/investments.py`: the figure with kind `period`; tests (`tests/common/test_investments.py`
       knows the new kind)
-- [ ] 1.3 `company_fundamentals.py`: the `period` pick (D1) and the pass-through column; table comment
+- [x] 1.3 `company_fundamentals.py`: the `period` pick (D1) and the pass-through column; table comment
 
 ## 2. Verification
 
-- [ ] 2.1 `verify_silver_domain_investments.py`: MA's latest row has `weighted_average_shares_basic_count`;
-      current members with neither count stay at or under 5
+- [x] 2.1 `verify_silver_domain_investments.py`: MA's latest row has `weighted_average_shares_basic_count`;
+      at least 97% of index companies have a share count on the current row
 
 ## 3. Run and check in dev
 

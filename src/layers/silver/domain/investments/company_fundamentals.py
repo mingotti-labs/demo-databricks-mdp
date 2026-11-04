@@ -45,7 +45,7 @@ WITH figures AS (
 ), filings AS (
   SELECT cik, accn, max(form) AS form, max(filed) AS filed, max(end_date) AS period_end,
          min(ingested_timestamp) AS ingested_timestamp
-  FROM mapped WHERE kind <> 'cover' GROUP BY cik, accn
+  FROM mapped WHERE kind NOT IN ('cover', 'period') GROUP BY cik, accn
 ), instant AS (
   SELECT cik, accn, figure, value, concept FROM (
     SELECT m.cik, m.accn, m.figure, m.value, m.concept,
@@ -58,6 +58,15 @@ WITH figures AS (
     SELECT cik, accn, figure, value, concept,
            row_number() OVER (PARTITION BY cik, accn, figure ORDER BY priority, end_date DESC) AS pick
     FROM mapped WHERE kind = 'cover'
+  ) WHERE pick = 1
+), period AS (
+  SELECT cik, accn, figure, value, concept FROM (
+    SELECT m.cik, m.accn, m.figure, m.value, m.concept,
+           row_number() OVER (
+             PARTITION BY m.cik, m.accn, m.figure ORDER BY m.priority, datediff(m.end_date, m.start_date)
+           ) AS pick
+    FROM mapped m JOIN filings fl ON fl.cik = m.cik AND fl.accn = m.accn
+    WHERE m.kind = 'period' AND m.end_date = fl.period_end
   ) WHERE pick = 1
 ), annual AS (
   SELECT cik, entity_cik, accn, figure, priority, concept, filed, end_date, value
@@ -115,6 +124,7 @@ WITH figures AS (
 ), chosen AS (
   SELECT cik, accn, figure, value, concept FROM instant
   UNION ALL SELECT cik, accn, figure, value, concept FROM cover
+  UNION ALL SELECT cik, accn, figure, value, concept FROM period
   UNION ALL SELECT cik, accn, figure, value, concept FROM duration
 ), wide AS (
   SELECT cik, accn,
