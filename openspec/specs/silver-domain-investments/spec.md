@@ -166,7 +166,10 @@ plus depreciation and amortisation) and a map of the concept
 used for each figure. Values SHALL come only from facts known at the filing
 date, in USD (and `shares` or `USD/shares` for share counts and earnings per share). Balance
 sheet figures and the share count SHALL be those the filing reports for its
-period end. Income and cash flow figures SHALL be the trailing twelve months to
+period end. `weighted_average_shares_basic_count` SHALL be the filing's weighted
+average basic share count (all share classes) for the shortest period ending at
+its period end (the quarter on a 10-Q, the year on a 10-K), never a sum of periods;
+`shares_outstanding_count` stays the cover-page count. Income and cash flow figures SHALL be the trailing twelve months to
 the period end: a 10-K's annual value, or for a 10-Q the latest annual value
 plus this year's year-to-date minus the prior year's year-to-date, empty when a
 part is missing. For each figure it SHALL take the highest-priority concept that
@@ -205,6 +208,12 @@ first filing.
 - **WHEN** the predecessor list maps `0002115436` to `0000034088`
 - **THEN** the company with central index key `0002115436` has the filings made under
   `0000034088` before its own first filing
+
+#### Scenario: A company with several share classes
+- **WHEN** a 10-Q has no cover-page share count and reports weighted average basic
+  shares of 880 million for the quarter and 885 million for the year to date
+- **THEN** its row has an empty `shares_outstanding_count` and
+  `weighted_average_shares_basic_count` 880000000
 
 ### Requirement: Market rates
 `market_rate_daily` SHALL have one row per rate and date for the Australian
