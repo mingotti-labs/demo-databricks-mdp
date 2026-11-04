@@ -43,5 +43,5 @@
 
 ## 9. After merge
 
-- [ ] 9.1 prd: CI runs `investments`, `portfolio`; then `run_yahoo`, `run_investments` by hand; prd = dev
+- [x] 9.1 prd: CI runs `investments`, `portfolio`; then `run_yahoo`, `run_investments` by hand; prd = dev
       for the Apple row and `^GSPC`
