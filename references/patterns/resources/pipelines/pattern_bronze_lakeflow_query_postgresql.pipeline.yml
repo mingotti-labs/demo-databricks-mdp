@@ -1,0 +1,56 @@
+resources:
+  pipelines:
+    pattern_bronze_lakeflow_query_postgresql:
+      name: bronze--pattern--lakeflow--query--postgresql--${bundle.target}
+      catalog: ${var.catalog}
+      target: pattern_bronze
+      configuration:
+        pipelines.numUpdateRetryAttempts: "0"
+        pipelines.maxFlowRetryAttempts: "0"
+      ingestion_definition:
+        connection_name: neon_dev
+        objects:
+        - table:
+            source_catalog: app
+            source_schema: public
+            source_table: customers
+            destination_table: lakeflow_query_postgresql_customers
+            table_configuration:
+              query_based_connector_config:
+                cursor_columns:
+                  - updated_at
+            destination_catalog: ${var.catalog}
+            destination_schema: pattern_bronze
+        - table:
+            source_catalog: app
+            source_schema: public
+            source_table: products
+            destination_table: lakeflow_query_postgresql_products
+            table_configuration:
+              query_based_connector_config:
+                cursor_columns:
+                  - updated_at
+            destination_catalog: ${var.catalog}
+            destination_schema: pattern_bronze
+        - table:
+            source_catalog: app
+            source_schema: public
+            source_table: orders
+            destination_table: lakeflow_query_postgresql_orders
+            table_configuration:
+              query_based_connector_config:
+                cursor_columns:
+                  - updated_at
+            destination_catalog: ${var.catalog}
+            destination_schema: pattern_bronze
+        - table:
+            source_catalog: app
+            source_schema: public
+            source_table: order_items
+            destination_table: lakeflow_query_postgresql_order_items
+            table_configuration:
+              query_based_connector_config:
+                cursor_columns:
+                  - updated_at
+            destination_catalog: ${var.catalog}
+            destination_schema: pattern_bronze

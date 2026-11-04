@@ -1,0 +1,2 @@
+dropped mdp_dev.pattern_bronze.autoloader_add_new_columns_python
+dropped mdp_dev.pattern_bronze.__materialization_mat_1d9ebbb7_871b_42c2_9f70_8c7897d678d1_autoloader_add_new_columns_python_1

@@ -15,24 +15,17 @@ richer variant if it exists; fall back only when it doesn't. See
 
 ## Sources
 
-### neon
-- **What it is**: Neon Postgres e-commerce operational database
-- **Design patterns**: [`bronze_lakeflow_query`](design-patterns.md#bronze_lakeflow_query), [`bronze_publish_scd2_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd2_autocdc_snapshot_python) (reference only), [`bronze_publish_scd1_autocdc_snapshot_python`](design-patterns.md#bronze_publish_scd1_autocdc_snapshot_python) (reference only)
-- **Bronze raw**: `bronze_neon.{customers,products,orders,order_items}_raw`
-- **Bronze Publish and Silver Landing**: removed in `neon-publish-cleanup`
-  (2026-11, to free table slots); the code is backed up in
-  `references/backups/neon/` and the SCD patterns are references in the patterns
-  bundle
+### neon and clickstream (reference patterns, not sources)
+Moved to the patterns bundle in `neon-clickstream-to-patterns` (2026-11) to free table slots;
+deploy steps in `references/patterns/README.md`.
+- **neon** (Neon Postgres e-commerce database): pattern [`bronze_lakeflow_query_postgresql`](design-patterns.md#bronze_lakeflow_query_postgresql),
+  tables `pattern_bronze.lakeflow_query_postgresql_{customers,products,orders,order_items}`. Earlier removals
+  (Bronze Publish and Silver Landing, `neon-publish-cleanup`) are backed up in `references/backups/neon/`.
+- **clickstream** (synthetic web events, file drop via UC Volume): pattern [`bronze_autoloader_add_new_columns_python`](design-patterns.md#bronze_autoloader_add_new_columns_python),
+  table `pattern_bronze.autoloader_add_new_columns_python`. Its SCD1 and Silver Landing are the live patterns of
+  yahoo, rba and fred ([`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python),
+  [`silver_landing_change_feed_python`](design-patterns.md#silver_landing_change_feed_python)).
 - **Consumed by Silver Landing**: no
-
-### clickstream
-- **What it is**: Synthetic web clickstream events, file-drop via UC Volume
-- **Design patterns**: [`bronze_autoloader_add_new_columns_python`](design-patterns.md#bronze_autoloader_add_new_columns_python), [`bronze_publish_scd1_autocdc_stream_python`](design-patterns.md#bronze_publish_scd1_autocdc_stream_python), [`bronze_publish_scd1_autocdc_stream_sql`](design-patterns.md#bronze_publish_scd1_autocdc_stream_sql), [`silver_landing_materialized_view_python`](design-patterns.md#silver_landing_materialized_view_python)
-- **Bronze raw**: `bronze_clickstream.web_events_raw` (+ demo variants)
-- **Bronze Publish** (`bronze_clickstream_publish`): `web_events_scd1` (the SQL twin
-  moved to the patterns bundle)
-- **Consumed by Silver Landing**: yes — `web_events_scd1` (Python) →
-  `silver_landing.clickstream__web_events`
 
 ### ungm
 - **What it is**: UNGM UNSPSC classification, public REST API

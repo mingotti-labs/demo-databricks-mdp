@@ -2,7 +2,7 @@
 # Pattern bronze_publish_scd2_merge_sql (reference only; reads the dev Neon
 # customers). Hand-rolled SCD Type 2 for Neon's customers table via the classic
 # two-phase MERGE pattern -- the real SQL-native answer for a source
-# that's already upsert-maintained (bronze_neon.customers_raw is merged in
+# that's already upsert-maintained (pattern_bronze.lakeflow_query_postgresql_customers is merged in
 # place by Lakeflow Connect, not appended to). AUTO CDC INTO only supports
 # append-only streaming sources -- confirmed via a real
 # DELTA_SOURCE_TABLE_IGNORE_CHANGES failure when this was first attempted
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS {catalog}.pattern_bronze_publish.bronze_publish_scd2_
 # columns changed since the last run.
 spark.sql(f"""
 MERGE INTO {catalog}.pattern_bronze_publish.bronze_publish_scd2_merge_sql AS target
-USING {catalog}.bronze_neon.customers_raw AS source
+USING {catalog}.pattern_bronze.lakeflow_query_postgresql_customers AS source
 ON target.id = source.id AND target.__END_AT IS NULL
 WHEN MATCHED AND (
   target.first_name != source.first_name OR
@@ -56,7 +56,7 @@ USING (
     source.created_at, source.updated_at,
     source.updated_at AS __START_AT,
     CAST(NULL AS TIMESTAMP) AS __END_AT
-  FROM {catalog}.bronze_neon.customers_raw AS source
+  FROM {catalog}.pattern_bronze.lakeflow_query_postgresql_customers AS source
   LEFT JOIN {catalog}.pattern_bronze_publish.bronze_publish_scd2_merge_sql AS current_version
     ON source.id = current_version.id AND current_version.__END_AT IS NULL
   WHERE current_version.id IS NULL

@@ -24,12 +24,13 @@ overview (<https://docs.databricks.com/aws/en/ingestion/overview>, read
 down only if it does not fit. Release stages change; check the docs before
 relying on one.
 
-### bronze_lakeflow_query
+### bronze_lakeflow_query_postgresql
 Lakeflow Connect, query-based (gateway-free), reading a Postgres source through
 a Unity Catalog Connection. Pick it for a relational source when CDC (which
 needs classic compute) is unavailable. Hard deletes are not propagated; new
-tables must be added explicitly. Code: `resources/pipelines/` (no source file).
-Used by: [neon](data-sources.md#neon). Evidence: `dev`.
+tables must be added explicitly. Code: `references/patterns/resources/pipelines/pattern_bronze_lakeflow_query_postgresql.pipeline.yml`
+(no source file; deploy steps in `references/patterns/README.md`; tables `pattern_bronze.lakeflow_query_postgresql_<table>`).
+Used by: none (reference; formerly neon). Evidence: `dev`.
 
 ### bronze_lakeflow_saas
 Lakeflow Connect managed connector pulling from a SaaS application (Salesforce,
@@ -47,7 +48,7 @@ serverless ingestion pipeline applies them as CDC. Pick it for a database that
 exposes a change feed (SQL Server, PostgreSQL, MySQL, Oracle; release stage
 varies by connector). The gateway
 needs classic compute, which Free Edition does not have, which is why Neon uses
-`bronze_lakeflow_query` instead.
+`bronze_lakeflow_query_postgresql` instead.
 Code: none. Used by: none (reference). Evidence: `documented only`.
 
 ### bronze_lakeflow_community
@@ -102,8 +103,8 @@ Code: none. Used by: none (reference). Evidence: `documented only`.
 Auto Loader streaming table over files in a UC Volume, schema evolution mode
 `addNewColumns`. A new column restarts the flow once and Databricks starts the
 update again on its own. Pair with `rescuedDataColumn` as a safety net.
-Code: `src/layers/bronze/clickstream/python_add_new_columns/`.
-Used by: [clickstream](data-sources.md#clickstream). Evidence: `dev`.
+Code: `references/patterns/src/bronze/autoloader_add_new_columns_python.py` (table `pattern_bronze.autoloader_add_new_columns_python`).
+Used by: none (reference; formerly clickstream). Evidence: `dev`.
 
 ### bronze_autoloader_{rescue,fail_on_new_columns,none}_python, bronze_autoloader_{add_new_columns,rescue,fail_on_new_columns,none}_sql
 The other seven schema-evolution variants, each its own deployable pipeline with
@@ -212,9 +213,8 @@ same flow until 2026-11; backup in `references/backups/neon/`).
 ### bronze_publish_scd1_autocdc_stream_python
 Streaming `create_auto_cdc_flow`. Valid only against an append-only source:
 against an upserted source it fails with `DELTA_SOURCE_TABLE_IGNORE_CHANGES`.
-Code: `src/layers/bronze/clickstream_publish/python/`,
-`src/layers/bronze/yahoo_publish/`.
-Used by: [clickstream](data-sources.md#clickstream), [yahoo](data-sources.md#yahoo),
+Code: `src/layers/bronze/yahoo_publish/`.
+Used by: [yahoo](data-sources.md#yahoo),
 [rba](data-sources.md#rba), [fred](data-sources.md#fred) (SCD1 prices, events, options, observations; `calendar_scd2` is the same flow as SCD2, its
 platform columns left out of the target). Evidence: `dev`.
 
@@ -305,9 +305,8 @@ shared SQL snippets in `src/common/investments.py`. Used by: investments
 ### bronze_silver_pipeline_per_layer
 One bronze pipeline and one silver pipeline per source, building the publish and
 landing tables by qualified name, instead of one pipeline per pattern. Used by
-acnc, ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec, yahoo, rba, fred; clickstream
-and neon follow it as
-far as their sources allow. Evidence: `prd`.
+acnc, ungm, iso, geonames, nsw_spatial, airroi, wikipedia, portfolio, sec, yahoo, rba, fred.
+Evidence: `prd`.
 
 ### cicd_run_unit
 A bundle job named `run_<unit>` chains everything a source produces; after a

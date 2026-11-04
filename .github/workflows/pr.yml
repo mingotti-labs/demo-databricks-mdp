@@ -44,6 +44,9 @@ jobs:
       - uses: databricks/setup-cli@v1.17.0
       - name: Validate bundle (dev)
         run: databricks bundle validate --target dev
+      - name: Validate patterns bundle (dev)
+        run: databricks bundle validate --target dev
+        working-directory: references/patterns
 
   deploy-dev:
     needs: validate

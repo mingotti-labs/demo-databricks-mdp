@@ -1,11 +1,11 @@
 # Databricks notebook source
 # Checks Auto Loader's schema evolution actually happened: the new-field
-# columns exist on web_events_raw, and are NULL only for rows ingested before
+# columns exist on autoloader_add_new_columns_python, and are NULL only for rows ingested before
 # those fields existed in the source files.
 dbutils.widgets.text("catalog", "")
 catalog = dbutils.widgets.get("catalog")
 
-columns = [f.name for f in spark.table(f"{catalog}.bronze_clickstream.web_events_raw").schema.fields]
+columns = [f.name for f in spark.table(f"{catalog}.pattern_bronze.autoloader_add_new_columns_python").schema.fields]
 for new_field in ["device_type", "referrer_url"]:
     assert new_field in columns, f"{new_field} column missing -- schema evolution did not happen"
 
@@ -14,7 +14,7 @@ for new_field in ["device_type", "referrer_url"]:
 counts = spark.sql(
     f"""
     SELECT count(*) AS total, count(device_type) AS with_device_type
-    FROM {catalog}.bronze_clickstream.web_events_raw
+    FROM {catalog}.pattern_bronze.autoloader_add_new_columns_python
     """
 ).collect()[0]
 

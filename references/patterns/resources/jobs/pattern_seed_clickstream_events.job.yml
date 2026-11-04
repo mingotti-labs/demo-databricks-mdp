@@ -1,7 +1,7 @@
 resources:
   jobs:
-    generate_clickstream_events:
-      name: generate--clickstream--events--${bundle.target}
+    pattern_seed_clickstream_events:
+      name: seed--pattern--clickstream--${bundle.target}
       tasks:
         - task_key: generate
           notebook_task:
