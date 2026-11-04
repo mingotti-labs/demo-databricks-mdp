@@ -173,5 +173,24 @@ Daily gold and commodity prices, US and Australian CPI (2026-11-02). Scripts and
 | P5 | Do the 8 commodity symbols get through the Yahoo fetch's own steps (bulk prices, actions, calendar, options)? | Pass for all 8 (`^TRCCRB`, `^SPGSCI`, `GC=F`, `SI=F`, `HG=F`, `CL=F`, `DBC`, `GSG`): prices and a calendar row with the exchange code; the calendar call prints "No fundamentals data found" and returns empty (as for `^VIX`). Only `DBC` and `GSG` have options; `DBC` has 9 events. `XNYM` and `XXXX` ("NO MARKET (E.G. UNLISTED)") are rows of `silver_domain_investments.market`. |
 | P6 | Does `yf.download` with `start=1970-01-01`, as the fetch calls it, return each new commodity symbol's full history? | Pass: `^SPGSCI` 10,792 rows from 1984-01-03, `^TRCCRB` 8,174 from 1994-01-03, `GC=F`/`SI=F`/`HG=F` about 6,570 from 2000-08-30, `CL=F` 6,577 from 2000-08-23, `DBC` 5,218 from 2006-02-06 (9 distributions), `GSG` 5,103 from 2006-07-21; about 53,000 rows in all. |
 | P7 | Do P4's two ABS CPI series requests work from serverless? | Yes, both 200 in 0.3 s: `1.10001.10.50.Q` 313 rows (1948-Q3 to 2026-Q3, last 103.64, 59 KB) and `1.10001.10.50.M` 30 rows (2024-04 to 2026-09, last 104.34, 6 KB). No empty `OBS_VALUE`. The label columns `Measure`, `Index`, `Adjustment Type`, `Region`, `Frequency`, `Unit of Measure`, `Reference Base Period` are present (base `Sep 2025 = 100.0`). |
-| P8 | Do the neon and clickstream pipelines run from the patterns bundle as the human, and pass their verify jobs? | Yes (`neon-clickstream-to-patterns`, 2026-11-04): neon seed 200/50/500/1,240, Lakeflow Connect through `neon_dev` as the human, counts equal Neon's; clickstream batch 3 with a new field absorbed, 800 rows, 600 with `device_type`. Nine slots used (483 to 492). |
-| P9 | What does `bundle destroy` of the patterns bundle leave behind? | 19 resources deleted. The Lakeflow Connect tables go with their pipeline but their hidden `__materialization_mat_*` twins stay; the Auto Loader table and its twin stay. Dropped with approval; `references/poc/table-cleanup/` has the scripts and logs. |
+
+## neon-clickstream-to-patterns
+
+neon and clickstream moved to the patterns bundle (2026-11-04). Scripts and logs in `references/poc/table-cleanup/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Do the neon and clickstream pipelines run from the patterns bundle as the human, and pass their verify jobs? | Yes (`neon-clickstream-to-patterns`, 2026-11-04): neon seed 200/50/500/1,240, Lakeflow Connect through `neon_dev` as the human, counts equal Neon's; clickstream batch 3 with a new field absorbed, 800 rows, 600 with `device_type`. Nine slots used (483 to 492). |
+| P2 | What does `bundle destroy` of the patterns bundle leave behind? | 19 resources deleted. The Lakeflow Connect tables go with their pipeline but their hidden `__materialization_mat_*` twins stay; the Auto Loader table and its twin stay. Dropped with approval; `references/poc/table-cleanup/` has the scripts and logs. |
+
+## market-climate (story probes, before change 1)
+
+10-year inflation-adjusted P/E with real data (2026-11-04). Notebook, scripts and results in `references/poc/market-climate/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Does the 10-year inflation-adjusted P/E give sensible values from our tables? | Yes: Apple's 10 10-Ks, CPI and factors give a 10-year average of 90.82 bn in today's money, P/E (10-year) 54.4 against trailing 38.3; the index (458 members) gives P/E (10-year) 40.8 and trailing 24.7, close to published CAPE in late 2025. History empty (see P2). |
+| P2 | Why is P1's history empty, and why do some members have no market value? | Prices start 2025-10-28 for every member and SPY (a new symbol loads 365 days). 42 members have no cover share count on their latest filing (24 had one on an older filing); VYLR has no SEC data. Median member has 16 years of 10-Ks; 444 of 503 have a year end by 2016. |
+| P3 | Why do share-class companies have no share count? | SEC sent no share facts for the latest filings of MA, NKE, UPS, FOXA, HSY; their last cover totals are from 2010 (MA, UPS), 2015 (NKE), 2019 (FOXA). HSY's `CommonStockSharesOutstanding` is one class only. Company facts leave out per-class values. |
+| P4 | Does SEC report weighted average basic shares for them? | Yes, current to 2026: MA 883 m, NKE 1.48 bn, UPS 850 m, FOXA 421 m, GOOGL 12.17 bn, AAPL 14.66 bn; not HSY (stops 2015). |
+

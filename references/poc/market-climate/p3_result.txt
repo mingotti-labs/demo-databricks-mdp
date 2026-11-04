@@ -1,0 +1,14 @@
+== latest filing kept per company (form, filed, shares)
+   ['FOXA', '10-K', '2026-08-06', None, '0001628280-26-053960']
+   ['HSY', '10-Q', '2026-10-29', None, '0001628280-26-068136']
+   ['MA', '10-Q', '2026-10-29', None, '0001141391-26-000124']
+   ['NKE', '10-Q', '2026-10-02', None, '0000320187-26-000193']
+   ['UPS', '10-Q', '2026-08-05', None, '0001628280-26-053249']
+== share facts in Landing for those accessions (concept, end, value, rows)
+== any share facts ever for these companies (concept, rows, last end, last value)
+   ['FOXA', 'EntityCommonStockSharesOutstanding', '1', '2019-03-18', '1']
+   ['HSY', 'CommonStockSharesOutstanding', '51', '2025-12-31', '202839656']
+   ['HSY', 'EntityCommonStockSharesOutstanding', '13', '2014-02-07', '223805223']
+   ['MA', 'EntityCommonStockSharesOutstanding', '4', '2010-10-27', '122530193']
+   ['NKE', 'EntityCommonStockSharesOutstanding', '18', '2015-07-17', '855351589']
+   ['UPS', 'EntityCommonStockSharesOutstanding', '2', '2010-02-17', '713924267']

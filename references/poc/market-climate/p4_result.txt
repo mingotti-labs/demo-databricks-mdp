@@ -1,0 +1,9 @@
+P4 (2026-11-04, local curl.exe to SEC companyconcept API, User-Agent "mdp handsonessential@gmail.com"):
+us-gaap WeightedAverageNumberOfSharesOutstandingBasic, latest 10-K/10-Q fact per company
+MA: 309 facts, latest end 2026-09-30 filed 2026-10-29 10-Q value 883,000,000
+NKE: 210 facts, latest end 2026-08-31 filed 2026-10-02 10-Q value 1,483,600,000
+UPS: 212 facts, latest end 2026-06-30 filed 2026-08-05 10-Q value 850,000,000
+FOXA: 76 facts, latest end 2026-09-30 filed 2026-11-02 10-Q value 421,000,000
+HSY: 49 facts, latest end 2015-10-04 filed 2015-10-30 10-Q value 219,678,000
+GOOGL: 34 facts, latest end 2026-09-30 filed 2026-10-29 10-Q value 12,169,000,000
+AAPL: 231 facts, latest end 2026-09-26 filed 2026-11-03 10-K value 14,661,935,000
