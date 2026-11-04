@@ -33,9 +33,9 @@
 
 ## 7. Run and check in dev
 
-- [ ] 7.1 Draft PR deploy-dev; `run_portfolio`, `run_yahoo`, `run_investments verify=true` in that order,
+- [x] 7.1 Draft PR deploy-dev; `run_portfolio`, `run_yahoo`, `run_investments verify=true` in that order,
       each `--no-wait` and polled
-- [ ] 7.2 Descriptions visible in Unity Catalog (`DESCRIBE TABLE`) for the new columns
+- [x] 7.2 Descriptions visible in Unity Catalog (`DESCRIBE TABLE`) for the new columns
 
 ## 8. Docs
 

@@ -1,0 +1,25 @@
+== Apple, latest 10-K row: filed, period end, years, CPI, plain avg bn, inflation-adjusted avg bn
+   ['2026-11-03', '2026-09-26', '10', '336.940000', '84.99', '97.66']
+   ['2025-10-31', '2025-09-27', '10', '324.800000', '76.35', '87.55']
+== years of earnings per current member: years, members
+   [None, '2']
+   ['1', '2']
+   ['2', '7']
+   ['3', '6']
+   ['4', '2']
+   ['5', '6']
+   ['6', '6']
+   ['7', '6']
+   ['8', '12']
+   ['9', '6']
+   ['10', '444']
+== ^GSPC: first price date, last price date, rows, latest close, 200-day average, slope
+   ['1970-01-02', '2026-11-03', '14332', '7568.919922', '7315.886362', '0.01101577']
+== price_indicator_daily rows, with an average, with a slope
+   ['148169', '43857', '33397']
+== SPY (a member-like listing with one year of prices): rows, with an average
+   ['256', '57']
+== CPI used for a period ending in October 2025 (no value that month)
+   ['2025-10-31', '324.800000']
+   ['2025-10-31', '324.800000']
+   ['2025-10-31', '324.800000']

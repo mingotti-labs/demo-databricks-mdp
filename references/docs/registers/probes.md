@@ -201,5 +201,4 @@ Column descriptions on materialized views (2026-11-04, dev, throwaway pipeline).
 
 | Probe | Question | Result |
 |---|---|---|
-| P1 | Can `@dp.materialized_view(schema=...)` describe only some columns? | No: a partial `schema=` fails ("user-specified schema that is incompatible with the schema inferred from its query"). Listing every column with a `COMMENT` works and the comments reach Unity Catalog. |
-
+| P1 | Can `@dp.materialized_view(schema=...)` describe only some columns? | No: a partial `schema=` fails ("user-specified schema that is incompatible with the schema inferred from its query"). Listing every column with a `COMMENT` works and the comments reach Unity Catalog. || P2 | Do the new silver columns give the expected values in dev? | Yes (2026-11-04): Apple's FY2025 10-K row has 10 years, CPI 324.8, plain average 76.35 bn and inflation-adjusted 87.55 bn, equal to the story probe's figures; its FY2026 row (filed 2026-11-03) 84.99 / 97.66 bn at CPI 336.94. 444 of the current rows have 10 years. A period ending 2025-10-31 uses CPI 324.8 (September, October has no value). `^GSPC`: 14,332 rows from 1970-01-02 to 2026-11-03, close 7,568.92 above its 200-day average 7,315.89, slope +1.10%. |
