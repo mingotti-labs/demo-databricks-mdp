@@ -1,4 +1,5 @@
-# Auto Loader schema evolution -- addNewColumns (this mode's default too).
+# Pattern bronze_autoloader_add_new_columns_python: Auto Loader schema evolution --
+# addNewColumns (this mode's default too). Formerly the canonical clickstream pipeline.
 #
 # Behavior (Databricks docs): the stream halts with UnknownFieldException the
 # moment a genuinely new column is seen; the triggering micro-batch's new data
@@ -45,7 +46,7 @@ LANDING_PATH = f"/Volumes/{catalog}/bronze_clickstream/s3_clickstream_raw/web_ev
 
 
 @dp.table()
-def web_events_raw():
+def autoloader_add_new_columns_python():
     return (
         spark.readStream.format("cloudFiles")
         .option("cloudFiles.format", "json")

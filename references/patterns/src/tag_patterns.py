@@ -1,7 +1,8 @@
 # Databricks notebook source
 # Tags every table in pattern_bronze and pattern_bronze_publish with its design
 # pattern. A pattern_bronze table is named after its pattern file, so the register
-# ID is "bronze_" + table name; a pattern_bronze_publish table is named by the ID.
+# ID is "bronze_" + table name (the four lakeflow_query_postgresql_<table> tables share
+# the ID bronze_lakeflow_query_postgresql); a pattern_bronze_publish table is named by the ID.
 # Idempotent; run after the pattern pipelines.
 dbutils.widgets.text("catalog", "")
 catalog = dbutils.widgets.get("catalog")
@@ -23,9 +24,12 @@ for schema, prefix in SCHEMAS.items():
     for t in client.tables.list(catalog_name=catalog, schema_name=schema):
         if t.name.startswith(("event_log_", "__materialization_")):
             continue
+        name = t.name
+        if name.startswith("lakeflow_query_postgresql_"):
+            name = "lakeflow_query_postgresql"
         spark.sql(
             f"ALTER {OBJECT_TYPES[t.table_type.value]} `{catalog}`.`{schema}`.`{t.name}` "
-            f"SET TAGS ('design_pattern' = '{prefix}{t.name}')"
+            f"SET TAGS ('design_pattern' = '{prefix}{name}')"
         )
         tagged += 1
 
