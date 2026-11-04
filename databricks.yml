@@ -75,6 +75,10 @@ variables:
   abs_api_url:
     description: Base URL of the Australian Bureau of Statistics Data API -- same for every target, no test/prod split exists for this source.
     default: https://data.api.abs.gov.au/rest
+  warehouse_id:
+    description: SQL warehouse the dashboards run on, looked up by name -- same for every target.
+    lookup:
+      warehouse: Serverless Starter Warehouse
   http_user_agent:
     description: User-Agent contact string sent to public sites that ask for one (Wikipedia, later SEC).
     default: mdp handsonessential@gmail.com

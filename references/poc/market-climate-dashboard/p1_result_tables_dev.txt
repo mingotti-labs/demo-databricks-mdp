@@ -1,0 +1,2 @@
+index: old rows 256, new rows 256, only old 0, only new 0, same timestamp 256
+signal: old rows 38286, new rows 38286, only old 0, only new 0, same timestamp 38286

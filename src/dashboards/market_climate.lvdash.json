@@ -1,0 +1,2733 @@
+{
+  "datasets": [
+    {
+      "name": "ds_freshness",
+      "displayName": "Data dates",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT (SELECT day FROM asof) AS climate_date, (SELECT max(price_date) FROM silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = '^GSPC') AS sp500_price_date, (SELECT max(observation_date) FROM silver_domain_investments.market_rate_daily WHERE rate_code = 'us_federal_funds_target_upper') AS fed_rate_date, (SELECT max(observation_date) FROM silver_domain_investments.market_rate_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted') AS cpi_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_lights",
+      "displayName": "Lights of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code = 'climate' ORDER BY s.lens_code "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_answers",
+      "displayName": "Answers of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.lens_name, s.lens_code, s.signal_name, s.signal_code, CASE WHEN s.is_yes THEN 'Yes' ELSE 'No' END AS answer_text, s.band_code, s.measured_value, s.threshold_value, s.reason_text FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_light_history",
+      "displayName": "Light history",
+      "queryLines": [
+        "SELECT signal_date, lens_name, yes_count, band_code AS light_code FROM monitor_daily_signal WHERE signal_code = 'climate' ORDER BY signal_date, lens_name "
+      ]
+    },
+    {
+      "name": "ds_pe_history",
+      "displayName": "Price/earnings history",
+      "queryLines": [
+        "SELECT i.valuation_date, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing FROM valuation_daily_index i ORDER BY i.valuation_date "
+      ]
+    },
+    {
+      "name": "ds_fed_history",
+      "displayName": "Fed target rate",
+      "queryLines": [
+        "SELECT signal_date, measured_value AS fed_target_rate, band_code AS fed_band_code FROM monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= DATE '2022-01-01' ORDER BY signal_date "
+      ]
+    },
+    {
+      "name": "ds_trend_history",
+      "displayName": "S&P 500 and its 200-day average",
+      "queryLines": [
+        "SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200 FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= date_sub(current_date(), 1100) ORDER BY signal_date "
+      ]
+    },
+    {
+      "name": "ds_index_day",
+      "displayName": "Index of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT i.valuation_date, i.market_value_amount / 1e12 AS market_value_trillion, i.earnings_ten_year_average_inflation_adjusted_amount / 1e9 AS earnings_adjusted_billion, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing, i.members_used_count, i.member_count, i.members_without_shares_count, i.members_under_ten_years_count FROM valuation_daily_index i JOIN asof a ON i.valuation_date = a.day "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_top_up",
+      "displayName": "Members pushing the P/E up",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10 "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_top_down",
+      "displayName": "Members pushing the P/E down",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10 "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_excluded",
+      "displayName": "Members left out",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.exclusion_reason_code, m.price_date FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE NOT m.is_used ORDER BY m.exclusion_reason_code, c.company_name "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_members",
+      "displayName": "All members",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.is_used, m.exclusion_reason_code, m.price_close, m.share_count, m.market_value_amount / 1e9 AS market_value_billion FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id ORDER BY m.market_value_amount DESC NULLS LAST "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_checks",
+      "displayName": "Checks of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), sums AS (SELECT count_if(m.is_used) AS used_count, sum(CASE WHEN m.is_used THEN m.market_value_amount END) AS value, sum(CASE WHEN m.is_used THEN m.earnings_ten_year_average_inflation_adjusted_amount END) AS earnings FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day) SELECT i.members_used_count AS index_used_count, s.used_count AS member_used_count, round(i.market_value_amount - s.value, 2) AS market_value_difference_amount, round(i.earnings_ten_year_average_inflation_adjusted_amount - s.earnings, 2) AS earnings_difference_amount, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_index, round(s.value / s.earnings, 4) AS pe_from_members FROM valuation_daily_index i JOIN asof a ON i.valuation_date = a.day CROSS JOIN sums s "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_sectors",
+      "displayName": "Sectors of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), used AS (SELECT c.gics_sector_name AS sector_name, m.market_value_amount AS value, m.earnings_ten_year_average_inflation_adjusted_amount AS earnings, m.price_earnings_effect_ratio AS effect FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used), total AS (SELECT sum(value) AS value, sum(earnings) AS earnings FROM used) SELECT u.sector_name, count(*) AS member_count, sum(u.value) / 1e12 AS market_value_trillion, sum(u.value) / total.value AS market_value_share_ratio, CASE WHEN sum(u.earnings) > 0 THEN sum(u.value) / sum(u.earnings) END AS sector_pe, CASE WHEN total.earnings - sum(u.earnings) > 0 THEN (total.value - sum(u.value)) / (total.earnings - sum(u.earnings)) END AS pe_without_sector, total.value / total.earnings AS pe_index FROM used u CROSS JOIN total GROUP BY u.sector_name, total.value, total.earnings ORDER BY sum(u.value) DESC "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_sector_up",
+      "displayName": "Sector members pushing the P/E up",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.price_earnings_effect_ratio AS pe_effect_sort FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND c.gics_sector_name = :sector_name ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10 "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "sector_name",
+          "displayName": "Sector",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "Information Technology"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_sector_down",
+      "displayName": "Sector members pushing the P/E down",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.price_earnings_effect_ratio AS pe_effect_sort FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND c.gics_sector_name = :sector_name AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10 "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "sector_name",
+          "displayName": "Sector",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "Information Technology"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_sector_names",
+      "displayName": "Sector names",
+      "queryLines": [
+        "SELECT DISTINCT gics_sector_name AS sector_name FROM silver_domain_investments.company WHERE gics_sector_name IS NOT NULL ORDER BY 1 "
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "climate",
+      "displayName": "Climate",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "climate-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Market climate\n",
+                "\n",
+                "Two climates read the same three questions: is the market too expensive, is the Fed in the way, is the market going up. Yes is the unfavourable answer. Red (2 or 3 yes): sell. Yellow (1 yes): buy and hold. Green (0 yes): strong buy. Change the date at the top; the Deep Dive pages show the numbers behind the valuation answer."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "data-dates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_freshness",
+                  "fields": [
+                    {
+                      "name": "climate_date",
+                      "expression": "`climate_date`"
+                    },
+                    {
+                      "name": "sp500_price_date",
+                      "expression": "`sp500_price_date`"
+                    },
+                    {
+                      "name": "fed_rate_date",
+                      "expression": "`fed_rate_date`"
+                    },
+                    {
+                      "name": "cpi_date",
+                      "expression": "`cpi_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "climate_date",
+                    "displayName": "Climate as of"
+                  },
+                  {
+                    "fieldName": "sp500_price_date",
+                    "displayName": "Latest S&P 500 price"
+                  },
+                  {
+                    "fieldName": "fed_rate_date",
+                    "displayName": "Latest Fed target reading"
+                  },
+                  {
+                    "fieldName": "cpi_date",
+                    "displayName": "Latest CPI reading (monthly, carried forward)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data dates",
+                "showDescription": true,
+                "description": "The climate is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "lights",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_lights",
+                  "fields": [
+                    {
+                      "name": "lens_name",
+                      "expression": "`lens_name`"
+                    },
+                    {
+                      "name": "yes_count",
+                      "expression": "`yes_count`"
+                    },
+                    {
+                      "name": "light_code",
+                      "expression": "`light_code`"
+                    },
+                    {
+                      "name": "action_name",
+                      "expression": "`action_name`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "lens_name",
+                    "displayName": "Climate"
+                  },
+                  {
+                    "fieldName": "yes_count",
+                    "displayName": "Yes answers (of 3)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "light_code",
+                    "displayName": "Light",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "action_name",
+                    "displayName": "Action"
+                  },
+                  {
+                    "fieldName": "reason_text",
+                    "displayName": "Why"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Lights of the day"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "answers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_answers",
+                  "fields": [
+                    {
+                      "name": "lens_name",
+                      "expression": "`lens_name`"
+                    },
+                    {
+                      "name": "signal_name",
+                      "expression": "`signal_name`"
+                    },
+                    {
+                      "name": "answer_text",
+                      "expression": "`answer_text`"
+                    },
+                    {
+                      "name": "band_code",
+                      "expression": "`band_code`"
+                    },
+                    {
+                      "name": "measured_value",
+                      "expression": "`measured_value`"
+                    },
+                    {
+                      "name": "threshold_value",
+                      "expression": "`threshold_value`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "lens_name",
+                    "displayName": "Climate"
+                  },
+                  {
+                    "fieldName": "signal_name",
+                    "displayName": "Question"
+                  },
+                  {
+                    "fieldName": "answer_text",
+                    "displayName": "Answer"
+                  },
+                  {
+                    "fieldName": "band_code",
+                    "displayName": "Band",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "measured_value",
+                    "displayName": "Measured",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "threshold_value",
+                    "displayName": "Compared with",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "reason_text",
+                    "displayName": "Why"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "The three answers of each climate"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "history-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## History\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "light-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_light_history",
+                  "fields": [
+                    {
+                      "name": "signal_date",
+                      "expression": "`signal_date`"
+                    },
+                    {
+                      "name": "yes_count",
+                      "expression": "`yes_count`"
+                    },
+                    {
+                      "name": "lens_name",
+                      "expression": "`lens_name`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "signal_date",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "yes_count",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Yes answers"
+                },
+                "color": {
+                  "fieldName": "lens_name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Yes answers per day (0 green, 1 yellow, 2 or 3 red)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "pe-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_pe_history",
+                  "fields": [
+                    {
+                      "name": "valuation_date",
+                      "expression": "`valuation_date`"
+                    },
+                    {
+                      "name": "pe_ten_year_adjusted",
+                      "expression": "`pe_ten_year_adjusted`"
+                    },
+                    {
+                      "name": "pe_trailing",
+                      "expression": "`pe_trailing`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "valuation_date",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "pe_ten_year_adjusted",
+                      "displayName": "10-year inflation-adjusted (votes)"
+                    },
+                    {
+                      "fieldName": "pe_trailing",
+                      "displayName": "Trailing 12 months"
+                    }
+                  ]
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "S&P 500 price/earnings ratio",
+                "showDescription": true,
+                "description": "Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern)."
+              },
+              "annotations": [
+                {
+                  "type": "horizontal-line",
+                  "encodings": {
+                    "y": {
+                      "dataValue": "16",
+                      "dataType": "INTEGER"
+                    },
+                    "label": {
+                      "value": "cheap line, long run"
+                    },
+                    "color": {
+                      "value": "#59A14F"
+                    }
+                  }
+                },
+                {
+                  "type": "horizontal-line",
+                  "encodings": {
+                    "y": {
+                      "dataValue": "22",
+                      "dataType": "INTEGER"
+                    },
+                    "label": {
+                      "value": "expensive line, long run"
+                    },
+                    "color": {
+                      "value": "#F2C037"
+                    }
+                  }
+                },
+                {
+                  "type": "horizontal-line",
+                  "encodings": {
+                    "y": {
+                      "dataValue": "30",
+                      "dataType": "INTEGER"
+                    },
+                    "label": {
+                      "value": "expensive line, modern"
+                    },
+                    "color": {
+                      "value": "#E15759"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "fed-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_fed_history",
+                  "fields": [
+                    {
+                      "name": "signal_date",
+                      "expression": "`signal_date`"
+                    },
+                    {
+                      "name": "fed_target_rate",
+                      "expression": "`fed_target_rate`"
+                    },
+                    {
+                      "name": "fed_band_code",
+                      "expression": "`fed_band_code`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "signal_date",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "fed_target_rate",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Target rate"
+                },
+                "color": {
+                  "fieldName": "fed_band_code",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "red",
+                        "color": "#E15759"
+                      },
+                      {
+                        "value": "yellow",
+                        "color": "#F2C037"
+                      },
+                      {
+                        "value": "green",
+                        "color": "#59A14F"
+                      }
+                    ]
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Fed target rate (upper limit), percent",
+                "showDescription": true,
+                "description": "Red: within 6 months of a hike (Fed in the way). Green: within 6 months of a cut."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 28,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "trend-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_trend_history",
+                  "fields": [
+                    {
+                      "name": "signal_date",
+                      "expression": "`signal_date`"
+                    },
+                    {
+                      "name": "sp500_close",
+                      "expression": "`sp500_close`"
+                    },
+                    {
+                      "name": "sp500_average_200",
+                      "expression": "`sp500_average_200`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "signal_date",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "sp500_close",
+                      "displayName": "S&P 500 close"
+                    },
+                    {
+                      "fieldName": "sp500_average_200",
+                      "displayName": "200-day average"
+                    }
+                  ]
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "S&P 500 and its 200-day average"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 28,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "deep-dive",
+      "displayName": "Climate Deep Dive",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "dive-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Climate Deep Dive\n",
+                "\n",
+                "Checks the valuation answer. The P/E is the sum of the members' market values over the sum of their 10-year inflation-adjusted earnings. Effect on index P/E = index P/E minus the P/E without that member: positive pushes the ratio up, negative down. Effects are one at a time and do not add up."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "index-day",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_index_day",
+                  "fields": [
+                    {
+                      "name": "valuation_date",
+                      "expression": "`valuation_date`"
+                    },
+                    {
+                      "name": "market_value_trillion",
+                      "expression": "`market_value_trillion`"
+                    },
+                    {
+                      "name": "earnings_adjusted_billion",
+                      "expression": "`earnings_adjusted_billion`"
+                    },
+                    {
+                      "name": "pe_ten_year_adjusted",
+                      "expression": "`pe_ten_year_adjusted`"
+                    },
+                    {
+                      "name": "pe_trailing",
+                      "expression": "`pe_trailing`"
+                    },
+                    {
+                      "name": "members_used_count",
+                      "expression": "`members_used_count`"
+                    },
+                    {
+                      "name": "member_count",
+                      "expression": "`member_count`"
+                    },
+                    {
+                      "name": "members_without_shares_count",
+                      "expression": "`members_without_shares_count`"
+                    },
+                    {
+                      "name": "members_under_ten_years_count",
+                      "expression": "`members_under_ten_years_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "valuation_date",
+                    "displayName": "Day"
+                  },
+                  {
+                    "fieldName": "market_value_trillion",
+                    "displayName": "Market value (US$ trillion)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "earnings_adjusted_billion",
+                    "displayName": "10-year adjusted earnings (US$ billion)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_ten_year_adjusted",
+                    "displayName": "P/E 10-year adjusted",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_trailing",
+                    "displayName": "P/E trailing",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "members_used_count",
+                    "displayName": "Members used",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_count",
+                    "displayName": "Members",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "members_without_shares_count",
+                    "displayName": "Without shares",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "members_under_ten_years_count",
+                    "displayName": "Under 10 years",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "The index of the day"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "checks",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_checks",
+                  "fields": [
+                    {
+                      "name": "index_used_count",
+                      "expression": "`index_used_count`"
+                    },
+                    {
+                      "name": "member_used_count",
+                      "expression": "`member_used_count`"
+                    },
+                    {
+                      "name": "market_value_difference_amount",
+                      "expression": "`market_value_difference_amount`"
+                    },
+                    {
+                      "name": "earnings_difference_amount",
+                      "expression": "`earnings_difference_amount`"
+                    },
+                    {
+                      "name": "pe_index",
+                      "expression": "`pe_index`"
+                    },
+                    {
+                      "name": "pe_from_members",
+                      "expression": "`pe_from_members`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "index_used_count",
+                    "displayName": "Used (index row)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_used_count",
+                    "displayName": "Used (member rows)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "market_value_difference_amount",
+                    "displayName": "Market value difference (US$)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "earnings_difference_amount",
+                    "displayName": "Earnings difference (US$)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_index",
+                    "displayName": "P/E index row",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 4
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_from_members",
+                    "displayName": "P/E from member rows",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Checks: member rows against the index row (differences should be 0)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "up-down-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Who moves the ratio\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "top-up",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_top_up",
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    },
+                    {
+                      "name": "market_value_share_ratio",
+                      "expression": "`market_value_share_ratio`"
+                    },
+                    {
+                      "name": "member_pe",
+                      "expression": "`member_pe`"
+                    },
+                    {
+                      "name": "pe_without_member",
+                      "expression": "`pe_without_member`"
+                    },
+                    {
+                      "name": "pe_effect",
+                      "expression": "`pe_effect`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company"
+                  },
+                  {
+                    "fieldName": "sector_name",
+                    "displayName": "Sector"
+                  },
+                  {
+                    "fieldName": "market_value_share_ratio",
+                    "displayName": "Share of market value",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe",
+                    "displayName": "P/E of the member",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_without_member",
+                    "displayName": "Index P/E without it",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_effect",
+                    "displayName": "Effect on index P/E",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Top 10 pushing the P/E up"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 6,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "top-down",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_top_down",
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    },
+                    {
+                      "name": "market_value_share_ratio",
+                      "expression": "`market_value_share_ratio`"
+                    },
+                    {
+                      "name": "member_pe",
+                      "expression": "`member_pe`"
+                    },
+                    {
+                      "name": "pe_without_member",
+                      "expression": "`pe_without_member`"
+                    },
+                    {
+                      "name": "pe_effect",
+                      "expression": "`pe_effect`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company"
+                  },
+                  {
+                    "fieldName": "sector_name",
+                    "displayName": "Sector"
+                  },
+                  {
+                    "fieldName": "market_value_share_ratio",
+                    "displayName": "Share of market value",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe",
+                    "displayName": "P/E of the member",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_without_member",
+                    "displayName": "Index P/E without it",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_effect",
+                    "displayName": "Effect on index P/E",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Top 10 pushing the P/E down"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 10,
+            "width": 6,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "left-out-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Members left out of the day\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "excluded",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_excluded",
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    },
+                    {
+                      "name": "exclusion_reason_code",
+                      "expression": "`exclusion_reason_code`"
+                    },
+                    {
+                      "name": "price_date",
+                      "expression": "`price_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company"
+                  },
+                  {
+                    "fieldName": "sector_name",
+                    "displayName": "Sector"
+                  },
+                  {
+                    "fieldName": "exclusion_reason_code",
+                    "displayName": "Left out because"
+                  },
+                  {
+                    "fieldName": "price_date",
+                    "displayName": "Price date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Left out"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 19,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "all-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## All members\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 25,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-sector-members",
+            "queries": [
+              {
+                "name": "q_ds_members_sector_name",
+                "query": {
+                  "datasetName": "ds_members",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "sector_name",
+                    "displayName": "Sector",
+                    "queryName": "q_ds_members_sector_name"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Sector"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 26,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-used-members",
+            "queries": [
+              {
+                "name": "q_ds_members_is_used",
+                "query": {
+                  "datasetName": "ds_members",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "is_used",
+                      "expression": "`is_used`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "is_used",
+                    "displayName": "Used",
+                    "queryName": "q_ds_members_is_used"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Used"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 26,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "all-members",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_members",
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    },
+                    {
+                      "name": "market_value_share_ratio",
+                      "expression": "`market_value_share_ratio`"
+                    },
+                    {
+                      "name": "member_pe",
+                      "expression": "`member_pe`"
+                    },
+                    {
+                      "name": "pe_without_member",
+                      "expression": "`pe_without_member`"
+                    },
+                    {
+                      "name": "pe_effect",
+                      "expression": "`pe_effect`"
+                    },
+                    {
+                      "name": "is_used",
+                      "expression": "`is_used`"
+                    },
+                    {
+                      "name": "exclusion_reason_code",
+                      "expression": "`exclusion_reason_code`"
+                    },
+                    {
+                      "name": "price_close",
+                      "expression": "`price_close`"
+                    },
+                    {
+                      "name": "share_count",
+                      "expression": "`share_count`"
+                    },
+                    {
+                      "name": "market_value_billion",
+                      "expression": "`market_value_billion`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company"
+                  },
+                  {
+                    "fieldName": "sector_name",
+                    "displayName": "Sector"
+                  },
+                  {
+                    "fieldName": "market_value_share_ratio",
+                    "displayName": "Share of market value",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe",
+                    "displayName": "P/E of the member",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_without_member",
+                    "displayName": "Index P/E without it",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_effect",
+                    "displayName": "Effect on index P/E",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 4
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "is_used",
+                    "displayName": "Used"
+                  },
+                  {
+                    "fieldName": "exclusion_reason_code",
+                    "displayName": "Left out because"
+                  },
+                  {
+                    "fieldName": "price_close",
+                    "displayName": "Close (US$)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "share_count",
+                    "displayName": "Shares",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "market_value_billion",
+                    "displayName": "Market value (US$ billion)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Every current member, largest first"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 28,
+            "width": 12,
+            "height": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "sector-deep-dive",
+      "displayName": "Sector Deep Dive",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "sector-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Sector Deep Dive\n",
+                "\n",
+                "Sector P/E = the sector's market value over its 10-year inflation-adjusted earnings. Index P/E without the sector shows how much the sector lifts or lowers the index ratio. Sectors are today's sectors (GICS), applied to every day."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "sectors",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_sectors",
+                  "fields": [
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    },
+                    {
+                      "name": "member_count",
+                      "expression": "`member_count`"
+                    },
+                    {
+                      "name": "market_value_trillion",
+                      "expression": "`market_value_trillion`"
+                    },
+                    {
+                      "name": "market_value_share_ratio",
+                      "expression": "`market_value_share_ratio`"
+                    },
+                    {
+                      "name": "sector_pe",
+                      "expression": "`sector_pe`"
+                    },
+                    {
+                      "name": "pe_without_sector",
+                      "expression": "`pe_without_sector`"
+                    },
+                    {
+                      "name": "pe_index",
+                      "expression": "`pe_index`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "sector_name",
+                    "displayName": "Sector"
+                  },
+                  {
+                    "fieldName": "member_count",
+                    "displayName": "Members used",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "market_value_trillion",
+                    "displayName": "Market value (US$ trillion)",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "market_value_share_ratio",
+                    "displayName": "Share of market value",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "sector_pe",
+                    "displayName": "Sector P/E",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_without_sector",
+                    "displayName": "Index P/E without the sector",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_index",
+                    "displayName": "Index P/E",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Every sector on the day"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "sector-pe",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_sectors",
+                  "fields": [
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    },
+                    {
+                      "name": "sector_pe",
+                      "expression": "`sector_pe`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sector_name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  },
+                  "displayName": "Sector"
+                },
+                "y": {
+                  "fieldName": "sector_pe",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Sector P/E"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Sector P/E"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-sector",
+            "queries": [
+              {
+                "name": "q_ds_sector_names_sector_name",
+                "query": {
+                  "datasetName": "ds_sector_names",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "sector_name",
+                      "expression": "`sector_name`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_sector_up_sector_name",
+                "query": {
+                  "datasetName": "ds_sector_up",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "sector_name",
+                      "keyword": "sector_name"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_sector_down_sector_name",
+                "query": {
+                  "datasetName": "ds_sector_down",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "sector_name",
+                      "keyword": "sector_name"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "sector_name",
+                    "displayName": "Sector",
+                    "queryName": "q_ds_sector_names_sector_name"
+                  },
+                  {
+                    "parameterName": "sector_name",
+                    "queryName": "q_ds_sector_up_sector_name"
+                  },
+                  {
+                    "parameterName": "sector_name",
+                    "queryName": "q_ds_sector_down_sector_name"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Sector"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "sector-up",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_sector_up",
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "market_value_share_ratio",
+                      "expression": "`market_value_share_ratio`"
+                    },
+                    {
+                      "name": "member_pe",
+                      "expression": "`member_pe`"
+                    },
+                    {
+                      "name": "pe_without_member",
+                      "expression": "`pe_without_member`"
+                    },
+                    {
+                      "name": "pe_effect",
+                      "expression": "`pe_effect`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company"
+                  },
+                  {
+                    "fieldName": "market_value_share_ratio",
+                    "displayName": "Share of index market value",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe",
+                    "displayName": "P/E of the member",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_without_member",
+                    "displayName": "Index P/E without it",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_effect",
+                    "displayName": "Effect on index P/E",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Chosen sector: top 10 pushing the index P/E up"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 6,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "sector-down",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_sector_down",
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "market_value_share_ratio",
+                      "expression": "`market_value_share_ratio`"
+                    },
+                    {
+                      "name": "member_pe",
+                      "expression": "`member_pe`"
+                    },
+                    {
+                      "name": "pe_without_member",
+                      "expression": "`pe_without_member`"
+                    },
+                    {
+                      "name": "pe_effect",
+                      "expression": "`pe_effect`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company"
+                  },
+                  {
+                    "fieldName": "market_value_share_ratio",
+                    "displayName": "Share of index market value",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe",
+                    "displayName": "P/E of the member",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_without_member",
+                    "displayName": "Index P/E without it",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "pe_effect",
+                    "displayName": "Effect on index P/E",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Chosen sector: top 10 pushing the index P/E down"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 17,
+            "width": 6,
+            "height": 8
+          }
+        }
+      ]
+    },
+    {
+      "name": "filters",
+      "displayName": "Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter-as-of",
+            "queries": [
+              {
+                "name": "q_ds_freshness_as_of_date",
+                "query": {
+                  "datasetName": "ds_freshness",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_lights_as_of_date",
+                "query": {
+                  "datasetName": "ds_lights",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_answers_as_of_date",
+                "query": {
+                  "datasetName": "ds_answers",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_index_day_as_of_date",
+                "query": {
+                  "datasetName": "ds_index_day",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_top_up_as_of_date",
+                "query": {
+                  "datasetName": "ds_top_up",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_top_down_as_of_date",
+                "query": {
+                  "datasetName": "ds_top_down",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_excluded_as_of_date",
+                "query": {
+                  "datasetName": "ds_excluded",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_members_as_of_date",
+                "query": {
+                  "datasetName": "ds_members",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_checks_as_of_date",
+                "query": {
+                  "datasetName": "ds_checks",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_sectors_as_of_date",
+                "query": {
+                  "datasetName": "ds_sectors",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_sector_up_as_of_date",
+                "query": {
+                  "datasetName": "ds_sector_up",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_sector_down_as_of_date",
+                "query": {
+                  "datasetName": "ds_sector_down",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_freshness_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_lights_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_answers_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_index_day_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_top_up_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_top_down_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_excluded_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_members_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_checks_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_sectors_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_sector_up_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_sector_down_as_of_date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "As of date (latest day on or before it)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FCFCFC",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#4E79A7",
+        "#F28E2C",
+        "#76B7B2",
+        "#59A14F",
+        "#B07AA1",
+        "#E15759",
+        "#F2C037"
+      ],
+      "widgetHeaderAlignment": "LEFT"
+    }
+  }
+}

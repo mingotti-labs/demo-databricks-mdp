@@ -1,0 +1,95 @@
+== ds_freshness (Data dates): SUCCEEDED
+  columns: ['climate_date', 'sp500_price_date', 'fed_rate_date', 'cpi_date']
+  rows: 1
+   ['2026-11-03', '2026-11-03', '2026-11-01', '2026-10-30']
+== ds_lights (Lights of the day): SUCCEEDED
+  columns: ['lens_name', 'lens_code', 'yes_count', 'light_code', 'action_name', 'reason_text']
+  rows: 2
+   ['Market climate long run', 'long_run', '3', 'red', 'sell', 'Market climate long run is red (sell): 3 of 3 answers are yes.']
+   ['Market climate modern', 'modern', '3', 'red', 'sell', 'Market climate modern is red (sell): 3 of 3 answers are yes.']
+== ds_answers (Answers of the day): SUCCEEDED
+  columns: ['lens_name', 'lens_code', 'signal_name', 'signal_code', 'answer_text', 'band_code', 'measured_value', 'threshold_value', 'reason_text']
+  rows: 6
+   ['Market climate long run', 'long_run', 'Fed in the way', 'fed_in_the_way', 'Yes', 'red', '4.000000', '3.750000', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+   ['Market climate long run', 'long_run', 'Market going up', 'market_going_up', 'Yes', 'green', '7568.919922', '7315.886362', 'The S&P 500 closed at 7,568.92, above its 200-day average of 7,315.89 (the average moved 1.1% over the last 20 days).']
+   ['Market climate long run', 'long_run', 'Too expensive', 'too_expensive', 'Yes', 'red', '40.045800', '22.000000', 'The S&P 500 price/earnings ratio on 10-year inflation-adjusted earnings is 40.0, above 22 (the line of the long run lens).']
+== ds_light_history (Light history): SUCCEEDED
+  columns: ['signal_date', 'lens_name', 'yes_count', 'light_code']
+  rows: 512
+   ['2025-10-28', 'Market climate long run', '2', 'red']
+   ['2025-10-28', 'Market climate modern', '2', 'red']
+   ['2025-10-29', 'Market climate long run', '2', 'red']
+== ds_pe_history (Price/earnings history): SUCCEEDED
+  columns: ['valuation_date', 'pe_ten_year_adjusted', 'pe_trailing']
+  rows: 256
+   ['2025-10-28', '40.3262', '30.3027']
+   ['2025-10-29', '40.3459', '30.3987']
+   ['2025-10-30', '39.8551', '29.9009']
+== ds_fed_history (Fed target rate): SUCCEEDED
+  columns: ['signal_date', 'fed_target_rate', 'fed_band_code']
+  rows: 1214
+   ['2022-01-03', '0.250000', 'yellow']
+   ['2022-01-04', '0.250000', 'yellow']
+   ['2022-01-05', '0.250000', 'yellow']
+== ds_trend_history (S&P 500 and its 200-day average): SUCCEEDED
+  columns: ['signal_date', 'sp500_close', 'sp500_average_200']
+  rows: 755
+   ['2023-10-31', '4193.799805', '4242.132501']
+   ['2023-11-01', '4237.859863', '4243.366951']
+   ['2023-11-02', '4317.779785', '4245.311549']
+== ds_index_day (Index of the day): SUCCEEDED
+  columns: ['valuation_date', 'market_value_trillion', 'earnings_adjusted_billion', 'pe_ten_year_adjusted', 'pe_trailing', 'members_used_count', 'member_count', 'members_without_shares_count', 'members_under_ten_years_count']
+  rows: 1
+   ['2026-11-03', '66.53819675156716', '1661.55426760369', '40.0458', '24.4350', '489', '500', '8', '52']
+== ds_top_up (Members pushing the P/E up): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'pe_without_member', 'pe_effect']
+  rows: 10
+   ['Nvidia', 'Information Technology', '0.0748630000', '183.1134', '37.6645', '2.3813']
+   ['Amazon', 'Consumer Discretionary', '0.0407400000', '97.3640', '39.0690', '0.9768']
+   ['Tesla, Inc.', 'Consumer Discretionary', '0.0236730000', '359.7667', '39.2010', '0.8448']
+== ds_top_down (Members pushing the P/E down): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'pe_without_member', 'pe_effect']
+  rows: 10
+   ['JPMorgan Chase', 'Financials', '0.0134890000', '18.9243', '40.6664', '-0.6206']
+   ['Bank of America', 'Financials', '0.0051500000', '11.1806', '40.5882', '-0.5424']
+   ['Verizon', 'Communication Services', '0.0028180000', '8.1995', '40.4902', '-0.4444']
+== ds_excluded (Members left out): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'exclusion_reason_code', 'price_date']
+  rows: 11
+   ['Vylor', 'Consumer Staples', 'no_filing', '2026-11-03']
+   ['Honeywell Aerospace', 'Industrials', 'no_net_income', '2026-11-03']
+   ['Viatris', 'Health Care', 'no_net_income', '2026-11-03']
+== ds_members (All members): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'pe_without_member', 'pe_effect', 'is_used', 'exclusion_reason_code', 'price_close', 'share_count', 'market_value_billion']
+  rows: 500
+   ['Nvidia', 'Information Technology', '0.0748630000', '183.1134', '37.6645', '2.3813', 'true', None, '206.690002', '24100000000', '4981.2290482']
+   ['Apple Inc.', 'Information Technology', '0.0724880000', '49.3874', '39.4624', '0.5834', 'true', None, '331.899994', '14532182000', '4823.231118606908']
+   ['Microsoft', 'Information Technology', '0.0581470000', '52.6203', '39.4636', '0.5822', 'true', None, '520.989990', '7426194552', '3868.9730253845346']
+== ds_checks (Checks of the day): SUCCEEDED
+  columns: ['index_used_count', 'member_used_count', 'market_value_difference_amount', 'earnings_difference_amount', 'pe_index', 'pe_from_members']
+  rows: 1
+   ['489', '489', '0.00', '0.00', '40.0458', '40.0458']
+== ds_sectors (Sectors of the day): SUCCEEDED
+  columns: ['sector_name', 'member_count', 'market_value_trillion', 'market_value_share_ratio', 'sector_pe', 'pe_without_sector', 'pe_index']
+  rows: 11
+   ['Information Technology', '75', '24.481094118236335', '0.367925', '66.681416', '32.491102', '40.045756']
+   ['Health Care', '59', '6.924052787815693', '0.104061', '35.323534', '40.677362', '40.045756']
+   ['Consumer Discretionary', '47', '6.8444901087613585', '0.102866', '51.435621', '39.054161', '40.045756']
+== ds_sector_up (Sector members pushing the P/E up): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'pe_without_member', 'pe_effect', 'pe_effect_sort']
+  rows: 10
+   ['Nvidia', 'Information Technology', '0.0748630000', '183.1134', '37.6645', '2.3813', '2.3813']
+   ['Broadcom', 'Information Technology', '0.0238280000', '139.7659', '39.3603', '0.6855', '0.6855']
+   ['Apple Inc.', 'Information Technology', '0.0724880000', '49.3874', '39.4624', '0.5834', '0.5834']
+== ds_sector_down (Sector members pushing the P/E down): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'pe_without_member', 'pe_effect', 'pe_effect_sort']
+  rows: 10
+   ['Intel', 'Information Technology', '0.0048370000', '25.7358', '40.1543', '-0.1085', '-0.1085']
+   ['HP Inc.', 'Information Technology', '0.0003830000', '5.9934', '40.1332', '-0.0874', '-0.0874']
+   ['Accenture', 'Information Technology', '0.0023020000', '21.9182', '40.1223', '-0.0765', '-0.0765']
+== ds_sector_names (Sector names): SUCCEEDED
+  columns: ['sector_name']
+  rows: 11
+   ['Communication Services']
+   ['Consumer Discretionary']
+   ['Consumer Staples']
