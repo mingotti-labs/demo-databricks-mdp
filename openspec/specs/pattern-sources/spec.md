@@ -1,7 +1,9 @@
 # pattern-sources Specification
 
 ## Purpose
-TBD - created by archiving change neon-clickstream-to-patterns. Update Purpose after archive.
+Keeps neon (Lakeflow Connect, query-based, PostgreSQL) and clickstream (Auto Loader, addNewColumns)
+as deployable reference patterns in the patterns bundle instead of sources of the main bundle: they
+cost table slots only while someone deploys them, and CI validates them so they do not go stale.
 
 ## Requirements
 
