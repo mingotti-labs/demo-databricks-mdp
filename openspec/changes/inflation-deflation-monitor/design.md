@@ -28,6 +28,10 @@ trading signals or shortlists from the rating.
 (`cicd/run_dev.py yahoo --param reload_symbols=...`), then `run_investments`. Pass: first dates in dev equal prd's
 (probe P1).
 
+Finding: `reload_symbols` alone reloaded from the symbol's first stored day, which in dev was already
+2025-11-03, so the first run changed nothing. `plan()` in `common/yahoo_market.py` now loads all history Yahoo has for
+a benchmark named in `reload_symbols` (a new benchmark already did).
+
 ### D2. Commodities: the CRB votes
 The 2004 plan used the old CRB (17 commodities, equal weights). In 2005 the index was rebuilt with uneven weights
 (energy about 39%); that is the `^TRCCRB` series loaded. The old equal-weighted formula continues as the

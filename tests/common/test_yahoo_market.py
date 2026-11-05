@@ -153,3 +153,11 @@ def test_stamp_and_jsonl():
         "symbol": "KO",
         "ingested_timestamp": "2026-10-29T00:00:00+00:00",
     }
+
+
+def test_plan_reload_of_a_benchmark_loads_all_history():
+    benchmarks = {"^TRCCRB"}
+    state = {"first_price_date": "2025-11-03", "last_price_date": "2026-10-28"}
+    assert plan(state, {"^TRCCRB"}, "^TRCCRB", TODAY, benchmarks) == (date(1970, 1, 1), True)
+    assert plan(state, {"*"}, "^TRCCRB", TODAY, benchmarks) == (date(1970, 1, 1), True)
+    assert plan(state, {"KO"}, "^TRCCRB", TODAY, benchmarks) == (date(2026, 10, 27), False)
