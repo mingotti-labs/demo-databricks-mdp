@@ -23,6 +23,9 @@ INK = "#11171C"
 TEXT_COLOR = {"expr": "colors.textPrimary.default"}
 START_DATE = {"year": 2022, "month": 1, "date": 1}
 AXIS_WIDTH = 64
+Y_PADDING = 14
+MONTH_END = {"expr": "datetime(year(now()), month(now()) + 1, 1)"}
+SHARED_DOMAIN = [START_DATE, MONTH_END]
 PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
 LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
 
@@ -167,7 +170,7 @@ def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
         "width": "container", "height": "container", "config": {"autosize": {"type": "fit", "contains": "padding"}},
         "transform": [{"calculate": "datum.yes_count + '/3'", "as": "yes_label"},
                       {"calculate": "datum.lens_code == 'long_run' ? 'Long Run' : 'Modern'", "as": "lens_label"}],
-        "title": {"text": {"expr": "'Market Climate as of ' + data('databricks_query')[0].climate_date"}, "anchor": "start", "fontSize": 16, "color": TEXT_COLOR},
+        "title": {"text": {"expr": "'Market Climate as of ' + utcFormat(toDate(data('databricks_query')[0].climate_date), '%Y-%m-%d')"}, "anchor": "start", "fontSize": 16, "color": TEXT_COLOR},
         "encoding": {"x": {"field": "lens_label", "type": "nominal", "sort": ["Long Run", "Modern"],
                            "axis": {"title": None, "orient": "top", "labelFontSize": 18, "labelAngle": 0, "labelColor": TEXT_COLOR, "domain": False, "ticks": False}},
                      "tooltip": [{"field": "lens_name", "title": "Climate"}, {"field": "action_name", "title": "Action"}, {"field": "reason_text", "title": "Why"}]},
@@ -205,7 +208,7 @@ def vega(name: str, title: str, dataset: str, fields: list[str], spec: dict, x: 
 def light_history(x: int, y: int, w: int, h: int) -> dict:
     """Both climates; the long-run line is drawn wide and pale under the thin modern line so equal answers stay visible."""
     time_x = {"field": "signal_date", "type": "temporal", "title": None}
-    spec = {"encoding": {"x": time_x, "y": {"field": "yes_count", "type": "quantitative", "title": "Yes answers", "scale": {"domain": [0, 3]}, "axis": {"tickMinStep": 1}},
+    spec = {"encoding": {"x": time_x, "y": {"field": "yes_count", "type": "quantitative", "title": "Yes answers", "scale": {"domain": [0, 3], "padding": Y_PADDING}, "axis": {"tickMinStep": 1}},
                          "color": {"field": "lens_name", "type": "nominal", "title": "Climate"},
                          "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "lens_name", "title": "Climate"}, {"field": "yes_count", "title": "Yes answers"}]},
             "layer": [{"transform": [{"filter": "datum.lens_code == 'long_run'"}], "mark": {"type": "line", "strokeWidth": 9, "opacity": 0.35, "interpolate": "step-after"}},
@@ -217,7 +220,7 @@ def light_history(x: int, y: int, w: int, h: int) -> dict:
 
 def fed_history(x: int, y: int, w: int, h: int) -> dict:
     """Target rate line over a background: red within 6 months of a hike, green within 6 months of a cut."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": [START_DATE, {"year": 2030, "month": 1, "date": 1}]}}
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
     spec = {"layer": [
         {"transform": [{"window": [{"op": "lead", "field": "signal_date", "as": "next_date"}], "sort": [{"field": "signal_date"}]},
                        {"filter": "datum.fed_band_code == 'red' || datum.fed_band_code == 'green'"}],
@@ -227,7 +230,7 @@ def fed_history(x: int, y: int, w: int, h: int) -> dict:
                                 "scale": {"domain": ["red", "green"], "range": [RED, GREEN]},
                                 "legend": {"orient": "top", "labelExpr": "datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'"}}}},
         {"mark": {"type": "line", "interpolate": "step-after", "strokeWidth": 2.5, "color": "#2B3A55"},
-         "encoding": {"x": time_x, "y": {"field": "fed_target_rate", "type": "quantitative", "title": "Target rate (%)", "scale": {"zero": True, "nice": True}, "axis": {"format": ".2f", "tickCount": 6, "minExtent": AXIS_WIDTH}},
+         "encoding": {"x": time_x, "y": {"field": "fed_target_rate", "type": "quantitative", "title": "Target rate (%)", "scale": {"zero": True, "nice": True, "padding": Y_PADDING}, "axis": {"format": ".2f", "tickCount": 6, "minExtent": AXIS_WIDTH}},
                       "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "fed_target_rate", "title": "Target rate (%)"}]}}]}
     return vega("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", ["signal_date", "fed_target_rate", "fed_band_code"], spec, x, y, w, h,
                 "Red background: within 6 months of a hike. Green background: within 6 months of a cut.")
@@ -235,18 +238,66 @@ def fed_history(x: int, y: int, w: int, h: int) -> dict:
 
 def trend_history(x: int, y: int, w: int, h: int) -> dict:
     """S&P 500 and its 200-day average on the same time axis and left margin as the Fed chart."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": [START_DATE, {"year": 2030, "month": 1, "date": 1}]}}
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
     spec = {"transform": [{"fold": ["sp500_close", "sp500_average_200"], "as": ["series", "value"]},
                           {"calculate": "datum.series == 'sp500_close' ? 'S&P 500 close' : '200-day average'", "as": "series_label"}],
             "mark": {"type": "line", "strokeWidth": 2},
             "encoding": {"x": time_x,
-                         "y": {"field": "value", "type": "quantitative", "title": "Index points", "scale": {"zero": False},
+                         "y": {"field": "value", "type": "quantitative", "title": "Index points", "scale": {"zero": False, "padding": Y_PADDING},
                                "axis": {"format": ",.0f", "minExtent": AXIS_WIDTH}},
                          "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"}},
                          "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Line"},
                                      {"field": "value", "type": "quantitative", "format": ",.2f", "title": "Value"}]}}
     return vega("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", ["signal_date", "sp500_close", "sp500_average_200"], spec, x, y, w, h,
                 "Same dates and left margin as the Fed chart, so the two can be read one above the other.")
+
+
+def pe_history(x: int, y: int, w: int, h: int) -> dict:
+    """Index P/E, both measures, with the three band lines drawn once each."""
+    time_x = {"field": "valuation_date", "type": "temporal", "title": None}
+    lines = [(16, "cheap line, long run", GREEN), (22, "expensive line, long run", YELLOW), (30, "expensive line, modern", RED)]
+    spec = {"layer": [
+        {"transform": [{"fold": ["pe_ten_year_adjusted", "pe_trailing"], "as": ["series", "value"]},
+                       {"calculate": "datum.series == 'pe_trailing' ? 'Trailing 12 months' : '10-year inflation-adjusted (votes)'", "as": "series_label"}],
+         "mark": {"type": "line", "strokeWidth": 2},
+         "encoding": {"x": time_x, "y": {"field": "value", "type": "quantitative", "title": "Price/earnings ratio", "scale": {"zero": True, "padding": Y_PADDING}},
+                      "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"}},
+                      "tooltip": [{"field": "valuation_date", "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Measure"},
+                                  {"field": "value", "type": "quantitative", "format": ".2f", "title": "P/E"}]}}]
+        + [{"transform": [{"window": [{"op": "row_number", "as": "row_rank"}]}, {"filter": "datum.row_rank == 1"}],
+            "mark": {"type": "rule", "strokeDash": [6, 4], "color": color, "strokeWidth": 1.5},
+            "encoding": {"y": {"datum": value, "type": "quantitative"}}} for value, _, color in lines]
+        + [{"transform": [{"window": [{"op": "row_number", "as": "row_rank"}]}, {"filter": "datum.row_rank == 1"}],
+            "mark": {"type": "text", "align": "left", "dx": 4, "dy": -6, "fontSize": 11, "color": TEXT_COLOR},
+            "encoding": {"x": {"value": 0}, "y": {"datum": value, "type": "quantitative"}, "text": {"value": label}}} for value, label, _ in lines]}
+    return vega("pe-history", "S&P 500 price/earnings ratio", "ds_pe_history", ["valuation_date", "pe_ten_year_adjusted", "pe_trailing"], spec, x, y, w, h,
+                "Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern).")
+
+
+def company_price(x: int, y: int, w: int, h: int) -> dict:
+    """Close line with the Bollinger bands."""
+    spec = {"transform": [{"fold": ["price_close", "band_upper", "band_middle", "band_lower"], "as": ["series", "value"]},
+                          {"calculate": "{'price_close': 'Close', 'band_upper': 'Upper band', 'band_middle': '20-day average', 'band_lower': 'Lower band'}[datum.series]", "as": "series_label"}],
+            "mark": {"type": "line", "strokeWidth": 2},
+            "encoding": {"x": {"field": "price_date", "type": "temporal", "title": None},
+                         "y": {"field": "value", "type": "quantitative", "title": "US$", "scale": {"zero": False, "padding": Y_PADDING}},
+                         "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"},
+                                   "scale": {"domain": ["Close", "Upper band", "20-day average", "Lower band"], "range": [PALETTE[0], PALETTE[1], PALETTE[2], PALETTE[1]]}},
+                         "strokeDash": {"field": "series_label", "type": "nominal", "legend": None,
+                                        "scale": {"domain": ["Close", "Upper band", "20-day average", "Lower band"], "range": [[1, 0], [5, 3], [1, 0], [5, 3]]}},
+                         "tooltip": [{"field": "price_date", "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Line"},
+                                     {"field": "value", "type": "quantitative", "format": ",.2f", "title": "US$"}]}}
+    return vega("company-price", "Close with Bollinger bands", "ds_company_price", ["price_date", "price_close", "band_upper", "band_middle", "band_lower"], spec, x, y, w, h,
+                "Bands: 20-day average of the close, plus and minus 2 standard deviations.")
+
+
+def sector_bars(x: int, y: int, w: int, h: int) -> dict:
+    spec = {"mark": {"type": "bar"},
+            "encoding": {"x": {"field": "sector_name", "type": "nominal", "sort": "-y", "title": None, "axis": {"labelAngle": -30}},
+                         "y": {"field": "sector_pe", "type": "quantitative", "title": "Sector P/E", "scale": {"zero": True, "padding": Y_PADDING}},
+                         "color": {"value": PALETTE[0]},
+                         "tooltip": [{"field": "sector_name", "title": "Sector"}, {"field": "sector_pe", "type": "quantitative", "format": ".2f", "title": "Sector P/E"}]}}
+    return vega("sector-pe", "Sector P/E", "ds_sectors", ["sector_name", "sector_pe"], spec, x, y, w, h)
 
 
 def counter(name: str, title: str, dataset: str, field: str, fmt: dict, x: int, y: int, w: int, h: int) -> dict:
@@ -272,8 +323,7 @@ def company_page() -> dict:
         counter("day-change", "Change on the day", "ds_company_figures", "day_change_ratio", percent, 3, 6, 3, 3),
         counter("high-52", "52-week high (US$)", "ds_company_figures", "high_52_weeks", money, 6, 6, 3, 3),
         counter("low-52", "52-week low (US$)", "ds_company_figures", "low_52_weeks", money, 9, 6, 3, 3),
-        line("company-price", "Close with Bollinger bands", "ds_company_price", "price_date",
-             [("price_close", "Close"), ("band_upper", "Upper band"), ("band_middle", "20-day average"), ("band_lower", "Lower band")], 0, 9, 12, 8),
+        company_price(0, 9, 12, 8),
         table("company-steps", "From the numbers to the P/E", "ds_company_check", steps, 0, 17, 12, 10),
     ]}
 
@@ -291,11 +341,7 @@ def climate_page() -> dict:
         text("climate-title", ["# Market Climate\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
         traffic_lights("traffic-lights", 0, 5, 12, 6),
         light_history(0, 11, 12, 5),
-        line("pe-history", "S&P 500 price/earnings ratio", "ds_pe_history", "valuation_date",
-             [("pe_ten_year_adjusted", "10-year inflation-adjusted (votes)"), ("pe_trailing", "Trailing 12 months")], 0, 16, 12, 6,
-             annotations=[horizontal("16", "cheap line, long run", GREEN), horizontal("22", "expensive line, long run", YELLOW),
-                          horizontal("30", "expensive line, modern", RED)],
-             description="Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern)."),
+        pe_history(0, 16, 12, 6),
         fed_history(0, 22, 12, 6),
         trend_history(0, 28, 12, 6),
         table("answers", "The three answers of each climate", "ds_answers", answers, 0, 34, 12, 7),
@@ -353,7 +399,7 @@ def sector_page() -> dict:
              "Index P/E without the sector shows how much the sector lifts or lowers the index ratio. Sectors are today's sectors (GICS), "
              "applied to every day."], 0, 0, 12, 3),
         table("sectors", "Every sector on the day", "ds_sectors", sectors, 0, 3, 12, 7),
-        bar("sector-pe", "Sector P/E", "ds_sectors", "sector_name", ("sector_pe", "Sector P/E"), 0, 10, 12, 5),
+        sector_bars(0, 10, 12, 5),
         filter_widget("filter-sector", "Sector", "filter-single-select",
                       [("ds_sector_names", "field", "sector_name"), ("ds_sector_up", "parameter", "sector_name"),
                        ("ds_sector_down", "parameter", "sector_name")], 0, 15, 6),
