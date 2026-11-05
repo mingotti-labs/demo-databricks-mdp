@@ -1,2 +1,0 @@
-[dev svc_cicd_github] run--yahoo--dev: run 75421937987523
-SUCCESS https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/1091762860577369/run/75421937987523

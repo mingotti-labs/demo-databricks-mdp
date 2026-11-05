@@ -61,6 +61,7 @@ def test_commodity_exchanges_map_to_a_market_or_to_no_market():
         "NYM": "XNYM",
         "FGI": "XXXX",
         "SNP": "XXXX",
+        "NYB": "XXXX",
     }
 
 

@@ -1,0 +1,2 @@
+[dev svc_cicd_github] run--investments--dev: run 767505614102051
+FAILED https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/1049696463765318/run/767505614102051

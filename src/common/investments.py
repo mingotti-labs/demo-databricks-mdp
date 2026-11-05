@@ -56,6 +56,7 @@ YAHOO_EXCHANGE_TO_MARKET = {
     "NYM": "XNYM",
     "FGI": "XXXX",
     "SNP": "XXXX",
+    "NYB": "XXXX",
 }
 
 # (rate_code, rate_name, source, series_id, unit); the source is the Landing table's source.
