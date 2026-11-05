@@ -21,17 +21,17 @@
 
 ## 4. Dashboard and Genie (D6, D7)
 
-- [ ] 4.1 `common/dashboard_widgets.py` from `market_climate_dashboard.py`; Market Climate JSON unchanged
-- [ ] 4.2 `common/inflation_queries.py`, `common/inflation_dashboard.py`, resource
+- [x] 4.1 `common/dashboard_widgets.py` from `market_climate_dashboard.py`; Market Climate JSON unchanged
+- [x] 4.2 `common/inflation_queries.py`, `common/inflation_dashboard.py`, resource
       `resources/dashboards/inflation_deflation.dashboard.yml`; `ds_company_figures` reads the stored 52-week columns;
       `cicd/build_dashboards.py` (and its `--check` test) writes all generated files
-- [ ] 4.3 Genie agent: tables, instructions, examples, benchmarks (D7)
-- [ ] 4.4 Every dashboard and Genie query runs in dev (probe script)
+- [x] 4.3 Genie agent: tables, instructions, examples, benchmarks (D7)
+- [x] 4.4 Every dashboard and Genie query runs in dev (probe script)
 
 ## 5. Run and check in dev
 
-- [ ] 5.1 Draft PR deploy-dev; `run_investments verify=true`
-- [ ] 5.2 Genie benchmark evaluation in dev passes
+- [x] 5.1 Draft PR deploy-dev; `run_investments verify=true`
+- [x] 5.2 Genie benchmark evaluation in dev passes
 - [ ] 5.3 P4: the user checks the dashboard and asks the agent; quota read (expected 484 after dev)
 
 ## 6. After merge
