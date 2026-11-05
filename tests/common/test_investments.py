@@ -56,7 +56,7 @@ def test_market_code_sql_maps_every_exchange_code():
 
 
 def test_commodity_exchanges_map_to_a_market_or_to_no_market():
-    assert {c: YAHOO_EXCHANGE_TO_MARKET[c] for c in ("CMX", "NYM", "FGI", "SNP")} == {
+    assert {c: YAHOO_EXCHANGE_TO_MARKET[c] for c in ("CMX", "NYM", "FGI", "SNP", "NYB")} == {
         "CMX": "XNYM",
         "NYM": "XNYM",
         "FGI": "XXXX",
