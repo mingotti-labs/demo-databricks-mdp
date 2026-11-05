@@ -39,6 +39,12 @@
                 "question": [
                   "Is the market too expensive right now?"
                 ]
+              },
+              {
+                "id": "e82e58bb9e3846157ec10d3045dc8631",
+                "question": [
+                  "What is the inflation rating today?"
+                ]
               }
             ]
           },
@@ -81,7 +87,13 @@
                 ]
               },
               {
+                "identifier": "${var.catalog}.silver_domain_investments.market_rate_indicator_daily"
+              },
+              {
                 "identifier": "${var.catalog}.silver_domain_investments.price_daily"
+              },
+              {
+                "identifier": "${var.catalog}.silver_domain_investments.price_indicator_daily"
               }
             ]
           },
@@ -105,11 +117,29 @@
                   "market_value_share_ratio is the member's share of the index market value (0 to 1). Amounts are in US dollars.\n",
                   "To name a company use silver_domain_investments company (company_name) joined on company_id; its sector is gics_sector_name. Sectors are today's sectors applied to every day.\n",
                   "Prices are in price_daily (price_close, price_high, price_low per listing and price_date); join on listing_id.\n",
-                  "Show dates as YYYY-MM-DD. Round ratios to 2 decimals unless asked for more.\n"
+                  "Show dates as YYYY-MM-DD. Round ratios to 2 decimals unless asked for more.\n",
+                  "The Inflation Deflation monitor is monitor_code inflation_deflation in monitor_daily_signal (one lens, game_plan). Four star rows per day (signal_code commodity_prices, consumer_prices, gold_prices, interest_rates; is_yes true means the star is on, pointing to inflation) and one rating row (signal_code rating).\n",
+                  "Stars: commodity_prices is on when the 200-day average of the CRB commodity index (^TRCCRB) is rising; consumer_prices when the 200-day average of the US consumer price index is rising; gold_prices when gold futures (GC=F) close above their 200-day average; interest_rates when the short-term rate (federal funds effective rate) is above its 200-day average.\n",
+                  "Rating: yes_count is the stars on (0 to 4) and measured_value the rating; action_name is the label: 4 Increasing Inflation, 3 Inflation Danger, 2 Some Inflation Risk, 1 Mild or Decreasing Inflation, 0 Decreasing Inflation, -1 Deflation (no star on and US consumer prices below their level 12 months earlier; threshold_value on the rating row is that 12-month change in percent).\n",
+                  "market_rate_indicator_daily has, per series and trading day, the value known that day, its 200-day average and the average's 20-day change: the CPI index, the CPI change against the previous reading and over 12 months, the federal funds effective rate and the real rate (effective rate minus the 12-month CPI change, percent). The real rate is shown for context and does not vote.\n",
+                  "price_indicator_daily has per listing and day the 200-day average of the adjusted close, its 20-day slope ratio and the 52-week high and low (price_high_fifty_two_week_amount, price_low_fifty_two_week_amount). Commodity benchmarks are listings with trading_symbol_code ^TRCCRB (CRB, votes), ^SPGSCI, GC=F (gold, votes), SI=F, HG=F, CL=F, DBC and GSG (context).\n",
+                  "Consumer prices count from the first day of their month, before they are published, so the rating can look ahead by up to six weeks.\n"
                 ]
               }
             ],
             "example_question_sqls": [
+              {
+                "id": "06069a514127d85375db0fb49f358390",
+                "question": [
+                  "How fresh is the inflation data?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= current_date()) SELECT (SELECT day FROM asof) AS rating_date, (SELECT max(price_date) FROM ${var.catalog}.silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = '^TRCCRB') AS crb_price_date, (SELECT max(price_date) FROM ${var.catalog}.silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = 'GC=F') AS gold_price_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_federal_funds_effective_rate') AS rate_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted' AND NOT is_carried_forward) AS cpi_reading_date"
+                ],
+                "usage_guidance": [
+                  "The rating date and the latest date of each input."
+                ]
+              },
               {
                 "id": "1703274fab3cbf3545fcdd2a023ab27c",
                 "question": [
@@ -144,6 +174,18 @@
                 ],
                 "usage_guidance": [
                   "Members that are not used, with the reason."
+                ]
+              },
+              {
+                "id": "4374e11af2c9a123bc1c1f9db146a57d",
+                "question": [
+                  "What is the inflation rating today?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= current_date()) SELECT s.signal_date AS rating_date, s.yes_count AS stars_on, CAST(s.measured_value AS INT) AS rating, s.action_name AS label, s.band_code AS rating_band, s.threshold_value AS cpi_change_twelve_months, s.reason_text FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'inflation_deflation' AND s.signal_code = 'rating'"
+                ],
+                "usage_guidance": [
+                  "Rating row of the latest day: stars on, label, US consumer prices over 12 months."
                 ]
               },
               {
@@ -200,10 +242,58 @@
                   "What are EQT's last close and its 52-week high and low?"
                 ],
                 "sql": [
-                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()), listing AS (SELECT m.listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation'), prices AS (SELECT p.price_date, p.price_close, p.price_high, p.price_low, avg(p.price_close) OVER w AS band_middle, stddev_pop(p.price_close) OVER w AS band_deviation, count(*) OVER w AS window_count, max(p.price_date) OVER () AS last_date FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof) WINDOW w AS (ORDER BY p.price_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW)) , ranked AS (SELECT *, row_number() OVER (ORDER BY price_date DESC) AS recency FROM prices) SELECT max(CASE WHEN recency = 1 THEN price_close END) AS last_close, max(CASE WHEN recency = 1 THEN price_close END) / max(CASE WHEN recency = 2 THEN price_close END) - 1 AS day_change_ratio, max(CASE WHEN price_date > add_months(last_date, -12) THEN price_high END) AS high_52_weeks, min(CASE WHEN price_date > add_months(last_date, -12) THEN price_low END) AS low_52_weeks, max(last_date) AS price_date FROM ranked"
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()), listing AS (SELECT m.listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation'), priced AS (SELECT p.price_date, p.price_close, i.price_high_fifty_two_week_amount AS high_52_weeks, i.price_low_fifty_two_week_amount AS low_52_weeks, lag(p.price_close) OVER (ORDER BY p.price_date) AS previous_close FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN ${var.catalog}.silver_domain_investments.price_indicator_daily i ON i.listing_id = p.listing_id AND i.price_date = p.price_date JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof)) SELECT price_close AS last_close, price_close / previous_close - 1 AS day_change_ratio, high_52_weeks, low_52_weeks, price_date FROM priced ORDER BY price_date DESC LIMIT 1"
                 ],
                 "usage_guidance": [
                   "Replace 'EQT Corporation' with the company asked about."
+                ]
+              },
+              {
+                "id": "8971f94739ab6aed577781846d613e55",
+                "question": [
+                  "What is the real interest rate over time?"
+                ],
+                "sql": [
+                  "SELECT indicator_date, rate_value, two_hundred_day_average_value AS average_200 FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate' AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY indicator_date"
+                ],
+                "usage_guidance": [
+                  "Effective rate minus the US consumer price change over 12 months, last 36 months."
+                ]
+              },
+              {
+                "id": "99c9f223adabe530b71a75484d424d85",
+                "question": [
+                  "Which inflation stars are on today, and why?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= current_date()) SELECT s.signal_name, s.signal_code, CASE s.signal_code WHEN 'commodity_prices' THEN 1 WHEN 'consumer_prices' THEN 2 WHEN 'gold_prices' THEN 3 ELSE 4 END AS star_order, CASE WHEN s.is_yes THEN 'On' ELSE 'Off' END AS star_state, s.band_code AS star_band, s.measured_value, s.threshold_value, s.reason_text FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'inflation_deflation' AND s.signal_code <> 'rating' ORDER BY star_order"
+                ],
+                "usage_guidance": [
+                  "One row per vehicle; On means it points to inflation."
+                ]
+              },
+              {
+                "id": "aaadc45a93b9c13f050fe88fff899a2d",
+                "question": [
+                  "How have US consumer prices changed over 12 months?"
+                ],
+                "sql": [
+                  "SELECT indicator_date, rate_value AS cpi_change, CASE rate_code WHEN 'us_cpi_change_twelve_months_percent' THEN 'Over 12 months' ELSE 'Against the previous reading' END AS change_label FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily WHERE rate_code IN ('us_cpi_change_twelve_months_percent', 'us_cpi_change_previous_reading_percent') AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY indicator_date"
+                ],
+                "usage_guidance": [
+                  "The 12-month change and the change against the previous reading, last 36 months."
+                ]
+              },
+              {
+                "id": "bba3ddf92c7dec313dc4d1688f4fef0a",
+                "question": [
+                  "How has the inflation rating changed over time?"
+                ],
+                "sql": [
+                  "SELECT signal_date, yes_count AS stars_on, CAST(measured_value AS INT) AS rating, action_name AS label FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date"
+                ],
+                "usage_guidance": [
+                  "Rating per day, last 36 months."
                 ]
               },
               {
@@ -240,6 +330,30 @@
                 ],
                 "usage_guidance": [
                   "One row per climate and question."
+                ]
+              },
+              {
+                "id": "df1621fab1176953df2892dd0342ae21",
+                "question": [
+                  "What is the short-term interest rate and its 200-day average?"
+                ],
+                "sql": [
+                  "SELECT indicator_date, rate_value, two_hundred_day_average_value AS average_200 FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_federal_funds_effective_rate' AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY indicator_date"
+                ],
+                "usage_guidance": [
+                  "Federal funds effective rate, last 36 months."
+                ]
+              },
+              {
+                "id": "e93e90997545471d0e255cf6e3845f61",
+                "question": [
+                  "How do the commodity benchmarks compare with their 200-day averages today?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= current_date()), names AS (SELECT * FROM VALUES ('^TRCCRB', 'CRB commodity index (votes)', 1), ('^SPGSCI', 'S&P GSCI commodity index', 2), ('GC=F', 'Gold futures (votes as gold)', 3), ('SI=F', 'Silver futures', 4), ('HG=F', 'Copper futures', 5), ('CL=F', 'WTI crude oil futures', 6), ('DBC', 'Invesco DB Commodity fund', 7), ('GSG', 'iShares S&P GSCI fund', 8) AS names(symbol, benchmark_name, benchmark_order)) , latest AS (SELECT p.*, row_number() OVER (PARTITION BY p.trading_symbol_code ORDER BY p.price_date DESC) AS pick FROM ${var.catalog}.silver_domain_investments.price_indicator_daily p JOIN asof a ON p.price_date <= a.day AND p.price_date >= date_sub(a.day, 7) WHERE p.trading_symbol_code IN (SELECT symbol FROM names)) SELECT n.benchmark_name, n.symbol, l.price_date, l.price_close_adjusted AS price_close, l.close_adjusted_two_hundred_day_average_amount AS average_200, l.price_close_adjusted / l.close_adjusted_two_hundred_day_average_amount - 1 AS distance_ratio, l.close_adjusted_two_hundred_day_average_slope_ratio AS slope_ratio, CASE WHEN l.price_close_adjusted > l.close_adjusted_two_hundred_day_average_amount THEN 'Above' ELSE 'Below' END AS position_text, CASE WHEN l.close_adjusted_two_hundred_day_average_slope_ratio > 0 THEN 'Rising' ELSE 'Falling' END AS direction_text, n.symbol = '^TRCCRB' AS is_vote FROM names n LEFT JOIN latest l ON l.trading_symbol_code = n.symbol AND l.pick = 1 ORDER BY n.benchmark_order"
+                ],
+                "usage_guidance": [
+                  "Eight benchmarks; only the CRB index and gold vote."
                 ]
               },
               {
@@ -318,6 +432,20 @@
           "benchmarks": {
             "questions": [
               {
+                "id": "2ba41e61a6e01869a2c69a1f315a4d84",
+                "question": [
+                  "When was the last deflation rating?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND measured_value = -1"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "66fa34212000c5983b8e303ef8d5686a",
                 "question": [
                   "Is the Fed in the way?"
@@ -383,6 +511,34 @@
                     "format": "SQL",
                     "content": [
                       "SELECT lens_name, is_yes, measured_value, threshold_value FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'too_expensive' AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "e95c78c01922fc9371ac728fa7c0d347",
+                "question": [
+                  "What is the real interest rate today?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT rate_value FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate' AND indicator_date = (SELECT max(indicator_date) FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate')"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "eeaafb5d3b7b1b03d66f4708e275bcab",
+                "question": [
+                  "How many inflation stars are on today?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT yes_count, action_name FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation')"
                     ]
                   }
                 ]

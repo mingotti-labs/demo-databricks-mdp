@@ -13,6 +13,18 @@ COMMODITY_SYMBOL = "^TRCCRB"
 GOLD_SYMBOL = "GC=F"
 STAR_COUNT = 4
 
+# The eight commodity benchmarks of data/portfolio/benchmarks.csv, in the order the dashboard shows them.
+BENCHMARK_NAMES = {
+    "^TRCCRB": "CRB commodity index (votes)",
+    "^SPGSCI": "S&P GSCI commodity index",
+    "GC=F": "Gold futures (votes as gold)",
+    "SI=F": "Silver futures",
+    "HG=F": "Copper futures",
+    "CL=F": "WTI crude oil futures",
+    "DBC": "Invesco DB Commodity fund",
+    "GSG": "iShares S&P GSCI fund",
+}
+
 # Stars on -> (band, label); -1 is deflation.
 RATINGS = {
     4: ("red", "Increasing Inflation"),

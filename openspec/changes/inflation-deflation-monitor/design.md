@@ -90,7 +90,7 @@ yellow (2), green (0 or 1), blue (-1). A day without all four inputs has no rows
 `common/inflation_signals_sql.py` (plain strings, as market climate's), thresholds in `common/inflation.py`;
 `monitor_daily_signal` becomes the union of both monitors. The column comments name the new values.
 
-### D6. Dashboard "Inflation Deflation"
+### D6. Dashboard "Inflation-Deflation Monitor"
 Its own dashboard (each story its own, the agent spans them). Generic widget helpers move from
 `common/market_climate_dashboard.py` to `common/dashboard_widgets.py` (no change to the Market Climate JSON).
 New `common/inflation_queries.py` and `common/inflation_dashboard.py`; `cicd/build_market_climate.py` becomes

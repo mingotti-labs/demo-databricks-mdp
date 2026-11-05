@@ -1,4 +1,5 @@
-"""Probe P3 (market-climate-dashboard, read only): every dataset query of the dashboard on the SQL warehouse.
+"""Probe P3 (market-climate-dashboard, read only): every dataset query of the dashboards (Market Climate and,
+since inflation-deflation-monitor, Inflation Deflation) on the SQL warehouse.
 
 Runs each query with the dashboard's own catalog and schema defaults (bare table names), with the date
 parameter and the sector parameter bound to values. Prints rows and the first rows.
@@ -16,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "single-silver-landing-schema"))
 from compare import cli  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+from common.inflation_queries import DATASETS as INFLATION_DATASETS  # noqa: E402
 from common.market_climate_queries import DATASETS  # noqa: E402
 
 
@@ -47,7 +49,7 @@ def main() -> None:
         {"name": "company_name", "value": args.company, "type": "STRING"},
         {"name": "range_code", "value": args.range, "type": "STRING"},
     ]
-    for name, (title, query) in DATASETS.items():
+    for name, (title, query) in {**DATASETS, **INFLATION_DATASETS}.items():
         out = run(args.profile, warehouse, args.catalog, query, parameters)
         state = out["status"]["state"]
         print(f"== {name} ({title}): {state}")

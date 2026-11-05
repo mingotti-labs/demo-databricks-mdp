@@ -29,7 +29,7 @@ inflation) as a daily series, and for the 52-week high and low noted on 2026-11-
   rates: the short-term rate above its 200-day average) and a rating row (stars 0 to 4, or minus one when no
   star is on and CPI over 12 months is below zero), with its label (Increasing Inflation, Inflation Danger, Some
   Inflation Risk, Mild or Decreasing Inflation, Decreasing Inflation, Deflation) and a plain reason.
-- **Dashboard "Inflation Deflation"** (its own dashboard, built by the same pattern as Market Climate): the
+- **Dashboard "Inflation-Deflation Monitor"** (the Market Climate dashboard is renamed "Market Climate Monitor") (its own dashboard, built by the same pattern as Market Climate): the
   rating as of a date and its four stars, the rating's history, a chart per star with its line, the real
   interest rate, and the other seven commodity benchmarks against their averages for context.
 - **The Genie agent** (title "Market Climate", provisional) gains the new tables, the inflation rules in its

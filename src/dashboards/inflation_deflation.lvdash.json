@@ -1,0 +1,1416 @@
+{
+  "datasets": [
+    {
+      "name": "ds_inflation_freshness",
+      "displayName": "Data dates",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT (SELECT day FROM asof) AS rating_date, (SELECT max(price_date) FROM silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = '^TRCCRB') AS crb_price_date, (SELECT max(price_date) FROM silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = 'GC=F') AS gold_price_date, (SELECT max(observation_date) FROM silver_domain_investments.market_rate_daily WHERE rate_code = 'us_federal_funds_effective_rate') AS rate_date, (SELECT max(observation_date) FROM silver_domain_investments.market_rate_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted' AND NOT is_carried_forward) AS cpi_reading_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_rating",
+      "displayName": "Rating of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.signal_date AS rating_date, s.yes_count AS stars_on, CAST(s.measured_value AS INT) AS rating, s.action_name AS label, s.band_code AS rating_band, s.threshold_value AS cpi_change_twelve_months, s.reason_text FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'inflation_deflation' AND s.signal_code = 'rating' "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_stars",
+      "displayName": "Stars of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.signal_name, s.signal_code, CASE s.signal_code WHEN 'commodity_prices' THEN 1 WHEN 'consumer_prices' THEN 2 WHEN 'gold_prices' THEN 3 ELSE 4 END AS star_order, CASE WHEN s.is_yes THEN 'On' ELSE 'Off' END AS star_state, s.band_code AS star_band, s.measured_value, s.threshold_value, s.reason_text FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'inflation_deflation' AND s.signal_code <> 'rating' ORDER BY star_order "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_rating_history",
+      "displayName": "Rating history",
+      "queryLines": [
+        "SELECT signal_date, yes_count AS stars_on, CAST(measured_value AS INT) AS rating, action_name AS label FROM monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date "
+      ]
+    },
+    {
+      "name": "ds_crb_history",
+      "displayName": "CRB commodity index",
+      "queryLines": [
+        "SELECT price_date, price_close_adjusted AS price_close, close_adjusted_two_hundred_day_average_amount AS average_200 FROM silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = '^TRCCRB' AND price_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY price_date "
+      ]
+    },
+    {
+      "name": "ds_gold_history",
+      "displayName": "Gold futures",
+      "queryLines": [
+        "SELECT price_date, price_close_adjusted AS price_close, close_adjusted_two_hundred_day_average_amount AS average_200 FROM silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = 'GC=F' AND price_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY price_date "
+      ]
+    },
+    {
+      "name": "ds_cpi_history",
+      "displayName": "US consumer price index",
+      "queryLines": [
+        "SELECT indicator_date, rate_value, two_hundred_day_average_value AS average_200 FROM silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted' AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY indicator_date "
+      ]
+    },
+    {
+      "name": "ds_rate_history",
+      "displayName": "Federal funds effective rate",
+      "queryLines": [
+        "SELECT indicator_date, rate_value, two_hundred_day_average_value AS average_200 FROM silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_federal_funds_effective_rate' AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY indicator_date "
+      ]
+    },
+    {
+      "name": "ds_real_rate_history",
+      "displayName": "Real federal funds rate",
+      "queryLines": [
+        "SELECT indicator_date, rate_value, two_hundred_day_average_value AS average_200 FROM silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate' AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY indicator_date "
+      ]
+    },
+    {
+      "name": "ds_cpi_changes",
+      "displayName": "US consumer price changes",
+      "queryLines": [
+        "SELECT indicator_date, rate_value AS cpi_change, CASE rate_code WHEN 'us_cpi_change_twelve_months_percent' THEN 'Over 12 months' ELSE 'Against the previous reading' END AS change_label FROM silver_domain_investments.market_rate_indicator_daily WHERE rate_code IN ('us_cpi_change_twelve_months_percent', 'us_cpi_change_previous_reading_percent') AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY indicator_date "
+      ]
+    },
+    {
+      "name": "ds_commodities",
+      "displayName": "Commodity benchmarks of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')), names AS (SELECT * FROM VALUES ('^TRCCRB', 'CRB commodity index (votes)', 1), ('^SPGSCI', 'S&P GSCI commodity index', 2), ('GC=F', 'Gold futures (votes as gold)', 3), ('SI=F', 'Silver futures', 4), ('HG=F', 'Copper futures', 5), ('CL=F', 'WTI crude oil futures', 6), ('DBC', 'Invesco DB Commodity fund', 7), ('GSG', 'iShares S&P GSCI fund', 8) AS names(symbol, benchmark_name, benchmark_order)) , latest AS (SELECT p.*, row_number() OVER (PARTITION BY p.trading_symbol_code ORDER BY p.price_date DESC) AS pick FROM silver_domain_investments.price_indicator_daily p JOIN asof a ON p.price_date <= a.day AND p.price_date >= date_sub(a.day, 7) WHERE p.trading_symbol_code IN (SELECT symbol FROM names)) SELECT n.benchmark_name, n.symbol, l.price_date, l.price_close_adjusted AS price_close, l.close_adjusted_two_hundred_day_average_amount AS average_200, l.price_close_adjusted / l.close_adjusted_two_hundred_day_average_amount - 1 AS distance_ratio, l.close_adjusted_two_hundred_day_average_slope_ratio AS slope_ratio, CASE WHEN l.price_close_adjusted > l.close_adjusted_two_hundred_day_average_amount THEN 'Above' ELSE 'Below' END AS position_text, CASE WHEN l.close_adjusted_two_hundred_day_average_slope_ratio > 0 THEN 'Rising' ELSE 'Falling' END AS direction_text, n.symbol = '^TRCCRB' AS is_vote FROM names n LEFT JOIN latest l ON l.trading_symbol_code = n.symbol AND l.pick = 1 ORDER BY n.benchmark_order "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_commodities_history",
+      "displayName": "Commodity benchmarks against their 200-day average",
+      "queryLines": [
+        "WITH names AS (SELECT * FROM VALUES ('^TRCCRB', 'CRB commodity index (votes)', 1), ('^SPGSCI', 'S&P GSCI commodity index', 2), ('GC=F', 'Gold futures (votes as gold)', 3), ('SI=F', 'Silver futures', 4), ('HG=F', 'Copper futures', 5), ('CL=F', 'WTI crude oil futures', 6), ('DBC', 'Invesco DB Commodity fund', 7), ('GSG', 'iShares S&P GSCI fund', 8) AS names(symbol, benchmark_name, benchmark_order)) SELECT p.price_date, n.benchmark_name, p.price_close_adjusted / p.close_adjusted_two_hundred_day_average_amount - 1 AS distance_ratio FROM silver_domain_investments.price_indicator_daily p JOIN names n ON n.symbol = p.trading_symbol_code WHERE p.close_adjusted_two_hundred_day_average_amount IS NOT NULL AND p.price_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY p.price_date "
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "game-plan",
+      "displayName": "Game plan",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "plan-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Inflation-Deflation Monitor\n",
+                "\n",
+                "Four vehicles each switch on a star when they point to inflation. The rating is the stars on.\n",
+                "\n",
+                "- Commodity prices: the CRB index 200-day average is rising\n",
+                "- Consumer prices: the 200-day average of US consumer prices is rising\n",
+                "- Gold prices: gold is above its 200-day average\n",
+                "- Interest rates: the short-term rate (federal funds effective) is above its 200-day average\n",
+                "\n",
+                "4 stars Increasing Inflation, 3 Inflation Danger, 2 Some Inflation Risk, 1 Mild or Decreasing Inflation, 0 Decreasing Inflation. Minus one is Deflation: no star on and consumer prices below their level of a year ago.\n",
+                "\n",
+                "Change the date at the top. Consumer prices count from the first day of their month, before they are published."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "rating-tile",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_rating",
+                  "fields": [
+                    {
+                      "name": "rating_date",
+                      "expression": "`rating_date`"
+                    },
+                    {
+                      "name": "stars_on",
+                      "expression": "`stars_on`"
+                    },
+                    {
+                      "name": "label",
+                      "expression": "`label`"
+                    },
+                    {
+                      "name": "rating_band",
+                      "expression": "`rating_band`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"title\": {\"text\": {\"expr\": \"'Inflation rating as of ' + utcFormat(toDate(data('databricks_query')[0].rating_date), '%Y-%m-%d')\"}, \"anchor\": \"start\", \"fontSize\": 16, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"transform\": [{\"calculate\": \"datum.stars_on + '/4'\", \"as\": \"stars_label\"}], \"encoding\": {\"x\": {\"field\": \"label\", \"type\": \"nominal\", \"axis\": {\"title\": null, \"orient\": \"bottom\", \"labelFontSize\": 17, \"labelAngle\": 0, \"labelColor\": {\"expr\": \"colors.textPrimary.default\"}, \"domain\": false, \"ticks\": false}}, \"tooltip\": [{\"field\": \"label\", \"title\": \"Rating\"}, {\"field\": \"reason_text\", \"title\": \"Why\"}]}, \"layer\": [{\"mark\": {\"type\": \"circle\", \"size\": 14000}, \"encoding\": {\"y\": {\"value\": 90}, \"color\": {\"field\": \"rating_band\", \"type\": \"nominal\", \"legend\": null, \"scale\": {\"domain\": [\"red\", \"yellow\", \"green\", \"blue\"], \"range\": [\"#E15759\", \"#F2C037\", \"#59A14F\", \"#4E79A7\"]}}}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 22, \"fontWeight\": \"bold\", \"color\": \"#11171C\"}, \"encoding\": {\"y\": {\"value\": 90}, \"text\": {\"field\": \"stars_label\"}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "rating_date"
+                  },
+                  {
+                    "fieldName": "stars_on"
+                  },
+                  {
+                    "fieldName": "label"
+                  },
+                  {
+                    "fieldName": "rating_band"
+                  },
+                  {
+                    "fieldName": "reason_text"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": false
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "stars-tile",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_stars",
+                  "fields": [
+                    {
+                      "name": "signal_name",
+                      "expression": "`signal_name`"
+                    },
+                    {
+                      "name": "star_order",
+                      "expression": "`star_order`"
+                    },
+                    {
+                      "name": "star_state",
+                      "expression": "`star_state`"
+                    },
+                    {
+                      "name": "star_band",
+                      "expression": "`star_band`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"title\": {\"text\": \"The four vehicles (red: pointing to inflation)\", \"anchor\": \"start\", \"fontSize\": 16, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"field\": \"signal_name\", \"type\": \"nominal\", \"sort\": {\"field\": \"star_order\"}, \"axis\": {\"title\": null, \"orient\": \"bottom\", \"labelFontSize\": 15, \"labelAngle\": 0, \"labelColor\": {\"expr\": \"colors.textPrimary.default\"}, \"domain\": false, \"ticks\": false}}, \"tooltip\": [{\"field\": \"signal_name\", \"title\": \"Vehicle\"}, {\"field\": \"reason_text\", \"title\": \"Why\"}]}, \"layer\": [{\"mark\": {\"type\": \"circle\", \"size\": 9000}, \"encoding\": {\"y\": {\"value\": 90}, \"color\": {\"field\": \"star_band\", \"type\": \"nominal\", \"legend\": null, \"scale\": {\"domain\": [\"red\", \"yellow\", \"green\", \"blue\"], \"range\": [\"#E15759\", \"#F2C037\", \"#59A14F\", \"#4E79A7\"]}}}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 18, \"fontWeight\": \"bold\", \"color\": \"#11171C\"}, \"encoding\": {\"y\": {\"value\": 90}, \"text\": {\"field\": \"star_state\"}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "signal_name"
+                  },
+                  {
+                    "fieldName": "star_order"
+                  },
+                  {
+                    "fieldName": "star_state"
+                  },
+                  {
+                    "fieldName": "star_band"
+                  },
+                  {
+                    "fieldName": "reason_text"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": false
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 7,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "rating-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_rating_history",
+                  "fields": [
+                    {
+                      "name": "signal_date",
+                      "expression": "`signal_date`"
+                    },
+                    {
+                      "name": "rating",
+                      "expression": "`rating`"
+                    },
+                    {
+                      "name": "label",
+                      "expression": "`label`"
+                    },
+                    {
+                      "name": "stars_on",
+                      "expression": "`stars_on`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"mark\": {\"type\": \"line\", \"strokeWidth\": 2.5, \"interpolate\": \"step-after\"}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"rating\", \"type\": \"quantitative\", \"title\": \"Rating (-1 to 4)\", \"scale\": {\"domain\": [-1, 4], \"padding\": 14}, \"axis\": {\"tickMinStep\": 1, \"minExtent\": 64}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"label\", \"title\": \"Rating\"}, {\"field\": \"stars_on\", \"title\": \"Stars on\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "signal_date"
+                  },
+                  {
+                    "fieldName": "rating"
+                  },
+                  {
+                    "fieldName": "label"
+                  },
+                  {
+                    "fieldName": "stars_on"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Rating per day (4 increasing inflation, 0 decreasing, -1 deflation)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "crb-chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_crb_history",
+                  "fields": [
+                    {
+                      "name": "price_date",
+                      "expression": "`price_date`"
+                    },
+                    {
+                      "name": "price_close",
+                      "expression": "`price_close`"
+                    },
+                    {
+                      "name": "average_200",
+                      "expression": "`average_200`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"price_close\", \"average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"price_close\\\": \\\"CRB close\\\", \\\"average_200\\\": \\\"200-day average\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Index points\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"price_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.0f\", \"title\": \"Index points\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "price_date"
+                  },
+                  {
+                    "fieldName": "price_close"
+                  },
+                  {
+                    "fieldName": "average_200"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "CRB commodity index and its 200-day average"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "cpi-chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_cpi_history",
+                  "fields": [
+                    {
+                      "name": "indicator_date",
+                      "expression": "`indicator_date`"
+                    },
+                    {
+                      "name": "rate_value",
+                      "expression": "`rate_value`"
+                    },
+                    {
+                      "name": "average_200",
+                      "expression": "`average_200`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"rate_value\", \"average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"rate_value\\\": \\\"Consumer price index\\\", \\\"average_200\\\": \\\"200-day average\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Index points\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.0f\", \"title\": \"Index points\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "indicator_date"
+                  },
+                  {
+                    "fieldName": "rate_value"
+                  },
+                  {
+                    "fieldName": "average_200"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "US consumer price index and its 200-day average"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 24,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "gold-chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_gold_history",
+                  "fields": [
+                    {
+                      "name": "price_date",
+                      "expression": "`price_date`"
+                    },
+                    {
+                      "name": "price_close",
+                      "expression": "`price_close`"
+                    },
+                    {
+                      "name": "average_200",
+                      "expression": "`average_200`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"price_close\", \"average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"price_close\\\": \\\"Gold close\\\", \\\"average_200\\\": \\\"200-day average\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"US$\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"price_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.0f\", \"title\": \"US$\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "price_date"
+                  },
+                  {
+                    "fieldName": "price_close"
+                  },
+                  {
+                    "fieldName": "average_200"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Gold futures and their 200-day average"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 30,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "rate-chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_rate_history",
+                  "fields": [
+                    {
+                      "name": "indicator_date",
+                      "expression": "`indicator_date`"
+                    },
+                    {
+                      "name": "rate_value",
+                      "expression": "`rate_value`"
+                    },
+                    {
+                      "name": "average_200",
+                      "expression": "`average_200`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"rate_value\", \"average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"rate_value\\\": \\\"Effective rate\\\", \\\"average_200\\\": \\\"200-day average\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Percent\", \"scale\": {\"zero\": true, \"padding\": 14}, \"axis\": {\"format\": \".2f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \".2f\", \"title\": \"Percent\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "indicator_date"
+                  },
+                  {
+                    "fieldName": "rate_value"
+                  },
+                  {
+                    "fieldName": "average_200"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Federal funds effective rate and its 200-day average"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 36,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "real-rate-chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_real_rate_history",
+                  "fields": [
+                    {
+                      "name": "indicator_date",
+                      "expression": "`indicator_date`"
+                    },
+                    {
+                      "name": "rate_value",
+                      "expression": "`rate_value`"
+                    },
+                    {
+                      "name": "average_200",
+                      "expression": "`average_200`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"rate_value\", \"average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"rate_value\\\": \\\"Real rate\\\", \\\"average_200\\\": \\\"200-day average\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Percent\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \".2f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \".2f\", \"title\": \"Percent\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "indicator_date"
+                  },
+                  {
+                    "fieldName": "rate_value"
+                  },
+                  {
+                    "fieldName": "average_200"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Real federal funds rate (effective rate minus consumer prices over 12 months)",
+                "showDescription": true,
+                "description": "Shown for context; it does not vote. Negative means savers lose to inflation."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 42,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "cpi-change-chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_cpi_changes",
+                  "fields": [
+                    {
+                      "name": "indicator_date",
+                      "expression": "`indicator_date`"
+                    },
+                    {
+                      "name": "cpi_change",
+                      "expression": "`cpi_change`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"cpi_change\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"cpi_change\\\": \\\"Change\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2, \"interpolate\": \"step-after\"}, \"encoding\": {\"x\": {\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Percent\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \".2f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \".2f\", \"title\": \"Percent\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "indicator_date"
+                  },
+                  {
+                    "fieldName": "cpi_change"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "US consumer price changes",
+                "showDescription": true,
+                "description": "Over 12 months, and against the previous monthly reading, carried until the next one."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 48,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "stars-table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_stars",
+                  "fields": [
+                    {
+                      "name": "signal_name",
+                      "expression": "`signal_name`"
+                    },
+                    {
+                      "name": "star_state",
+                      "expression": "`star_state`"
+                    },
+                    {
+                      "name": "star_band",
+                      "expression": "`star_band`"
+                    },
+                    {
+                      "name": "measured_value",
+                      "expression": "`measured_value`"
+                    },
+                    {
+                      "name": "threshold_value",
+                      "expression": "`threshold_value`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "signal_name",
+                    "displayName": "Vehicle",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "star_state",
+                    "displayName": "Star",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "star_band",
+                    "displayName": "Band",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "measured_value",
+                    "displayName": "Measured",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "threshold_value",
+                    "displayName": "Compared with",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "reason_text",
+                    "displayName": "Why",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "The four answers"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 54,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "plan-dates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_inflation_freshness",
+                  "fields": [
+                    {
+                      "name": "rating_date",
+                      "expression": "`rating_date`"
+                    },
+                    {
+                      "name": "crb_price_date",
+                      "expression": "`crb_price_date`"
+                    },
+                    {
+                      "name": "gold_price_date",
+                      "expression": "`gold_price_date`"
+                    },
+                    {
+                      "name": "rate_date",
+                      "expression": "`rate_date`"
+                    },
+                    {
+                      "name": "cpi_reading_date",
+                      "expression": "`cpi_reading_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "rating_date",
+                    "displayName": "Rating as of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "crb_price_date",
+                    "displayName": "Latest CRB price",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "gold_price_date",
+                    "displayName": "Latest gold price",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "rate_date",
+                    "displayName": "Latest federal funds reading",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "cpi_reading_date",
+                    "displayName": "Latest CPI reading (monthly, counted from the first day of its month)",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data dates",
+                "showDescription": true,
+                "description": "The rating is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 60,
+            "width": 12,
+            "height": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "commodities",
+      "displayName": "Commodities",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "commodities-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Commodities\n",
+                "\n",
+                "The eight commodity benchmarks against their 200-day averages, for context. Only the CRB index votes for the commodity star, and gold futures for the gold star.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "distance-bars",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_commodities",
+                  "fields": [
+                    {
+                      "name": "benchmark_name",
+                      "expression": "`benchmark_name`"
+                    },
+                    {
+                      "name": "distance_ratio",
+                      "expression": "`distance_ratio`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"mark\": {\"type\": \"bar\"}, \"encoding\": {\"y\": {\"field\": \"benchmark_name\", \"type\": \"nominal\", \"sort\": null, \"title\": null, \"axis\": {\"labelLimit\": 220}}, \"x\": {\"field\": \"distance_ratio\", \"type\": \"quantitative\", \"title\": \"Distance from the 200-day average\", \"axis\": {\"format\": \".0%\"}, \"scale\": {\"padding\": 14}}, \"color\": {\"condition\": {\"test\": \"datum.distance_ratio > 0\", \"value\": \"#E15759\"}, \"value\": \"#59A14F\"}, \"tooltip\": [{\"field\": \"benchmark_name\", \"title\": \"Benchmark\"}, {\"field\": \"distance_ratio\", \"type\": \"quantitative\", \"format\": \".1%\", \"title\": \"Distance\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "benchmark_name"
+                  },
+                  {
+                    "fieldName": "distance_ratio"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Distance from the 200-day average, today (red above: rising prices)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "commodities-table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_commodities",
+                  "fields": [
+                    {
+                      "name": "benchmark_name",
+                      "expression": "`benchmark_name`"
+                    },
+                    {
+                      "name": "price_close",
+                      "expression": "`price_close`"
+                    },
+                    {
+                      "name": "average_200",
+                      "expression": "`average_200`"
+                    },
+                    {
+                      "name": "distance_ratio",
+                      "expression": "`distance_ratio`"
+                    },
+                    {
+                      "name": "position_text",
+                      "expression": "`position_text`"
+                    },
+                    {
+                      "name": "slope_ratio",
+                      "expression": "`slope_ratio`"
+                    },
+                    {
+                      "name": "direction_text",
+                      "expression": "`direction_text`"
+                    },
+                    {
+                      "name": "price_date",
+                      "expression": "`price_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "benchmark_name",
+                    "displayName": "Benchmark",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "price_close",
+                    "displayName": "Close",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "average_200",
+                    "displayName": "200-day average",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "distance_ratio",
+                    "displayName": "Distance from the average",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "position_text",
+                    "displayName": "Close is",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "slope_ratio",
+                    "displayName": "Average moved over 20 days",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "direction_text",
+                    "displayName": "Average is",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "price_date",
+                    "displayName": "Price date",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Benchmarks of the day"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "commodity-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_commodities_history",
+                  "fields": [
+                    {
+                      "name": "price_date",
+                      "expression": "`price_date`"
+                    },
+                    {
+                      "name": "benchmark_name",
+                      "expression": "`benchmark_name`"
+                    },
+                    {
+                      "name": "distance_ratio",
+                      "expression": "`distance_ratio`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"mark\": {\"type\": \"line\", \"strokeWidth\": 1.8}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"distance_ratio\", \"type\": \"quantitative\", \"title\": \"Distance from the 200-day average\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \".0%\", \"minExtent\": 64}}, \"color\": {\"field\": \"benchmark_name\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\", \"columns\": 4}}, \"tooltip\": [{\"field\": \"price_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"benchmark_name\", \"title\": \"Benchmark\"}, {\"field\": \"distance_ratio\", \"type\": \"quantitative\", \"format\": \".1%\", \"title\": \"Distance\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "price_date"
+                  },
+                  {
+                    "fieldName": "benchmark_name"
+                  },
+                  {
+                    "fieldName": "distance_ratio"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Each benchmark against its 200-day average"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "filters",
+      "displayName": "Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter-as-of",
+            "queries": [
+              {
+                "name": "q_ds_inflation_freshness_as_of_date",
+                "query": {
+                  "datasetName": "ds_inflation_freshness",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_rating_as_of_date",
+                "query": {
+                  "datasetName": "ds_rating",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_stars_as_of_date",
+                "query": {
+                  "datasetName": "ds_stars",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_commodities_as_of_date",
+                "query": {
+                  "datasetName": "ds_commodities",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_inflation_freshness_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_rating_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_stars_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_commodities_as_of_date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "As of date (latest day on or before it)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FCFCFC",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#4E79A7",
+        "#F28E2C",
+        "#76B7B2",
+        "#59A14F",
+        "#B07AA1",
+        "#E15759",
+        "#F2C037"
+      ],
+      "widgetHeaderAlignment": "LEFT"
+    }
+  }
+}
