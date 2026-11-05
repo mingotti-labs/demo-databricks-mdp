@@ -32,7 +32,7 @@ inflation) as a daily series, and for the 52-week high and low noted on 2026-11-
 - **Dashboard "Inflation-Deflation Monitor"** (the Market Climate dashboard is renamed "Market Climate Monitor") (its own dashboard, built by the same pattern as Market Climate): the
   rating as of a date and its four stars, the rating's history, a chart per star with its line, the real
   interest rate, and the other seven commodity benchmarks against their averages for context.
-- **The Genie agent** (title "Market Climate", provisional) gains the new tables, the inflation rules in its
+- **The Genie agent** (renamed "Investment Intelligence", user 2026-11-05) gains the new tables, the inflation rules in its
   instructions, examples from the new dashboard's queries and benchmark questions.
 - **Verification**: the gold verification checks the new monitor's rows (five per day, the rating equals its
   stars, minus one only with CPI below zero over 12 months).

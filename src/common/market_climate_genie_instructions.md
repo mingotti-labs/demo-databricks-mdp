@@ -1,4 +1,4 @@
-The Market Climate agent answers whether the US market is too expensive, whether the Fed is in the way and whether the market is going up, for the S&P 500.
+The Investment Intelligence agent answers questions about the US market and the inflation game: whether the market is too expensive, whether the Fed is in the way and whether the market is going up (market climate, for the S&P 500), and whether prices are heading for inflation or deflation (the inflation/deflation rating).
 Two climates are shown each day, "long_run" and "modern". Each is read from three yes/no answers (signal_code too_expensive, fed_in_the_way, market_going_up). Yes is always the unfavourable answer.
 Too expensive: the S&P 500 price/earnings ratio on 10-year inflation-adjusted earnings is above 22 for long_run and above 30 for modern. Drilldown bands: 16 and 22 (long_run), 22 and 30 (modern).
 Fed in the way: the latest change of the Fed target rate (upper limit) was a hike less than 6 months ago. A new hike restarts the 6 months, a cut ends it.

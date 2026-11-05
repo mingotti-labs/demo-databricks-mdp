@@ -148,8 +148,8 @@ def space() -> dict:
 
 def build() -> str:
     resource = {"resources": {"genie_spaces": {"market_climate_genie": {
-        "title": "Market Climate",
-        "description": "Ask about the market climate lights, the S&P 500 price/earnings ratio and its members.",
+        "title": "Investment Intelligence",
+        "description": "Ask about the market climate lights, the inflation/deflation rating, the S&P 500 price/earnings ratio and its members.",
         "warehouse_id": "${var.warehouse_id}",
         "parent_path": "${workspace.resource_path}",
         "serialized_space": space(),
