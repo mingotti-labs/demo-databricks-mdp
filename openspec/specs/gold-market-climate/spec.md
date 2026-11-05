@@ -87,8 +87,8 @@ ratio). Every column SHALL carry a Unity Catalog description.
 - **THEN** it has a row with `is_used` false, `exclusion_reason_code` `no_share_count` and no position figures
 
 ### Requirement: Market climate dashboard
-A dashboard "Market Climate" SHALL read the gold tables of its target's catalog and have four pages, each
-with a date defaulting to the latest day with a climate row: *Climate* (the "Climate as of" date, the latest
+A dashboard "Market Climate Monitor" SHALL read the gold tables of its target's catalog and have four pages, each
+with a date defaulting to the latest day with a climate row: *Market Climate Monitor* (the "Climate as of" date, the latest
 date of each input, a traffic light per climate with its yes count, then the light history, the P/E, Fed
 target (with the hike and cut periods shaded) and S&P 500 trend charts, then the answers table); *Climate Deep Dive* (the day's index row, the 10 members
 with the largest and the 10 with the smallest effect with their "without" ratio, the members left out with
@@ -104,7 +104,7 @@ without the sector, and the sector's members by effect). Sector SHALL come from
 - **THEN** the member sums shown equal the index row and the largest effects explain the ratio
 
 ### Requirement: Market climate Genie agent
-A Genie agent "Market Climate" SHALL be deployed with the bundle in every target, on the target's SQL
+A Genie agent "Investment Intelligence" SHALL be deployed with the bundle in every target, on the target's SQL
 warehouse, over `gold_analytics_gateway.valuation_daily_index`, `valuation_daily_index_member` and
 `monitor_daily_signal` and `silver_domain_investments.company` and `price_daily` of the target's catalog,
 and the `users` group SHALL be able to ask it questions. Its instructions SHALL state the story's rules:

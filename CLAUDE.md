@@ -677,7 +677,10 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   share classes, whose cover total SEC no longer sends; four more columns hold the rolling
   10-year average of annual earnings, plain and inflation-adjusted, and the CPI of the period end),
   `price_indicator_daily` (200-day moving average of the adjusted close and its 20-day slope,
-  `market-climate-silver`), `market_rate_daily` (six daily rates plus five CPI series on business days, with
+  `market-climate-silver`; the 52-week high and low of the reported prices, `inflation-deflation-monitor`),
+  `market_rate_indicator_daily` (per series and `^GSPC` trading day: the CPI index, its change against the previous
+  reading and over 12 months, the federal funds effective rate and the real rate, each with its 200-day average
+  and the average's 20-row change; query in `src/common/inflation_sql.py`), `market_rate_daily` (six daily rates plus five CPI series on business days, with
   `rate_name` and `is_carried_forward`; CPI sits on the dates of the period it measures,
   not its publication date, so it is not for prediction). Column names end in what they
   are (`_id`, `_key`, `_code`, `_name`, `_date`, `_amount`, `_count`, `_ratio`, `_value`; rule in
@@ -706,7 +709,17 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   further monitors add rows. Thresholds in `src/common/market_climate.py`, queries in
   `market_climate_sql.py` and `market_climate_signals_sql.py` (probes run the same text:
   `references/poc/market-climate-gold/`). Rules and definitions: planning story
-  `monitor-understand-market-climate`.
+  `monitor-understand-market-climate`. The inflation/deflation monitor (`inflation-deflation-monitor`, monitor
+  `inflation_deflation`, lens `game_plan`) adds four star rows (CRB 200-day average rising, CPI 200-day average
+  rising, gold above its 200-day average, federal funds rate above its) and a `rating` row (stars on, or -1 Deflation
+  when none is on and CPI is below a year ago) per trading day from 2001-06-18; rules in `src/common/inflation.py`,
+  query in `inflation_signals_sql.py`; story `monitor-inflation-deflation-game-plan`. -1 is rare (4 days in 2015).
+  **Dashboards and the Genie agent are generated**: `cicd/build_dashboards.py` writes `src/dashboards/market_climate.lvdash.json`
+  (dashboard "Market Climate Monitor"), `inflation_deflation.lvdash.json` ("Inflation-Deflation Monitor") and
+  `resources/genie/market_climate.genie.yml` (agent "Investment Intelligence") from the queries in `src/common/*_queries.py`;
+  a pytest checks the committed files equal the builders' output (`--check`). Never edit them by hand or in the UI (the dev
+  deploy uses `--force`). A Genie agent lists its tables with the target's catalog and its example SQL is the dashboards'
+  queries, so the agent and the dashboards give the same figures.
 - **Landing checks per source**: `verification/silver_landing_checks/<source>.yml`
   lists a source's Landing tables for `verify_silver_landing`; a new source adds
   one file (a test fails if a source with a Landing schema has none) and no
@@ -729,6 +742,16 @@ the decision record behind what's built.
 
 ## Operational notes
 
+- **A new table that a Genie agent (or dashboard) lists must exist in the target before the deploy that updates the
+  agent.** The agent update fails with `Table '...' does not exist (403)`, and CI skips its unit runs when a deploy
+  fails, so the merge deadlocks (`inflation-deflation-monitor`, prd, 2026-11-05). Fix: the owner of the target starts
+  the unit's job by hand (`databricks jobs run-now --json '{"job_id": ..., "job_parameters": {"verify": "true"}}'`;
+  the auto-mode classifier blocks Claude from doing it in prd), then re-runs the failed jobs of the merge workflow.
+  Better: plan the table into the PR before the agent change, or accept the manual run in the plan.
+- **`reload_symbols` loads all history for a benchmark** (`plan()` in `src/common/yahoo_market.py`); for any other
+  symbol it reloads from the first stored day, which is the same data when that day is recent.
+- **A CI unit run (`investments`) takes long and CI repeats it after a failed deploy is re-run**; check the
+  quota before and after (`inflation-deflation-monitor` took it from 482 to 486 of 500, stop line 488).
 - **`tst`/`prd` should be deployed via CI/CD (GitHub Actions on merge to
   `main`), not a local human `bundle deploy -t tst|prd`** — once a resource in
   a target has ever been deployed by the CI/CD service principal, a later
