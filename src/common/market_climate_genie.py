@@ -76,7 +76,7 @@ BENCHMARKS = [
      f"SELECT band_code, yes_count, action_name FROM {GOLD}.monitor_daily_signal "
      f"WHERE signal_code = 'climate' AND lens_code = 'long_run' AND signal_date = DATE '2026-10-01'"),
     ("How many inflation stars are on today?",
-     f"SELECT yes_count, action_name FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' "
+     f"SELECT yes_count FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' "
      f"AND signal_code = 'rating' AND signal_date = {LATEST_INFLATION}"),
     ("What is the real interest rate today?",
      f"SELECT rate_value FROM {SILVER}.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate' "

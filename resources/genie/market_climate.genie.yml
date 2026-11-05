@@ -538,7 +538,7 @@
                   {
                     "format": "SQL",
                     "content": [
-                      "SELECT yes_count, action_name FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation')"
+                      "SELECT yes_count FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation')"
                     ]
                   }
                 ]
