@@ -1,0 +1,58 @@
+{
+  "eval_results": [
+    {
+      "benchmark_answer": "SELECT band_code, yes_count, action_name FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND lens_code = 'long_run' AND signal_date = DATE '2026-10-01'",
+      "benchmark_question_id": "faa82b40470f1a61abb09c014ba95582",
+      "created_by_user": 75657101984116,
+      "question": "What did the long-run light say on 2026-10-01?",
+      "result_id": "01f1d8dcffbf1d4a81f89556813dd592",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT lens_name, is_yes, measured_value, threshold_value FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'too_expensive' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code",
+      "benchmark_question_id": "c83172d084a01c40a003f6c6d199cacc",
+      "created_by_user": 75657101984116,
+      "question": "Is the market too expensive right now?",
+      "result_id": "01f1d8dcffbf13b597531ae4b7f94aee",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT count(*) AS members_left_out FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member WHERE NOT is_used AND valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "benchmark_question_id": "af1e8117be8243960198b4419159dd8c",
+      "created_by_user": 75657101984116,
+      "question": "How many members are left out today?",
+      "result_id": "01f1d8dcffbe186e87d52178d77a536c",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "benchmark_question_id": "99897103e155986440e6d9280673ade0",
+      "created_by_user": 75657101984116,
+      "question": "What are EQT's P/E on trailing earnings and on 10-year inflation-adjusted earnings?",
+      "result_id": "01f1d8dcffbd1ecc8845f07cc376907f",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT c.gics_sector_name, sum(m.market_value_amount) / sum(m.earnings_ten_year_average_inflation_adjusted_amount) AS sector_pe FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member) GROUP BY c.gics_sector_name HAVING sum(m.earnings_ten_year_average_inflation_adjusted_amount) \u003e 0 ORDER BY sector_pe DESC LIMIT 1",
+      "benchmark_question_id": "6a3ef63c494e05fd43558d79eb342c34",
+      "created_by_user": 75657101984116,
+      "question": "Which sector has the highest P/E?",
+      "result_id": "01f1d8dcffbd14ee8714dacb284b19f5",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT lens_name, is_yes, reason_text FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code",
+      "benchmark_question_id": "66fa34212000c5983b8e303ef8d5686a",
+      "created_by_user": 75657101984116,
+      "question": "Is the Fed in the way?",
+      "result_id": "01f1d8dcffbc1b4493a8f111654bbac8",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    }
+  ]
+}
