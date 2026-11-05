@@ -178,3 +178,34 @@ steps AS (
   UNION ALL SELECT 12, 'Used in the index', CASE WHEN is_used THEN 'Yes' ELSE 'No: ' || exclusion_reason_code END, 'A member is left out when an input is missing' FROM m)
 SELECT step_number, step_name, value_text, how_text FROM steps ORDER BY step_number
 """)
+
+RANGE_START = """CASE :range_code
+  WHEN '5D' THEN date_sub(last_date, 7) WHEN '1M' THEN add_months(last_date, -1) WHEN '6M' THEN add_months(last_date, -6)
+  WHEN 'YTD' THEN trunc(last_date, 'YEAR') ELSE add_months(last_date, -12) END"""
+COMPANY_PRICES = f"""
+WITH {VALUATION_AS_OF},
+listing AS (SELECT m.listing_id FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day
+  JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name),
+prices AS (SELECT p.price_date, p.price_close, p.price_high, p.price_low,
+  avg(p.price_close) OVER w AS band_middle, stddev_pop(p.price_close) OVER w AS band_deviation, count(*) OVER w AS window_count,
+  max(p.price_date) OVER () AS last_date
+  FROM silver_domain_investments.price_daily p JOIN listing l ON l.listing_id = p.listing_id
+  WHERE p.price_date <= (SELECT day FROM asof)
+  WINDOW w AS (ORDER BY p.price_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW))
+"""
+dataset("ds_range_options", "Price ranges", "SELECT * FROM VALUES ('5D', 1), ('1M', 2), ('6M', 3), ('YTD', 4), ('1Y', 5) AS t(range_code, range_order) ORDER BY range_order")
+
+dataset("ds_company_price", "Company price with Bollinger bands", COMPANY_PRICES + f"""
+SELECT price_date, price_close, band_middle, band_middle + 2 * band_deviation AS band_upper, band_middle - 2 * band_deviation AS band_lower
+FROM prices WHERE window_count = 20 AND price_date >= {RANGE_START} ORDER BY price_date
+""")
+
+dataset("ds_company_figures", "Company price figures", COMPANY_PRICES + """
+, ranked AS (SELECT *, row_number() OVER (ORDER BY price_date DESC) AS recency FROM prices)
+SELECT max(CASE WHEN recency = 1 THEN price_close END) AS last_close,
+  max(CASE WHEN recency = 1 THEN price_close END) / max(CASE WHEN recency = 2 THEN price_close END) - 1 AS day_change_ratio,
+  max(CASE WHEN price_date > add_months(last_date, -12) THEN price_high END) AS high_52_weeks,
+  min(CASE WHEN price_date > add_months(last_date, -12) THEN price_low END) AS low_52_weeks,
+  max(last_date) AS price_date
+FROM ranked
+""")

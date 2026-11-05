@@ -13,10 +13,11 @@ from queries import DATASETS  # noqa: E402
 OUT = Path(__file__).resolve().parents[3] / "src" / "dashboards" / "market_climate.lvdash.json"
 DATE_DATASETS = [
     "ds_freshness", "ds_lights", "ds_answers", "ds_index_day", "ds_top_up", "ds_top_down", "ds_excluded",
-    "ds_members", "ds_checks", "ds_company_check", "ds_sectors", "ds_sector_up", "ds_sector_down",
+    "ds_members", "ds_checks", "ds_company_check", "ds_company_price", "ds_company_figures", "ds_sectors", "ds_sector_up", "ds_sector_down",
 ]
 SECTOR_DATASETS = ["ds_sector_up", "ds_sector_down"]
-COMPANY_DATASETS = ["ds_company_check"]
+COMPANY_DATASETS = ["ds_company_check", "ds_company_price", "ds_company_figures"]
+RANGE_DATASETS = ["ds_company_price"]
 RED, YELLOW, GREEN = "#E15759", "#F2C037", "#59A14F"
 PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
 LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
@@ -43,6 +44,11 @@ def parameters(dataset: str) -> list[dict]:
         result.append({
             "keyword": "company_name", "displayName": "Company", "dataType": "STRING",
             "defaultSelection": {"values": {"dataType": "STRING", "values": [{"value": "EQT Corporation"}]}},
+        })
+    if dataset in RANGE_DATASETS:
+        result.append({
+            "keyword": "range_code", "displayName": "Range", "dataType": "STRING",
+            "defaultSelection": {"values": {"dataType": "STRING", "values": [{"value": "6M"}]}},
         })
     return result
 
@@ -155,7 +161,7 @@ def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
     spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v6.json", "data": {"name": "databricks_query"},
         "width": "container", "height": "container", "config": {"autosize": {"type": "fit", "contains": "padding"}},
-        "transform": [{"calculate": "datum.yes_count + ' of 3 yes'", "as": "yes_label"}],
+        "transform": [{"calculate": "datum.yes_count + '/3'", "as": "yes_label"}],
         "encoding": {"x": {"field": "lens_name", "type": "nominal", "axis": {"title": None, "orient": "top", "labelFontSize": 18, "labelAngle": 0, "domain": False, "ticks": False}},
                      "tooltip": [{"field": "lens_name", "title": "Climate"}, {"field": "action_name", "title": "Action"}, {"field": "reason_text", "title": "Why"}]},
         "layer": [
@@ -164,8 +170,6 @@ def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
                           "scale": {"domain": ["red", "yellow", "green"], "range": [RED, YELLOW, GREEN]}}}},
             {"mark": {"type": "text", "fontSize": 22, "fontWeight": "bold", "color": "#11171C"},
              "encoding": {"y": {"value": 95}, "text": {"field": "yes_label"}}},
-            {"mark": {"type": "text", "fontSize": 18},
-             "encoding": {"y": {"value": 190}, "text": {"field": "action_name"}}},
         ],
     }
     names = ["lens_name", "yes_count", "light_code", "action_name", "reason_text"]
@@ -177,14 +181,32 @@ def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
             "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
+def counter(name: str, title: str, dataset: str, field: str, fmt: dict, x: int, y: int, w: int, h: int) -> dict:
+    return {"widget": {"name": name,
+                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": [{"name": field, "expression": f"`{field}`"}], "disaggregated": True}}],
+                       "spec": {"version": 2, "widgetType": "counter", "encodings": {"value": {"fieldName": field, "displayName": title, "format": fmt}},
+                                "frame": {"showTitle": True, "title": title}}},
+            "position": {"x": x, "y": y, "width": w, "height": h}}
+
+
 def company_page() -> dict:
     steps = [("step_number", "Step", NUMBER0), ("step_name", "What", None), ("value_text", "Value", None), ("how_text", "How", None)]
+    money = {"type": "number", "decimalPlaces": {"type": "exact", "places": 2}}
+    percent = {"type": "number-percent", "decimalPlaces": {"type": "exact", "places": 2}}
     return {"name": "company-check", "displayName": "Company Check", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
-        text("company-title", ["# Company Check\n", "\n", "Pick a company to see, step by step, how its P/E in the climate is built from the filing and the price. "
-             "Step 5 is the trailing P/E finance sites show; step 9 is the one the climate uses. They differ when earnings were low in earlier years."], 0, 0, 12, 3),
+        text("company-title", ["# Company Check\n", "\n", "Pick a company: its price first, then the steps that turn its filing and price into the P/E the climate uses.\n", "\n", "- Step 5 is the trailing P/E finance sites show\n", "- Step 9 is the one the climate uses; they differ when earnings were low in earlier years\n", "- Bollinger bands: 20-day average of the close, plus and minus 2 standard deviations"], 0, 0, 12, 4),
         filter_widget("filter-company", "Company", "filter-single-select",
-                      [("ds_company_names", "field", "company_name"), ("ds_company_check", "parameter", "company_name")], 0, 3, 6),
-        table("company-steps", "From the numbers to the P/E", "ds_company_check", steps, 0, 5, 12, 10),
+                      [("ds_company_names", "field", "company_name"), ("ds_company_check", "parameter", "company_name"),
+                       ("ds_company_price", "parameter", "company_name"), ("ds_company_figures", "parameter", "company_name")], 0, 4, 6),
+        filter_widget("filter-range", "Range", "filter-single-select",
+                      [("ds_range_options", "field", "range_code"), ("ds_company_price", "parameter", "range_code")], 6, 4, 6),
+        counter("last-close", "Last close (US$)", "ds_company_figures", "last_close", money, 0, 6, 3, 3),
+        counter("day-change", "Change on the day", "ds_company_figures", "day_change_ratio", percent, 3, 6, 3, 3),
+        counter("high-52", "52-week high (US$)", "ds_company_figures", "high_52_weeks", money, 6, 6, 3, 3),
+        counter("low-52", "52-week low (US$)", "ds_company_figures", "low_52_weeks", money, 9, 6, 3, 3),
+        line("company-price", "Close with Bollinger bands", "ds_company_price", "price_date",
+             [("price_close", "Close"), ("band_upper", "Upper band"), ("band_middle", "20-day average"), ("band_lower", "Lower band")], 0, 9, 12, 8),
+        table("company-steps", "From the numbers to the P/E", "ds_company_check", steps, 0, 17, 12, 10),
     ]}
 
 
@@ -198,25 +220,22 @@ def climate_page() -> dict:
              ("fed_rate_date", "Latest Fed target reading", None), ("cpi_date", "Latest CPI reading (monthly, carried forward)", None)]
     mapping = [{"value": "red", "color": RED}, {"value": "yellow", "color": YELLOW}, {"value": "green", "color": GREEN}]
     return {"name": "climate", "displayName": "Climate", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
-        text("climate-title", ["# Market climate\n", "\n", "Two climates read the same three questions: is the market too expensive, is the Fed in the way, is the market going up. "
-             "Yes is the unfavourable answer. Red (2 or 3 yes): sell. Yellow (1 yes): buy and hold. Green (0 yes): strong buy. "
-             "Change the date at the top; the other pages show the numbers behind the valuation answer."], 0, 0, 12, 3),
-        traffic_lights("traffic-lights", 0, 3, 12, 6),
+        text("climate-title", ["# Market climate\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
+        traffic_lights("traffic-lights", 0, 5, 12, 6),
         line("light-history", "Yes answers per day (0 green, 1 yellow, 2 or 3 red)", "ds_light_history", "signal_date",
-             [("yes_count", "Yes answers")], 0, 9, 12, 5, color_field="lens_name"),
+             [("yes_count", "Yes answers")], 0, 11, 12, 5, color_field="lens_name"),
         line("pe-history", "S&P 500 price/earnings ratio", "ds_pe_history", "valuation_date",
-             [("pe_ten_year_adjusted", "10-year inflation-adjusted (votes)"), ("pe_trailing", "Trailing 12 months")], 0, 14, 12, 6,
+             [("pe_ten_year_adjusted", "10-year inflation-adjusted (votes)"), ("pe_trailing", "Trailing 12 months")], 0, 16, 12, 6,
              annotations=[horizontal("16", "cheap line, long run", GREEN), horizontal("22", "expensive line, long run", YELLOW),
                           horizontal("30", "expensive line, modern", RED)],
              description="Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern)."),
         line("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", "signal_date", [("fed_target_rate", "Target rate")],
-             0, 20, 6, 6, color_field="fed_band_code", mappings=mapping,
-             description="Red: within 6 months of a hike (Fed in the way). Green: within 6 months of a cut."),
+             0, 22, 12, 6, description="Upper limit of the Fed's target range."),
         line("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", "signal_date",
-             [("sp500_close", "S&P 500 close"), ("sp500_average_200", "200-day average")], 6, 20, 6, 6),
-        table("answers", "The three answers of each climate", "ds_answers", answers, 0, 26, 12, 7),
-        table("lights", "Lights of the day", "ds_lights", lights, 0, 33, 12, 3),
-        table("data-dates", "Data dates", "ds_freshness", dates, 0, 36, 12, 3,
+             [("sp500_close", "S&P 500 close"), ("sp500_average_200", "200-day average")], 0, 28, 12, 6),
+        table("answers", "The three answers of each climate", "ds_answers", answers, 0, 34, 12, 7),
+        table("lights", "Lights of the day", "ds_lights", lights, 0, 41, 12, 3),
+        table("data-dates", "Data dates", "ds_freshness", dates, 0, 44, 12, 3,
               "The climate is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."),
     ]}
 
