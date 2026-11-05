@@ -156,7 +156,7 @@
   "pages": [
     {
       "name": "game-plan",
-      "displayName": "Game plan",
+      "displayName": "Inflation-Deflation Monitor",
       "pageType": "PAGE_TYPE_CANVAS",
       "layoutVersion": "GRID_V1",
       "layout": [
@@ -1006,7 +1006,7 @@
     },
     {
       "name": "commodities",
-      "displayName": "Commodities",
+      "displayName": "Commodities Deep Dive",
       "pageType": "PAGE_TYPE_CANVAS",
       "layoutVersion": "GRID_V1",
       "layout": [

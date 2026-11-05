@@ -210,7 +210,7 @@ def climate_page() -> dict:
                ("threshold_value", "Compared with", NUMBER2), ("reason_text", "Why", None)]
     dates = [("climate_date", "Climate as of", None), ("sp500_price_date", "Latest S&P 500 price", None),
              ("fed_rate_date", "Latest Fed target reading", None), ("cpi_date", "Latest CPI reading (monthly, carried forward)", None)]
-    return {"name": "climate", "displayName": "Climate", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+    return {"name": "climate", "displayName": "Market Climate Monitor", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
         text("climate-title", ["# Market Climate Monitor\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
         traffic_lights("traffic-lights", 0, 5, 12, 6),
         light_history(0, 11, 12, 5),

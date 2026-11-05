@@ -2,7 +2,7 @@
 
 ### Requirement: Market climate dashboard
 A dashboard "Market Climate Monitor" SHALL read the gold tables of its target's catalog and have four pages, each
-with a date defaulting to the latest day with a climate row: *Climate* (the "Climate as of" date, the latest
+with a date defaulting to the latest day with a climate row: *Market Climate Monitor* (the "Climate as of" date, the latest
 date of each input, a traffic light per climate with its yes count, then the light history, the P/E, Fed
 target (with the hike and cut periods shaded) and S&P 500 trend charts, then the answers table); *Climate Deep Dive* (the day's index row, the 10 members
 with the largest and the 10 with the smallest effect with their "without" ratio, the members left out with

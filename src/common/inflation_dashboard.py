@@ -138,7 +138,7 @@ def game_plan_page() -> dict:
              ("threshold_value", "Compared with", NUMBER2), ("reason_text", "Why", None)]
     dates = [("rating_date", "Rating as of", None), ("crb_price_date", "Latest CRB price", None), ("gold_price_date", "Latest gold price", None),
              ("rate_date", "Latest federal funds reading", None), ("cpi_reading_date", "Latest CPI reading (monthly, counted from the first day of its month)", None)]
-    return {"name": "game-plan", "displayName": "Game plan", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+    return {"name": "game-plan", "displayName": "Inflation-Deflation Monitor", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
         text("plan-title", ["# Inflation-Deflation Monitor\n", "\n", "Four vehicles each switch on a star when they point to inflation. The rating is the stars on.\n", "\n",
                             "- Commodity prices: the CRB index 200-day average is rising\n", "- Consumer prices: the 200-day average of US consumer prices is rising\n",
                             "- Gold prices: gold is above its 200-day average\n", "- Interest rates: the short-term rate (federal funds effective) is above its 200-day average\n", "\n",
@@ -172,7 +172,7 @@ def commodities_page() -> dict:
     columns = [("benchmark_name", "Benchmark", None), ("price_close", "Close", NUMBER2), ("average_200", "200-day average", NUMBER2),
                ("distance_ratio", "Distance from the average", PERCENT), ("position_text", "Close is", None),
                ("slope_ratio", "Average moved over 20 days", PERCENT), ("direction_text", "Average is", None), ("price_date", "Price date", None)]
-    return {"name": "commodities", "displayName": "Commodities", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+    return {"name": "commodities", "displayName": "Commodities Deep Dive", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
         text("commodities-title", ["# Commodities\n", "\n", "The eight commodity benchmarks against their 200-day averages, for context. "
                                    "Only the CRB index votes for the commodity star, and gold futures for the gold star.\n"], 0, 0, 12, 3),
         distance_bars(0, 3, 12, 6),

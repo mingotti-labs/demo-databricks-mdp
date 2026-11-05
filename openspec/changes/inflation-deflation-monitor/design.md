@@ -95,10 +95,10 @@ Its own dashboard (each story its own, the agent spans them). Generic widget hel
 `common/market_climate_dashboard.py` to `common/dashboard_widgets.py` (no change to the Market Climate JSON).
 New `common/inflation_queries.py` and `common/inflation_dashboard.py`; `cicd/build_market_climate.py` becomes
 `cicd/build_dashboards.py` writing all three generated files. Pages:
-- *Game plan*: bullet intro, the rating as of a date (a star row for the four vehicles, the label), the rating's
+- *Inflation-Deflation Monitor* (the first page): bullet intro, the rating as of a date (a star row for the four vehicles, the label), the rating's
   history, one chart per star with its line (CRB with its 200-day average; CPI change and its average; gold with
   its average; the effective rate with its average), the real interest rate, the answers table, data dates.
-- *Commodities*: the eight benchmarks, each against its 200-day average (context; only the CRB votes).
+- *Commodities Deep Dive*: the eight benchmarks, each against its 200-day average (context; only the CRB votes).
 Same 36-month axis and colours as Market Climate.
 
 ### D7. Genie agent
