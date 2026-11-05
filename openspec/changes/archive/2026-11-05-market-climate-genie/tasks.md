@@ -33,11 +33,11 @@
 - [x] 4.1 Push; `deploy-dev` passes; the dev agent shows the five tables, the instructions, the examples
 - [x] 4.2 P3: benchmark evaluation in dev; every question passes or the miss is explained and fixed (dev-only
       `CAN_MANAGE` for `users` if the evaluation needs it). Check: eval result saved
-- [ ] 4.3 P4: the user asks the spec's three scenarios in the dev agent and confirms the answers
+- [x] 4.3 P4: the user asks the spec's three scenarios in the dev agent and confirms the answers
 - [x] 4.4 (not a single field; left for later, see design.md) Open question: "Ask Genie" link on the dashboard if it is one field; otherwise noted for later
 
 ## 5. After merge
 
-- [ ] 5.1 prd deploy creates the agent; `get-space` shows `mdp_prd.` table names
-- [ ] 5.2 The user asks the three scenarios in the prd agent and confirms
-- [ ] 5.3 Planning: story design marks change 5 done; memory updated
+- [x] 5.1 prd deploy creates the agent; `get-space` shows `mdp_prd.` table names
+- [x] 5.2 The user asks the three scenarios in the prd agent and confirms
+- [x] 5.3 Planning: story design marks change 5 done; memory updated
