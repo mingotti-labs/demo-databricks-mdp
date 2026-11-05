@@ -26,7 +26,8 @@ AXIS_WIDTH = 64
 Y_PADDING = 14
 MONTH_END = {"expr": "datetime(year(now()), month(now()) + 1, 1)"}
 SHARED_DOMAIN = [START_DATE, MONTH_END]
-TIME_AXIS = {"format": "%b %Y", "tickCount": {"interval": "month", "step": 6}, "labelOverlap": True}
+TIME_AXIS = {"tickCount": {"interval": "month", "step": 3}, "labelOverlap": True,
+             "labelExpr": "month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')"}
 PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
 LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
 
