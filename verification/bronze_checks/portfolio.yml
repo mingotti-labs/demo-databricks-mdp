@@ -30,5 +30,5 @@ tables:
   - raw: benchmarks_raw
     keys: [symbol]
     columns: [symbol, name, kind, sector, ingested_timestamp]
-    reference_rows: 23
+    reference_rows: 24
     scd2: benchmarks_scd2

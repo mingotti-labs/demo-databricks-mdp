@@ -15,6 +15,7 @@ catalog = dbutils.widgets.get("catalog")
 check_symbol = dbutils.widgets.get("check_symbol")
 
 sys.path.insert(0, f"{dbutils.widgets.get('workspace_file_path')}/src")
+from common.currency import CURRENCY_RATES  # noqa: E402
 from common.investments import CPI_RATES, RATES, market_code_sql  # noqa: E402
 
 DOMAIN = f"{catalog}.silver_domain_investments"
@@ -101,6 +102,21 @@ checks["rate is missing or its latest date is more than 7 days old"] = f"""
   LEFT JOIN (SELECT rate_code, max(observation_date) AS last_date FROM {DOMAIN}.market_rate_daily
              GROUP BY rate_code) d ON d.rate_code = r.rate_code
   WHERE d.last_date IS NULL OR d.last_date < date_sub(current_date(), 7)"""
+DAILY_SERIES = ("DTWEXBGS", "ECBDFR", "FCMYGBAG10D")
+EXCHANGE_CODES = [c for c, _, _, i, _ in CURRENCY_RATES if i.startswith("DEX") or i in DAILY_SERIES]
+MONTHLY_CODES = [c for c, _, _, i, _ in CURRENCY_RATES if i.startswith(("IR3TIB", "IRSTCI", "IRLTLT"))]
+KNOWN_STALE_CODES = ["euro_area_10_year_government_bond_yield"]
+checks["currency series has no rows"] = f"""
+  SELECT c.rate_code FROM (SELECT * FROM VALUES {", ".join(f"('{c}')" for c, *_ in CURRENCY_RATES)} AS c(rate_code)) c
+  WHERE NOT EXISTS (SELECT 1 FROM {DOMAIN}.market_rate_daily d WHERE d.rate_code = c.rate_code)"""
+checks["exchange rate, dollar index, ECB or Australian 10-year rate is more than 14 days old"] = f"""
+  SELECT rate_code FROM {DOMAIN}.market_rate_daily
+  WHERE rate_code IN ({", ".join(f"'{c}'" for c in EXCHANGE_CODES)})
+  GROUP BY rate_code HAVING max(observation_date) < date_sub(current_date(), 14)"""
+checks["monthly OECD rate is more than 4 months old (the known stale series excepted)"] = f"""
+  SELECT rate_code FROM {DOMAIN}.market_rate_daily
+  WHERE rate_code IN ({", ".join(f"'{c}'" for c in MONTHLY_CODES if c not in KNOWN_STALE_CODES)})
+  GROUP BY rate_code HAVING max(observation_date) < add_months(current_date(), -4)"""
 checks["CPI series has no rows"] = f"""
   SELECT c.rate_code FROM (SELECT * FROM VALUES {", ".join(f"('{c}')" for c, *_ in CPI_RATES)} AS c(rate_code)) c
   LEFT JOIN (SELECT DISTINCT rate_code FROM {DOMAIN}.market_rate_daily) d ON d.rate_code = c.rate_code

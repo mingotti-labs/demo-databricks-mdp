@@ -1,6 +1,6 @@
 ## 1. Sources (D1)
 
-- [ ] 1.1 FRED: add the 25 series (with `DTWEXBGS`) to `src/common/fred_series.py`; `RATES` rows in `src/common/investments.py` for them
+- [x] 1.1 FRED: add the 25 series (with `DTWEXBGS`) to `src/common/fred_series.py`; `RATES` rows in `src/common/investments.py` for them
       and for RBA `FCMYGBAG10D`; Yahoo benchmark row `DX-Y.NYB` in `data/portfolio/benchmarks.csv`. Check: unit tests
       of the rate list pass
 - [ ] 1.2 P1 in dev (draft PR deployed, one run at a time): `run_fred`, `run_portfolio`, `run_yahoo`. Check: FRED rows
