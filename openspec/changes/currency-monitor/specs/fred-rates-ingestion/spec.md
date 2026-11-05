@@ -7,10 +7,11 @@ rate; `DFEDTARU` and `DFEDTARL`, the upper and lower limit of the federal funds
 target range; `CPIAUCSL`, `CPIAUCNS` and `CPILFESL`, the US consumer price index
 for all urban consumers: all items seasonally adjusted, all items not seasonally
 adjusted, and all items less food and energy seasonally adjusted; the daily exchange rates `DEXUSEU`,
-`DEXJPUS`, `DEXUSUK`, `DEXSZUS`, `DEXCAUS`, `DEXUSAL`, `DEXUSNZ` and `DEXCHUS`; the ECB deposit facility rate
-`ECBDFR`; the OECD short-term rates `IRSTCI01JPM156N`, `IRSTCI01GBM156N`, `IRSTCI01CHM156N`, `IRSTCI01CAM156N`,
-`IRSTCI01NZM156N`, `IRSTCI01CNM156N`; and the OECD long-term rates `IRLTLT01EZM156N`, `IRLTLT01JPM156N`,
-`IRLTLT01GBM156N`, `IRLTLT01CHM156N`, `IRLTLT01CAM156N`, `IRLTLT01NZM156N`) from the FRED
+`DEXJPUS`, `DEXUSUK`, `DEXSZUS`, `DEXCAUS`, `DEXSDUS`, `DEXUSAL`, `DEXUSNZ` and `DEXCHUS`; the ECB deposit
+facility rate `ECBDFR`; the OECD short-term rates `IRSTCI01GBM156N`, `IR3TIB01JPM156N`, `IR3TIB01CAM156N`,
+`IR3TIB01CHM156N`, `IR3TIB01SEM156N`, `IR3TIB01NZM156N`, `IR3TIB01CNM156N`; and the OECD long-term rates
+`IRLTLT01EZM156N`, `IRLTLT01JPM156N`, `IRLTLT01GBM156N`, `IRLTLT01CHM156N`, `IRLTLT01CAM156N`, `IRLTLT01SEM156N`,
+`IRLTLT01NZM156N`) from the FRED
 API at the address in the bundle variable `fred_api_url`, using the key in secret
 `api_key` of scope `fred`. For each it SHALL read the series' title, units and
 frequency and its observations.

@@ -10,15 +10,17 @@ what each country pays in interest. That picture comes before any decision to ho
 ## What Changes
 
 - **Data, all from existing sources, no new table**:
-  - eight exchange rates from FRED's daily H.10 series (euro, yen, pound, Swiss franc, Canadian dollar, Australian dollar,
-    New Zealand dollar, yuan, each against the US dollar), added to the FRED fetch and to `market_rate_daily`;
+  - nine exchange rates from FRED's daily H.10 series (euro, yen, pound, Swiss franc, Canadian dollar, Swedish krona,
+    Australian dollar, New Zealand dollar, yuan, each against the US dollar), added to the FRED fetch and to
+    `market_rate_daily`; the six currencies of the US Dollar Index (EUR, JPY, GBP, CAD, SEK, CHF) are all included;
   - the US Dollar Index (`DX-Y.NYB`) as a Yahoo benchmark row in `data/portfolio/benchmarks.csv`, so `price_daily` and
     `price_indicator_daily` carry it with its 200-day average;
-  - short-term interest rates: the ECB deposit facility rate (`ECBDFR`, daily) and the OECD short-term rates of Japan, the
-    UK, Switzerland, Canada, New Zealand and China (monthly, on FRED), next to the federal funds and RBA cash rates already
-    loaded;
-  - 10-year government bond yields: the OECD long-term rates of the euro area, Japan, the UK, Switzerland, Canada and New
-    Zealand (monthly, on FRED), next to the US 10-year (FRED, loaded) and the Australian 10-year (RBA `FCMYGBAG10D`, daily,
+  - short-term interest rates: the ECB deposit facility rate (`ECBDFR`, daily), the OECD 3-month interbank rates of Japan,
+    Canada, Switzerland, Sweden, New Zealand and China and the OECD call money rate of the UK (monthly, on FRED; the
+    freshest series per country, and a 3-month rate is close to what a CD pays), next to the federal funds and RBA cash
+    rates already loaded;
+  - 10-year government bond yields: the OECD long-term rates of the euro area, Japan, the UK, Switzerland, Canada, Sweden
+    and New Zealand (monthly, on FRED), next to the US 10-year (FRED, loaded) and the Australian 10-year (RBA `FCMYGBAG10D`, daily,
     already in Landing, newly mapped).
 - **Reusable cross rates (silver)**: every exchange rate is turned into "the value of one unit of the currency in US
   dollars"; its value in Australian dollars is that divided by the value of one Australian dollar in US dollars. One list of
@@ -26,14 +28,14 @@ what each country pays in interest. That picture comes before any decision to ho
   `market_rate_indicator_daily` (with their 200-day average and its 20-day change), as do the rates, carried from their
   latest reading.
 - **The monitor (gold)**: rows of `monitor_daily_signal` with monitor `currency`: lens `us_dollar` (the dollar megatrend:
-  the US Dollar Index against its 200-day average; and each of the eight other currencies against the dollar) and lens
-  `australian_dollar` (each of the eight others, the US dollar included, against the Australian dollar). A currency is
+  the US Dollar Index against its 200-day average; and each of the nine other currencies against the dollar) and lens
+  `australian_dollar` (each of the nine others, the US dollar included, against the Australian dollar). A currency is
   gaining (`is_yes`) when its value in the base currency is above its 200-day average. A summary row per lens counts the
   currencies gaining. No rating or advice yet.
 - **Dashboard "Currency Monitor"** (generated like the other two): first page "Currency Monitor" with the dollar megatrend,
   the currencies against USD and against AUD (gaining or losing, distance from the average) and the interest rate table (short-term
   and 10-year with the date of each reading); a "Currency Deep Dive" page with a currency selector (its value in USD and AUD
-  with their averages, its rates over time).
+  with their averages, its short-term rate and its 10-year yield over time, the 10-year when the country has one).
 - **Investment Intelligence agent**: the currency rows, rules, examples and benchmarks.
 - **Verification**: one row per currency, base and day; a cross rate equals its two USD rates; the summary counts its rows.
 
@@ -42,7 +44,9 @@ what each country pays in interest. That picture comes before any decision to ho
 - Monitor name: Currency Monitor; built gradually; part 1 is the dollar megatrend, the currencies against USD and AUD,
   and the interest rates.
 - Megatrend: the 200-day average, as the other monitors.
-- Main currencies: USD, EUR, JPY, GBP, CHF, CAD, AUD, NZD, CNY.
+- Main currencies: USD, EUR, JPY, GBP, CHF, CAD, SEK, AUD, NZD, CNY (the six currencies of the US Dollar Index plus
+  AUD, NZD and CNY; SEK added by the user after checking the index, 2026-11-05).
+- The Currency Deep Dive page shows the 10-year yield when the country has one.
 - Both a short-term rate and the 10-year yield per country, from FRED for now (the BIS daily policy rates are free but a new
   source, about 12 table slots; later, after a table clean-up, if the monthly figures are too slow).
 
@@ -60,9 +64,9 @@ what each country pays in interest. That picture comes before any decision to ho
 
 - Table slots: none (new rows in existing tables). Quota 486 of 500.
 - Runs: `fred` (new series load their full history), `portfolio` and `yahoo` (the new benchmark), `investments`.
-- Known gaps, shown on the dashboard with each reading's date: the OECD short-term rates of Switzerland (last 2024-03),
-  New Zealand (2024-12) and China (2025-06) and the euro area 10-year (2026-01) are stale on FRED; China has no 10-year on
-  FRED. FRED's exchange rates arrive weekly, so the latest days can be up to about 10 days old.
+- Known gaps, shown on the dashboard with each reading's date: the euro area 10-year (last 2026-01) is stale on FRED;
+  China has no 10-year on FRED. The short-term rates use the freshest OECD series per country (probe P0: the call money
+  rates of Switzerland, New Zealand, China and Sweden stopped between 2020 and 2025, their 3-month rates are current). FRED's exchange rates arrive weekly, so the latest days can be up to about 10 days old.
 - Not in this change: the Big Mac index, a rating or strategy, the BIS source.
 
 ## Cross-repo dependencies

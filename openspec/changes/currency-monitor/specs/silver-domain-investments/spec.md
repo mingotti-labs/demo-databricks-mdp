@@ -4,7 +4,7 @@
 `market_rate_daily` SHALL have one row per rate and date for the Australian
 dollar in US dollars (RBA `FXRUSD`), the RBA cash rate target (`FIRMMCRTD`), the
 US 10-year Treasury yield (`DGS10`), the effective federal funds rate (`DFF`)
-the Fed target range limits (`DFEDTARU`, `DFEDTARL`), the eight FRED exchange rates of the Currency Monitor,
+the Fed target range limits (`DFEDTARU`, `DFEDTARL`), the nine FRED exchange rates of the Currency Monitor,
 the ECB deposit facility rate, the OECD short-term and long-term rates of the FRED fetch and the Australian
 10-year government bond yield (RBA `FCMYGBAG10D`), with a `rate_code`
 (`australian_dollar_in_us_dollars`, `rba_cash_rate_target`,
@@ -47,8 +47,8 @@ of the other rates. Rows after a period's first business day SHALL have
 - **THEN** its first row is the next Monday and no CPI row has a Saturday or Sunday date
 
 #### Scenario: A monthly OECD rate
-- **WHEN** FRED's `IRSTCI01JPM156N` has 1.043 for 2026-09-01
-- **THEN** `market_rate_daily` has 1.043 under the Japanese short-term rate's `rate_code` on 2026-09-01, and no
+- **WHEN** FRED's `IRSTCI01GBM156N` has 3.7305 for 2026-09-01
+- **THEN** `market_rate_daily` has 3.7305 under the UK short-term rate's `rate_code` on 2026-09-01, and no
   carried rows (the carrying happens in `market_rate_indicator_daily`)
 
 ### Requirement: Market rate indicators

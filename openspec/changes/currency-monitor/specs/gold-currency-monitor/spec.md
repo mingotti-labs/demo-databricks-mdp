@@ -23,11 +23,16 @@ A dashboard "Currency Monitor" SHALL read the target's catalog and show, as of a
 currency rows: the dollar megatrend (the index against its average), each main currency gaining or losing against the US
 dollar and against the Australian dollar, and every country's short-term rate and 10-year yield with the date of the
 reading and a mark when it is older than 3 months; and on a "Currency Deep Dive" page, for a chosen currency, its value in
-US and Australian dollars with their averages and its rates over time.
+US and Australian dollars with their averages, and its short-term rate and its 10-year yield over time (the 10-year when
+the country has one).
 
 #### Scenario: A stale rate
-- **WHEN** Switzerland's latest short-term rate reading is from 2024-03
+- **WHEN** the euro area's latest 10-year yield reading is from 2026-01
 - **THEN** the rates table shows it with its date and the stale mark
+
+#### Scenario: The 10-year on the deep dive
+- **WHEN** the user picks the Swedish krona on the Currency Deep Dive page
+- **THEN** its short-term rate and its 10-year yield are shown over time; for the yuan only the short-term rate
 
 ### Requirement: Genie agent covers the currency monitor
 The Genie agent SHALL state the currency rules in its instructions (value in a base, gaining above the 200-day average,
