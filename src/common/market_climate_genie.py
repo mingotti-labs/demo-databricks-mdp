@@ -107,7 +107,7 @@ def space() -> dict:
         "config": {"sample_questions": by_id([{"id": identifier("sample:" + q), "question": [q]} for q in SAMPLE_QUESTIONS])},
         "data_sources": {"tables": sorted(tables, key=lambda table: table["identifier"])},
         "instructions": {
-            "text_instructions": [{"id": identifier("instructions"), "content": INSTRUCTIONS.read_text(encoding="utf-8").strip().splitlines()}],
+            "text_instructions": [{"id": identifier("instructions"), "content": [line + chr(10) for line in INSTRUCTIONS.read_text(encoding="utf-8").strip().splitlines()]}],
             "example_question_sqls": by_id([
                 {"id": identifier("example:" + name), "question": [question], "sql": [for_genie(DATASETS[name][1])], "usage_guidance": [guidance]}
                 for name, (question, guidance) in EXAMPLES.items()]),
