@@ -29,7 +29,7 @@
 - [x] 5.1 Draft PR deploy-dev; `run_investments verify=true` (polled)
 - [x] 5.2 P1: old vs new tables equal in dev (record as a probe)
 - [x] 5.3 Drop dev `index_valuation_daily`, `monitor_signal_daily` and their twins (approved); quota read after
-- [ ] 5.4 P4: the dev dashboard opens for the user, every widget shows data; descriptions visible in UC
+- [x] 5.4 P4: the dev dashboard opens for the user, every widget shows data; descriptions visible in UC
 
 ## 6. After merge
 
