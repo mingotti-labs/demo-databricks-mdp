@@ -50,9 +50,9 @@ BENCHMARKS = [
      f"FROM {GOLD}.valuation_daily_index_member m JOIN {SILVER}.company c ON c.company_id = m.company_id "
      f"WHERE m.is_used AND m.valuation_date = {LATEST_MEMBER} GROUP BY c.gics_sector_name "
      f"HAVING sum(m.earnings_ten_year_average_inflation_adjusted_amount) > 0 ORDER BY sector_pe DESC LIMIT 1"),
-    ("Why is EQT's P/E so high?",
-     f"SELECT m.price_earnings_ten_year_average_inflation_adjusted_ratio, m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, "
-     f"m.earnings_trailing_twelve_months_amount, m.earnings_ten_year_average_inflation_adjusted_amount "
+    ("What are EQT's P/E on trailing earnings and on 10-year inflation-adjusted earnings?",
+     f"SELECT m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, "
+     f"m.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted "
      f"FROM {GOLD}.valuation_daily_index_member m JOIN {SILVER}.company c ON c.company_id = m.company_id "
      f"WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = {LATEST_MEMBER}"),
     ("Is the Fed in the way?",

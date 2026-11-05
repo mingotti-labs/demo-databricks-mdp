@@ -1,0 +1,94 @@
+{
+  "actual_response": [
+    {
+      "response": "WITH asof AS (SELECT max(valuation_date) AS day FROM mdp_dev.gold_analytics_gateway.valuation_daily_index WHERE valuation_date \u003c= current_date())\nSELECT count(*) AS left_out_count\nFROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m\nJOIN asof a ON m.valuation_date = a.day\nWHERE NOT m.is_used",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 336,
+              "chunk_index": 0,
+              "row_count": 1,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 1,
+            "columns": [
+              {
+                "name": "left_out_count",
+                "position": 0,
+                "type_name": "LONG",
+                "type_text": "BIGINT"
+              }
+            ]
+          },
+          "total_byte_count": 336,
+          "total_chunk_count": 1,
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 1,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-6a3a-11f8-996c-20c632f65b88",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "assessment": "GOOD",
+  "benchmark_question_id": "af1e8117be8243960198b4419159dd8c",
+  "eval_run_status": "DONE",
+  "expected_response": [
+    {
+      "response": "SELECT count(*) AS members_left_out FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member WHERE NOT is_used AND valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 336,
+              "chunk_index": 0,
+              "row_count": 1,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 1,
+            "columns": [
+              {
+                "name": "members_left_out",
+                "position": 0,
+                "type_name": "LONG",
+                "type_text": "BIGINT"
+              }
+            ]
+          },
+          "total_byte_count": 336,
+          "total_chunk_count": 1,
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 1,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-681e-1850-83f5-f12adc8f6ef2",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "manual_assessment": false,
+  "result_id": "01f1d8dc5aa61ecdbde4555bfb8ff3c4",
+  "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72"
+}

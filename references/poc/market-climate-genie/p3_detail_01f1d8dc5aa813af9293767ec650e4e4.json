@@ -1,0 +1,142 @@
+{
+  "actual_response": [
+    {
+      "response": "SELECT monitor_daily_signal.lens_name, monitor_daily_signal.lens_code, monitor_daily_signal.yes_count, monitor_daily_signal.band_code AS light_code, monitor_daily_signal.action_name, monitor_daily_signal.reason_text, monitor_daily_signal.signal_date AS climate_date\nFROM mdp_dev.gold_analytics_gateway.monitor_daily_signal\nWHERE monitor_daily_signal.signal_code = 'climate'\n  AND monitor_daily_signal.signal_date = '2026-10-01'\n  AND monitor_daily_signal.lens_code = 'long_run'",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 2776,
+              "chunk_index": 0,
+              "row_count": 1,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 7,
+            "columns": [
+              {
+                "name": "lens_name",
+                "position": 0,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "lens_code",
+                "position": 1,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "yes_count",
+                "position": 2,
+                "type_name": "LONG",
+                "type_text": "BIGINT"
+              },
+              {
+                "name": "light_code",
+                "position": 3,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "action_name",
+                "position": 4,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "reason_text",
+                "position": 5,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "climate_date",
+                "position": 6,
+                "type_name": "DATE",
+                "type_text": "DATE"
+              }
+            ]
+          },
+          "total_byte_count": 2776,
+          "total_chunk_count": 1,
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 1,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-6179-13e2-bd3f-1b7dadc25683",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "assessment": "GOOD",
+  "benchmark_question_id": "faa82b40470f1a61abb09c014ba95582",
+  "eval_run_status": "DONE",
+  "expected_response": [
+    {
+      "response": "SELECT band_code, yes_count, action_name FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND lens_code = 'long_run' AND signal_date = DATE '2026-10-01'",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 1464,
+              "chunk_index": 0,
+              "row_count": 1,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 3,
+            "columns": [
+              {
+                "name": "band_code",
+                "position": 0,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "yes_count",
+                "position": 1,
+                "type_name": "LONG",
+                "type_text": "BIGINT"
+              },
+              {
+                "name": "action_name",
+                "position": 2,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              }
+            ]
+          },
+          "total_byte_count": 1464,
+          "total_chunk_count": 1,
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 1,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-5bbf-1437-bfeb-03fef8bc8a8f",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "manual_assessment": false,
+  "result_id": "01f1d8dc5aa813af9293767ec650e4e4",
+  "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72"
+}

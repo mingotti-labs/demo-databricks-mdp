@@ -318,20 +318,6 @@
           "benchmarks": {
             "questions": [
               {
-                "id": "0826f772ea684cb396c69b36eaf91252",
-                "question": [
-                  "Why is EQT's P/E so high?"
-                ],
-                "answer": [
-                  {
-                    "format": "SQL",
-                    "content": [
-                      "SELECT m.price_earnings_ten_year_average_inflation_adjusted_ratio, m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, m.earnings_trailing_twelve_months_amount, m.earnings_ten_year_average_inflation_adjusted_amount FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = (SELECT max(valuation_date) FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member)"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "66fa34212000c5983b8e303ef8d5686a",
                 "question": [
                   "Is the Fed in the way?"
@@ -355,6 +341,20 @@
                     "format": "SQL",
                     "content": [
                       "SELECT c.gics_sector_name, sum(m.market_value_amount) / sum(m.earnings_ten_year_average_inflation_adjusted_amount) AS sector_pe FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.valuation_date = (SELECT max(valuation_date) FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member) GROUP BY c.gics_sector_name HAVING sum(m.earnings_ten_year_average_inflation_adjusted_amount) > 0 ORDER BY sector_pe DESC LIMIT 1"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "99897103e155986440e6d9280673ade0",
+                "question": [
+                  "What are EQT's P/E on trailing earnings and on 10-year inflation-adjusted earnings?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = (SELECT max(valuation_date) FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member)"
                     ]
                   }
                 ]

@@ -1,0 +1,126 @@
+{
+  "actual_response": [
+    {
+      "response": "WITH asof AS (SELECT max(valuation_date) AS day FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member), used AS (SELECT c.gics_sector_name AS sector_name, m.market_value_amount AS value, m.earnings_ten_year_average_inflation_adjusted_amount AS earnings FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used), sector_pe AS (SELECT sector_name, SUM(value) AS total_value, SUM(earnings) AS total_earnings, CASE WHEN SUM(earnings) \u003e 0 THEN try_divide(SUM(value),SUM(earnings)) END AS sector_pe FROM used GROUP BY sector_name) SELECT sector_name, total_value, total_earnings, sector_pe FROM sector_pe WHERE sector_pe IS NOT NULL ORDER BY sector_pe DESC LIMIT 1",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 776,
+              "chunk_index": 0,
+              "row_count": 1,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 4,
+            "columns": [
+              {
+                "name": "sector_name",
+                "position": 0,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "total_value",
+                "position": 1,
+                "type_name": "DECIMAL",
+                "type_precision": 38,
+                "type_scale": 6,
+                "type_text": "DECIMAL(38,6)"
+              },
+              {
+                "name": "total_earnings",
+                "position": 2,
+                "type_name": "DECIMAL",
+                "type_precision": 38,
+                "type_scale": 7,
+                "type_text": "DECIMAL(38,7)"
+              },
+              {
+                "name": "sector_pe",
+                "position": 3,
+                "type_name": "DECIMAL",
+                "type_precision": 38,
+                "type_scale": 6,
+                "type_text": "DECIMAL(38,6)"
+              }
+            ]
+          },
+          "total_byte_count": 776,
+          "total_chunk_count": 1,
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 1,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-7335-123f-9766-14298edb2fa7",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "assessment": "GOOD",
+  "benchmark_question_id": "6a3ef63c494e05fd43558d79eb342c34",
+  "eval_run_status": "DONE",
+  "expected_response": [
+    {
+      "response": "SELECT c.gics_sector_name, sum(m.market_value_amount) / sum(m.earnings_ten_year_average_inflation_adjusted_amount) AS sector_pe FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member) GROUP BY c.gics_sector_name HAVING sum(m.earnings_ten_year_average_inflation_adjusted_amount) \u003e 0 ORDER BY sector_pe DESC LIMIT 1",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 504,
+              "chunk_index": 0,
+              "row_count": 1,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 2,
+            "columns": [
+              {
+                "name": "gics_sector_name",
+                "position": 0,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "sector_pe",
+                "position": 1,
+                "type_name": "DECIMAL",
+                "type_precision": 38,
+                "type_scale": 6,
+                "type_text": "DECIMAL(38,6)"
+              }
+            ]
+          },
+          "total_byte_count": 504,
+          "total_chunk_count": 1,
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 1,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-6e7a-1c5f-892d-da176f4d0b42",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "manual_assessment": false,
+  "result_id": "01f1d8dc5aa61488ab0b02b246dfe22f",
+  "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72"
+}

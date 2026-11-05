@@ -1,0 +1,162 @@
+{
+  "actual_response": [
+    {
+      "response": "WITH asof AS (SELECT max(signal_date) AS day FROM `mdp_dev`.`gold_analytics_gateway`.`monitor_daily_signal` WHERE signal_code = 'too_expensive' AND signal_date \u003c= current_date())\nSELECT s.lens_name, s.lens_code, s.is_yes, s.measured_value, s.threshold_value, s.band_code, s.reason_text, s.signal_date AS signal_date\nFROM `mdp_dev`.`gold_analytics_gateway`.`monitor_daily_signal` s\nJOIN asof a ON s.signal_date = a.day\nWHERE s.signal_code = 'too_expensive'\nORDER BY s.lens_code",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 3728,
+              "chunk_index": 0,
+              "row_count": 2,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 8,
+            "columns": [
+              {
+                "name": "lens_name",
+                "position": 0,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "lens_code",
+                "position": 1,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "is_yes",
+                "position": 2,
+                "type_name": "BOOLEAN",
+                "type_text": "BOOLEAN"
+              },
+              {
+                "name": "measured_value",
+                "position": 3,
+                "type_name": "DECIMAL",
+                "type_precision": 18,
+                "type_scale": 6,
+                "type_text": "DECIMAL(18,6)"
+              },
+              {
+                "name": "threshold_value",
+                "position": 4,
+                "type_name": "DECIMAL",
+                "type_precision": 18,
+                "type_scale": 6,
+                "type_text": "DECIMAL(18,6)"
+              },
+              {
+                "name": "band_code",
+                "position": 5,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "reason_text",
+                "position": 6,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "signal_date",
+                "position": 7,
+                "type_name": "DATE",
+                "type_text": "DATE"
+              }
+            ]
+          },
+          "total_byte_count": 3728,
+          "total_chunk_count": 1,
+          "total_row_count": 2,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 2,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-5f4e-1d63-8e79-3caeadacc261",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "assessment": "GOOD",
+  "benchmark_question_id": "c83172d084a01c40a003f6c6d199cacc",
+  "eval_run_status": "DONE",
+  "expected_response": [
+    {
+      "response": "SELECT lens_name, is_yes, measured_value, threshold_value FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'too_expensive' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 1856,
+              "chunk_index": 0,
+              "row_count": 2,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 4,
+            "columns": [
+              {
+                "name": "lens_name",
+                "position": 0,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "is_yes",
+                "position": 1,
+                "type_name": "BOOLEAN",
+                "type_text": "BOOLEAN"
+              },
+              {
+                "name": "measured_value",
+                "position": 2,
+                "type_name": "DECIMAL",
+                "type_precision": 18,
+                "type_scale": 6,
+                "type_text": "DECIMAL(18,6)"
+              },
+              {
+                "name": "threshold_value",
+                "position": 3,
+                "type_name": "DECIMAL",
+                "type_precision": 18,
+                "type_scale": 6,
+                "type_text": "DECIMAL(18,6)"
+              }
+            ]
+          },
+          "total_byte_count": 1856,
+          "total_chunk_count": 1,
+          "total_row_count": 2,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 2,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-5bbf-1204-9b1c-a9cdea387470",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "manual_assessment": false,
+  "result_id": "01f1d8dc5aa7192592f50a7b1b62544d",
+  "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72"
+}
