@@ -2,9 +2,10 @@
 
 ### Requirement: Market rate indicators
 `market_rate_indicator_daily` SHALL have one row per `rate_code` and `indicator_date` for every `^GSPC` price
-date, for `us_federal_funds_effective_rate`, `us_cpi_change_previous_reading_percent`,
+date, for `us_cpi_all_items_not_seasonally_adjusted` (the CPI index), `us_federal_funds_effective_rate`,
+`us_cpi_change_previous_reading_percent`,
 `us_cpi_change_twelve_months_percent` and `us_real_federal_funds_rate`, with `rate_name`, `rate_value` (the
-latest value of the series on or before the date, in percent), `two_hundred_day_average_value` (the average of
+latest value of the series on or before the date: index points for the CPI index, percent for the others), `two_hundred_day_average_value` (the average of
 the series' last 200 rows, empty when fewer exist), `two_hundred_day_average_change_value` (that average minus
 the same average 20 rows earlier), `day_count`, `is_calculated`, `unit_name` and `ingested_timestamp`. The CPI
 changes SHALL be worked out on the monthly readings of `us_cpi_all_items_not_seasonally_adjusted` and carried to

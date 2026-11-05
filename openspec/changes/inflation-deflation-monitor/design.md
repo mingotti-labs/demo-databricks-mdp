@@ -39,10 +39,11 @@ or BCOM later is one row in `data/portfolio/benchmarks.csv` if a source is found
 ### D3. `market_rate_indicator_daily` (silver, materialized view)
 One row per `rate_code` and `indicator_date`, where the dates are the `^GSPC` price dates (trading days, so
 "200 days" means the same as for prices). `rate_value` is the latest value of the series on or before the date.
-Series (`unit_name` percent for all):
+Series (`unit_name` percent, except the CPI index in index points):
 
 | `rate_code` | Value |
 |---|---|
+| `us_cpi_all_items_not_seasonally_adjusted` | the CPI index (index points), carried from its reading to every date |
 | `us_federal_funds_effective_rate` | DFF as reported |
 | `us_cpi_change_previous_reading_percent` | CPI (not seasonally adjusted) over the previous month's CPI, minus 1, x 100; it changes once a month and is carried |
 | `us_cpi_change_twelve_months_percent` | CPI over the CPI 12 months earlier, minus 1, x 100 |
@@ -54,7 +55,9 @@ the same average 20 rows earlier, in the series' units; a difference, not a rati
 can be zero or negative), `day_count`, `is_calculated` (true for the three series we derive), `unit_name`,
 `ingested_timestamp` (earliest input). The CPI changes are worked out on the monthly readings (rows with
 `is_carried_forward` false) and then carried, as the story README decided. Twelve-month change rather than the
-monthly one for the real rate, because the effective rate is a yearly rate.
+monthly one for the real rate, because the effective rate is a yearly rate. A day-over-day change of the carried
+index is 0 on about 20 of 21 days and jumps on reading days, so the daily change kept is the change against the
+previous reading, carried (user, 2026-11-05: index, 200-day average and change, all daily).
 
 ### D4. 52-week high and low on `price_indicator_daily`
 `price_high_fifty_two_week_amount` = the highest `price_high` and `price_low_fifty_two_week_amount` = the lowest
@@ -72,7 +75,7 @@ is on (pointing to inflation):
 | `signal_code` | Star on when | `measured_value` | `threshold_value` |
 |---|---|---|---|
 | `commodity_prices` | the CRB 200-day average slope ratio is above 0 | the slope ratio | 0 |
-| `consumer_prices` | the 200-day average of the CPI previous-reading change is higher than 20 rows earlier | the average's change | 0 |
+| `consumer_prices` | the 200-day average of the CPI index is higher than 20 rows earlier (the curve is going up) | the average's change in index points | 0 |
 | `gold_prices` | the `GC=F` adjusted close is above its 200-day average | the close | the average |
 | `interest_rates` | the effective rate is above its 200-day average | the rate | the average |
 
@@ -117,8 +120,9 @@ deflation rating?"). Tables stay under the API limit of 30.
 - [CPI counts from the first day of its month, about six weeks before it is published] → kept, as decided for
   `market_rate_daily`; the rating can look ahead by up to six weeks. A release lag is a later change; the
   dashboard intro says so.
-- [Monthly CPI change, not seasonally adjusted, is seasonal] → the 200-day average smooths it, and the star uses
-  the average's direction; the 12-month change (no seasonality) decides deflation and the real rate.
+- [The CPI index rises in almost every period, so the consumer star is on most days] → intended: the model asks
+  whether the curve goes up; the star goes off when CPI turns down (2009). The monthly change, not seasonally
+  adjusted, is seasonal, so it is shown but does not vote; the 12-month change decides deflation and the real rate.
 - [Quota 486 of 500 after this] → nothing else adds tables before a clean-up; recorded in the probe register.
 - [The CRB series on Yahoo has gaps (248 rows a year in dev against 253)] → the 7-day rule covers short gaps.
 

@@ -8,7 +8,7 @@
 - [ ] 2.1 `common` query for `market_rate_indicator_daily` and the pipeline file with every column described
 - [ ] 2.2 52-week high and low columns on `price_indicator_daily`, described
 - [ ] 2.3 P2 before deploy: the effective rate's average on one date against a hand average; the CPI change for
-      September 2026 is 0.585; EQT's 52-week high and low are 68.24 and 47.94 on 2026-11-03
+      September 2026 is 0.585 and the CPI index is carried to every date; EQT's 52-week high and low are 68.24 and 47.94 on 2026-11-03
 - [ ] 2.4 Silver verification gains: one row per series and `^GSPC` date; the real rate equals its two parts
 
 ## 3. Gold (D5)

@@ -16,15 +16,16 @@ inflation) as a daily series, and for the 52-week high and low noted on 2026-11-
   `run_investments`), so dev has the same history as prd.
 - **New silver `market_rate_indicator_daily`**: one row per series and trading day (the `^GSPC` price dates),
   with the series value (latest on or before the day), its 200-day average, and the change of that average over
-  20 rows. Four series: `us_federal_funds_effective_rate` (the short-term rate), the CPI change against the
-  previous reading, the CPI change over 12 months, and `us_real_federal_funds_rate` (the short-term rate minus
-  the CPI 12-month change), all in percent.
+  20 rows. Five series: the CPI index itself (`us_cpi_all_items_not_seasonally_adjusted`, carried to every day),
+  the CPI change against the previous reading (carried until the next one), the CPI change over 12 months,
+  `us_federal_funds_effective_rate` (the short-term rate) and `us_real_federal_funds_rate` (the short-term rate
+  minus the CPI 12-month change); the changes and rates in percent.
 - **52-week high and low** on `price_indicator_daily` (`price_high_fifty_two_week_amount`,
   `price_low_fifty_two_week_amount`), for every listing and day. The dashboard's Company Deep Dive reads them
   instead of working them out.
 - **The monitor** as rows of the existing gold `monitor_daily_signal` (monitor `inflation_deflation`, one lens
   `game_plan`), no new gold table: four star rows (commodity prices: the CRB 200-day average rising; consumer
-  prices: the 200-day average of CPI's change rising; gold: the gold price above its 200-day average; interest
+  prices: the 200-day average of the CPI index rising; gold: the gold price above its 200-day average; interest
   rates: the short-term rate above its 200-day average) and a rating row (stars 0 to 4, or minus one when no
   star is on and CPI over 12 months is below zero), with its label (Increasing Inflation, Inflation Danger, Some
   Inflation Risk, Mild or Decreasing Inflation, Decreasing Inflation, Deflation) and a plain reason.
@@ -44,6 +45,9 @@ inflation) as a daily series, and for the 52-week high and low noted on 2026-11-
 - Commodities: the CRB index votes; the other seven benchmarks are shown for context. There is no clearly
   better free daily series (design D2 explains why).
 - Deflation (minus one): all four stars off and CPI below zero.
+- CPI (user, 2026-11-05): daily series of the index, its 200-day average and its change; the model tracks the
+  trajectory of the curve, so the consumer star is the slope of the index's 200-day average, the same rule as
+  commodities. Daily granularity, a monthly reading carried forward.
 
 ## Capabilities
 

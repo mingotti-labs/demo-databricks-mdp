@@ -4,7 +4,7 @@
 `gold_analytics_gateway.monitor_daily_signal` SHALL have, for monitor `inflation_deflation` and lens `game_plan`,
 on every `^GSPC` trading day where all four inputs have a row at most 7 days old, four star rows and one rating
 row. A star is on (`is_yes` true) when: `commodity_prices`, the `^TRCCRB` 200-day average slope ratio is above 0;
-`consumer_prices`, the 200-day average of the CPI previous-reading change is higher than 20 rows earlier;
+`consumer_prices`, the 200-day average of the CPI index is higher than 20 rows earlier;
 `gold_prices`, the `GC=F` adjusted close is above its 200-day average; `interest_rates`, the federal funds
 effective rate is above its 200-day average. The `rating` row SHALL carry `yes_count` (stars on, 0 to 4),
 `measured_value` (the rating: the stars on, or -1 when no star is on and the CPI 12-month change is below 0),
