@@ -116,6 +116,23 @@ checks["latest market value differs from a recomputation"] = f"""
   FROM latest CROSS JOIN recomputed
   WHERE abs(latest.market_value_amount - recomputed.value) / recomputed.value > {MARKET_VALUE_TOLERANCE}"""
 
+checks["inflation_deflation: a day without exactly four stars and a rating"] = f"""
+  SELECT concat(CAST(signal_date AS STRING), ' rows ', count(*)) FROM {GOLD}.monitor_daily_signal
+  WHERE monitor_code = 'inflation_deflation' GROUP BY signal_date HAVING count(*) != 5"""
+checks["inflation_deflation: a rating that is not the stars on, or -1 without prices below a year ago"] = f"""
+  SELECT CAST(r.signal_date AS STRING) FROM {GOLD}.monitor_daily_signal r
+  JOIN (SELECT signal_date, count_if(is_yes) AS stars_on FROM {GOLD}.monitor_daily_signal
+        WHERE monitor_code = 'inflation_deflation' AND signal_code != 'rating' GROUP BY signal_date) s
+    ON s.signal_date = r.signal_date
+  WHERE r.monitor_code = 'inflation_deflation' AND r.signal_code = 'rating'
+    AND (r.yes_count != s.stars_on
+         OR r.measured_value != CASE WHEN s.stars_on = 0 AND r.threshold_value < 0 THEN -1 ELSE s.stars_on END)"""
+checks["inflation_deflation: no rating on the latest market climate day"] = f"""
+  SELECT 'latest climate day ' || CAST(max(signal_date) AS STRING) FROM {GOLD}.monitor_daily_signal
+  WHERE monitor_code = 'market_climate'
+  HAVING max(signal_date) > (SELECT coalesce(max(signal_date), DATE '1900-01-01') FROM {GOLD}.monitor_daily_signal
+                             WHERE monitor_code = 'inflation_deflation') + 7"""
+
 failures = [f"{name}: {found}" for name, sql in checks.items() if (found := offenders(sql))]
 assert not failures, "\n".join(failures)
 dbutils.notebook.exit(f"{len(checks)} checks passed")

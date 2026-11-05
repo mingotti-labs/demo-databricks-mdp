@@ -1,0 +1,26 @@
+== rows per series
+
+  ['us_cpi_all_items_not_seasonally_adjusted', '14332', '1970-01-02', '2026-11-03', '14133', '14113']
+  ['us_cpi_change_previous_reading_percent', '14332', '1970-01-02', '2026-11-03', '14133', '14113']
+  ['us_cpi_change_twelve_months_percent', '14332', '1970-01-02', '2026-11-03', '14133', '14113']
+  ['us_federal_funds_effective_rate', '14332', '1970-01-02', '2026-11-03', '14133', '14113']
+  ['us_real_federal_funds_rate', '14332', '1970-01-02', '2026-11-03', '14133', '14113']
+== CPI change against the previous reading, September 2026 (expect 0.585)
+
+  ['2026-08-31', '0.318042', '2026-08-03']
+  ['2026-09-01', '0.585110', '2026-09-01']
+  ['2026-09-02', '0.585110', '2026-09-01']
+  ['2026-09-30', '0.585110', '2026-09-01']
+== latest row per series
+
+  ['us_cpi_all_items_not_seasonally_adjusted', '2026-11-03', '336.940000', '2026-10-30', '333.264085', '1.222710']
+  ['us_cpi_change_previous_reading_percent', '2026-11-03', '0.585110', '2026-09-01', '0.456443', '0.039122']
+  ['us_cpi_change_twelve_months_percent', '2026-11-03', '3.737685', '2026-09-01', '3.432141', '0.111287']
+  ['us_federal_funds_effective_rate', '2026-11-03', '3.880000', '2026-10-29', '3.675150', '0.024000']
+  ['us_real_federal_funds_rate', '2026-11-03', '0.142315', '2026-09-01', '0.243009', '-0.087287']
+== federal funds 200-day average on 2026-09-30: query vs hand average (equal)
+
+  ['3.646350', '3.646350']
+== real rate on 2026-09-30 = effective rate - CPI 12-month change
+
+  ['0.142315', '0.142315']

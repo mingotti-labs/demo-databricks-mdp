@@ -31,6 +31,7 @@ KEYS = {
     "dividend": ["listing_id", "ex_dividend_date"],
     "company_fundamentals": ["company_id", "valid_from_date"],
     "market_rate_daily": ["rate_code", "observation_date"],
+    "market_rate_indicator_daily": ["rate_code", "indicator_date"],
 }
 CURRENT_MEMBERS = f"""
   SELECT l.listing_id, l.trading_symbol_code, l.company_id, l.market_code
@@ -117,6 +118,35 @@ checks["CPI value changes on a row marked as carried forward"] = f"""
 checks["^GSPC has no prices before 2000"] = f"""
   SELECT '^GSPC' WHERE NOT EXISTS (
     SELECT 1 FROM {DOMAIN}.price_daily WHERE trading_symbol_code = '^GSPC' AND price_date < DATE '2000-01-01')"""
+checks["market_rate_indicator_daily: a series misses a ^GSPC trading day since the series began"] = f"""
+  WITH s AS (SELECT rate_code, min(indicator_date) AS first_day, count(*) AS row_count
+             FROM {DOMAIN}.market_rate_indicator_daily GROUP BY rate_code)
+  SELECT concat(rate_code, ' rows ', row_count) FROM s
+  WHERE row_count != (SELECT count(DISTINCT price_date) FROM {DOMAIN}.price_daily
+                      WHERE trading_symbol_code = '^GSPC' AND price_date >= s.first_day)"""
+checks["market_rate_indicator_daily: real rate differs from the effective rate minus the CPI 12-month change"] = f"""
+  SELECT CAST(r.indicator_date AS STRING) FROM {DOMAIN}.market_rate_indicator_daily r
+  JOIN {DOMAIN}.market_rate_indicator_daily f ON f.indicator_date = r.indicator_date AND f.rate_code = 'us_federal_funds_effective_rate'
+  JOIN {DOMAIN}.market_rate_indicator_daily c ON c.indicator_date = r.indicator_date AND c.rate_code = 'us_cpi_change_twelve_months_percent'
+  WHERE r.rate_code = 'us_real_federal_funds_rate' AND abs(r.rate_value - (f.rate_value - c.rate_value)) > 0.000001"""
+checks["market_rate_indicator_daily: a CPI change is not the ratio of two monthly readings (latest reading)"] = f"""
+  WITH r AS (SELECT observation_date, rate_value FROM {DOMAIN}.market_rate_daily
+             WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted' AND NOT is_carried_forward),
+  latest AS (SELECT max(observation_date) AS day FROM r),
+  expected AS (
+    SELECT (a.rate_value / b.rate_value - 1) * 100 AS previous_change
+    FROM r a JOIN latest ON a.observation_date = latest.day
+    JOIN r b ON b.observation_date = (SELECT max(observation_date) FROM r WHERE observation_date < latest.day))
+  SELECT concat('table ', i.rate_value, ' expected ', e.previous_change)
+  FROM {DOMAIN}.market_rate_indicator_daily i CROSS JOIN expected e
+  WHERE i.rate_code = 'us_cpi_change_previous_reading_percent'
+    AND i.indicator_date = (SELECT max(indicator_date) FROM {DOMAIN}.market_rate_indicator_daily)
+    AND abs(i.rate_value - e.previous_change) > 0.0001"""
+checks["price_indicator_daily: 52-week high below the close or low above it"] = f"""
+  SELECT concat(trading_symbol_code, ' ', CAST(price_date AS STRING)) FROM {DOMAIN}.price_indicator_daily p
+  JOIN (SELECT listing_id, price_date, price_close FROM {DOMAIN}.price_daily) d USING (listing_id, price_date)
+  WHERE p.price_high_fifty_two_week_amount < d.price_close OR p.price_low_fifty_two_week_amount > d.price_close
+  LIMIT 10"""
 checks["^GSPC has no 200-day average on its latest day"] = f"""
   SELECT '^GSPC' FROM (
     SELECT max_by(close_adjusted_two_hundred_day_average_amount, price_date) AS average
