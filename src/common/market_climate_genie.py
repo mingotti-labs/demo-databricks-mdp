@@ -99,7 +99,7 @@ BENCHMARKS = [
      f"SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' "
      f"AND signal_code = 'rating' AND measured_value = -1"),
     ("Is the dollar strong or weak today?",
-     f"SELECT signal_name, is_yes FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency' "
+     f"SELECT signal_name, CASE WHEN is_yes THEN 'Strong' ELSE 'Weak' END AS dollar_state FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency' "
      f"AND signal_code IN ('dollar_index', 'dollar_broad_index') AND signal_date = {LATEST_CURRENCY} ORDER BY signal_code"),
     ("Which currencies are gaining against the Australian dollar today?",
      f"SELECT signal_name FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency' AND lens_code = 'australian_dollar' "

@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "single-silver-landing-schema"))
 from compare import cli  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+from common.currency_queries import DATASETS as CURRENCY_DATASETS  # noqa: E402
 from common.inflation_queries import DATASETS as INFLATION_DATASETS  # noqa: E402
 from common.market_climate_queries import DATASETS  # noqa: E402
 
@@ -40,6 +41,7 @@ def main() -> None:
     parser.add_argument("--sector", default="Information Technology")
     parser.add_argument("--company", default="EQT Corporation")
     parser.add_argument("--range", default="6M")
+    parser.add_argument("--currency", default="CHF")
     args = parser.parse_args()
     warehouse = cli(args.profile, "warehouses", "list")[0]["id"]
     as_of = args.as_of or __import__("datetime").date.today().isoformat()
@@ -48,8 +50,9 @@ def main() -> None:
         {"name": "sector_name", "value": args.sector, "type": "STRING"},
         {"name": "company_name", "value": args.company, "type": "STRING"},
         {"name": "range_code", "value": args.range, "type": "STRING"},
+        {"name": "currency_code", "value": args.currency, "type": "STRING"},
     ]
-    for name, (title, query) in {**DATASETS, **INFLATION_DATASETS}.items():
+    for name, (title, query) in {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS}.items():
         out = run(args.profile, warehouse, args.catalog, query, parameters)
         state = out["status"]["state"]
         print(f"== {name} ({title}): {state}")

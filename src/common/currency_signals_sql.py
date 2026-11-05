@@ -69,10 +69,10 @@ def currency_signal_query(domain: str = DOMAIN, indicator_source: str | None = N
              two_hundred_day_average_change_value AS average_change, ingested_timestamp
       FROM recent WHERE rate_code = '{BROAD_INDEX_RATE_CODE}'
     ), indexes AS (
-      SELECT signal_date, 'dollar_index' AS signal_code, 'US Dollar Index (DXY)' AS signal_name, 'the US Dollar Index' AS label,
+      SELECT signal_date, 'dollar_index' AS signal_code, 'US Dollar Index (DXY)' AS signal_name, 'US Dollar Index' AS label,
              value, average_value, average_change, ingested_timestamp FROM dollar_index
       UNION ALL
-      SELECT signal_date, 'dollar_broad_index', 'Broad dollar index (Federal Reserve)', 'the Federal Reserve broad dollar index',
+      SELECT signal_date, 'dollar_broad_index', 'Broad dollar index (Federal Reserve)', 'Federal Reserve broad dollar index',
              value, average_value, average_change, ingested_timestamp FROM broad_index
     ), currency_rows AS (
       SELECT v.signal_date, v.lens_code, v.lens_name, v.signal_code, v.signal_name,
