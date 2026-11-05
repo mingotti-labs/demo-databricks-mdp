@@ -1,0 +1,20 @@
+resources:
+  genie_spaces:
+    market_climate_genie:
+      title: Market Climate
+      description: Ask about the market climate lights, the S&P 500 price/earnings ratio and its members.
+      warehouse_id: ${var.warehouse_id}
+      parent_path: ${workspace.resource_path}
+      serialized_space:
+        version: 2
+        data_sources:
+          tables:
+            - identifier: ${var.catalog}.gold_analytics_gateway.monitor_daily_signal
+        instructions:
+          text_instructions:
+            - id: "30000000000000000000000000000001"
+              content:
+                - "Probe: this agent answers questions about the market climate lights."
+      permissions:
+        - group_name: users
+          level: CAN_RUN
