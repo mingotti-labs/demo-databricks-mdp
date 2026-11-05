@@ -1,0 +1,142 @@
+{
+  "actual_response": [
+    {
+      "response": "WITH asof AS (SELECT max(valuation_date) AS day FROM mdp_dev.gold_analytics_gateway.valuation_daily_index WHERE valuation_date \u003c= current_date()), m AS (SELECT m.*, c.company_name FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation'), steps AS ( SELECT 1 AS step_number, 'Closing price' AS step_name, format_number(price_close, 2) || ' US$ on ' || CAST(price_date AS STRING) AS value_text, 'Latest close on or before the day' AS how_text FROM m UNION ALL SELECT 2, 'Shares outstanding', format_number(share_count, 0) || ' (' || coalesce(share_count_source_code, 'none') || ')', 'From the latest filing' FROM m UNION ALL SELECT 3, 'Market value', format_number(try_divide(market_value_amount,1e9), 2) || ' US$ billion', 'Step 1 x step 2' FROM m UNION ALL SELECT 4, 'Earnings, trailing 12 months', format_number(try_divide(earnings_trailing_twelve_months_amount,1e6), 1) || ' US$ million', 'Net income of the latest 12 months' FROM m UNION ALL SELECT 5, 'P/E on trailing earnings (what finance sites show)', format_number(try_divide(market_value_amount,nullif(earnings_trailing_twelve_months_amount, 0)), 2), 'Step 3 / step 4' FROM m UNION ALL SELECT 6, 'Earnings, average of the last ' || coalesce(CAST(earnings_year_count AS STRING), '0') || ' years', format_number(try_divide(earnings_ten_year_average_amount,1e6), 1) || ' US$ million', 'Average yearly net income, up to 10 years' FROM m UNION ALL SELECT 7, 'Inflation factor', format_number(try_divide(consumer_price_index_value,nullif(filing_consumer_price_index_value, 0)), 4), 'Price index today / price index at the filing' FROM m UNION ALL SELECT 8, 'Average earnings in today''s money', format_number(try_divide(earnings_ten_year_average_inflation_adjusted_amount,1e6), 1) || ' US$ million', 'Step 6 x step 7' FROM m UNION ALL SELECT 9, 'P/E on 10-year inflation-adjusted earnings (the climate uses this)', format_number(price_earnings_ten_year_average_inflation_adjusted_ratio, 2), 'Step 3 / step 8' FROM m UNION ALL SELECT 10, 'Index P/E without this member', format_number(price_earnings_without_member_ratio, 2), 'Same calculation over the other members' FROM m UNION ALL SELECT 11, 'Effect on the index P/E', format_number(price_earnings_effect_ratio, 4), 'Index P/E minus step 10' FROM m UNION ALL SELECT 12, 'Used in the index', CASE WHEN is_used THEN 'Yes' ELSE 'No: ' || exclusion_reason_code END, 'A member is left out when an input is missing' FROM m) SELECT step_number, step_name, value_text, how_text FROM steps ORDER BY step_number",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 1776,
+              "chunk_index": 0,
+              "row_count": 12,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 4,
+            "columns": [
+              {
+                "name": "step_number",
+                "position": 0,
+                "type_name": "INT",
+                "type_text": "INT"
+              },
+              {
+                "name": "step_name",
+                "position": 1,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "value_text",
+                "position": 2,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              },
+              {
+                "name": "how_text",
+                "position": 3,
+                "type_name": "STRING",
+                "type_text": "STRING"
+              }
+            ]
+          },
+          "total_byte_count": 1776,
+          "total_chunk_count": 1,
+          "total_row_count": 12,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 12,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-80be-15c9-91aa-6884edb11ee1",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "assessment": "BAD",
+  "assessment_reasons": [
+    "RESULT_MISSING_COLUMNS",
+    "LLM_JUDGE_INCOMPLETE_OR_PARTIAL_OUTPUT"
+  ],
+  "benchmark_question_id": "0826f772ea684cb396c69b36eaf91252",
+  "eval_run_status": "DONE",
+  "expected_response": [
+    {
+      "response": "SELECT m.price_earnings_ten_year_average_inflation_adjusted_ratio, m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, m.earnings_trailing_twelve_months_amount, m.earnings_ten_year_average_inflation_adjusted_amount FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "response_type": "SQL",
+      "sql_execution_result": {
+        "manifest": {
+          "chunks": [
+            {
+              "byte_count": 1776,
+              "chunk_index": 0,
+              "row_count": 1,
+              "row_offset": 0
+            }
+          ],
+          "format": "PROTOBUF_ARRAY",
+          "schema": {
+            "column_count": 4,
+            "columns": [
+              {
+                "name": "price_earnings_ten_year_average_inflation_adjusted_ratio",
+                "position": 0,
+                "type_name": "DECIMAL",
+                "type_precision": 18,
+                "type_scale": 4,
+                "type_text": "DECIMAL(18,4)"
+              },
+              {
+                "name": "pe_trailing",
+                "position": 1,
+                "type_name": "DECIMAL",
+                "type_precision": 38,
+                "type_scale": 6,
+                "type_text": "DECIMAL(38,6)"
+              },
+              {
+                "name": "earnings_trailing_twelve_months_amount",
+                "position": 2,
+                "type_name": "DECIMAL",
+                "type_precision": 30,
+                "type_scale": 6,
+                "type_text": "DECIMAL(30,6)"
+              },
+              {
+                "name": "earnings_ten_year_average_inflation_adjusted_amount",
+                "position": 3,
+                "type_name": "DECIMAL",
+                "type_precision": 38,
+                "type_scale": 7,
+                "type_text": "DECIMAL(38,7)"
+              }
+            ]
+          },
+          "total_byte_count": 1776,
+          "total_chunk_count": 1,
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_count": 1,
+          "row_offset": 0
+        },
+        "statement_id": "01f1d8dc-7b21-100c-83f7-820be167d412",
+        "status": {
+          "state": "SUCCEEDED"
+        }
+      }
+    }
+  ],
+  "manual_assessment": false,
+  "result_id": "01f1d8dc5aa41af4b5ae9c0a5b603f52",
+  "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72"
+}

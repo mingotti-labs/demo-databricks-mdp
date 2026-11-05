@@ -101,6 +101,16 @@ in dev (P3).
   for the user, the dev target gives `users` `CAN_MANAGE` on it (dev only).
 - **P4**: the user asks the spec's three scenarios in the dev agent and confirms; after merge, the same in prd.
 
+## P1 result (2026-11-05)
+
+Creating the agent as the CI principal works and `${var.catalog}` is filled in. Every later deploy fails while
+planning: the bundle reads the agent back and gets 403 "You need the aclPath entitlement: /sqlanalytics",
+because the principal has only `workspace-access`. It needs the `databricks-sql-access` entitlement
+(`databricks_sql_access = true` on `databricks_service_principal.cicd_github` in iac
+`modules/databricks-identity-governance`). This is the cross-repo dependency the proposal anticipated; the
+entitlement also lets the bundle look a warehouse up by name again. Until it is granted, this PR's
+`deploy-dev` fails.
+
 ## Risks / Trade-offs
 
 - [Variables not replaced inside `serialized_space`] → one JSON file per target with a target override
@@ -120,5 +130,7 @@ agent. No tables, so no drops and no quota change.
 
 ## Open Questions
 
-- Whether the dashboard can link to the agent ("Ask Genie") with a single field; if it is one field, add it,
-  otherwise leave it for later.
+- Resolved in implementation: an "Ask Genie" link on the dashboard is `uiSettings.genieSpace.overrideId` with the
+  agent's space id, which differs per target and exists only after the agent is created. The dashboard file is
+  static JSON, so it would need the dashboard inlined in YAML with `${resources.genie_spaces.market_climate_genie.id}`
+  and the dashboard made to depend on the agent. Not a single field; left for a later change.

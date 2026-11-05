@@ -1,0 +1,11 @@
+{
+  "create_time": "2026-11-05T05:24:34.361Z",
+  "description": "Ask about the market climate lights, the S\u0026P 500 price/earnings ratio and its members.",
+  "etag": "aa27f240dfd7254c555e2df21a0653fff605da4cfef94f4a1e08f9cab6d6b9b6",
+  "parent_path": "/Users/74cc0004-a114-4e3d-aac2-d714aadb6910/.bundle/demo-databricks-mdp/dev/resources",
+  "serialized_space": "{\n  \"version\": 2,\n  \"data_sources\": {\n    \"tables\": [\n      {\n        \"identifier\": \"mdp_dev.gold_analytics_gateway.monitor_daily_signal\"\n      }\n    ]\n  },\n  \"instructions\": {\n    \"text_instructions\": [\n      {\n        \"id\": \"30000000000000000000000000000001\",\n        \"content\": [\n          \"Probe: this agent answers questions about the market climate lights.\"\n        ]\n      }\n    ]\n  }\n}\n",
+  "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+  "title": "[dev svc_cicd_github] Market Climate",
+  "update_time": "2026-11-05T05:24:34.361Z",
+  "warehouse_id": "c36e1ff0d4e62a24"
+}
