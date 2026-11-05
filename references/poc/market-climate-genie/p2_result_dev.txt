@@ -1,0 +1,49 @@
+== example: How has the S&P 500 P/E moved over time?: SUCCEEDED, rows 256
+   ['2025-10-28', '40.3262', '30.3027']
+   ['2025-10-29', '40.3459', '30.3987']
+== example: How fresh is the data?: SUCCEEDED, rows 1
+   ['2026-11-03', '2026-11-03', '2026-11-01', '2026-10-30']
+== example: Which members are left out today, and why?: SUCCEEDED, rows 11
+   ['Vylor', 'Consumer Staples', 'no_filing', '2026-11-03']
+   ['Honeywell Aerospace', 'Industrials', 'no_net_income', '2026-11-03']
+== example: Which companies push the index P/E up most?: SUCCEEDED, rows 10
+   ['Nvidia', 'Information Technology', '0.0748630000', '183.1134', '25.825534', '37.6645', '2.3813']
+   ['Amazon', 'Consumer Discretionary', '0.0407400000', '97.3640', '20.112522', '39.0690', '0.9768']
+== example: What is the P/E of each sector, and the index P/E without it?: SUCCEEDED, rows 11
+   ['Information Technology', '75', '24.481094118236335', '0.367925', '66.681416', '32.491102', '40.045756']
+   ['Health Care', '59', '6.924052787815693', '0.104061', '35.323534', '40.677362', '40.045756']
+== example: What is the S&P 500 P/E today, on 10-year inflation-adjusted and on trailing earnings?: SUCCEEDED, rows 1
+   ['2026-11-03', '66.53819675156716', '1661.55426760369', '40.0458', '24.4350', '489', '500', '8', '52']
+== example: How is EQT's P/E worked out, step by step?: SUCCEEDED, rows 12
+   ['1', 'Closing price', '54.25 US$ on 2026-11-03', 'Latest close on or before the day']
+   ['2', 'Shares outstanding', '625,549,000 (cover_page)', 'From the latest filing']
+== example: What are EQT's last close and its 52-week high and low?: SUCCEEDED, rows 1
+   ['54.250000', '-0.0107585703865791393', '68.239998', '47.939999', '2026-11-03']
+== example: How have the lights changed over time?: SUCCEEDED, rows 512
+   ['2025-10-28', 'Market climate long run', 'long_run', '2', 'red']
+   ['2025-10-28', 'Market climate modern', 'modern', '2', 'red']
+== example: What is the market climate today?: SUCCEEDED, rows 2
+   ['Market climate long run', 'long_run', '3', 'red', 'sell', 'Market climate long run is red (sell): 3 of 3 answers are yes.', '2026-11-03']
+   ['Market climate modern', 'modern', '3', 'red', 'sell', 'Market climate modern is red (sell): 3 of 3 answers are yes.', '2026-11-03']
+== example: What are the three answers of each climate today, and why?: SUCCEEDED, rows 6
+   ['Market climate long run', 'long_run', 'Fed in the way', 'fed_in_the_way', 'Yes', 'red', '4.000000', '3.750000', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+   ['Market climate long run', 'long_run', 'Market going up', 'market_going_up', 'Yes', 'green', '7568.919922', '7315.886362', 'The S&P 500 closed at 7,568.92, above its 200-day average of 7,315.89 (the average moved 1.1% over the last 20 days).']
+== example: Do the member rows add up to the index row?: SUCCEEDED, rows 1
+   ['489', '489', '0.00', '0.00', '40.0458', '40.0458']
+== example: Which companies push the index P/E down most?: SUCCEEDED, rows 10
+   ['JPMorgan Chase', 'Financials', '0.0134890000', '18.9243', '13.603464', '40.6664', '-0.6206']
+   ['Bank of America', 'Financials', '0.0051500000', '11.1806', '10.629207', '40.5882', '-0.5424']
+== benchmark: Why is EQT's P/E so high?: SUCCEEDED, rows 1
+   ['749.7352', '12.784611', '2654444000.000000', '45264023.0505020']
+== benchmark: Is the Fed in the way?: SUCCEEDED, rows 2
+   ['Market climate long run', 'true', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+   ['Market climate modern', 'true', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+== benchmark: Which sector has the highest P/E?: SUCCEEDED, rows 1
+   ['Information Technology', '66.681416']
+== benchmark: How many members are left out today?: SUCCEEDED, rows 1
+   ['11']
+== benchmark: Is the market too expensive right now?: SUCCEEDED, rows 2
+   ['Market climate long run', 'true', '40.045800', '22.000000']
+   ['Market climate modern', 'true', '40.045800', '30.000000']
+== benchmark: What did the long-run light say on 2026-10-01?: SUCCEEDED, rows 1
+   ['red', '3', 'sell']

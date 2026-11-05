@@ -1,16 +1,13 @@
-"""Builds src/dashboards/market_climate.lvdash.json from queries.py (openspec market-climate-dashboard).
+"""Builds the Market Climate dashboard JSON from the shared dataset queries (openspec market-climate-dashboard).
 
-Usage: uv run python references/poc/market-climate-dashboard/build_dashboard.py
+`build()` returns the file content of `src/dashboards/market_climate.lvdash.json`; `cicd/build_market_climate.py`
+writes it and a test checks the committed file equals it.
 """
 
 import json
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from queries import DATASETS, MONTHS_SHOWN  # noqa: E402
+from common.market_climate_queries import DATASETS, MONTHS_SHOWN
 
-OUT = Path(__file__).resolve().parents[3] / "src" / "dashboards" / "market_climate.lvdash.json"
 DATE_DATASETS = [
     "ds_freshness", "ds_lights", "ds_answers", "ds_index_day", "ds_top_up", "ds_top_down", "ds_excluded",
     "ds_members", "ds_checks", "ds_company_check", "ds_company_price", "ds_company_figures", "ds_sectors", "ds_sector_up", "ds_sector_down",
@@ -99,51 +96,6 @@ def table(name: str, title: str, dataset: str, columns: list[tuple], x: int, y: 
                        "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": fields, "disaggregated": True}}],
                        "spec": {"version": 2, "widgetType": "table", "encodings": {"columns": encodings}, "frame": frame}},
             "position": {"x": x, "y": y, "width": w, "height": h}}
-
-
-def line(name: str, title: str, dataset: str, x_field: str, y_fields: list[tuple], x: int, y: int, w: int, h: int,
-         color_field: str | None = None, mappings: list[dict] | None = None, annotations: list[dict] | None = None,
-         description: str | None = None) -> dict:
-    fields = [{"name": x_field, "expression": f"`{x_field}`"}]
-    fields += [{"name": f, "expression": f"`{f}`"} for f, _ in y_fields]
-    encodings = {"x": {"fieldName": x_field, "scale": {"type": "temporal"}, "displayName": "Date"}}
-    if len(y_fields) == 1:
-        encodings["y"] = {"fieldName": y_fields[0][0], "scale": {"type": "quantitative"}, "displayName": y_fields[0][1]}
-    else:
-        encodings["y"] = {"scale": {"type": "quantitative"},
-                          "fields": [{"fieldName": f, "displayName": d} for f, d in y_fields]}
-    if color_field:
-        fields.append({"name": color_field, "expression": f"`{color_field}`"})
-        scale = {"type": "categorical"}
-        if mappings:
-            scale["mappings"] = mappings
-        encodings["color"] = {"fieldName": color_field, "scale": scale}
-    frame = {"showTitle": True, "title": title}
-    if description:
-        frame.update({"showDescription": True, "description": description})
-    spec = {"version": 3, "widgetType": "line", "encodings": encodings, "frame": frame}
-    if annotations:
-        spec["annotations"] = annotations
-    return {"widget": {"name": name,
-                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": fields, "disaggregated": True}}],
-                       "spec": spec},
-            "position": {"x": x, "y": y, "width": w, "height": h}}
-
-
-def bar(name: str, title: str, dataset: str, category: str, value: tuple, x: int, y: int, w: int, h: int) -> dict:
-    fields = [{"name": category, "expression": f"`{category}`"}, {"name": value[0], "expression": f"`{value[0]}`"}]
-    encodings = {"x": {"fieldName": category, "scale": {"type": "categorical", "sort": {"by": "y-reversed"}}, "displayName": "Sector"},
-                 "y": {"fieldName": value[0], "scale": {"type": "quantitative"}, "displayName": value[1]}}
-    return {"widget": {"name": name,
-                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": fields, "disaggregated": True}}],
-                       "spec": {"version": 3, "widgetType": "bar", "encodings": encodings,
-                                "frame": {"showTitle": True, "title": title}}},
-            "position": {"x": x, "y": y, "width": w, "height": h}}
-
-
-def horizontal(value: str, label: str, color: str) -> dict:
-    return {"type": "horizontal-line", "encodings": {"y": {"dataValue": value, "dataType": "INTEGER"},
-                                                      "label": {"value": label}, "color": {"value": color}}}
 
 
 def filter_widget(name: str, title: str, kind: str, bindings: list[tuple[str, str, str]], x: int, y: int, w: int) -> dict:
@@ -338,7 +290,6 @@ def climate_page() -> dict:
                ("threshold_value", "Compared with", NUMBER2), ("reason_text", "Why", None)]
     dates = [("climate_date", "Climate as of", None), ("sp500_price_date", "Latest S&P 500 price", None),
              ("fed_rate_date", "Latest Fed target reading", None), ("cpi_date", "Latest CPI reading (monthly, carried forward)", None)]
-    mapping = [{"value": "red", "color": RED}, {"value": "yellow", "color": YELLOW}, {"value": "green", "color": GREEN}]
     return {"name": "climate", "displayName": "Climate", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
         text("climate-title", ["# Market Climate\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
         traffic_lights("traffic-lights", 0, 5, 12, 6),
@@ -416,7 +367,7 @@ def filters_page() -> dict:
                       [(d, "parameter", "as_of_date") for d in DATE_DATASETS], 0, 0, 4)]}
 
 
-def main() -> None:
+def build() -> str:
     dashboard = {
         "datasets": datasets(),
         "pages": [climate_page(), deep_dive_page(), company_page(), sector_page(), filters_page()],
@@ -428,10 +379,4 @@ def main() -> None:
             "visualizationColors": PALETTE,
             "widgetHeaderAlignment": "LEFT"}},
     }
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(dashboard, indent=2) + "\n", encoding="utf-8")
-    print("wrote", OUT, len(dashboard["datasets"]), "datasets")
-
-
-if __name__ == "__main__":
-    main()
+    return json.dumps(dashboard, indent=2) + "\n"

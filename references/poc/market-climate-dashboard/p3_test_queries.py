@@ -15,7 +15,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "single-silver-landing-schema"))
 from compare import cli  # noqa: E402
-from queries import DATASETS  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+from common.market_climate_queries import DATASETS  # noqa: E402
 
 
 def run(profile: str, warehouse: str, catalog: str, statement: str, parameters: list[dict]) -> dict:

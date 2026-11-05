@@ -1,20 +1,416 @@
-resources:
-  genie_spaces:
-    market_climate_genie:
-      title: Market Climate
-      description: Ask about the market climate lights, the S&P 500 price/earnings ratio and its members.
-      warehouse_id: ${var.warehouse_id}
-      parent_path: ${workspace.resource_path}
-      serialized_space:
-        version: 2
-        data_sources:
-          tables:
-            - identifier: ${var.catalog}.gold_analytics_gateway.monitor_daily_signal
-        instructions:
-          text_instructions:
-            - id: "30000000000000000000000000000001"
-              content:
-                - "Probe: this agent answers questions about the market climate lights."
-      permissions:
-        - group_name: users
-          level: CAN_RUN
+{
+  "resources": {
+    "genie_spaces": {
+      "market_climate_genie": {
+        "title": "Market Climate",
+        "description": "Ask about the market climate lights, the S&P 500 price/earnings ratio and its members.",
+        "warehouse_id": "${var.warehouse_id}",
+        "parent_path": "${workspace.resource_path}",
+        "serialized_space": {
+          "version": 2,
+          "config": {
+            "sample_questions": [
+              {
+                "id": "1f905bacedd815f56a2447bb70e3aabd",
+                "question": [
+                  "Why is EQT's P/E so high?"
+                ]
+              },
+              {
+                "id": "6d6e7f2d4de73249b7aba3bda62466dd",
+                "question": [
+                  "What is the market climate today?"
+                ]
+              },
+              {
+                "id": "7354ebd9a92d5cb82e4a4f6876d2566d",
+                "question": [
+                  "Which sector has the highest P/E?"
+                ]
+              },
+              {
+                "id": "7e902c40502fee00f1a940efa7dfb1b2",
+                "question": [
+                  "Which companies push the P/E up most?"
+                ]
+              },
+              {
+                "id": "ab5839efba522f9829f521b46ed94f3d",
+                "question": [
+                  "Is the market too expensive right now?"
+                ]
+              }
+            ]
+          },
+          "data_sources": {
+            "tables": [
+              {
+                "identifier": "${var.catalog}.gold_analytics_gateway.monitor_daily_signal",
+                "column_configs": [
+                  {
+                    "column_name": "lens_name",
+                    "enable_entity_matching": true,
+                    "enable_format_assistance": true
+                  },
+                  {
+                    "column_name": "signal_name",
+                    "enable_entity_matching": true,
+                    "enable_format_assistance": true
+                  }
+                ]
+              },
+              {
+                "identifier": "${var.catalog}.gold_analytics_gateway.valuation_daily_index"
+              },
+              {
+                "identifier": "${var.catalog}.gold_analytics_gateway.valuation_daily_index_member"
+              },
+              {
+                "identifier": "${var.catalog}.silver_domain_investments.company",
+                "column_configs": [
+                  {
+                    "column_name": "company_name",
+                    "enable_entity_matching": true,
+                    "enable_format_assistance": true
+                  },
+                  {
+                    "column_name": "gics_sector_name",
+                    "enable_entity_matching": true,
+                    "enable_format_assistance": true
+                  }
+                ]
+              },
+              {
+                "identifier": "${var.catalog}.silver_domain_investments.price_daily"
+              }
+            ]
+          },
+          "instructions": {
+            "text_instructions": [
+              {
+                "id": "cbde2df6a7c89370edc449dc5705d30c",
+                "content": [
+                  "The Market Climate agent answers whether the US market is too expensive, whether the Fed is in the way and whether the market is going up, for the S&P 500.",
+                  "Two climates are shown each day, \"long_run\" and \"modern\". Each is read from three yes/no answers (signal_code too_expensive, fed_in_the_way, market_going_up). Yes is always the unfavourable answer.",
+                  "Too expensive: the S&P 500 price/earnings ratio on 10-year inflation-adjusted earnings is above 22 for long_run and above 30 for modern. Drilldown bands: 16 and 22 (long_run), 22 and 30 (modern).",
+                  "Fed in the way: the latest change of the Fed target rate (upper limit) was a hike less than 6 months ago. A new hike restarts the 6 months, a cut ends it.",
+                  "Market going up: the S&P 500 closes above its 200-day simple moving average (measured_value is the close, threshold_value the average). Yes means above the average. Its band is for drilldown only: red below the average, green above and rising, yellow above and flat or falling.",
+                  "The result row of a climate has signal_code \"climate\": yes_count of 3 and the light. 2 or 3 yes is red (action sell), 1 yes is yellow (buy and hold), 0 yes is green (strong buy).",
+                  "Use monitor_daily_signal for lights, answers and reasons. One row per day, monitor, lens and signal. reason_text is a plain sentence for the row.",
+                  "\"Today\" or \"now\" means the latest signal_date in monitor_daily_signal and the latest valuation_date in valuation_daily_index. Dates are trading days; a day without a row has no light.",
+                  "Three price/earnings measures are stored per day in valuation_daily_index and valuation_daily_index_member: trailing twelve months, plain 10-year average, and 10-year average adjusted for inflation to that day's money. Only the 10-year inflation-adjusted one votes. The ratio of the index is total market value over total earnings of the members used, not an average of member ratios.",
+                  "Finance sites show the trailing P/E. A company that earned little in earlier years has a small 10-year average, so its inflation-adjusted P/E is far higher than its trailing P/E (EQT Corporation: about 12 trailing, about 750 on 10-year inflation-adjusted earnings).",
+                  "valuation_daily_index_member has one row per member and day, used or not. is_used says whether it is in the index figures; exclusion_reason_code says why not: no_recent_price, no_filing, no_share_count, no_net_income, no_ten_year_average, no_consumer_price_index.",
+                  "price_earnings_without_member_ratio is the index P/E without that member. price_earnings_effect_ratio is the index P/E minus that: positive means the member pushes the index P/E up, negative down. Effects are one at a time and do not add up to the index P/E.",
+                  "market_value_share_ratio is the member's share of the index market value (0 to 1). Amounts are in US dollars.",
+                  "To name a company use silver_domain_investments company (company_name) joined on company_id; its sector is gics_sector_name. Sectors are today's sectors applied to every day.",
+                  "Prices are in price_daily (price_close, price_high, price_low per listing and price_date); join on listing_id.",
+                  "Show dates as YYYY-MM-DD. Round ratios to 2 decimals unless asked for more."
+                ]
+              }
+            ],
+            "example_question_sqls": [
+              {
+                "id": "1703274fab3cbf3545fcdd2a023ab27c",
+                "question": [
+                  "How has the S&P 500 P/E moved over time?"
+                ],
+                "sql": [
+                  "SELECT i.valuation_date, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index i WHERE i.valuation_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY i.valuation_date"
+                ],
+                "usage_guidance": [
+                  "Both measures per day, last 36 months."
+                ]
+              },
+              {
+                "id": "22a8d4f4cc1751c4ef05822a3fdf3bbe",
+                "question": [
+                  "How fresh is the data?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= current_date()) SELECT (SELECT day FROM asof) AS climate_date, (SELECT max(price_date) FROM ${var.catalog}.silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = '^GSPC') AS sp500_price_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_federal_funds_target_upper') AS fed_rate_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted') AS cpi_date"
+                ],
+                "usage_guidance": [
+                  "The climate date and the latest date of each input."
+                ]
+              },
+              {
+                "id": "3b165a89cb2ebf36a12d6ec92ae4c678",
+                "question": [
+                  "Which members are left out today, and why?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()) SELECT c.company_name, c.gics_sector_name AS sector_name, m.exclusion_reason_code, m.price_date FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE NOT m.is_used ORDER BY m.exclusion_reason_code, c.company_name"
+                ],
+                "usage_guidance": [
+                  "Members that are not used, with the reason."
+                ]
+              },
+              {
+                "id": "45fc87c90f24a85c8e172b8902140f1d",
+                "question": [
+                  "Which companies push the index P/E up most?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10"
+                ],
+                "usage_guidance": [
+                  "Top 10 of the latest day."
+                ]
+              },
+              {
+                "id": "52e5451c9f5a84462871af56db57271f",
+                "question": [
+                  "What is the P/E of each sector, and the index P/E without it?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()), used AS (SELECT c.gics_sector_name AS sector_name, m.market_value_amount AS value, m.earnings_ten_year_average_inflation_adjusted_amount AS earnings, m.price_earnings_effect_ratio AS effect FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used), total AS (SELECT sum(value) AS value, sum(earnings) AS earnings FROM used) SELECT u.sector_name, count(*) AS member_count, sum(u.value) / 1e12 AS market_value_trillion, sum(u.value) / total.value AS market_value_share_ratio, CASE WHEN sum(u.earnings) > 0 THEN sum(u.value) / sum(u.earnings) END AS sector_pe, CASE WHEN total.earnings - sum(u.earnings) > 0 THEN (total.value - sum(u.value)) / (total.earnings - sum(u.earnings)) END AS pe_without_sector, total.value / total.earnings AS pe_index FROM used u CROSS JOIN total GROUP BY u.sector_name, total.value, total.earnings ORDER BY sum(u.value) DESC"
+                ],
+                "usage_guidance": [
+                  "Sectors of the latest day."
+                ]
+              },
+              {
+                "id": "586211d38eca6dbe111eaa117564f575",
+                "question": [
+                  "What is the S&P 500 P/E today, on 10-year inflation-adjusted and on trailing earnings?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()) SELECT i.valuation_date, i.market_value_amount / 1e12 AS market_value_trillion, i.earnings_ten_year_average_inflation_adjusted_amount / 1e9 AS earnings_adjusted_billion, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing, i.members_used_count, i.member_count, i.members_without_shares_count, i.members_under_ten_years_count FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index i JOIN asof a ON i.valuation_date = a.day"
+                ],
+                "usage_guidance": [
+                  "Index row of the latest day."
+                ]
+              },
+              {
+                "id": "6d93eb8f69177e1eaea45d4f4ff8d12a",
+                "question": [
+                  "How is EQT's P/E worked out, step by step?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()), m AS (SELECT m.*, c.company_name FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation'), steps AS ( SELECT 1 AS step_number, 'Closing price' AS step_name, format_number(price_close, 2) || ' US$ on ' || CAST(price_date AS STRING) AS value_text, 'Latest close on or before the day' AS how_text FROM m UNION ALL SELECT 2, 'Shares outstanding', format_number(share_count, 0) || ' (' || coalesce(share_count_source_code, 'none') || ')', 'From the latest filing' FROM m UNION ALL SELECT 3, 'Market value', format_number(market_value_amount / 1e9, 2) || ' US$ billion', 'Step 1 x step 2' FROM m UNION ALL SELECT 4, 'Earnings, trailing 12 months', format_number(earnings_trailing_twelve_months_amount / 1e6, 1) || ' US$ million', 'Net income of the latest 12 months' FROM m UNION ALL SELECT 5, 'P/E on trailing earnings (what finance sites show)', format_number(market_value_amount / nullif(earnings_trailing_twelve_months_amount, 0), 2), 'Step 3 / step 4' FROM m UNION ALL SELECT 6, 'Earnings, average of the last ' || coalesce(CAST(earnings_year_count AS STRING), '0') || ' years', format_number(earnings_ten_year_average_amount / 1e6, 1) || ' US$ million', 'Average yearly net income, up to 10 years' FROM m UNION ALL SELECT 7, 'Inflation factor', format_number(consumer_price_index_value / nullif(filing_consumer_price_index_value, 0), 4), 'Price index today / price index at the filing' FROM m UNION ALL SELECT 8, 'Average earnings in today''s money', format_number(earnings_ten_year_average_inflation_adjusted_amount / 1e6, 1) || ' US$ million', 'Step 6 x step 7' FROM m UNION ALL SELECT 9, 'P/E on 10-year inflation-adjusted earnings (the climate uses this)', format_number(price_earnings_ten_year_average_inflation_adjusted_ratio, 2), 'Step 3 / step 8' FROM m UNION ALL SELECT 10, 'Index P/E without this member', format_number(price_earnings_without_member_ratio, 2), 'Same calculation over the other members' FROM m UNION ALL SELECT 11, 'Effect on the index P/E', format_number(price_earnings_effect_ratio, 4), 'Index P/E minus step 10' FROM m UNION ALL SELECT 12, 'Used in the index', CASE WHEN is_used THEN 'Yes' ELSE 'No: ' || exclusion_reason_code END, 'A member is left out when an input is missing' FROM m) SELECT step_number, step_name, value_text, how_text FROM steps ORDER BY step_number"
+                ],
+                "usage_guidance": [
+                  "Replace 'EQT Corporation' with the company asked about."
+                ]
+              },
+              {
+                "id": "70367c8b4adfc02936908d33d3a550a8",
+                "question": [
+                  "What are EQT's last close and its 52-week high and low?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()), listing AS (SELECT m.listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation'), prices AS (SELECT p.price_date, p.price_close, p.price_high, p.price_low, avg(p.price_close) OVER w AS band_middle, stddev_pop(p.price_close) OVER w AS band_deviation, count(*) OVER w AS window_count, max(p.price_date) OVER () AS last_date FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof) WINDOW w AS (ORDER BY p.price_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW)) , ranked AS (SELECT *, row_number() OVER (ORDER BY price_date DESC) AS recency FROM prices) SELECT max(CASE WHEN recency = 1 THEN price_close END) AS last_close, max(CASE WHEN recency = 1 THEN price_close END) / max(CASE WHEN recency = 2 THEN price_close END) - 1 AS day_change_ratio, max(CASE WHEN price_date > add_months(last_date, -12) THEN price_high END) AS high_52_weeks, min(CASE WHEN price_date > add_months(last_date, -12) THEN price_low END) AS low_52_weeks, max(last_date) AS price_date FROM ranked"
+                ],
+                "usage_guidance": [
+                  "Replace 'EQT Corporation' with the company asked about."
+                ]
+              },
+              {
+                "id": "c134332a69b3c8798fa6abb0e7efa749",
+                "question": [
+                  "How have the lights changed over time?"
+                ],
+                "sql": [
+                  "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date, lens_name"
+                ],
+                "usage_guidance": [
+                  "Yes answers per day for each climate, last 36 months."
+                ]
+              },
+              {
+                "id": "d39e89da306a89d09f1608158100d890",
+                "question": [
+                  "What is the market climate today?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= current_date()) SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text, s.signal_date AS climate_date FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code = 'climate' ORDER BY s.lens_code"
+                ],
+                "usage_guidance": [
+                  "Both lights with the yes count and the climate date."
+                ]
+              },
+              {
+                "id": "d85a21ffa8adda3ba1890618f90c02ca",
+                "question": [
+                  "What are the three answers of each climate today, and why?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= current_date()) SELECT s.lens_name, s.lens_code, s.signal_name, s.signal_code, CASE WHEN s.is_yes THEN 'Yes' ELSE 'No' END AS answer_text, s.band_code, s.measured_value, s.threshold_value, s.reason_text FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code"
+                ],
+                "usage_guidance": [
+                  "One row per climate and question."
+                ]
+              },
+              {
+                "id": "e946b2dbf12be9d9f7ee89f7f3141059",
+                "question": [
+                  "Do the member rows add up to the index row?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()), sums AS (SELECT count_if(m.is_used) AS used_count, sum(CASE WHEN m.is_used THEN m.market_value_amount END) AS value, sum(CASE WHEN m.is_used THEN m.earnings_ten_year_average_inflation_adjusted_amount END) AS earnings FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day) SELECT i.members_used_count AS index_used_count, s.used_count AS member_used_count, round(i.market_value_amount - s.value, 2) AS market_value_difference_amount, round(i.earnings_ten_year_average_inflation_adjusted_amount - s.earnings, 2) AS earnings_difference_amount, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_index, round(s.value / s.earnings, 4) AS pe_from_members FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index i JOIN asof a ON i.valuation_date = a.day CROSS JOIN sums s"
+                ],
+                "usage_guidance": [
+                  "Differences should be 0."
+                ]
+              },
+              {
+                "id": "f5b5d6ad5fcc763290f526719fd359cd",
+                "question": [
+                  "Which companies push the index P/E down most?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(valuation_date) AS day FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index WHERE valuation_date <= current_date()) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10"
+                ],
+                "usage_guidance": [
+                  "Top 10 of the latest day."
+                ]
+              }
+            ],
+            "join_specs": [
+              {
+                "id": "19468e2064286e57d41c520c705fba55",
+                "left": {
+                  "identifier": "${var.catalog}.gold_analytics_gateway.valuation_daily_index_member",
+                  "alias": "valuation_daily_index_member"
+                },
+                "right": {
+                  "identifier": "${var.catalog}.silver_domain_investments.company",
+                  "alias": "company"
+                },
+                "sql": [
+                  "`valuation_daily_index_member`.`company_id` = `company`.`company_id`",
+                  "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_ONE--"
+                ]
+              },
+              {
+                "id": "20d29b214fef23b2d12545755a8ba985",
+                "left": {
+                  "identifier": "${var.catalog}.gold_analytics_gateway.valuation_daily_index_member",
+                  "alias": "valuation_daily_index_member"
+                },
+                "right": {
+                  "identifier": "${var.catalog}.silver_domain_investments.price_daily",
+                  "alias": "price_daily"
+                },
+                "sql": [
+                  "`valuation_daily_index_member`.`listing_id` = `price_daily`.`listing_id`",
+                  "--rt=FROM_RELATIONSHIP_TYPE_ONE_TO_MANY--"
+                ]
+              },
+              {
+                "id": "591b3eae554bc549382f87fe6a5151c8",
+                "left": {
+                  "identifier": "${var.catalog}.gold_analytics_gateway.valuation_daily_index_member",
+                  "alias": "valuation_daily_index_member"
+                },
+                "right": {
+                  "identifier": "${var.catalog}.gold_analytics_gateway.valuation_daily_index",
+                  "alias": "valuation_daily_index"
+                },
+                "sql": [
+                  "`valuation_daily_index_member`.`index_code` = `valuation_daily_index`.`index_code` AND `valuation_daily_index_member`.`valuation_date` = `valuation_daily_index`.`valuation_date`",
+                  "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_ONE--"
+                ]
+              }
+            ]
+          },
+          "benchmarks": {
+            "questions": [
+              {
+                "id": "0826f772ea684cb396c69b36eaf91252",
+                "question": [
+                  "Why is EQT's P/E so high?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT m.price_earnings_ten_year_average_inflation_adjusted_ratio, m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, m.earnings_trailing_twelve_months_amount, m.earnings_ten_year_average_inflation_adjusted_amount FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = (SELECT max(valuation_date) FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member)"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "66fa34212000c5983b8e303ef8d5686a",
+                "question": [
+                  "Is the Fed in the way?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT lens_name, is_yes, reason_text FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "6a3ef63c494e05fd43558d79eb342c34",
+                "question": [
+                  "Which sector has the highest P/E?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT c.gics_sector_name, sum(m.market_value_amount) / sum(m.earnings_ten_year_average_inflation_adjusted_amount) AS sector_pe FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.valuation_date = (SELECT max(valuation_date) FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member) GROUP BY c.gics_sector_name HAVING sum(m.earnings_ten_year_average_inflation_adjusted_amount) > 0 ORDER BY sector_pe DESC LIMIT 1"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "af1e8117be8243960198b4419159dd8c",
+                "question": [
+                  "How many members are left out today?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT count(*) AS members_left_out FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member WHERE NOT is_used AND valuation_date = (SELECT max(valuation_date) FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member)"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "c83172d084a01c40a003f6c6d199cacc",
+                "question": [
+                  "Is the market too expensive right now?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT lens_name, is_yes, measured_value, threshold_value FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'too_expensive' AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "faa82b40470f1a61abb09c014ba95582",
+                "question": [
+                  "What did the long-run light say on 2026-10-01?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT band_code, yes_count, action_name FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND lens_code = 'long_run' AND signal_date = DATE '2026-10-01'"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "permissions": [
+          {
+            "group_name": "users",
+            "level": "CAN_RUN"
+          }
+        ]
+      }
+    }
+  }
+}

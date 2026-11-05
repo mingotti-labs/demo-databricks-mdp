@@ -232,3 +232,4 @@ The Genie agent as code (2026-11-05, dev). Scripts and results in `references/po
 | Probe | Question | Result |
 |---|---|---|
 | P1 | Can the CI principal deploy a `genie_spaces` resource, and is `${var.catalog}` filled in inside `serialized_space`? | Yes to both: the agent `[dev svc_cicd_github] Market Climate` was created on `c36e1ff0d4e62a24`, its table is `mdp_dev.gold_analytics_gateway.monitor_daily_signal`, `users` has `CAN_RUN`. A resource key must be unique across resource types (`market_climate_genie`, not `market_climate`, which the dashboard has). |
+| P2 | Does every example and benchmark SQL of the agent run in dev with the catalog filled in? | Yes, all 13 examples and 6 benchmarks (`p2_result_dev.txt`). Latest day 2026-11-03: both lights red 3/3, index P/E 40.0458, EQT 749.74 against 12.78 trailing, 11 members left out. |
