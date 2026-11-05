@@ -23,7 +23,7 @@ above it with a rising average, else yellow) and a plain `reason_text`. The rows
 A dashboard "Currency Monitor" SHALL read the target's catalog and show, as of a date defaulting to the latest day with
 currency rows: the dollar megatrend as two circles (the US Dollar Index and the broad index, each against its average), each main currency gaining or losing against the US
 dollar and against the Australian dollar, and every country's short-term rate and 10-year yield with the date of the
-reading and a mark when it is older than 3 months; and on a "Currency Deep Dive" page, for a chosen currency, its value in
+reading and a mark when it is older than 4 months; and on a "Currency Deep Dive" page, for a chosen currency, its value in
 US and Australian dollars with their averages, and its short-term rate and its 10-year yield over time (the 10-year when
 the country has one).
 

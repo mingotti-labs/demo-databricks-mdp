@@ -72,7 +72,7 @@ Monitor": intro bullets; two circles (the US Dollar Index and the broad index, e
 its average on hover); a currency grid (rows the nine currencies,
 columns against USD and against AUD, coloured gaining or losing); distance from the average for each currency against USD
 and against AUD (bars); the two dollar indexes with their averages over the shared 36-month axis; the rates table (currency, short-term
-rate and date, 10-year yield and date, a mark when older than 3 months). Page "Currency Deep Dive": currency selector; its
+rate and date, 10-year yield and date, a mark when older than 4 months (OECD readings are dated the 1st of a month and arrive a month or two late)). Page "Currency Deep Dive": currency selector; its
 value in USD and in AUD with averages; its short-term rate and its 10-year yield over time (the 10-year line only
 when the country has one: none for China). Agent: examples from these queries,
 instructions (the cross-rate rule, gaining means above the average, the stale rates), three benchmarks.
@@ -89,7 +89,7 @@ instructions (the cross-rate rule, gaining means above the average, the stale ra
 ## Risks / Trade-offs
 
 - [Stale OECD rates (the euro 10-year, and any series that stops later)] → shown with their reading date and marked when
-  older than 3 months; another OECD series or BIS later if needed.
+  older than 4 months; another OECD series or BIS later if needed.
 - [Yahoo `DX-Y.NYB` gaps or a renamed symbol] → P1 checks it; FRED `DTWEXBGS` is the fallback.
 - [Refactoring the shared indicator query changes the inflation series] → P2 compares them before deploy.
 - [Deploy order: the agent lists no new table] → no deadlock (the tables exist; only rows are new).
