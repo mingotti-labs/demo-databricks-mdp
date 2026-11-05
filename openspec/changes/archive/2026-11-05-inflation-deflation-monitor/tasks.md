@@ -32,10 +32,10 @@
 
 - [x] 5.1 Draft PR deploy-dev; `run_investments verify=true`
 - [x] 5.2 Genie benchmark evaluation in dev passes
-- [ ] 5.3 P4: the user checks the dashboard and asks the agent; quota read (expected 484 after dev)
+- [x] 5.3 P4: the user checks the dashboard and asks the agent; quota read (expected 484 after dev)
 
 ## 6. After merge
 
-- [ ] 6.1 prd: CI runs `investments`; prd ratings match dev for the latest day; quota read (expected 486)
-- [ ] 6.2 The user checks the prd dashboard and agent
-- [ ] 6.3 Planning: the story gets its Analysis section; memory updated
+- [x] 6.1 prd: CI runs `investments`; prd ratings match dev for the latest day; quota read (expected 486)
+- [x] 6.2 The user checks the prd dashboard and agent
+- [x] 6.3 Planning: the story gets its Analysis section; memory updated
