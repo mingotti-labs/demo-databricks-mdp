@@ -41,6 +41,12 @@
                 ]
               },
               {
+                "id": "be1f95b8d10a785d3c86c3348dee5b44",
+                "question": [
+                  "Rank the countries by interest rate and currency change."
+                ]
+              },
+              {
                 "id": "df2a85f3104e219aa1768f15a34dc126",
                 "question": [
                   "Which currencies are gaining against the Australian dollar?"
@@ -138,7 +144,8 @@
                   "Values are worked out from FRED exchange rates quoted against the US dollar: a rate quoted as units per US dollar is inverted, and the value in Australian dollars is the value in US dollars divided by the value of one Australian dollar in US dollars on the same day (market_rate_indicator_daily rate_code currency_value_<code>_in_usd and currency_value_<code>_in_aud).\n",
                   "Interest rates of the main countries are in market_rate_daily and market_rate_indicator_daily: short-term (the federal funds, RBA cash, ECB deposit rates and 3-month interbank rates of Japan, Canada, Switzerland, Sweden, New Zealand and China, and the UK call money rate) and 10-year government bond yields (none for China). Most are monthly readings carried forward; observation_date is the date of the reading. The euro area 10-year yield is stale (last reading 2026-01).\n",
                   "When a question about a market climate answer or light does not name a lens, answer for both lenses (long_run and modern) of the latest day, even when they agree.\n",
-                  "For the latest interest rate of a country, read market_rate_daily (one row per reading) and show observation_date, the date of the reading; market_rate_indicator_daily repeats the last reading on every trading day, so its indicator_date is not the date of the reading.\n"
+                  "For the latest interest rate of a country, read market_rate_daily (one row per reading) and show observation_date, the date of the reading; market_rate_indicator_daily repeats the last reading on every trading day, so its indicator_date is not the date of the reading.\n",
+                  "To rank countries by what their currency and interest rate would have paid, in a base currency (default the Australian dollar; the US dollar is the other base), use the Yield Deep Dive method: short-term interest rate in percent plus the change of the currency's value in the base over the last 12 months in percent (the value in market_rate_indicator_daily, rate_code currency_value_<code>_in_<base>, divided by the same value 252 trading days earlier, minus 1, times 100). The base currency itself has no currency change. Never add a ratio such as a distance from an average to a percent rate without multiplying it by 100. Always say the result looks backward, is not a forecast and that the rates are interbank or policy rates, not bank CD rates; show the date of each rate reading.\n"
                 ]
               }
             ],
@@ -333,6 +340,18 @@
                 ],
                 "usage_guidance": [
                   "The 12-month change and the change against the previous reading, last 36 months."
+                ]
+              },
+              {
+                "id": "abf22b981abb8deece75a3e3cc89b8eb",
+                "question": [
+                  "Which country can deliver the highest yield, considering its interest rate and its currency's change, in a table ranking?"
+                ],
+                "sql": [
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= current_date()), countries AS (SELECT * FROM VALUES ('USD', 'US dollar', 'us_federal_funds_effective_rate', 'us_10_year_treasury_yield'), ('EUR', 'Euro', 'euro_area_deposit_facility_rate', 'euro_area_10_year_government_bond_yield'), ('JPY', 'Japanese yen', 'japan_3_month_interbank_rate', 'japan_10_year_government_bond_yield'), ('GBP', 'British pound', 'uk_call_money_rate', 'uk_10_year_government_bond_yield'), ('CHF', 'Swiss franc', 'switzerland_3_month_interbank_rate', 'switzerland_10_year_government_bond_yield'), ('CAD', 'Canadian dollar', 'canada_3_month_interbank_rate', 'canada_10_year_government_bond_yield'), ('SEK', 'Swedish krona', 'sweden_3_month_interbank_rate', 'sweden_10_year_government_bond_yield'), ('AUD', 'Australian dollar', 'rba_cash_rate_target', 'australia_10_year_government_bond_yield'), ('NZD', 'New Zealand dollar', 'new_zealand_3_month_interbank_rate', 'new_zealand_10_year_government_bond_yield'), ('CNY', 'Chinese yuan', 'china_3_month_interbank_rate', '-') AS countries(currency_code, currency_name, short_rate_code, long_rate_code)), series_values AS (SELECT rate_code, indicator_date, rate_value, two_hundred_day_average_value AS average_value, lag(rate_value, 252) OVER (PARTITION BY rate_code ORDER BY indicator_date) AS year_ago FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily WHERE rate_code LIKE concat('currency_value_%_in_', lower('AUD'))), today AS (SELECT v.* FROM series_values v JOIN asof a ON v.indicator_date = a.day), latest AS (SELECT i.rate_code, i.rate_value, i.observation_date FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily i JOIN asof a ON i.indicator_date = a.day), ranked AS ( SELECT c.currency_code, c.currency_name, s.rate_value AS short_term_rate, s.observation_date AS short_term_date, l.rate_value AS ten_year_yield, CASE WHEN c.currency_code = upper('AUD') THEN 0 ELSE (t.rate_value / t.year_ago - 1) * 100 END AS currency_change_12m, CASE WHEN c.currency_code = upper('AUD') THEN 0 ELSE (t.rate_value / t.average_value - 1) * 100 END AS distance_from_average FROM countries c LEFT JOIN latest s ON s.rate_code = c.short_rate_code LEFT JOIN latest l ON l.rate_code = c.long_rate_code LEFT JOIN today t ON t.rate_code = concat('currency_value_', lower(c.currency_code), '_in_', lower('AUD')) WHERE s.rate_value IS NOT NULL AND (c.currency_code = upper('AUD') OR t.year_ago IS NOT NULL)) SELECT rank() OVER (ORDER BY short_term_rate + currency_change_12m DESC) AS rank_position, currency_name, round(short_term_rate, 2) AS short_term_rate, short_term_date, round(ten_year_yield, 2) AS ten_year_yield, round(currency_change_12m, 1) AS currency_change_12m, round(distance_from_average, 1) AS distance_from_average, round(short_term_rate + currency_change_12m, 1) AS short_plus_12m FROM ranked ORDER BY rank_position"
+                ],
+                "usage_guidance": [
+                  "Short-term rate plus the 12-month change of the currency against the base; replace 'AUD' with 'USD' for a US dollar base. Backward-looking."
                 ]
               },
               {
@@ -598,6 +617,20 @@
                     "format": "SQL",
                     "content": [
                       "SELECT signal_name FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency' AND lens_code = 'australian_dollar' AND signal_code <> 'summary' AND is_yes AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency') ORDER BY signal_name"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "97563483fd7c6174374346da160f8828",
+                "question": [
+                  "Which country has the highest short-term rate plus 12-month currency change against the Australian dollar?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT currency_name, short_plus_12m FROM (WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= current_date()), countries AS (SELECT * FROM VALUES ('USD', 'US dollar', 'us_federal_funds_effective_rate', 'us_10_year_treasury_yield'), ('EUR', 'Euro', 'euro_area_deposit_facility_rate', 'euro_area_10_year_government_bond_yield'), ('JPY', 'Japanese yen', 'japan_3_month_interbank_rate', 'japan_10_year_government_bond_yield'), ('GBP', 'British pound', 'uk_call_money_rate', 'uk_10_year_government_bond_yield'), ('CHF', 'Swiss franc', 'switzerland_3_month_interbank_rate', 'switzerland_10_year_government_bond_yield'), ('CAD', 'Canadian dollar', 'canada_3_month_interbank_rate', 'canada_10_year_government_bond_yield'), ('SEK', 'Swedish krona', 'sweden_3_month_interbank_rate', 'sweden_10_year_government_bond_yield'), ('AUD', 'Australian dollar', 'rba_cash_rate_target', 'australia_10_year_government_bond_yield'), ('NZD', 'New Zealand dollar', 'new_zealand_3_month_interbank_rate', 'new_zealand_10_year_government_bond_yield'), ('CNY', 'Chinese yuan', 'china_3_month_interbank_rate', '-') AS countries(currency_code, currency_name, short_rate_code, long_rate_code)), series_values AS (SELECT rate_code, indicator_date, rate_value, two_hundred_day_average_value AS average_value, lag(rate_value, 252) OVER (PARTITION BY rate_code ORDER BY indicator_date) AS year_ago FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily WHERE rate_code LIKE concat('currency_value_%_in_', lower('AUD'))), today AS (SELECT v.* FROM series_values v JOIN asof a ON v.indicator_date = a.day), latest AS (SELECT i.rate_code, i.rate_value, i.observation_date FROM ${var.catalog}.silver_domain_investments.market_rate_indicator_daily i JOIN asof a ON i.indicator_date = a.day), ranked AS ( SELECT c.currency_code, c.currency_name, s.rate_value AS short_term_rate, s.observation_date AS short_term_date, l.rate_value AS ten_year_yield, CASE WHEN c.currency_code = upper('AUD') THEN 0 ELSE (t.rate_value / t.year_ago - 1) * 100 END AS currency_change_12m, CASE WHEN c.currency_code = upper('AUD') THEN 0 ELSE (t.rate_value / t.average_value - 1) * 100 END AS distance_from_average FROM countries c LEFT JOIN latest s ON s.rate_code = c.short_rate_code LEFT JOIN latest l ON l.rate_code = c.long_rate_code LEFT JOIN today t ON t.rate_code = concat('currency_value_', lower(c.currency_code), '_in_', lower('AUD')) WHERE s.rate_value IS NOT NULL AND (c.currency_code = upper('AUD') OR t.year_ago IS NOT NULL)) SELECT rank() OVER (ORDER BY short_term_rate + currency_change_12m DESC) AS rank_position, currency_name, round(short_term_rate, 2) AS short_term_rate, short_term_date, round(ten_year_yield, 2) AS ten_year_yield, round(currency_change_12m, 1) AS currency_change_12m, round(distance_from_average, 1) AS distance_from_average, round(short_term_rate + currency_change_12m, 1) AS short_plus_12m FROM ranked ORDER BY rank_position) WHERE rank_position = 1"
                     ]
                   }
                 ]

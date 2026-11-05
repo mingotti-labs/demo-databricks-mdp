@@ -8,8 +8,11 @@ from common.dashboard_widgets import (
     AXIS_WIDTH,
     BAND_SCALE,
     INK,
+    NUMBER0,
     NUMBER2,
     PERCENT,
+    GREEN,
+    RED,
     SHARED_DOMAIN,
     TEXT_COLOR,
     TIME_AXIS,
@@ -26,7 +29,7 @@ from common.dashboard_widgets import (
 )
 from common.currency_queries import DATASETS
 
-DATE_DATASETS = ["ds_currency_freshness", "ds_dollar", "ds_currency_grid", "ds_currency_distance", "ds_country_rates"]
+DATE_DATASETS = ["ds_currency_freshness", "ds_dollar", "ds_currency_grid", "ds_currency_distance", "ds_country_rates", "ds_yield_ranking"]
 CURRENCY_DATASETS = ["ds_currency_history", "ds_currency_rates_history"]
 
 
@@ -34,6 +37,8 @@ def parameters(dataset: str) -> list[dict]:
     result = [date_parameter()] if dataset in DATE_DATASETS else []
     if dataset in CURRENCY_DATASETS:
         result.append(string_parameter("currency_code", "Currency", "CHF"))
+    if dataset == "ds_yield_ranking":
+        result.append(string_parameter("base_code", "Base currency", "AUD"))
     return result
 
 
@@ -125,6 +130,38 @@ def deep_dive_page() -> dict:
     ]}
 
 
+def score_bars(x: int, y: int, w: int, h: int) -> dict:
+    """The score of each country: short-term rate plus the 12-month change of its currency against the base."""
+    spec = {"mark": {"type": "bar"},
+            "encoding": {"y": {"field": "currency_name", "type": "nominal", "sort": {"field": "rank_position"}, "title": None},
+                         "x": {"field": "short_plus_12m", "type": "quantitative", "title": "Short-term rate plus 12-month currency change, percent",
+                               "scale": {"padding": Y_PADDING}},
+                         "color": {"condition": {"test": "datum.short_plus_12m > 0", "value": GREEN}, "value": RED},
+                         "tooltip": [{"field": "currency_name", "title": "Currency"}, {"field": "short_term_rate", "title": "Short-term rate, %"},
+                                     {"field": "currency_change_12m", "title": "12-month change, %"}, {"field": "short_plus_12m", "title": "Total, %"}]}}
+    return custom("score-bars", "ds_yield_ranking", ["rank_position", "currency_name", "short_term_rate", "currency_change_12m", "short_plus_12m"],
+                  spec, x, y, w, h, "Short-term rate plus the 12-month change of the currency")
+
+
+def yield_page() -> dict:
+    ranking = [("rank_position", "Rank", NUMBER0), ("currency_name", "Currency", None), ("short_term_rate", "Short-term rate, %", NUMBER2),
+               ("short_term_date", "Reading of", None), ("ten_year_yield", "10-year yield, %", NUMBER2),
+               ("currency_change_12m", "Currency change, last 12 months, %", NUMBER2), ("distance_from_average", "From 200-day average, %", NUMBER2),
+               ("short_plus_12m", "Short-term rate + 12-month change, %", NUMBER2)]
+    return {"name": "yield-deep-dive", "displayName": "Yield Deep Dive", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+        text("yield-title", ["# Yield Deep Dive\n", "\n", "Which country would have paid the most, in your base currency? Each country is ranked by its short-term interest rate "
+                             "plus the change of its currency against the base over the last 12 months (252 trading days).\n", "\n",
+                             "- Pick the base currency: the Australian dollar or the US dollar\n",
+                             "- The currency change looks backward; it is not a forecast, and high-rate currencies often fall\n",
+                             "- The rates are interbank or policy rates, not what a bank pays on a CD; the date of each reading is shown\n",
+                             "- The base currency is shown with no currency change\n"], 0, 0, 12, 5),
+        filter_widget("filter-base", "Base currency", "filter-single-select",
+                      [("ds_base_options", "field", "base_code"), ("ds_yield_ranking", "parameter", "base_code")], 0, 5, 6),
+        table("yield-ranking", "Countries ranked by short-term rate plus 12-month currency change", "ds_yield_ranking", ranking, 0, 7, 12, 9),
+        score_bars(0, 16, 12, 7),
+    ]}
+
+
 def filters_page() -> dict:
     return {"name": "filters", "displayName": "Filters", "pageType": "PAGE_TYPE_GLOBAL_FILTERS", "layoutVersion": "GRID_V1", "layout": [
         filter_widget("filter-as-of", "As of date (latest day on or before it)", "filter-date-picker",
@@ -132,4 +169,4 @@ def filters_page() -> dict:
 
 
 def build() -> str:
-    return dashboard_json(dataset_entries(DATASETS, parameters), [currency_monitor_page(), deep_dive_page(), filters_page()])
+    return dashboard_json(dataset_entries(DATASETS, parameters), [currency_monitor_page(), deep_dive_page(), yield_page(), filters_page()])

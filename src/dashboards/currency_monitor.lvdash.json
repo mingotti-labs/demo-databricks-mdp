@@ -181,6 +181,52 @@
           }
         }
       ]
+    },
+    {
+      "name": "ds_base_options",
+      "displayName": "Base currencies",
+      "queryLines": [
+        "SELECT * FROM VALUES ('AUD', 'Australian dollar'), ('USD', 'US dollar') AS bases(base_code, base_name) "
+      ]
+    },
+    {
+      "name": "ds_yield_ranking",
+      "displayName": "Countries ranked by short-term rate plus the currency's 12-month change",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')), countries AS (SELECT * FROM VALUES ('USD', 'US dollar', 'us_federal_funds_effective_rate', 'us_10_year_treasury_yield'), ('EUR', 'Euro', 'euro_area_deposit_facility_rate', 'euro_area_10_year_government_bond_yield'), ('JPY', 'Japanese yen', 'japan_3_month_interbank_rate', 'japan_10_year_government_bond_yield'), ('GBP', 'British pound', 'uk_call_money_rate', 'uk_10_year_government_bond_yield'), ('CHF', 'Swiss franc', 'switzerland_3_month_interbank_rate', 'switzerland_10_year_government_bond_yield'), ('CAD', 'Canadian dollar', 'canada_3_month_interbank_rate', 'canada_10_year_government_bond_yield'), ('SEK', 'Swedish krona', 'sweden_3_month_interbank_rate', 'sweden_10_year_government_bond_yield'), ('AUD', 'Australian dollar', 'rba_cash_rate_target', 'australia_10_year_government_bond_yield'), ('NZD', 'New Zealand dollar', 'new_zealand_3_month_interbank_rate', 'new_zealand_10_year_government_bond_yield'), ('CNY', 'Chinese yuan', 'china_3_month_interbank_rate', '-') AS countries(currency_code, currency_name, short_rate_code, long_rate_code)), series_values AS (SELECT rate_code, indicator_date, rate_value, two_hundred_day_average_value AS average_value, lag(rate_value, 252) OVER (PARTITION BY rate_code ORDER BY indicator_date) AS year_ago FROM silver_domain_investments.market_rate_indicator_daily WHERE rate_code LIKE concat('currency_value_%_in_', lower(:base_code))), today AS (SELECT v.* FROM series_values v JOIN asof a ON v.indicator_date = a.day), latest AS (SELECT i.rate_code, i.rate_value, i.observation_date FROM silver_domain_investments.market_rate_indicator_daily i JOIN asof a ON i.indicator_date = a.day), ranked AS ( SELECT c.currency_code, c.currency_name, s.rate_value AS short_term_rate, s.observation_date AS short_term_date, l.rate_value AS ten_year_yield, CASE WHEN c.currency_code = upper(:base_code) THEN 0 ELSE (t.rate_value / t.year_ago - 1) * 100 END AS currency_change_12m, CASE WHEN c.currency_code = upper(:base_code) THEN 0 ELSE (t.rate_value / t.average_value - 1) * 100 END AS distance_from_average FROM countries c LEFT JOIN latest s ON s.rate_code = c.short_rate_code LEFT JOIN latest l ON l.rate_code = c.long_rate_code LEFT JOIN today t ON t.rate_code = concat('currency_value_', lower(c.currency_code), '_in_', lower(:base_code)) WHERE s.rate_value IS NOT NULL AND (c.currency_code = upper(:base_code) OR t.year_ago IS NOT NULL)) SELECT rank() OVER (ORDER BY short_term_rate + currency_change_12m DESC) AS rank_position, currency_name, round(short_term_rate, 2) AS short_term_rate, short_term_date, round(ten_year_yield, 2) AS ten_year_yield, round(currency_change_12m, 1) AS currency_change_12m, round(distance_from_average, 1) AS distance_from_average, round(short_term_rate + currency_change_12m, 1) AS short_plus_12m FROM ranked ORDER BY rank_position "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "base_code",
+          "displayName": "Base currency",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "AUD"
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "pages": [
@@ -1100,6 +1146,321 @@
       ]
     },
     {
+      "name": "yield-deep-dive",
+      "displayName": "Yield Deep Dive",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "yield-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Yield Deep Dive\n",
+                "\n",
+                "Which country would have paid the most, in your base currency? Each country is ranked by its short-term interest rate plus the change of its currency against the base over the last 12 months (252 trading days).\n",
+                "\n",
+                "- Pick the base currency: the Australian dollar or the US dollar\n",
+                "- The currency change looks backward; it is not a forecast, and high-rate currencies often fall\n",
+                "- The rates are interbank or policy rates, not what a bank pays on a CD; the date of each reading is shown\n",
+                "- The base currency is shown with no currency change\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-base",
+            "queries": [
+              {
+                "name": "q_ds_base_options_base_code",
+                "query": {
+                  "datasetName": "ds_base_options",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "base_code",
+                      "expression": "`base_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_yield_ranking_base_code",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "base_code",
+                      "keyword": "base_code"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "base_code",
+                    "displayName": "Base currency",
+                    "queryName": "q_ds_base_options_base_code"
+                  },
+                  {
+                    "parameterName": "base_code",
+                    "queryName": "q_ds_yield_ranking_base_code"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Base currency"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "yield-ranking",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "fields": [
+                    {
+                      "name": "rank_position",
+                      "expression": "`rank_position`"
+                    },
+                    {
+                      "name": "currency_name",
+                      "expression": "`currency_name`"
+                    },
+                    {
+                      "name": "short_term_rate",
+                      "expression": "`short_term_rate`"
+                    },
+                    {
+                      "name": "short_term_date",
+                      "expression": "`short_term_date`"
+                    },
+                    {
+                      "name": "ten_year_yield",
+                      "expression": "`ten_year_yield`"
+                    },
+                    {
+                      "name": "currency_change_12m",
+                      "expression": "`currency_change_12m`"
+                    },
+                    {
+                      "name": "distance_from_average",
+                      "expression": "`distance_from_average`"
+                    },
+                    {
+                      "name": "short_plus_12m",
+                      "expression": "`short_plus_12m`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "rank_position",
+                    "displayName": "Rank",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "currency_name",
+                    "displayName": "Currency",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "short_term_rate",
+                    "displayName": "Short-term rate, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "short_term_date",
+                    "displayName": "Reading of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "ten_year_yield",
+                    "displayName": "10-year yield, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "currency_change_12m",
+                    "displayName": "Currency change, last 12 months, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "distance_from_average",
+                    "displayName": "From 200-day average, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "short_plus_12m",
+                    "displayName": "Short-term rate + 12-month change, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Countries ranked by short-term rate plus 12-month currency change"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "score-bars",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "fields": [
+                    {
+                      "name": "rank_position",
+                      "expression": "`rank_position`"
+                    },
+                    {
+                      "name": "currency_name",
+                      "expression": "`currency_name`"
+                    },
+                    {
+                      "name": "short_term_rate",
+                      "expression": "`short_term_rate`"
+                    },
+                    {
+                      "name": "currency_change_12m",
+                      "expression": "`currency_change_12m`"
+                    },
+                    {
+                      "name": "short_plus_12m",
+                      "expression": "`short_plus_12m`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"mark\": {\"type\": \"bar\"}, \"encoding\": {\"y\": {\"field\": \"currency_name\", \"type\": \"nominal\", \"sort\": {\"field\": \"rank_position\"}, \"title\": null}, \"x\": {\"field\": \"short_plus_12m\", \"type\": \"quantitative\", \"title\": \"Short-term rate plus 12-month currency change, percent\", \"scale\": {\"padding\": 14}}, \"color\": {\"condition\": {\"test\": \"datum.short_plus_12m > 0\", \"value\": \"#59A14F\"}, \"value\": \"#E15759\"}, \"tooltip\": [{\"field\": \"currency_name\", \"title\": \"Currency\"}, {\"field\": \"short_term_rate\", \"title\": \"Short-term rate, %\"}, {\"field\": \"currency_change_12m\", \"title\": \"12-month change, %\"}, {\"field\": \"short_plus_12m\", \"title\": \"Total, %\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "rank_position"
+                  },
+                  {
+                    "fieldName": "currency_name"
+                  },
+                  {
+                    "fieldName": "short_term_rate"
+                  },
+                  {
+                    "fieldName": "currency_change_12m"
+                  },
+                  {
+                    "fieldName": "short_plus_12m"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Short-term rate plus the 12-month change of the currency"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
       "name": "filters",
       "displayName": "Filters",
       "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
@@ -1173,6 +1534,19 @@
                     }
                   ]
                 }
+              },
+              {
+                "name": "q_ds_yield_ranking_as_of_date",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
               }
             ],
             "spec": {
@@ -1199,6 +1573,10 @@
                   {
                     "parameterName": "as_of_date",
                     "queryName": "q_ds_country_rates_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_yield_ranking_as_of_date"
                   }
                 ]
               },

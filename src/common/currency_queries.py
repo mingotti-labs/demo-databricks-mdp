@@ -12,6 +12,7 @@ from common.currency import (
     DOLLAR_INDEX_SYMBOL,
     MONITOR_CODE,
     STALE_AFTER_MONTHS,
+    YEAR_TRADING_DAYS,
     value_code,
 )
 from common.market_climate_queries import CHART_START
@@ -132,4 +133,30 @@ WITH {COUNTRIES}
 SELECT i.indicator_date, CASE i.rate_code WHEN c.short_rate_code THEN 'Short-term rate' ELSE '10-year yield' END AS rate_label, i.rate_value
 FROM countries c JOIN {SILVER}.market_rate_indicator_daily i ON i.rate_code IN (c.short_rate_code, c.long_rate_code)
 WHERE c.currency_code = :currency_code AND i.indicator_date >= {CHART_START} ORDER BY i.indicator_date
+""")
+
+dataset("ds_base_options", "Base currencies", """
+SELECT * FROM VALUES ('AUD', 'Australian dollar'), ('USD', 'US dollar') AS bases(base_code, base_name)
+""")
+
+dataset("ds_yield_ranking", "Countries ranked by short-term rate plus the currency's 12-month change", f"""
+WITH {AS_OF}, {COUNTRIES},
+series_values AS (SELECT rate_code, indicator_date, rate_value, two_hundred_day_average_value AS average_value,
+    lag(rate_value, {YEAR_TRADING_DAYS}) OVER (PARTITION BY rate_code ORDER BY indicator_date) AS year_ago
+  FROM {SILVER}.market_rate_indicator_daily WHERE rate_code LIKE concat('currency_value_%_in_', lower(:base_code))),
+today AS (SELECT v.* FROM series_values v JOIN asof a ON v.indicator_date = a.day),
+latest AS (SELECT i.rate_code, i.rate_value, i.observation_date FROM {SILVER}.market_rate_indicator_daily i JOIN asof a ON i.indicator_date = a.day),
+ranked AS (
+  SELECT c.currency_code, c.currency_name, s.rate_value AS short_term_rate, s.observation_date AS short_term_date,
+    l.rate_value AS ten_year_yield,
+    CASE WHEN c.currency_code = upper(:base_code) THEN 0 ELSE (t.rate_value / t.year_ago - 1) * 100 END AS currency_change_12m,
+    CASE WHEN c.currency_code = upper(:base_code) THEN 0 ELSE (t.rate_value / t.average_value - 1) * 100 END AS distance_from_average
+  FROM countries c LEFT JOIN latest s ON s.rate_code = c.short_rate_code LEFT JOIN latest l ON l.rate_code = c.long_rate_code
+  LEFT JOIN today t ON t.rate_code = concat('currency_value_', lower(c.currency_code), '_in_', lower(:base_code))
+  WHERE s.rate_value IS NOT NULL AND (c.currency_code = upper(:base_code) OR t.year_ago IS NOT NULL))
+SELECT rank() OVER (ORDER BY short_term_rate + currency_change_12m DESC) AS rank_position, currency_name,
+  round(short_term_rate, 2) AS short_term_rate, short_term_date, round(ten_year_yield, 2) AS ten_year_yield,
+  round(currency_change_12m, 1) AS currency_change_12m, round(distance_from_average, 1) AS distance_from_average,
+  round(short_term_rate + currency_change_12m, 1) AS short_plus_12m
+FROM ranked ORDER BY rank_position
 """)

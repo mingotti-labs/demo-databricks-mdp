@@ -25,6 +25,7 @@ LITERALS = {
     ":company_name": "'EQT Corporation'",
     ":range_code": "'6M'",
     ":currency_code": "'CHF'",
+    ":base_code": "'AUD'",
 }
 
 EXAMPLES = {
@@ -55,12 +56,13 @@ EXAMPLES = {
     "ds_currency_history": ("How has the Swiss franc moved against the US and Australian dollars?", "Replace 'CHF' with the currency code asked about (USD, EUR, JPY, GBP, CHF, CAD, SEK, AUD, NZD, CNY)."),
     "ds_currency_rates_history": ("How have Switzerland's interest rates changed?", "Replace 'CHF' with the currency code of the country asked about."),
     "ds_dollar_history": ("How have the dollar indexes moved over time?", "Both indexes and their 200-day averages, last 36 months."),
+    "ds_yield_ranking": ("Which country can deliver the highest yield, considering its interest rate and its currency's change, in a table ranking?", "Short-term rate plus the 12-month change of the currency against the base; replace 'AUD' with 'USD' for a US dollar base. Backward-looking."),
 }
 QUERIES = {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS}
 SAMPLE_QUESTIONS = [
     "What is the market climate today?", "Is the market too expensive right now?", "Which companies push the P/E up most?",
     "Which sector has the highest P/E?", "Why is EQT's P/E so high?", "What is the inflation rating today?",
-    "Which currencies are gaining against the Australian dollar?",
+    "Which currencies are gaining against the Australian dollar?", "Rank the countries by interest rate and currency change.",
 ]
 LATEST_SIGNAL = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal)"
 LATEST_MEMBER = f"(SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index_member)"
@@ -134,6 +136,15 @@ def join_spec(left: str, right: str, condition: str, relationship: str) -> dict:
             "sql": [condition, f"--rt=FROM_RELATIONSHIP_TYPE_{relationship}--"]}
 
 
+def extra_benchmarks() -> list[tuple[str, str]]:
+    """Benchmarks built from the dashboard's own query, so the expected answer follows it."""
+    ranking = for_genie(QUERIES["ds_yield_ranking"][1])
+    return [(
+        "Which country has the highest short-term rate plus 12-month currency change against the Australian dollar?",
+        f"SELECT currency_name, short_plus_12m FROM ({ranking}) WHERE rank_position = 1",
+    )]
+
+
 def space() -> dict:
     members, index, signal = (f"{GOLD}.{name}" for name in GOLD_TABLES)
     company, price = f"{SILVER}.company", f"{SILVER}.price_daily"
@@ -166,7 +177,7 @@ def space() -> dict:
         },
         "benchmarks": {"questions": by_id([
             {"id": identifier("benchmark:" + question), "question": [question], "answer": [{"format": "SQL", "content": [sql]}]}
-            for question, sql in BENCHMARKS])},
+            for question, sql in BENCHMARKS + extra_benchmarks()])},
     }
 
 
