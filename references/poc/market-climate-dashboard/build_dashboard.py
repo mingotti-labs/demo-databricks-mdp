@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from queries import DATASETS  # noqa: E402
+from queries import DATASETS, MONTHS_SHOWN  # noqa: E402
 
 OUT = Path(__file__).resolve().parents[3] / "src" / "dashboards" / "market_climate.lvdash.json"
 DATE_DATASETS = [
@@ -21,7 +21,7 @@ RANGE_DATASETS = ["ds_company_price"]
 RED, YELLOW, GREEN = "#E15759", "#F2C037", "#59A14F"
 INK = "#11171C"
 TEXT_COLOR = {"expr": "colors.textPrimary.default"}
-START_DATE = {"year": 2022, "month": 1, "date": 1}
+START_DATE = {"expr": f"datetime(year(now()), month(now()) - {MONTHS_SHOWN - 1}, 1)"}
 AXIS_WIDTH = 64
 Y_PADDING = 14
 MONTH_END = {"expr": "datetime(year(now()), month(now()) + 1, 1)"}
@@ -207,9 +207,9 @@ def vega(name: str, title: str, dataset: str, fields: list[str], spec: dict, x: 
 
 def light_history(x: int, y: int, w: int, h: int) -> dict:
     """Both climates; the long-run line is drawn wide and pale under the thin modern line so equal answers stay visible."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None}
-    spec = {"encoding": {"x": time_x, "y": {"field": "yes_count", "type": "quantitative", "title": "Yes answers", "scale": {"domain": [0, 3], "padding": Y_PADDING}, "axis": {"tickMinStep": 1}},
-                         "color": {"field": "lens_name", "type": "nominal", "title": "Climate"},
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
+    spec = {"encoding": {"x": time_x, "y": {"field": "yes_count", "type": "quantitative", "title": "Yes answers", "scale": {"domain": [0, 3], "padding": Y_PADDING}, "axis": {"tickMinStep": 1, "minExtent": AXIS_WIDTH}},
+                         "color": {"field": "lens_name", "type": "nominal", "title": "Climate", "legend": {"orient": "top"}},
                          "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "lens_name", "title": "Climate"}, {"field": "yes_count", "title": "Yes answers"}]},
             "layer": [{"transform": [{"filter": "datum.lens_code == 'long_run'"}], "mark": {"type": "line", "strokeWidth": 9, "opacity": 0.35, "interpolate": "step-after"}},
                       {"transform": [{"filter": "datum.lens_code == 'modern'"}], "mark": {"type": "line", "strokeWidth": 2.5, "interpolate": "step-after"}}]}

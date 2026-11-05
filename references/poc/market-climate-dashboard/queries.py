@@ -14,6 +14,9 @@ VALUATION_AS_OF = (
     "WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31'))"
 )
 
+MONTHS_SHOWN = 36
+CHART_START = f"add_months(date_trunc('MONTH', current_date()), -{MONTHS_SHOWN - 1})"
+
 DATASETS: dict[str, tuple[str, str]] = {}
 
 
@@ -45,27 +48,27 @@ FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day
 WHERE s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code
 """)
 
-dataset("ds_light_history", "Light history", """
+dataset("ds_light_history", "Light history", f"""
 SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code
-FROM monitor_daily_signal WHERE signal_code = 'climate' ORDER BY signal_date, lens_name
+FROM monitor_daily_signal WHERE signal_code = 'climate' AND signal_date >= {CHART_START} ORDER BY signal_date, lens_name
 """)
 
-dataset("ds_pe_history", "Price/earnings history", """
+dataset("ds_pe_history", "Price/earnings history", f"""
 SELECT i.valuation_date,
   i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted,
   i.price_earnings_trailing_twelve_months_ratio AS pe_trailing
-FROM valuation_daily_index i ORDER BY i.valuation_date
+FROM valuation_daily_index i WHERE i.valuation_date >= {CHART_START} ORDER BY i.valuation_date
 """)
 
-dataset("ds_fed_history", "Fed target rate", """
+dataset("ds_fed_history", "Fed target rate", f"""
 SELECT signal_date, measured_value AS fed_target_rate, band_code AS fed_band_code
-FROM monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= DATE '2022-01-01'
+FROM monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
 ORDER BY signal_date
 """)
 
-dataset("ds_trend_history", "S&P 500 and its 200-day average", """
+dataset("ds_trend_history", "S&P 500 and its 200-day average", f"""
 SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200
-FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= DATE '2022-01-01'
+FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
 ORDER BY signal_date
 """)
 
