@@ -9,8 +9,9 @@ stories add rows to.
 ## Requirements
 
 ### Requirement: Index valuation per day
-`gold_analytics_gateway.index_valuation_daily` SHALL have one row per `index_code` (`SP500`) and
-`valuation_date`, for each `^GSPC` price date from the first date a current member has a price. The day's
+`gold_analytics_gateway.valuation_daily_index` SHALL have one row per `index_code` (`SP500`) and
+`valuation_date`, for each `^GSPC` price date from the first date a current member has a price, summed
+from the used rows of `valuation_daily_index_member` for that day. The day's
 used members SHALL be the current index members, one listing per company (the most traded over its last
 60 price rows), that have a close on or up to 5 days before the date and a `company_fundamentals` row
 valid on the date with a share count (cover-page, else weighted average basic), `net_income` and both
@@ -31,8 +32,12 @@ Unity Catalog description.
 - **WHEN** a current member has neither share count on its valid filing row
 - **THEN** it is in no total of that date and `members_without_shares_count` counts it
 
+#### Scenario: Totals from the member rows
+- **WHEN** the used member rows of a day are summed
+- **THEN** the counts equal the day's index row exactly and the amounts to the cent
+
 ### Requirement: Market climate signals
-`gold_analytics_gateway.monitor_signal_daily` SHALL have one row per `signal_date`, `monitor_code`,
+`gold_analytics_gateway.monitor_daily_signal` SHALL have one row per `signal_date`, `monitor_code`,
 `lens_code` and `signal_code`, with display names, `is_yes`, `band_code`, `measured_value`,
 `threshold_value`, `reason_text`, `yes_count`, `action_name` and `ingested_timestamp`, each with a Unity
 Catalog description. For monitor `market_climate` and each lens (`long_run`, `modern`) it SHALL have:
@@ -56,3 +61,44 @@ red for 2 or 3 (sell), yellow for 1 (buy and hold), green for 0 (strong buy).
 #### Scenario: Before the first member price
 - **WHEN** a date has a Fed answer and a trend answer but no index valuation
 - **THEN** it has those answer rows and no `too_expensive` or `climate` row
+
+### Requirement: Index member valuation per day
+`gold_analytics_gateway.valuation_daily_index_member` SHALL have one row per `index_code`, `valuation_date`
+and `company_id` for every current index member (one listing per company, the most traded over its last 60
+price rows) on every valuation day, used or not. It SHALL carry the trace (`listing_id`, `price_date`,
+`filing_valid_from_date`), the inputs (`price_close`, `share_count`, `share_count_source_code`
+`cover_page` or `weighted_average`, `earnings_trailing_twelve_months_amount`,
+`earnings_ten_year_average_amount`, `earnings_year_count`, `filing_consumer_price_index_value`,
+`consumer_price_index_value`), `earnings_ten_year_average_inflation_adjusted_amount` (the stored average x
+the day's CPI / the filing's CPI), `market_value_amount`, `is_used`, and `exclusion_reason_code`, the first
+failing of `no_recent_price`, `no_filing`, `no_share_count`, `no_net_income`, `no_ten_year_average`,
+`no_consumer_price_index`. For used members it SHALL carry, on the 10-year inflation-adjusted ratio,
+`market_value_share_ratio`, the member's own
+`price_earnings_ten_year_average_inflation_adjusted_ratio`, `price_earnings_without_member_ratio` (the index
+ratio computed without the member) and `price_earnings_effect_ratio` (index ratio minus the "without"
+ratio). Every column SHALL carry a Unity Catalog description.
+
+#### Scenario: A member that pushes the P/E up
+- **WHEN** a used member's own ratio is above the index ratio and it holds a large share of market value
+- **THEN** its "without" ratio is below the index ratio and its effect is positive
+
+#### Scenario: A member left out
+- **WHEN** a current member has a price on a day but no share count on its valid filing row
+- **THEN** it has a row with `is_used` false, `exclusion_reason_code` `no_share_count` and no position figures
+
+### Requirement: Market climate dashboard
+A dashboard "Market Climate" SHALL read the gold tables of its target's catalog and have four pages, each
+with a date defaulting to the latest day with a climate row: *Climate* (the "Climate as of" date, the latest
+date of each input, a traffic light per climate with its yes count, then the light history, the P/E, Fed
+target (with the hike and cut periods shaded) and S&P 500 trend charts, then the answers table); *Climate Deep Dive* (the day's index row, the 10 members
+with the largest and the 10 with the smallest effect with their "without" ratio, the members left out with
+their reason, all members filterable by sector and use, and the checks that the member rows add up to the
+index row); *Company Deep Dive* (a company selector and range selector, the last close, change on the day,
+52-week high and low, the close with Bollinger bands of 20 days and 2 standard deviations, and the steps from
+price and filing to the trailing and the 10-year inflation-adjusted P/E); and *Sector Deep Dive* (a sector selector, the sector's P/E against the index P/E, the index P/E
+without the sector, and the sector's members by effect). Sector SHALL come from
+`silver_domain_investments.company` by `company_id`.
+
+#### Scenario: Checking a light
+- **WHEN** the user opens Climate Deep Dive for the latest day
+- **THEN** the member sums shown equal the index row and the largest effects explain the ratio

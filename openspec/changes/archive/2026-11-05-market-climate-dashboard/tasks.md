@@ -33,7 +33,7 @@
 
 ## 6. After merge
 
-- [ ] 6.1 prd: CI runs `investments`; P1 old vs new equal in prd; prd = dev for the latest day
-- [ ] 6.2 Drop prd `index_valuation_daily`, `monitor_signal_daily` and their twins (approved); quota read after
+- [x] 6.1 prd: CI runs `investments`; P1 old vs new equal in prd; prd = dev for the latest day
+- [x] 6.2 Drop prd `index_valuation_daily`, `monitor_signal_daily` and their twins (approved); quota read after
 - [ ] 6.3 prd dashboard opens for the user
-- [ ] 6.4 Planning: story design change list (Genie agent is change 5)
+- [x] 6.4 Planning: story design change list (Genie agent is change 5)
