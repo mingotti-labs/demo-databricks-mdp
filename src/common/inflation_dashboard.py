@@ -4,10 +4,9 @@
 writes it and a test checks the committed file equals it. Same date axis, colours and theme as Market Climate.
 """
 
-import json
-
 from common.dashboard_widgets import (
     AXIS_WIDTH,
+    BAND_SCALE,
     GREEN,
     INK,
     NUMBER2,
@@ -16,38 +15,27 @@ from common.dashboard_widgets import (
     SHARED_DOMAIN,
     TEXT_COLOR,
     TIME_AXIS,
-    YELLOW,
     Y_PADDING,
+    custom,
     dashboard_json,
     dataset_entries,
     date_parameter,
     filter_widget,
     table,
     text,
+    time_lines,
     vega,
 )
 from common.inflation_queries import DATASETS
 
-BLUE = "#4E79A7"
+
 DATE_DATASETS = ["ds_inflation_freshness", "ds_rating", "ds_stars", "ds_commodities"]
-BAND_SCALE = {"domain": ["red", "yellow", "green", "blue"], "range": [RED, YELLOW, GREEN, BLUE]}
-SCHEMA = "https://vega.github.io/schema/vega-lite/v6.json"
-BASE = {"$schema": SCHEMA, "data": {"name": "databricks_query"}, "width": "container", "height": "container",
-        "config": {"autosize": {"type": "fit", "contains": "padding"}}}
 
 
 def parameters(dataset: str) -> list[dict]:
     return [date_parameter()] if dataset in DATE_DATASETS else []
 
 
-def custom(name: str, dataset: str, fields: list[str], spec: dict, x: int, y: int, w: int, h: int, title: str | None = None) -> dict:
-    """A Vega-Lite widget without the standard title bar (the title is drawn inside when `spec` has one)."""
-    return {"widget": {"name": name,
-                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": [{"name": n, "expression": f"`{n}`"} for n in fields], "disaggregated": True}}],
-                       "spec": {"version": 1, "widgetType": "custom-vega-viz", "jsonSpec": {"type": "vega-lite", "spec": json.dumps({**BASE, **spec})},
-                                "encodings": {"fields": [{"fieldName": n} for n in fields]}, "data": {"queryName": "main_query"},
-                                "frame": {"showTitle": bool(title), **({"title": title} if title else {})}}},
-            "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
 def rating_tile(x: int, y: int, w: int, h: int) -> dict:
@@ -85,21 +73,6 @@ def stars_tile(x: int, y: int, w: int, h: int) -> dict:
     return custom("stars-tile", "ds_stars", ["signal_name", "star_order", "star_state", "star_band", "reason_text"], spec, x, y, w, h)
 
 
-def time_lines(name: str, title: str, dataset: str, x_field: str, series: list[tuple[str, str]], y_title: str, x: int, y: int, w: int, h: int,
-               y_format: str = ",.2f", zero: bool = False, step: bool = False, description: str | None = None) -> dict:
-    """Lines over time on the shared date axis and left margin: `series` is (field, label), folded into one colour field."""
-    time_x = {"field": x_field, "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
-    labels = dict(series)
-    spec = {"transform": [{"fold": [f for f, _ in series], "as": ["series", "value"]},
-                          {"calculate": json.dumps(labels) + "[datum.series]", "as": "series_label"}],
-            "mark": {"type": "line", "strokeWidth": 2, **({"interpolate": "step-after"} if step else {})},
-            "encoding": {"x": time_x,
-                         "y": {"field": "value", "type": "quantitative", "title": y_title, "scale": {"zero": zero, "padding": Y_PADDING},
-                               "axis": {"format": y_format, "minExtent": AXIS_WIDTH}},
-                         "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"}},
-                         "tooltip": [{"field": x_field, "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Line"},
-                                     {"field": "value", "type": "quantitative", "format": y_format, "title": y_title}]}}
-    return vega(name, title, dataset, [x_field] + [f for f, _ in series], {k: v for k, v in spec.items()}, x, y, w, h, description)
 
 
 def rating_history(x: int, y: int, w: int, h: int) -> dict:

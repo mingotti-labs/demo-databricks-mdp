@@ -10,11 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from common import inflation_dashboard, market_climate_dashboard, market_climate_genie  # noqa: E402
+from common import currency_dashboard, inflation_dashboard, market_climate_dashboard, market_climate_genie  # noqa: E402
 
 GENERATED = {
     ROOT / "src" / "dashboards" / "market_climate.lvdash.json": market_climate_dashboard.build,
     ROOT / "src" / "dashboards" / "inflation_deflation.lvdash.json": inflation_dashboard.build,
+    ROOT / "src" / "dashboards" / "currency_monitor.lvdash.json": currency_dashboard.build,
     ROOT / "resources" / "genie" / "market_climate.genie.yml": market_climate_genie.build,
 }
 
