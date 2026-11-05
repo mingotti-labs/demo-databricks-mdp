@@ -1,5 +1,6 @@
 # Databricks notebook source
-# Checks the gold analytics gateway tables after a run (openspec market-climate-gold): unique keys,
+# Checks the gold analytics gateway tables after a run (openspec market-climate-gold, market-climate-dashboard):
+# unique keys, a member row for every member and day, the member rows adding up to the index row,
 # the valuation of the latest day (members used, a plausible price/earnings ratio, ratios equal market
 # value over earnings), a climate row for both lenses on every valuation day, every light following
 # its yes count and every yes count equal to the answers, and the latest day's market value close to
@@ -22,24 +23,50 @@ def offenders(sql: str) -> list[str]:
 
 
 checks = {}
-checks["index_valuation_daily: key (index_code, valuation_date) not unique"] = f"""
-  SELECT concat_ws(',', index_code, CAST(valuation_date AS STRING)) FROM {GOLD}.index_valuation_daily
+checks["valuation_daily_index: key (index_code, valuation_date) not unique"] = f"""
+  SELECT concat_ws(',', index_code, CAST(valuation_date AS STRING)) FROM {GOLD}.valuation_daily_index
   GROUP BY index_code, valuation_date HAVING count(*) > 1"""
-checks["monitor_signal_daily: key (signal_date, monitor_code, lens_code, signal_code) not unique"] = f"""
+checks["monitor_daily_signal: key (signal_date, monitor_code, lens_code, signal_code) not unique"] = f"""
   SELECT concat_ws(',', CAST(signal_date AS STRING), monitor_code, lens_code, signal_code)
-  FROM {GOLD}.monitor_signal_daily
+  FROM {GOLD}.monitor_daily_signal
   GROUP BY signal_date, monitor_code, lens_code, signal_code HAVING count(*) > 1"""
+checks["valuation_daily_index_member: key (index_code, valuation_date, company_id) not unique"] = f"""
+  SELECT concat_ws(',', index_code, CAST(valuation_date AS STRING), company_id) FROM {GOLD}.valuation_daily_index_member
+  GROUP BY index_code, valuation_date, company_id HAVING count(*) > 1"""
+checks["a valuation day without a row for every member"] = f"""
+  SELECT concat('day ', CAST(valuation_date AS STRING), ' rows ', count(*)) FROM {GOLD}.valuation_daily_index_member
+  GROUP BY valuation_date HAVING count(*) != (SELECT count(DISTINCT company_id) FROM {GOLD}.valuation_daily_index_member)"""
+checks["member rows differ from the index row"] = f"""
+  SELECT CAST(i.valuation_date AS STRING) FROM {GOLD}.valuation_daily_index i
+  JOIN (SELECT valuation_date, count(*) AS member_count, count_if(is_used) AS used_count,
+               CAST(sum(CASE WHEN is_used THEN market_value_amount END) AS DECIMAL(34, 2)) AS market_value_amount,
+               CAST(sum(CASE WHEN is_used THEN earnings_ten_year_average_inflation_adjusted_amount END)
+                    AS DECIMAL(34, 2)) AS earnings_amount
+        FROM {GOLD}.valuation_daily_index_member GROUP BY valuation_date) m ON m.valuation_date = i.valuation_date
+  WHERE m.member_count != i.member_count OR m.used_count != i.members_used_count
+     OR m.market_value_amount != i.market_value_amount
+     OR m.earnings_amount != i.earnings_ten_year_average_inflation_adjusted_amount"""
+checks["the latest top member's without ratio does not recompute"] = f"""
+  WITH day AS (SELECT * FROM {GOLD}.valuation_daily_index_member
+               WHERE is_used AND valuation_date = (SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index_member)),
+  top AS (SELECT * FROM day ORDER BY price_earnings_effect_ratio DESC LIMIT 1),
+  totals AS (SELECT sum(market_value_amount) AS value, sum(earnings_ten_year_average_inflation_adjusted_amount) AS earnings FROM day)
+  SELECT concat('table ', top.price_earnings_without_member_ratio, ' recomputed ',
+                (totals.value - top.market_value_amount) / (totals.earnings - top.earnings_ten_year_average_inflation_adjusted_amount))
+  FROM top CROSS JOIN totals
+  WHERE abs(top.price_earnings_without_member_ratio
+            - (totals.value - top.market_value_amount) / (totals.earnings - top.earnings_ten_year_average_inflation_adjusted_amount)) > 0.001"""
 checks["latest valuation day: too few members used or an implausible ratio"] = f"""
   SELECT concat('day ', valuation_date, ' used ', members_used_count, ' ratio ',
                 price_earnings_ten_year_average_inflation_adjusted_ratio)
-  FROM {GOLD}.index_valuation_daily
-  WHERE valuation_date = (SELECT max(valuation_date) FROM {GOLD}.index_valuation_daily)
+  FROM {GOLD}.valuation_daily_index
+  WHERE valuation_date = (SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index)
     AND (members_used_count < {MIN_MEMBERS_USED}
          OR price_earnings_ten_year_average_inflation_adjusted_ratio IS NULL
          OR price_earnings_ten_year_average_inflation_adjusted_ratio
             NOT BETWEEN {PLAUSIBLE_RATIO[0]} AND {PLAUSIBLE_RATIO[1]})"""
 checks["a ratio differs from market value over earnings"] = f"""
-  SELECT CAST(valuation_date AS STRING) FROM {GOLD}.index_valuation_daily
+  SELECT CAST(valuation_date AS STRING) FROM {GOLD}.valuation_daily_index
   WHERE (earnings_trailing_twelve_months_amount > 0
          AND abs(price_earnings_trailing_twelve_months_ratio
                  - market_value_amount / earnings_trailing_twelve_months_amount) > 0.001)
@@ -50,26 +77,26 @@ checks["a ratio differs from market value over earnings"] = f"""
          AND abs(price_earnings_ten_year_average_inflation_adjusted_ratio
                  - market_value_amount / earnings_ten_year_average_inflation_adjusted_amount) > 0.001)"""
 checks["valuation day without a climate row for both lenses"] = f"""
-  SELECT CAST(v.valuation_date AS STRING) FROM {GOLD}.index_valuation_daily v
-  LEFT JOIN (SELECT signal_date, count(*) AS lenses FROM {GOLD}.monitor_signal_daily
+  SELECT CAST(v.valuation_date AS STRING) FROM {GOLD}.valuation_daily_index v
+  LEFT JOIN (SELECT signal_date, count(*) AS lenses FROM {GOLD}.monitor_daily_signal
              WHERE signal_code = 'climate' GROUP BY signal_date) c ON c.signal_date = v.valuation_date
   WHERE coalesce(c.lenses, 0) != 2"""
 checks["climate light does not follow its yes count"] = f"""
   SELECT concat_ws(' ', CAST(signal_date AS STRING), lens_code, CAST(yes_count AS STRING), band_code)
-  FROM {GOLD}.monitor_signal_daily
+  FROM {GOLD}.monitor_daily_signal
   WHERE signal_code = 'climate'
     AND band_code != CASE yes_count WHEN 0 THEN 'green' WHEN 1 THEN 'yellow' ELSE 'red' END"""
 checks["climate yes count differs from the yes answers"] = f"""
   SELECT concat_ws(' ', CAST(c.signal_date AS STRING), c.lens_code)
-  FROM {GOLD}.monitor_signal_daily c
-  JOIN (SELECT signal_date, lens_code, count_if(is_yes) AS answers_yes FROM {GOLD}.monitor_signal_daily
+  FROM {GOLD}.monitor_daily_signal c
+  JOIN (SELECT signal_date, lens_code, count_if(is_yes) AS answers_yes FROM {GOLD}.monitor_daily_signal
         WHERE signal_code != 'climate' GROUP BY signal_date, lens_code) a
     ON a.signal_date = c.signal_date AND a.lens_code = c.lens_code
   WHERE c.signal_code = 'climate' AND c.yes_count != a.answers_yes"""
 checks["latest market value differs from a recomputation"] = f"""
   WITH latest AS (
-    SELECT valuation_date, market_value_amount FROM {GOLD}.index_valuation_daily
-    WHERE valuation_date = (SELECT max(valuation_date) FROM {GOLD}.index_valuation_daily)),
+    SELECT valuation_date, market_value_amount FROM {GOLD}.valuation_daily_index
+    WHERE valuation_date = (SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index)),
   members AS (
     SELECT l.company_id, max_by(l.listing_id, v.average_volume) AS listing_id FROM {DOMAIN}.index_membership m
     JOIN {DOMAIN}.listing l ON l.listing_id = m.listing_id

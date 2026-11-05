@@ -1,7 +1,10 @@
-"""SQL of the market climate gold tables (openspec market-climate-gold).
+"""SQL of the market climate gold tables (openspec market-climate-gold, market-climate-dashboard).
 
 Plain strings so a probe can run the exact query against dev before it goes into a pipeline. Table
 names are two-part (`schema.table`), resolved in the pipeline's catalog.
+
+`index_member_valuation_query()` is one row per member and day; `index_valuation_query()` sums its used
+rows into one row per day.
 """
 
 from common.market_climate import (
@@ -16,8 +19,8 @@ FED_RATE_CODE = "us_federal_funds_target_upper"
 CPI_LOOKBACK_DAYS = 120
 
 
-def index_valuation_query() -> str:
-    """One row per day: the S&P 500's market value, earnings totals, P/E ratios and coverage counts."""
+def index_member_valuation_query() -> str:
+    """One row per current member and day: its inputs, whether it is used and its effect on the index P/E."""
     return f"""
     WITH members AS (
       SELECT DISTINCT l.company_id, l.listing_id
@@ -46,6 +49,7 @@ def index_valuation_query() -> str:
       WHERE l.trading_symbol_code = '^GSPC'
         AND p.price_date >= (
           SELECT min(q.price_date) FROM {DOMAIN}.price_daily q JOIN main_listing ml ON ml.listing_id = q.listing_id)
+      GROUP BY p.price_date
     ), cpi_today AS (
       SELECT d.valuation_date, max_by(r.rate_value, r.observation_date) AS cpi_value
       FROM days d
@@ -55,8 +59,9 @@ def index_valuation_query() -> str:
        AND r.observation_date >= date_sub(d.valuation_date, {CPI_LOOKBACK_DAYS})
       GROUP BY d.valuation_date
     ), priced AS (
-      SELECT valuation_date, company_id, price_close, price_ingested_timestamp FROM (
-        SELECT d.valuation_date, ml.company_id, p.price_close, p.ingested_timestamp AS price_ingested_timestamp,
+      SELECT valuation_date, company_id, listing_id, price_date, price_close, price_ingested_timestamp FROM (
+        SELECT d.valuation_date, ml.company_id, ml.listing_id, p.price_date, p.price_close,
+               p.ingested_timestamp AS price_ingested_timestamp,
                row_number() OVER (PARTITION BY d.valuation_date, ml.listing_id ORDER BY p.price_date DESC) AS pick
         FROM days d
         CROSS JOIN main_listing ml
@@ -66,48 +71,120 @@ def index_valuation_query() -> str:
          AND p.price_date >= date_sub(d.valuation_date, {PRICE_MAX_AGE_DAYS})
       ) WHERE pick = 1
     ), member_days AS (
-      SELECT d.valuation_date, ml.company_id,
-             p.price_close, p.price_ingested_timestamp,
+      SELECT d.valuation_date, ml.company_id, ml.listing_id,
+             p.price_date, p.price_close, p.price_ingested_timestamp,
+             f.valid_from_date AS filing_valid_from_date,
+             CASE WHEN f.shares_outstanding_count IS NOT NULL THEN 'cover_page'
+                  WHEN f.weighted_average_shares_basic_count IS NOT NULL THEN 'weighted_average' END
+               AS share_count_source_code,
              coalesce(f.shares_outstanding_count, f.weighted_average_shares_basic_count) AS share_count,
-             f.net_income,
+             f.net_income AS earnings_trailing_twelve_months_amount,
              f.earnings_ten_year_average_amount,
-             f.earnings_ten_year_average_inflation_adjusted_amount,
-             f.consumer_price_index_value AS row_cpi,
+             f.earnings_ten_year_average_inflation_adjusted_amount AS adjusted_average_amount,
              f.earnings_year_count,
+             f.consumer_price_index_value AS filing_consumer_price_index_value,
+             c.cpi_value AS consumer_price_index_value,
              f.ingested_timestamp AS fundamentals_ingested_timestamp
       FROM days d
+      JOIN cpi_today c ON c.valuation_date = d.valuation_date
       CROSS JOIN main_listing ml
       LEFT JOIN priced p ON p.valuation_date = d.valuation_date AND p.company_id = ml.company_id
       LEFT JOIN {DOMAIN}.company_fundamentals f
         ON f.company_id = ml.company_id AND d.valuation_date BETWEEN f.valid_from_date AND f.valid_to_date
-    ), valued AS (
+    ), reasoned AS (
       SELECT m.*,
-             c.cpi_value AS cpi_today_value,
-             m.price_close IS NOT NULL AND m.share_count IS NOT NULL AND m.net_income IS NOT NULL
-               AND m.earnings_ten_year_average_amount IS NOT NULL
-               AND m.earnings_ten_year_average_inflation_adjusted_amount IS NOT NULL
-               AND m.row_cpi IS NOT NULL AND c.cpi_value IS NOT NULL AS is_used
+             CASE WHEN m.price_close IS NULL THEN 'no_recent_price'
+                  WHEN m.filing_valid_from_date IS NULL THEN 'no_filing'
+                  WHEN m.share_count IS NULL THEN 'no_share_count'
+                  WHEN m.earnings_trailing_twelve_months_amount IS NULL THEN 'no_net_income'
+                  WHEN m.earnings_ten_year_average_amount IS NULL
+                    OR m.adjusted_average_amount IS NULL THEN 'no_ten_year_average'
+                  WHEN m.filing_consumer_price_index_value IS NULL THEN 'no_consumer_price_index'
+             END AS exclusion_reason_code
       FROM member_days m
-      JOIN cpi_today c ON c.valuation_date = m.valuation_date
+    ), valued AS (
+      SELECT r.*,
+             r.exclusion_reason_code IS NULL AS is_used,
+             r.price_close * r.share_count AS market_value_amount,
+             r.adjusted_average_amount
+               * CAST(r.consumer_price_index_value / r.filing_consumer_price_index_value AS DECIMAL(18, 10))
+               AS earnings_ten_year_average_inflation_adjusted_amount
+      FROM reasoned r
     ), totals AS (
+      SELECT v.*,
+             sum(CASE WHEN is_used THEN market_value_amount END) OVER (PARTITION BY valuation_date)
+               AS index_market_value_amount,
+             sum(CASE WHEN is_used THEN earnings_ten_year_average_inflation_adjusted_amount END)
+               OVER (PARTITION BY valuation_date) AS index_earnings_amount
+      FROM valued v
+    ), positioned AS (
+      SELECT t.*,
+             CASE WHEN index_earnings_amount > 0
+                  THEN CAST(index_market_value_amount / index_earnings_amount AS DECIMAL(18, 4)) END AS index_ratio,
+             CASE WHEN is_used AND earnings_ten_year_average_inflation_adjusted_amount > 0
+                  THEN CAST(market_value_amount / earnings_ten_year_average_inflation_adjusted_amount
+                            AS DECIMAL(18, 4)) END AS own_ratio,
+             CASE WHEN is_used AND index_earnings_amount - earnings_ten_year_average_inflation_adjusted_amount > 0
+                  THEN CAST((index_market_value_amount - market_value_amount)
+                            / (index_earnings_amount - earnings_ten_year_average_inflation_adjusted_amount)
+                            AS DECIMAL(18, 4)) END AS without_ratio
+      FROM totals t
+    )
+    SELECT '{INDEX_CODE}' AS index_code,
+           valuation_date,
+           company_id,
+           listing_id,
+           price_date,
+           filing_valid_from_date,
+           price_close,
+           share_count,
+           share_count_source_code,
+           earnings_trailing_twelve_months_amount,
+           earnings_ten_year_average_amount,
+           earnings_year_count,
+           filing_consumer_price_index_value,
+           consumer_price_index_value,
+           earnings_ten_year_average_inflation_adjusted_amount,
+           market_value_amount,
+           is_used,
+           exclusion_reason_code,
+           CASE WHEN is_used AND index_market_value_amount > 0
+                THEN CAST(market_value_amount / index_market_value_amount AS DECIMAL(18, 10)) END
+             AS market_value_share_ratio,
+           own_ratio AS price_earnings_ten_year_average_inflation_adjusted_ratio,
+           without_ratio AS price_earnings_without_member_ratio,
+           CASE WHEN is_used AND index_ratio IS NOT NULL AND without_ratio IS NOT NULL
+                THEN index_ratio - without_ratio END AS price_earnings_effect_ratio,
+           'USD' AS currency_code,
+           CASE WHEN price_ingested_timestamp IS NULL THEN fundamentals_ingested_timestamp
+                WHEN fundamentals_ingested_timestamp IS NULL THEN price_ingested_timestamp
+                ELSE least(price_ingested_timestamp, fundamentals_ingested_timestamp) END AS ingested_timestamp
+    FROM positioned
+    """
+
+
+def index_valuation_query(member_source: str = "valuation_daily_index_member") -> str:
+    """One row per day: the S&P 500's market value, earnings totals, P/E ratios and coverage counts.
+
+    `member_source` is the member valuation per day: a table or a parenthesised query.
+    """
+    return f"""
+    WITH totals AS (
       SELECT valuation_date,
-             max(cpi_today_value) AS consumer_price_index_value,
+             max(consumer_price_index_value) AS consumer_price_index_value,
              count(*) AS member_count,
              count_if(is_used) AS members_used_count,
              count_if(price_close IS NOT NULL AND share_count IS NULL) AS members_without_shares_count,
              count_if(is_used AND earnings_year_count < 10) AS members_under_ten_years_count,
-             CAST(sum(CASE WHEN is_used THEN price_close * share_count END) AS DECIMAL(34, 2)) AS market_value_amount,
-             CAST(sum(CASE WHEN is_used THEN net_income END) AS DECIMAL(34, 2))
+             CAST(sum(CASE WHEN is_used THEN market_value_amount END) AS DECIMAL(34, 2)) AS market_value_amount,
+             CAST(sum(CASE WHEN is_used THEN earnings_trailing_twelve_months_amount END) AS DECIMAL(34, 2))
                AS earnings_trailing_twelve_months_amount,
              CAST(sum(CASE WHEN is_used THEN earnings_ten_year_average_amount END) AS DECIMAL(34, 2))
                AS earnings_ten_year_average_amount,
-             CAST(sum(CASE WHEN is_used THEN
-                   earnings_ten_year_average_inflation_adjusted_amount
-                   * CAST(cpi_today_value / row_cpi AS DECIMAL(18, 10)) END) AS DECIMAL(34, 2))
-               AS earnings_ten_year_average_inflation_adjusted_amount,
-             least(min(CASE WHEN is_used THEN price_ingested_timestamp END),
-                   min(CASE WHEN is_used THEN fundamentals_ingested_timestamp END)) AS ingested_timestamp
-      FROM valued
+             CAST(sum(CASE WHEN is_used THEN earnings_ten_year_average_inflation_adjusted_amount END)
+                  AS DECIMAL(34, 2)) AS earnings_ten_year_average_inflation_adjusted_amount,
+             min(CASE WHEN is_used THEN ingested_timestamp END) AS ingested_timestamp
+      FROM {member_source}
       GROUP BY valuation_date
     )
     SELECT '{INDEX_CODE}' AS index_code,

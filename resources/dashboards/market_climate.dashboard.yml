@@ -1,0 +1,11 @@
+resources:
+  dashboards:
+    market_climate:
+      display_name: Market Climate
+      file_path: ../../src/dashboards/market_climate.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      dataset_catalog: ${var.catalog}
+      dataset_schema: gold_analytics_gateway
+      permissions:
+        - group_name: users
+          level: CAN_READ

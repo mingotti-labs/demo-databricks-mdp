@@ -16,7 +16,7 @@ from common.market_climate import (
 from common.market_climate_sql import DOMAIN, FED_RATE_CODE
 
 
-def monitor_signal_query(valuation_source: str = "index_valuation_daily") -> str:
+def monitor_signal_query(valuation_source: str = "valuation_daily_index") -> str:
     """Market climate rows. `valuation_source` is the index valuation per day: a table or a parenthesised query."""
     return f"""
     WITH lenses AS (

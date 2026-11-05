@@ -1,13 +1,14 @@
-# Gold analytics gateway: index_valuation_daily (openspec market-climate-gold). The S&P 500's market
-# value, earnings totals and price/earnings ratios per day, from silver_domain_investments. The query
-# is in common/market_climate_sql.py so a probe can run the same text.
+# Gold analytics gateway: valuation_daily_index (openspec market-climate-gold, market-climate-dashboard).
+# The S&P 500's market value, earnings totals and price/earnings ratios per day: the sum of the used rows
+# of valuation_daily_index_member. The query is in common/market_climate_sql.py so a probe can run the
+# same text.
 import sys
 
 from pyspark import pipelines as dp
 
 sys.path.insert(0, f"{spark.conf.get('workspace_file_path')}/src")
 from common.investments import schema_with_comments  # noqa: E402
-from common.market_climate_sql import index_valuation_query  # noqa: E402
+from common.market_climate_sql import index_member_valuation_query, index_valuation_query  # noqa: E402
 
 COMMENTS = {
     "index_code": "Index the row describes. SP500 is the S&P 500: its current members, one listing per company.",
@@ -68,13 +69,17 @@ COMMENTS = {
     "ingested_timestamp": "Earliest fetch time of the price and filing rows behind this day's totals.",
 }
 
-COLUMNS = [(f.name, f.dataType.simpleString()) for f in spark.sql(index_valuation_query()).schema.fields]
+COLUMNS = [
+    (f.name, f.dataType.simpleString())
+    for f in spark.sql(index_valuation_query(f"({index_member_valuation_query()})")).schema.fields
+]
 
 
 @dp.materialized_view(
     comment="S&P 500 valuation per day: market value, trailing 12-month and 10-year (plain and inflation-adjusted) "
-    "earnings, and the three price/earnings ratios with the member counts behind them. One row per index and day.",
+    "earnings, and the three price/earnings ratios with the member counts behind them. One row per index and day: "
+    "the sum of the used rows of valuation_daily_index_member.",
     schema=schema_with_comments(COLUMNS, COMMENTS),
 )
-def index_valuation_daily():
+def valuation_daily_index():
     return spark.sql(index_valuation_query())

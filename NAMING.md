@@ -77,11 +77,12 @@ Always use 3-part names: `catalog.schema.table`. Never use bare or 2-part refere
   Column names end in what they are (`_id`, `_key`, `_code`, `_name`, `_url`, `_date`,
   `_timestamp`, `_amount`, `_count`; flags start `is_` or `has_`), see
   `references/docs/medallion/silver.md`. One pipeline file per table, named after it.
-- **Gold tables** (`gold_analytics_gateway`, first built by `market-climate-gold`): named for what a row is,
-  with the grain suffix (`index_valuation_daily`: one row per index and day), under the Silver Domain column
-  rules plus `_text` for a sentence (`reason_text`). A table every monitoring story adds rows to is long, not
-  wide: `monitor_signal_daily` has one row per day, monitor, lens and signal, with `monitor_code`, `lens_code`
-  and `signal_code` as the key. Every column carries a Unity Catalog description written for a Genie agent.
+- **Gold tables** (`gold_analytics_gateway`, first built by `market-climate-gold`): named subject first, then grain,
+  then detail, so related tables sort together: `valuation_daily_index` (one row per index and day) and
+  `valuation_daily_index_member` (one row per index, day and member); `monitor_daily_signal` (the monitor comes
+  first). Column rules are the Silver Domain ones plus `_text` for a sentence (`reason_text`). A table every
+  monitoring story adds rows to is long, not wide: `monitor_daily_signal` has one row per day, monitor, lens and
+  signal, with `monitor_code`, `lens_code` and `signal_code` as the key. Every column carries a Unity Catalog description written for a Genie agent.
 
 ## Silver Normalised tables
 

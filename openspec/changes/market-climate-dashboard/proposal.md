@@ -20,7 +20,7 @@ The Genie agent follows in change 5 and reuses the dashboard's tested queries.
 - **`monitor_signal_daily` renamed `monitor_daily_signal`**, same rows (checked the same way).
 - **Naming rule** for gold tables (user, 2026-11-05): subject first, then grain, then detail, so related
   tables sort together. NAMING.md says so.
-- **Dashboard "Market climate"** (`resources/dashboards/`), on the gold tables, three pages:
+- **Dashboard "Market Climate"** (`resources/dashboards/`), on the gold tables, four pages (*Company Deep Dive*, added in implementation: price chart with Bollinger bands and the steps behind one company's P/E):
   - *Climate*: "Climate as of" date and the freshness of each input; both lights with their three
     answers and reasons; the history of both lights; three drilldown charts (P/E with the lens lines, Fed
     target with hikes and cuts, S&P 500 with its 200-day average).

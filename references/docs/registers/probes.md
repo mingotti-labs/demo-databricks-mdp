@@ -214,3 +214,13 @@ The gold queries and tables with real data (2026-11-04, dev). Scripts and result
 | P3 | What do the built tables hold? | 256 valuation rows; signals from 1970 (trend), 2008-12 (Fed), 2025-10-28 (valuation, climate). Latest day red (sell) in both lenses, 3 of 3 yes. Over the 256 days both lenses are red on 243 days and yellow on 13: the 10-year ratio stays above 30. |
 | P4 | Are the tags and descriptions in Unity Catalog? | Yes: `design_pattern = gold_materialized_view_sql` on both tables; 16 of 16 and 15 of 15 columns described. |
 
+## market-climate-dashboard
+
+The member valuation table, the renames and the dashboard queries (2026-11-05, dev). Scripts and results in `references/poc/market-climate-dashboard/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Do the new queries and then the new tables equal the old tables? | Yes, both times: valuation 256 rows and signals 38,286 rows, no row only in one side, every `ingested_timestamp` equal. Old tables and their hidden copies dropped in dev afterwards (approved). |
+| P2 | Does the member query give sensible figures? | Yes: 128,000 rows (500 members x 256 days); on 2026-11-03 489 used, 7 `no_share_count`, 2 `no_net_income`, 1 `no_filing`, 1 `no_ten_year_average`; Nvidia pushes the P/E up most (+2.38), JPMorgan Chase down most (-0.62). |
+| P3 | Does every dashboard dataset query run with the dashboard's catalog and schema defaults? | Yes, all 17, with the date and sector parameters bound; silver tables are reachable by two-part name. Latest day member sums equal the index row (differences 0.00). |
+| P4 | Can the CI principal deploy a dashboard? | Yes with the warehouse id; a lookup by name fails (`databricks-sql-access` entitlement missing for the principal, 403 on listing warehouses). A dashboard created with `--json` shows no dataset catalog. |
