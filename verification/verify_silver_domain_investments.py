@@ -129,23 +129,22 @@ checks["market_rate_indicator_daily: real rate differs from the effective rate m
   JOIN {DOMAIN}.market_rate_indicator_daily f ON f.indicator_date = r.indicator_date AND f.rate_code = 'us_federal_funds_effective_rate'
   JOIN {DOMAIN}.market_rate_indicator_daily c ON c.indicator_date = r.indicator_date AND c.rate_code = 'us_cpi_change_twelve_months_percent'
   WHERE r.rate_code = 'us_real_federal_funds_rate' AND abs(r.rate_value - (f.rate_value - c.rate_value)) > 0.000001"""
-checks["market_rate_indicator_daily: a CPI change is not the ratio of two monthly readings (latest reading)"] = f"""
-  WITH r AS (SELECT observation_date, rate_value FROM {DOMAIN}.market_rate_daily
-             WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted' AND NOT is_carried_forward),
-  latest AS (SELECT max(observation_date) AS day FROM r),
-  expected AS (
-    SELECT (a.rate_value / b.rate_value - 1) * 100 AS previous_change
-    FROM r a JOIN latest ON a.observation_date = latest.day
-    JOIN r b ON b.observation_date = (SELECT max(observation_date) FROM r WHERE observation_date < latest.day))
-  SELECT concat('table ', i.rate_value, ' expected ', e.previous_change)
-  FROM {DOMAIN}.market_rate_indicator_daily i CROSS JOIN expected e
+checks["market_rate_indicator_daily: the latest CPI change is not the ratio of the two latest monthly readings"] = f"""
+  WITH r AS (
+    SELECT observation_date,
+           (rate_value / lag(rate_value) OVER (ORDER BY observation_date) - 1) * 100 AS previous_change
+    FROM {DOMAIN}.market_rate_daily
+    WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted' AND NOT is_carried_forward),
+  latest AS (SELECT previous_change FROM r ORDER BY observation_date DESC LIMIT 1)
+  SELECT concat('table ', i.rate_value, ' expected ', l.previous_change)
+  FROM {DOMAIN}.market_rate_indicator_daily i CROSS JOIN latest l
   WHERE i.rate_code = 'us_cpi_change_previous_reading_percent'
     AND i.indicator_date = (SELECT max(indicator_date) FROM {DOMAIN}.market_rate_indicator_daily)
-    AND abs(i.rate_value - e.previous_change) > 0.0001"""
-checks["price_indicator_daily: 52-week high below the close or low above it"] = f"""
-  SELECT concat(trading_symbol_code, ' ', CAST(price_date AS STRING)) FROM {DOMAIN}.price_indicator_daily p
-  JOIN (SELECT listing_id, price_date, price_close FROM {DOMAIN}.price_daily) d USING (listing_id, price_date)
-  WHERE p.price_high_fifty_two_week_amount < d.price_close OR p.price_low_fifty_two_week_amount > d.price_close
+    AND abs(i.rate_value - l.previous_change) > 0.0001"""
+checks["price_indicator_daily: 52-week high below the day's own high, or low above the day's own low"] = f"""
+  SELECT concat(p.trading_symbol_code, ' ', CAST(p.price_date AS STRING)) FROM {DOMAIN}.price_indicator_daily p
+  JOIN {DOMAIN}.price_daily d ON d.listing_id = p.listing_id AND d.price_date = p.price_date
+  WHERE p.price_high_fifty_two_week_amount < d.price_high OR p.price_low_fifty_two_week_amount > d.price_low
   LIMIT 10"""
 checks["^GSPC has no 200-day average on its latest day"] = f"""
   SELECT '^GSPC' FROM (
