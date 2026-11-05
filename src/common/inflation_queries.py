@@ -6,7 +6,7 @@ the day shown is the latest day with a rating on or before it. Also the example 
 """
 
 from common.inflation import BENCHMARK_NAMES, COMMODITY_SYMBOL, GOLD_SYMBOL, MONITOR_CODE
-from common.inflation_sql import CPI_PREVIOUS_CODE, CPI_RATE_CODE, CPI_TWELVE_CODE, FED_RATE_CODE, REAL_RATE_CODE
+from common.market_rate_indicator_sql import CPI_PREVIOUS_CODE, CPI_RATE_CODE, CPI_TWELVE_CODE, FED_RATE_CODE, REAL_RATE_CODE
 from common.market_climate_queries import CHART_START
 
 DATASETS: dict[str, tuple[str, str]] = {}

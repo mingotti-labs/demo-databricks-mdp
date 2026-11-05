@@ -92,3 +92,35 @@ def value_in_us_dollars_sql(currency: Currency, rate_value: str = "rate_value") 
 def other_currencies(base: str) -> list[Currency]:
     """The main currencies other than the base."""
     return [currency for currency in CURRENCIES if currency.code != base]
+
+
+BASE_NAMES = {"USD": "US dollars", "AUD": "Australian dollars"}
+
+
+def value_code(currency: str, base: str) -> str:
+    """`rate_code` of the value of one unit of the currency in the base, for example currency_value_chf_in_aud."""
+    return f"currency_value_{currency.lower()}_in_{base.lower()}"
+
+
+def value_unit(base: str) -> str:
+    return f"{BASE_NAMES[base].lower().replace(' ', '_')}_per_unit"
+
+
+def value_series() -> list[tuple[Currency, str]]:
+    """(currency, base) pairs that have a series: every main currency other than the base, for every base."""
+    return [(currency, base) for base in BASES for currency in other_currencies(base)]
+
+
+def exchange_rate_codes() -> list[str]:
+    """`rate_code`s of the raw exchange rates the cross rates are built from."""
+    return [c.exchange_rate_code for c in CURRENCIES if c.exchange_rate_code]
+
+
+def carried_rate_codes() -> list[str]:
+    """`rate_code`s of the rates and the broad index carried onto trading days as they are."""
+    codes = [BROAD_INDEX_RATE_CODE]
+    for currency in CURRENCIES:
+        for code in (currency.short_rate_code, currency.long_rate_code):
+            if code and code not in codes:
+                codes.append(code)
+    return codes

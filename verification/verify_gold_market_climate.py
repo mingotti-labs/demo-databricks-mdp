@@ -133,6 +133,29 @@ checks["inflation_deflation: no rating on the latest market climate day"] = f"""
   HAVING max(signal_date) > (SELECT coalesce(max(signal_date), DATE '1900-01-01') FROM {GOLD}.monitor_daily_signal
                              WHERE monitor_code = 'inflation_deflation') + 7"""
 
+checks["currency: a summary row that differs from the currency rows it counts"] = f"""
+  SELECT concat(CAST(m.signal_date AS STRING), ' ', m.lens_code) FROM {GOLD}.monitor_daily_signal m
+  JOIN (SELECT signal_date, lens_code, count_if(is_yes) AS gaining
+        FROM {GOLD}.monitor_daily_signal
+        WHERE monitor_code = 'currency' AND signal_code NOT IN ('summary', 'dollar_index', 'dollar_broad_index')
+        GROUP BY signal_date, lens_code) c ON c.signal_date = m.signal_date AND c.lens_code = m.lens_code
+  WHERE m.monitor_code = 'currency' AND m.signal_code = 'summary' AND m.yes_count != c.gaining"""
+checks["currency: the latest day does not have 9 currencies and a summary per lens, and both dollar indexes"] = f"""
+  WITH latest AS (SELECT max(signal_date) AS day FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency')
+  SELECT concat(lens_code, ' currencies ', currencies, ' summary ', summaries, ' indexes ', indexes) FROM (
+    SELECT s.lens_code,
+           count_if(s.signal_code NOT IN ('summary', 'dollar_index', 'dollar_broad_index')) AS currencies,
+           count_if(s.signal_code = 'summary') AS summaries,
+           count_if(s.signal_code IN ('dollar_index', 'dollar_broad_index')) AS indexes
+    FROM {GOLD}.monitor_daily_signal s JOIN latest l ON s.signal_date = l.day
+    WHERE s.monitor_code = 'currency' GROUP BY s.lens_code)
+  WHERE currencies != 9 OR summaries != 1 OR indexes != CASE lens_code WHEN 'us_dollar' THEN 2 ELSE 0 END"""
+checks["currency: a currency row whose answer does not follow its value and average"] = f"""
+  SELECT concat(CAST(signal_date AS STRING), ' ', lens_code, ' ', signal_code) FROM {GOLD}.monitor_daily_signal
+  WHERE monitor_code = 'currency' AND signal_code != 'summary' AND is_yes != (measured_value > threshold_value)
+    AND abs(measured_value - threshold_value) > 0.00001
+  LIMIT 10"""
+
 failures = [f"{name}: {found}" for name, sql in checks.items() if (found := offenders(sql))]
 assert not failures, "\n".join(failures)
 dbutils.notebook.exit(f"{len(checks)} checks passed")

@@ -680,7 +680,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   `market-climate-silver`; the 52-week high and low of the reported prices, `inflation-deflation-monitor`),
   `market_rate_indicator_daily` (per series and `^GSPC` trading day: the CPI index, its change against the previous
   reading and over 12 months, the federal funds effective rate and the real rate, each with its 200-day average
-  and the average's 20-row change; query in `src/common/inflation_sql.py`), `market_rate_daily` (six daily rates plus five CPI series on business days, with
+  and the average's 20-row change; query in `src/common/market_rate_indicator_sql.py`), `market_rate_daily` (six daily rates plus five CPI series on business days, with
   `rate_name` and `is_carried_forward`; CPI sits on the dates of the period it measures,
   not its publication date, so it is not for prediction). Column names end in what they
   are (`_id`, `_key`, `_code`, `_name`, `_date`, `_amount`, `_count`, `_ratio`, `_value`; rule in

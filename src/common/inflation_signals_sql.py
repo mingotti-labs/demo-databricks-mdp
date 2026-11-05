@@ -15,7 +15,7 @@ from common.inflation import (
     MONITOR_NAME,
     ratings_values_sql,
 )
-from common.inflation_sql import CPI_RATE_CODE, CPI_TWELVE_CODE, FED_RATE_CODE
+from common.market_rate_indicator_sql import CPI_RATE_CODE, CPI_TWELVE_CODE, FED_RATE_CODE
 from common.market_climate_sql import DOMAIN
 
 
