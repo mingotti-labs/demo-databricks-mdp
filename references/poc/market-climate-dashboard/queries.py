@@ -72,6 +72,7 @@ ORDER BY signal_date
 MEMBER_COLUMNS = (
     "c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, "
     "m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, "
+    "CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, "
     "m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect"
 )
 MEMBER_JOIN = (
@@ -151,3 +152,29 @@ SELECT {MEMBER_COLUMNS}, m.price_earnings_effect_ratio AS pe_effect_sort
 dataset("ds_sector_up", "Sector members pushing the P/E up", SECTOR_MEMBERS + " ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10")
 dataset("ds_sector_down", "Sector members pushing the P/E down", SECTOR_MEMBERS + " AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10")
 dataset("ds_sector_names", "Sector names", "SELECT DISTINCT gics_sector_name AS sector_name FROM silver_domain_investments.company WHERE gics_sector_name IS NOT NULL ORDER BY 1")
+
+COMPANY_NAMES = (
+    "SELECT DISTINCT c.company_name FROM valuation_daily_index_member m "
+    "JOIN silver_domain_investments.company c ON c.company_id = m.company_id ORDER BY 1"
+)
+dataset("ds_company_names", "Company names", COMPANY_NAMES)
+
+dataset("ds_company_check", "Company check, step by step", f"""
+WITH {VALUATION_AS_OF},
+m AS (SELECT m.*, c.company_name FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day
+  JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name),
+steps AS (
+  SELECT 1 AS step_number, 'Closing price' AS step_name, format_number(price_close, 2) || ' US$ on ' || CAST(price_date AS STRING) AS value_text, 'Latest close on or before the day' AS how_text FROM m
+  UNION ALL SELECT 2, 'Shares outstanding', format_number(share_count, 0) || ' (' || coalesce(share_count_source_code, 'none') || ')', 'From the latest filing' FROM m
+  UNION ALL SELECT 3, 'Market value', format_number(market_value_amount / 1e9, 2) || ' US$ billion', 'Step 1 x step 2' FROM m
+  UNION ALL SELECT 4, 'Earnings, trailing 12 months', format_number(earnings_trailing_twelve_months_amount / 1e6, 1) || ' US$ million', 'Net income of the latest 12 months' FROM m
+  UNION ALL SELECT 5, 'P/E on trailing earnings (what finance sites show)', format_number(market_value_amount / nullif(earnings_trailing_twelve_months_amount, 0), 2), 'Step 3 / step 4' FROM m
+  UNION ALL SELECT 6, 'Earnings, average of the last ' || coalesce(CAST(earnings_year_count AS STRING), '0') || ' years', format_number(earnings_ten_year_average_amount / 1e6, 1) || ' US$ million', 'Average yearly net income, up to 10 years' FROM m
+  UNION ALL SELECT 7, 'Inflation factor', format_number(consumer_price_index_value / nullif(filing_consumer_price_index_value, 0), 4), 'Price index today / price index at the filing' FROM m
+  UNION ALL SELECT 8, 'Average earnings in today''s money', format_number(earnings_ten_year_average_inflation_adjusted_amount / 1e6, 1) || ' US$ million', 'Step 6 x step 7' FROM m
+  UNION ALL SELECT 9, 'P/E on 10-year inflation-adjusted earnings (the climate uses this)', format_number(price_earnings_ten_year_average_inflation_adjusted_ratio, 2), 'Step 3 / step 8' FROM m
+  UNION ALL SELECT 10, 'Index P/E without this member', format_number(price_earnings_without_member_ratio, 2), 'Same calculation over the other members' FROM m
+  UNION ALL SELECT 11, 'Effect on the index P/E', format_number(price_earnings_effect_ratio, 4), 'Index P/E minus step 10' FROM m
+  UNION ALL SELECT 12, 'Used in the index', CASE WHEN is_used THEN 'Yes' ELSE 'No: ' || exclusion_reason_code END, 'A member is left out when an input is missing' FROM m)
+SELECT step_number, step_name, value_text, how_text FROM steps ORDER BY step_number
+""")

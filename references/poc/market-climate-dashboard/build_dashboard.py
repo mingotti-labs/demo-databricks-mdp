@@ -13,9 +13,10 @@ from queries import DATASETS  # noqa: E402
 OUT = Path(__file__).resolve().parents[3] / "src" / "dashboards" / "market_climate.lvdash.json"
 DATE_DATASETS = [
     "ds_freshness", "ds_lights", "ds_answers", "ds_index_day", "ds_top_up", "ds_top_down", "ds_excluded",
-    "ds_members", "ds_checks", "ds_sectors", "ds_sector_up", "ds_sector_down",
+    "ds_members", "ds_checks", "ds_company_check", "ds_sectors", "ds_sector_up", "ds_sector_down",
 ]
 SECTOR_DATASETS = ["ds_sector_up", "ds_sector_down"]
+COMPANY_DATASETS = ["ds_company_check"]
 RED, YELLOW, GREEN = "#E15759", "#F2C037", "#59A14F"
 PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
 LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
@@ -37,6 +38,11 @@ def parameters(dataset: str) -> list[dict]:
         result.append({
             "keyword": "sector_name", "displayName": "Sector", "dataType": "STRING",
             "defaultSelection": {"values": {"dataType": "STRING", "values": [{"value": "Information Technology"}]}},
+        })
+    if dataset in COMPANY_DATASETS:
+        result.append({
+            "keyword": "company_name", "displayName": "Company", "dataType": "STRING",
+            "defaultSelection": {"values": {"dataType": "STRING", "values": [{"value": "EQT Corporation"}]}},
         })
     return result
 
@@ -62,7 +68,7 @@ def table(name: str, title: str, dataset: str, columns: list[tuple], x: int, y: 
     fields = [{"name": c[0], "expression": f"`{c[0]}`"} for c in columns]
     encodings = []
     for c in columns:
-        column = {"fieldName": c[0], "displayName": c[1]}
+        column = {"fieldName": c[0], "displayName": c[1], "alignContent": "left"}
         if c[2]:
             column["format"] = c[2]
         if len(c) > 3 and c[3] == "light":
@@ -144,6 +150,44 @@ def filter_widget(name: str, title: str, kind: str, bindings: list[tuple[str, st
             "position": {"x": x, "y": y, "width": w, "height": 2}}
 
 
+def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
+    """Big coloured circle per climate (custom Vega-Lite), driven by ds_lights."""
+    spec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v6.json", "data": {"name": "databricks_query"},
+        "width": "container", "height": "container", "config": {"autosize": {"type": "fit", "contains": "padding"}},
+        "transform": [{"calculate": "datum.yes_count + ' of 3 yes'", "as": "yes_label"}],
+        "encoding": {"x": {"field": "lens_name", "type": "nominal", "axis": {"title": None, "orient": "top", "labelFontSize": 18, "labelAngle": 0, "domain": False, "ticks": False}},
+                     "tooltip": [{"field": "lens_name", "title": "Climate"}, {"field": "action_name", "title": "Action"}, {"field": "reason_text", "title": "Why"}]},
+        "layer": [
+            {"mark": {"type": "circle", "size": 14000},
+             "encoding": {"y": {"value": 95}, "color": {"field": "light_code", "type": "nominal", "legend": None,
+                          "scale": {"domain": ["red", "yellow", "green"], "range": [RED, YELLOW, GREEN]}}}},
+            {"mark": {"type": "text", "fontSize": 22, "fontWeight": "bold", "color": "#11171C"},
+             "encoding": {"y": {"value": 95}, "text": {"field": "yes_label"}}},
+            {"mark": {"type": "text", "fontSize": 18},
+             "encoding": {"y": {"value": 190}, "text": {"field": "action_name"}}},
+        ],
+    }
+    names = ["lens_name", "yes_count", "light_code", "action_name", "reason_text"]
+    return {"widget": {"name": name,
+                       "queries": [{"name": "main_query", "query": {"datasetName": "ds_lights", "fields": [{"name": n, "expression": f"`{n}`"} for n in names], "disaggregated": True}}],
+                       "spec": {"version": 1, "widgetType": "custom-vega-viz", "jsonSpec": {"type": "vega-lite", "spec": json.dumps(spec)},
+                                "encodings": {"fields": [{"fieldName": n} for n in names]}, "data": {"queryName": "main_query"},
+                                "frame": {"showTitle": True, "title": "Market climate today"}}},
+            "position": {"x": x, "y": y, "width": w, "height": h}}
+
+
+def company_page() -> dict:
+    steps = [("step_number", "Step", NUMBER0), ("step_name", "What", None), ("value_text", "Value", None), ("how_text", "How", None)]
+    return {"name": "company-check", "displayName": "Company Check", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+        text("company-title", ["# Company Check\n", "\n", "Pick a company to see, step by step, how its P/E in the climate is built from the filing and the price. "
+             "Step 5 is the trailing P/E finance sites show; step 9 is the one the climate uses. They differ when earnings were low in earlier years."], 0, 0, 12, 3),
+        filter_widget("filter-company", "Company", "filter-single-select",
+                      [("ds_company_names", "field", "company_name"), ("ds_company_check", "parameter", "company_name")], 0, 3, 6),
+        table("company-steps", "From the numbers to the P/E", "ds_company_check", steps, 0, 5, 12, 10),
+    ]}
+
+
 def climate_page() -> dict:
     lights = [("lens_name", "Climate", None), ("yes_count", "Yes answers (of 3)", NUMBER0),
               ("light_code", "Light", None, "light"), ("action_name", "Action", None), ("reason_text", "Why", None)]
@@ -156,24 +200,24 @@ def climate_page() -> dict:
     return {"name": "climate", "displayName": "Climate", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
         text("climate-title", ["# Market climate\n", "\n", "Two climates read the same three questions: is the market too expensive, is the Fed in the way, is the market going up. "
              "Yes is the unfavourable answer. Red (2 or 3 yes): sell. Yellow (1 yes): buy and hold. Green (0 yes): strong buy. "
-             "Change the date at the top; the Deep Dive pages show the numbers behind the valuation answer."], 0, 0, 12, 3),
-        table("data-dates", "Data dates", "ds_freshness", dates, 0, 3, 12, 3,
-              "The climate is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."),
-        table("lights", "Lights of the day", "ds_lights", lights, 0, 6, 12, 3),
-        table("answers", "The three answers of each climate", "ds_answers", answers, 0, 9, 12, 7),
-        text("history-title", ["## History\n"], 0, 16, 12, 1),
+             "Change the date at the top; the other pages show the numbers behind the valuation answer."], 0, 0, 12, 3),
+        traffic_lights("traffic-lights", 0, 3, 12, 6),
         line("light-history", "Yes answers per day (0 green, 1 yellow, 2 or 3 red)", "ds_light_history", "signal_date",
-             [("yes_count", "Yes answers")], 0, 17, 12, 5, color_field="lens_name"),
+             [("yes_count", "Yes answers")], 0, 9, 12, 5, color_field="lens_name"),
         line("pe-history", "S&P 500 price/earnings ratio", "ds_pe_history", "valuation_date",
-             [("pe_ten_year_adjusted", "10-year inflation-adjusted (votes)"), ("pe_trailing", "Trailing 12 months")], 0, 22, 12, 6,
+             [("pe_ten_year_adjusted", "10-year inflation-adjusted (votes)"), ("pe_trailing", "Trailing 12 months")], 0, 14, 12, 6,
              annotations=[horizontal("16", "cheap line, long run", GREEN), horizontal("22", "expensive line, long run", YELLOW),
                           horizontal("30", "expensive line, modern", RED)],
              description="Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern)."),
         line("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", "signal_date", [("fed_target_rate", "Target rate")],
-             0, 28, 6, 6, color_field="fed_band_code", mappings=mapping,
+             0, 20, 6, 6, color_field="fed_band_code", mappings=mapping,
              description="Red: within 6 months of a hike (Fed in the way). Green: within 6 months of a cut."),
         line("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", "signal_date",
-             [("sp500_close", "S&P 500 close"), ("sp500_average_200", "200-day average")], 6, 28, 6, 6),
+             [("sp500_close", "S&P 500 close"), ("sp500_average_200", "200-day average")], 6, 20, 6, 6),
+        table("answers", "The three answers of each climate", "ds_answers", answers, 0, 26, 12, 7),
+        table("lights", "Lights of the day", "ds_lights", lights, 0, 33, 12, 3),
+        table("data-dates", "Data dates", "ds_freshness", dates, 0, 36, 12, 3,
+              "The climate is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."),
     ]}
 
 
@@ -188,7 +232,7 @@ def deep_dive_page() -> dict:
               ("earnings_difference_amount", "Earnings difference (US$)", NUMBER2),
               ("pe_index", "P/E index row", NUMBER4), ("pe_from_members", "P/E from member rows", NUMBER4)]
     members = [("company_name", "Company", None), ("sector_name", "Sector", None), ("market_value_share_ratio", "Share of market value", PERCENT),
-               ("member_pe", "P/E of the member", NUMBER2), ("pe_without_member", "Index P/E without it", NUMBER2),
+               ("member_pe", "P/E 10-year adjusted", NUMBER2), ("member_pe_trailing", "P/E trailing", NUMBER2), ("pe_without_member", "Index P/E without it", NUMBER2),
                ("pe_effect", "Effect on index P/E", NUMBER4)]
     everyone = members + [("is_used", "Used", None), ("exclusion_reason_code", "Left out because", None),
                           ("price_close", "Close (US$)", NUMBER2), ("share_count", "Shares", NUMBER0),
@@ -218,7 +262,7 @@ def sector_page() -> dict:
                ("market_value_share_ratio", "Share of market value", PERCENT), ("sector_pe", "Sector P/E", NUMBER2),
                ("pe_without_sector", "Index P/E without the sector", NUMBER2), ("pe_index", "Index P/E", NUMBER2)]
     members = [("company_name", "Company", None), ("market_value_share_ratio", "Share of index market value", PERCENT),
-               ("member_pe", "P/E of the member", NUMBER2), ("pe_without_member", "Index P/E without it", NUMBER2),
+               ("member_pe", "P/E 10-year adjusted", NUMBER2), ("member_pe_trailing", "P/E trailing", NUMBER2), ("pe_without_member", "Index P/E without it", NUMBER2),
                ("pe_effect", "Effect on index P/E", NUMBER4)]
     return {"name": "sector-deep-dive", "displayName": "Sector Deep Dive", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
         text("sector-title", ["# Sector Deep Dive\n", "\n", "Sector P/E = the sector's market value over its 10-year inflation-adjusted earnings. "
@@ -243,7 +287,7 @@ def filters_page() -> dict:
 def main() -> None:
     dashboard = {
         "datasets": datasets(),
-        "pages": [climate_page(), deep_dive_page(), sector_page(), filters_page()],
+        "pages": [climate_page(), deep_dive_page(), company_page(), sector_page(), filters_page()],
         "uiSettings": {"theme": {
             "canvasBackgroundColor": {"light": "#FCFCFC", "dark": "#1F272D"},
             "widgetBackgroundColor": {"light": "#FFFFFF", "dark": "#11171C"},

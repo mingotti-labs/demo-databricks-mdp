@@ -128,7 +128,7 @@
       "name": "ds_top_up",
       "displayName": "Members pushing the P/E up",
       "queryLines": [
-        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10 "
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10 "
       ],
       "parameters": [
         {
@@ -152,7 +152,7 @@
       "name": "ds_top_down",
       "displayName": "Members pushing the P/E down",
       "queryLines": [
-        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10 "
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10 "
       ],
       "parameters": [
         {
@@ -200,7 +200,7 @@
       "name": "ds_members",
       "displayName": "All members",
       "queryLines": [
-        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.is_used, m.exclusion_reason_code, m.price_close, m.share_count, m.market_value_amount / 1e9 AS market_value_billion FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id ORDER BY m.market_value_amount DESC NULLS LAST "
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.is_used, m.exclusion_reason_code, m.price_close, m.share_count, m.market_value_amount / 1e9 AS market_value_billion FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id ORDER BY m.market_value_amount DESC NULLS LAST "
       ],
       "parameters": [
         {
@@ -272,7 +272,7 @@
       "name": "ds_sector_up",
       "displayName": "Sector members pushing the P/E up",
       "queryLines": [
-        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.price_earnings_effect_ratio AS pe_effect_sort FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND c.gics_sector_name = :sector_name ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10 "
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.price_earnings_effect_ratio AS pe_effect_sort FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND c.gics_sector_name = :sector_name ORDER BY m.price_earnings_effect_ratio DESC LIMIT 10 "
       ],
       "parameters": [
         {
@@ -311,7 +311,7 @@
       "name": "ds_sector_down",
       "displayName": "Sector members pushing the P/E down",
       "queryLines": [
-        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.price_earnings_effect_ratio AS pe_effect_sort FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND c.gics_sector_name = :sector_name AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10 "
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT c.company_name, c.gics_sector_name AS sector_name, m.market_value_share_ratio, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS member_pe, CASE WHEN m.earnings_trailing_twelve_months_amount > 0 THEN m.market_value_amount / m.earnings_trailing_twelve_months_amount END AS member_pe_trailing, m.price_earnings_without_member_ratio AS pe_without_member, m.price_earnings_effect_ratio AS pe_effect, m.price_earnings_effect_ratio AS pe_effect_sort FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND c.gics_sector_name = :sector_name AND m.price_earnings_effect_ratio IS NOT NULL ORDER BY m.price_earnings_effect_ratio ASC LIMIT 10 "
       ],
       "parameters": [
         {
@@ -352,6 +352,52 @@
       "queryLines": [
         "SELECT DISTINCT gics_sector_name AS sector_name FROM silver_domain_investments.company WHERE gics_sector_name IS NOT NULL ORDER BY 1 "
       ]
+    },
+    {
+      "name": "ds_company_names",
+      "displayName": "Company names",
+      "queryLines": [
+        "SELECT DISTINCT c.company_name FROM valuation_daily_index_member m JOIN silver_domain_investments.company c ON c.company_id = m.company_id ORDER BY 1 "
+      ]
+    },
+    {
+      "name": "ds_company_check",
+      "displayName": "Company check, step by step",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), m AS (SELECT m.*, c.company_name FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name), steps AS ( SELECT 1 AS step_number, 'Closing price' AS step_name, format_number(price_close, 2) || ' US$ on ' || CAST(price_date AS STRING) AS value_text, 'Latest close on or before the day' AS how_text FROM m UNION ALL SELECT 2, 'Shares outstanding', format_number(share_count, 0) || ' (' || coalesce(share_count_source_code, 'none') || ')', 'From the latest filing' FROM m UNION ALL SELECT 3, 'Market value', format_number(market_value_amount / 1e9, 2) || ' US$ billion', 'Step 1 x step 2' FROM m UNION ALL SELECT 4, 'Earnings, trailing 12 months', format_number(earnings_trailing_twelve_months_amount / 1e6, 1) || ' US$ million', 'Net income of the latest 12 months' FROM m UNION ALL SELECT 5, 'P/E on trailing earnings (what finance sites show)', format_number(market_value_amount / nullif(earnings_trailing_twelve_months_amount, 0), 2), 'Step 3 / step 4' FROM m UNION ALL SELECT 6, 'Earnings, average of the last ' || coalesce(CAST(earnings_year_count AS STRING), '0') || ' years', format_number(earnings_ten_year_average_amount / 1e6, 1) || ' US$ million', 'Average yearly net income, up to 10 years' FROM m UNION ALL SELECT 7, 'Inflation factor', format_number(consumer_price_index_value / nullif(filing_consumer_price_index_value, 0), 4), 'Price index today / price index at the filing' FROM m UNION ALL SELECT 8, 'Average earnings in today''s money', format_number(earnings_ten_year_average_inflation_adjusted_amount / 1e6, 1) || ' US$ million', 'Step 6 x step 7' FROM m UNION ALL SELECT 9, 'P/E on 10-year inflation-adjusted earnings (the climate uses this)', format_number(price_earnings_ten_year_average_inflation_adjusted_ratio, 2), 'Step 3 / step 8' FROM m UNION ALL SELECT 10, 'Index P/E without this member', format_number(price_earnings_without_member_ratio, 2), 'Same calculation over the other members' FROM m UNION ALL SELECT 11, 'Effect on the index P/E', format_number(price_earnings_effect_ratio, 4), 'Index P/E minus step 10' FROM m UNION ALL SELECT 12, 'Used in the index', CASE WHEN is_used THEN 'Yes' ELSE 'No: ' || exclusion_reason_code END, 'A member is left out when an input is missing' FROM m) SELECT step_number, step_name, value_text, how_text FROM steps ORDER BY step_number "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "company_name",
+          "displayName": "Company",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "EQT Corporation"
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "pages": [
@@ -368,7 +414,7 @@
               "lines": [
                 "# Market climate\n",
                 "\n",
-                "Two climates read the same three questions: is the market too expensive, is the Fed in the way, is the market going up. Yes is the unfavourable answer. Red (2 or 3 yes): sell. Yellow (1 yes): buy and hold. Green (0 yes): strong buy. Change the date at the top; the Deep Dive pages show the numbers behind the valuation answer."
+                "Two climates read the same three questions: is the market too expensive, is the Fed in the way, is the market going up. Yes is the unfavourable answer. Red (2 or 3 yes): sell. Yellow (1 yes): buy and hold. Green (0 yes): strong buy. Change the date at the top; the other pages show the numbers behind the valuation answer."
               ]
             }
           },
@@ -381,75 +427,7 @@
         },
         {
           "widget": {
-            "name": "data-dates",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_freshness",
-                  "fields": [
-                    {
-                      "name": "climate_date",
-                      "expression": "`climate_date`"
-                    },
-                    {
-                      "name": "sp500_price_date",
-                      "expression": "`sp500_price_date`"
-                    },
-                    {
-                      "name": "fed_rate_date",
-                      "expression": "`fed_rate_date`"
-                    },
-                    {
-                      "name": "cpi_date",
-                      "expression": "`cpi_date`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "climate_date",
-                    "displayName": "Climate as of"
-                  },
-                  {
-                    "fieldName": "sp500_price_date",
-                    "displayName": "Latest S&P 500 price"
-                  },
-                  {
-                    "fieldName": "fed_rate_date",
-                    "displayName": "Latest Fed target reading"
-                  },
-                  {
-                    "fieldName": "cpi_date",
-                    "displayName": "Latest CPI reading (monthly, carried forward)"
-                  }
-                ]
-              },
-              "frame": {
-                "showTitle": true,
-                "title": "Data dates",
-                "showDescription": true,
-                "description": "The climate is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 3,
-            "width": 12,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "lights",
+            "name": "traffic-lights",
             "queries": [
               {
                 "name": "main_query",
@@ -482,258 +460,45 @@
               }
             ],
             "spec": {
-              "version": 2,
-              "widgetType": "table",
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"calculate\": \"datum.yes_count + ' of 3 yes'\", \"as\": \"yes_label\"}], \"encoding\": {\"x\": {\"field\": \"lens_name\", \"type\": \"nominal\", \"axis\": {\"title\": null, \"orient\": \"top\", \"labelFontSize\": 18, \"labelAngle\": 0, \"domain\": false, \"ticks\": false}}, \"tooltip\": [{\"field\": \"lens_name\", \"title\": \"Climate\"}, {\"field\": \"action_name\", \"title\": \"Action\"}, {\"field\": \"reason_text\", \"title\": \"Why\"}]}, \"layer\": [{\"mark\": {\"type\": \"circle\", \"size\": 14000}, \"encoding\": {\"y\": {\"value\": 95}, \"color\": {\"field\": \"light_code\", \"type\": \"nominal\", \"legend\": null, \"scale\": {\"domain\": [\"red\", \"yellow\", \"green\"], \"range\": [\"#E15759\", \"#F2C037\", \"#59A14F\"]}}}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 22, \"fontWeight\": \"bold\", \"color\": \"#11171C\"}, \"encoding\": {\"y\": {\"value\": 95}, \"text\": {\"field\": \"yes_label\"}}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 18}, \"encoding\": {\"y\": {\"value\": 190}, \"text\": {\"field\": \"action_name\"}}}]}"
+              },
               "encodings": {
-                "columns": [
+                "fields": [
                   {
-                    "fieldName": "lens_name",
-                    "displayName": "Climate"
+                    "fieldName": "lens_name"
                   },
                   {
-                    "fieldName": "yes_count",
-                    "displayName": "Yes answers (of 3)",
-                    "format": {
-                      "type": "number",
-                      "decimalPlaces": {
-                        "type": "exact",
-                        "places": 0
-                      }
-                    }
+                    "fieldName": "yes_count"
                   },
                   {
-                    "fieldName": "light_code",
-                    "displayName": "Light",
-                    "style": {
-                      "type": "basic",
-                      "rules": [
-                        {
-                          "condition": {
-                            "operand": {
-                              "type": "data-value",
-                              "value": "red"
-                            },
-                            "operator": "=="
-                          },
-                          "backgroundColor": {
-                            "themeColorType": "visualizationColors",
-                            "position": 5
-                          }
-                        },
-                        {
-                          "condition": {
-                            "operand": {
-                              "type": "data-value",
-                              "value": "yellow"
-                            },
-                            "operator": "=="
-                          },
-                          "backgroundColor": {
-                            "themeColorType": "visualizationColors",
-                            "position": 6
-                          }
-                        },
-                        {
-                          "condition": {
-                            "operand": {
-                              "type": "data-value",
-                              "value": "green"
-                            },
-                            "operator": "=="
-                          },
-                          "backgroundColor": {
-                            "themeColorType": "visualizationColors",
-                            "position": 3
-                          }
-                        }
-                      ]
-                    }
+                    "fieldName": "light_code"
                   },
                   {
-                    "fieldName": "action_name",
-                    "displayName": "Action"
+                    "fieldName": "action_name"
                   },
                   {
-                    "fieldName": "reason_text",
-                    "displayName": "Why"
+                    "fieldName": "reason_text"
                   }
                 ]
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Lights of the day"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 6,
-            "width": 12,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "answers",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_answers",
-                  "fields": [
-                    {
-                      "name": "lens_name",
-                      "expression": "`lens_name`"
-                    },
-                    {
-                      "name": "signal_name",
-                      "expression": "`signal_name`"
-                    },
-                    {
-                      "name": "answer_text",
-                      "expression": "`answer_text`"
-                    },
-                    {
-                      "name": "band_code",
-                      "expression": "`band_code`"
-                    },
-                    {
-                      "name": "measured_value",
-                      "expression": "`measured_value`"
-                    },
-                    {
-                      "name": "threshold_value",
-                      "expression": "`threshold_value`"
-                    },
-                    {
-                      "name": "reason_text",
-                      "expression": "`reason_text`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "lens_name",
-                    "displayName": "Climate"
-                  },
-                  {
-                    "fieldName": "signal_name",
-                    "displayName": "Question"
-                  },
-                  {
-                    "fieldName": "answer_text",
-                    "displayName": "Answer"
-                  },
-                  {
-                    "fieldName": "band_code",
-                    "displayName": "Band",
-                    "style": {
-                      "type": "basic",
-                      "rules": [
-                        {
-                          "condition": {
-                            "operand": {
-                              "type": "data-value",
-                              "value": "red"
-                            },
-                            "operator": "=="
-                          },
-                          "backgroundColor": {
-                            "themeColorType": "visualizationColors",
-                            "position": 5
-                          }
-                        },
-                        {
-                          "condition": {
-                            "operand": {
-                              "type": "data-value",
-                              "value": "yellow"
-                            },
-                            "operator": "=="
-                          },
-                          "backgroundColor": {
-                            "themeColorType": "visualizationColors",
-                            "position": 6
-                          }
-                        },
-                        {
-                          "condition": {
-                            "operand": {
-                              "type": "data-value",
-                              "value": "green"
-                            },
-                            "operator": "=="
-                          },
-                          "backgroundColor": {
-                            "themeColorType": "visualizationColors",
-                            "position": 3
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "fieldName": "measured_value",
-                    "displayName": "Measured",
-                    "format": {
-                      "type": "number",
-                      "decimalPlaces": {
-                        "type": "exact",
-                        "places": 2
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "threshold_value",
-                    "displayName": "Compared with",
-                    "format": {
-                      "type": "number",
-                      "decimalPlaces": {
-                        "type": "exact",
-                        "places": 2
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "reason_text",
-                    "displayName": "Why"
-                  }
-                ]
+              "data": {
+                "queryName": "main_query"
               },
               "frame": {
                 "showTitle": true,
-                "title": "The three answers of each climate"
+                "title": "Market climate today"
               }
             }
           },
           "position": {
             "x": 0,
-            "y": 9,
+            "y": 3,
             "width": 12,
-            "height": 7
-          }
-        },
-        {
-          "widget": {
-            "name": "history-title",
-            "multilineTextboxSpec": {
-              "lines": [
-                "## History\n"
-              ]
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 16,
-            "width": 12,
-            "height": 1
+            "height": 6
           }
         },
         {
@@ -795,7 +560,7 @@
           },
           "position": {
             "x": 0,
-            "y": 17,
+            "y": 9,
             "width": 12,
             "height": 5
           }
@@ -910,7 +675,7 @@
           },
           "position": {
             "x": 0,
-            "y": 22,
+            "y": 14,
             "width": 12,
             "height": 6
           }
@@ -990,7 +755,7 @@
           },
           "position": {
             "x": 0,
-            "y": 28,
+            "y": 20,
             "width": 6,
             "height": 6
           }
@@ -1056,9 +821,366 @@
           },
           "position": {
             "x": 6,
-            "y": 28,
+            "y": 20,
             "width": 6,
             "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "answers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_answers",
+                  "fields": [
+                    {
+                      "name": "lens_name",
+                      "expression": "`lens_name`"
+                    },
+                    {
+                      "name": "signal_name",
+                      "expression": "`signal_name`"
+                    },
+                    {
+                      "name": "answer_text",
+                      "expression": "`answer_text`"
+                    },
+                    {
+                      "name": "band_code",
+                      "expression": "`band_code`"
+                    },
+                    {
+                      "name": "measured_value",
+                      "expression": "`measured_value`"
+                    },
+                    {
+                      "name": "threshold_value",
+                      "expression": "`threshold_value`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "lens_name",
+                    "displayName": "Climate",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "signal_name",
+                    "displayName": "Question",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "answer_text",
+                    "displayName": "Answer",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "band_code",
+                    "displayName": "Band",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "measured_value",
+                    "displayName": "Measured",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "threshold_value",
+                    "displayName": "Compared with",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "reason_text",
+                    "displayName": "Why",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "The three answers of each climate"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 26,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "lights",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_lights",
+                  "fields": [
+                    {
+                      "name": "lens_name",
+                      "expression": "`lens_name`"
+                    },
+                    {
+                      "name": "yes_count",
+                      "expression": "`yes_count`"
+                    },
+                    {
+                      "name": "light_code",
+                      "expression": "`light_code`"
+                    },
+                    {
+                      "name": "action_name",
+                      "expression": "`action_name`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "lens_name",
+                    "displayName": "Climate",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "yes_count",
+                    "displayName": "Yes answers (of 3)",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "light_code",
+                    "displayName": "Light",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "action_name",
+                    "displayName": "Action",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "reason_text",
+                    "displayName": "Why",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Lights of the day"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 33,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "data-dates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_freshness",
+                  "fields": [
+                    {
+                      "name": "climate_date",
+                      "expression": "`climate_date`"
+                    },
+                    {
+                      "name": "sp500_price_date",
+                      "expression": "`sp500_price_date`"
+                    },
+                    {
+                      "name": "fed_rate_date",
+                      "expression": "`fed_rate_date`"
+                    },
+                    {
+                      "name": "cpi_date",
+                      "expression": "`cpi_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "climate_date",
+                    "displayName": "Climate as of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "sp500_price_date",
+                    "displayName": "Latest S&P 500 price",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "fed_rate_date",
+                    "displayName": "Latest Fed target reading",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "cpi_date",
+                    "displayName": "Latest CPI reading (monthly, carried forward)",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data dates",
+                "showDescription": true,
+                "description": "The climate is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 36,
+            "width": 12,
+            "height": 3
           }
         }
       ]
@@ -1144,11 +1266,13 @@
                 "columns": [
                   {
                     "fieldName": "valuation_date",
-                    "displayName": "Day"
+                    "displayName": "Day",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "market_value_trillion",
                     "displayName": "Market value (US$ trillion)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1160,6 +1284,7 @@
                   {
                     "fieldName": "earnings_adjusted_billion",
                     "displayName": "10-year adjusted earnings (US$ billion)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1171,6 +1296,7 @@
                   {
                     "fieldName": "pe_ten_year_adjusted",
                     "displayName": "P/E 10-year adjusted",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1182,6 +1308,7 @@
                   {
                     "fieldName": "pe_trailing",
                     "displayName": "P/E trailing",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1193,6 +1320,7 @@
                   {
                     "fieldName": "members_used_count",
                     "displayName": "Members used",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1204,6 +1332,7 @@
                   {
                     "fieldName": "member_count",
                     "displayName": "Members",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1215,6 +1344,7 @@
                   {
                     "fieldName": "members_without_shares_count",
                     "displayName": "Without shares",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1226,6 +1356,7 @@
                   {
                     "fieldName": "members_under_ten_years_count",
                     "displayName": "Under 10 years",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1295,6 +1426,7 @@
                   {
                     "fieldName": "index_used_count",
                     "displayName": "Used (index row)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1306,6 +1438,7 @@
                   {
                     "fieldName": "member_used_count",
                     "displayName": "Used (member rows)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1317,6 +1450,7 @@
                   {
                     "fieldName": "market_value_difference_amount",
                     "displayName": "Market value difference (US$)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1328,6 +1462,7 @@
                   {
                     "fieldName": "earnings_difference_amount",
                     "displayName": "Earnings difference (US$)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1339,6 +1474,7 @@
                   {
                     "fieldName": "pe_index",
                     "displayName": "P/E index row",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1350,6 +1486,7 @@
                   {
                     "fieldName": "pe_from_members",
                     "displayName": "P/E from member rows",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1415,6 +1552,10 @@
                       "expression": "`member_pe`"
                     },
                     {
+                      "name": "member_pe_trailing",
+                      "expression": "`member_pe_trailing`"
+                    },
+                    {
                       "name": "pe_without_member",
                       "expression": "`pe_without_member`"
                     },
@@ -1434,15 +1575,18 @@
                 "columns": [
                   {
                     "fieldName": "company_name",
-                    "displayName": "Company"
+                    "displayName": "Company",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "sector_name",
-                    "displayName": "Sector"
+                    "displayName": "Sector",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "market_value_share_ratio",
                     "displayName": "Share of market value",
+                    "alignContent": "left",
                     "format": {
                       "type": "number-percent",
                       "decimalPlaces": {
@@ -1453,7 +1597,20 @@
                   },
                   {
                     "fieldName": "member_pe",
-                    "displayName": "P/E of the member",
+                    "displayName": "P/E 10-year adjusted",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe_trailing",
+                    "displayName": "P/E trailing",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1465,6 +1622,7 @@
                   {
                     "fieldName": "pe_without_member",
                     "displayName": "Index P/E without it",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1476,6 +1634,7 @@
                   {
                     "fieldName": "pe_effect",
                     "displayName": "Effect on index P/E",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1525,6 +1684,10 @@
                       "expression": "`member_pe`"
                     },
                     {
+                      "name": "member_pe_trailing",
+                      "expression": "`member_pe_trailing`"
+                    },
+                    {
                       "name": "pe_without_member",
                       "expression": "`pe_without_member`"
                     },
@@ -1544,15 +1707,18 @@
                 "columns": [
                   {
                     "fieldName": "company_name",
-                    "displayName": "Company"
+                    "displayName": "Company",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "sector_name",
-                    "displayName": "Sector"
+                    "displayName": "Sector",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "market_value_share_ratio",
                     "displayName": "Share of market value",
+                    "alignContent": "left",
                     "format": {
                       "type": "number-percent",
                       "decimalPlaces": {
@@ -1563,7 +1729,20 @@
                   },
                   {
                     "fieldName": "member_pe",
-                    "displayName": "P/E of the member",
+                    "displayName": "P/E 10-year adjusted",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe_trailing",
+                    "displayName": "P/E trailing",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1575,6 +1754,7 @@
                   {
                     "fieldName": "pe_without_member",
                     "displayName": "Index P/E without it",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1586,6 +1766,7 @@
                   {
                     "fieldName": "pe_effect",
                     "displayName": "Effect on index P/E",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1662,19 +1843,23 @@
                 "columns": [
                   {
                     "fieldName": "company_name",
-                    "displayName": "Company"
+                    "displayName": "Company",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "sector_name",
-                    "displayName": "Sector"
+                    "displayName": "Sector",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "exclusion_reason_code",
-                    "displayName": "Left out because"
+                    "displayName": "Left out because",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "price_date",
-                    "displayName": "Price date"
+                    "displayName": "Price date",
+                    "alignContent": "left"
                   }
                 ]
               },
@@ -1819,6 +2004,10 @@
                       "expression": "`member_pe`"
                     },
                     {
+                      "name": "member_pe_trailing",
+                      "expression": "`member_pe_trailing`"
+                    },
+                    {
                       "name": "pe_without_member",
                       "expression": "`pe_without_member`"
                     },
@@ -1858,15 +2047,18 @@
                 "columns": [
                   {
                     "fieldName": "company_name",
-                    "displayName": "Company"
+                    "displayName": "Company",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "sector_name",
-                    "displayName": "Sector"
+                    "displayName": "Sector",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "market_value_share_ratio",
                     "displayName": "Share of market value",
+                    "alignContent": "left",
                     "format": {
                       "type": "number-percent",
                       "decimalPlaces": {
@@ -1877,7 +2069,20 @@
                   },
                   {
                     "fieldName": "member_pe",
-                    "displayName": "P/E of the member",
+                    "displayName": "P/E 10-year adjusted",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe_trailing",
+                    "displayName": "P/E trailing",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1889,6 +2094,7 @@
                   {
                     "fieldName": "pe_without_member",
                     "displayName": "Index P/E without it",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1900,6 +2106,7 @@
                   {
                     "fieldName": "pe_effect",
                     "displayName": "Effect on index P/E",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1910,15 +2117,18 @@
                   },
                   {
                     "fieldName": "is_used",
-                    "displayName": "Used"
+                    "displayName": "Used",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "exclusion_reason_code",
-                    "displayName": "Left out because"
+                    "displayName": "Left out because",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "price_close",
                     "displayName": "Close (US$)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1930,6 +2140,7 @@
                   {
                     "fieldName": "share_count",
                     "displayName": "Shares",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1941,6 +2152,7 @@
                   {
                     "fieldName": "market_value_billion",
                     "displayName": "Market value (US$ billion)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -1960,6 +2172,169 @@
           "position": {
             "x": 0,
             "y": 28,
+            "width": 12,
+            "height": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "company-check",
+      "displayName": "Company Check",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "company-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Company Check\n",
+                "\n",
+                "Pick a company to see, step by step, how its P/E in the climate is built from the filing and the price. Step 5 is the trailing P/E finance sites show; step 9 is the one the climate uses. They differ when earnings were low in earlier years."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-company",
+            "queries": [
+              {
+                "name": "q_ds_company_names_company_name",
+                "query": {
+                  "datasetName": "ds_company_names",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_company_check_company_name",
+                "query": {
+                  "datasetName": "ds_company_check",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "company_name",
+                      "keyword": "company_name"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company",
+                    "queryName": "q_ds_company_names_company_name"
+                  },
+                  {
+                    "parameterName": "company_name",
+                    "queryName": "q_ds_company_check_company_name"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Company"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "company-steps",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_company_check",
+                  "fields": [
+                    {
+                      "name": "step_number",
+                      "expression": "`step_number`"
+                    },
+                    {
+                      "name": "step_name",
+                      "expression": "`step_name`"
+                    },
+                    {
+                      "name": "value_text",
+                      "expression": "`value_text`"
+                    },
+                    {
+                      "name": "how_text",
+                      "expression": "`how_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "step_number",
+                    "displayName": "Step",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "step_name",
+                    "displayName": "What",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "value_text",
+                    "displayName": "Value",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "how_text",
+                    "displayName": "How",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "From the numbers to the P/E"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
             "width": 12,
             "height": 10
           }
@@ -2039,11 +2414,13 @@
                 "columns": [
                   {
                     "fieldName": "sector_name",
-                    "displayName": "Sector"
+                    "displayName": "Sector",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "member_count",
                     "displayName": "Members used",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2055,6 +2432,7 @@
                   {
                     "fieldName": "market_value_trillion",
                     "displayName": "Market value (US$ trillion)",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2066,6 +2444,7 @@
                   {
                     "fieldName": "market_value_share_ratio",
                     "displayName": "Share of market value",
+                    "alignContent": "left",
                     "format": {
                       "type": "number-percent",
                       "decimalPlaces": {
@@ -2077,6 +2456,7 @@
                   {
                     "fieldName": "sector_pe",
                     "displayName": "Sector P/E",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2088,6 +2468,7 @@
                   {
                     "fieldName": "pe_without_sector",
                     "displayName": "Index P/E without the sector",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2099,6 +2480,7 @@
                   {
                     "fieldName": "pe_index",
                     "displayName": "Index P/E",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2278,6 +2660,10 @@
                       "expression": "`member_pe`"
                     },
                     {
+                      "name": "member_pe_trailing",
+                      "expression": "`member_pe_trailing`"
+                    },
+                    {
                       "name": "pe_without_member",
                       "expression": "`pe_without_member`"
                     },
@@ -2297,11 +2683,13 @@
                 "columns": [
                   {
                     "fieldName": "company_name",
-                    "displayName": "Company"
+                    "displayName": "Company",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "market_value_share_ratio",
                     "displayName": "Share of index market value",
+                    "alignContent": "left",
                     "format": {
                       "type": "number-percent",
                       "decimalPlaces": {
@@ -2312,7 +2700,20 @@
                   },
                   {
                     "fieldName": "member_pe",
-                    "displayName": "P/E of the member",
+                    "displayName": "P/E 10-year adjusted",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe_trailing",
+                    "displayName": "P/E trailing",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2324,6 +2725,7 @@
                   {
                     "fieldName": "pe_without_member",
                     "displayName": "Index P/E without it",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2335,6 +2737,7 @@
                   {
                     "fieldName": "pe_effect",
                     "displayName": "Effect on index P/E",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2380,6 +2783,10 @@
                       "expression": "`member_pe`"
                     },
                     {
+                      "name": "member_pe_trailing",
+                      "expression": "`member_pe_trailing`"
+                    },
+                    {
                       "name": "pe_without_member",
                       "expression": "`pe_without_member`"
                     },
@@ -2399,11 +2806,13 @@
                 "columns": [
                   {
                     "fieldName": "company_name",
-                    "displayName": "Company"
+                    "displayName": "Company",
+                    "alignContent": "left"
                   },
                   {
                     "fieldName": "market_value_share_ratio",
                     "displayName": "Share of index market value",
+                    "alignContent": "left",
                     "format": {
                       "type": "number-percent",
                       "decimalPlaces": {
@@ -2414,7 +2823,20 @@
                   },
                   {
                     "fieldName": "member_pe",
-                    "displayName": "P/E of the member",
+                    "displayName": "P/E 10-year adjusted",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "member_pe_trailing",
+                    "displayName": "P/E trailing",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2426,6 +2848,7 @@
                   {
                     "fieldName": "pe_without_member",
                     "displayName": "Index P/E without it",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2437,6 +2860,7 @@
                   {
                     "fieldName": "pe_effect",
                     "displayName": "Effect on index P/E",
+                    "alignContent": "left",
                     "format": {
                       "type": "number",
                       "decimalPlaces": {
@@ -2590,6 +3014,19 @@
                 }
               },
               {
+                "name": "q_ds_company_check_as_of_date",
+                "query": {
+                  "datasetName": "ds_company_check",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "q_ds_sectors_as_of_date",
                 "query": {
                   "datasetName": "ds_sectors",
@@ -2669,6 +3106,10 @@
                   {
                     "parameterName": "as_of_date",
                     "queryName": "q_ds_checks_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_company_check_as_of_date"
                   },
                   {
                     "parameterName": "as_of_date",

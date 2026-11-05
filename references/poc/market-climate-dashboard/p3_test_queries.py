@@ -35,12 +35,14 @@ def main() -> None:
     parser.add_argument("--catalog", default="mdp_dev")
     parser.add_argument("--as-of", default=None, help="date for :as_of_date (default: today)")
     parser.add_argument("--sector", default="Information Technology")
+    parser.add_argument("--company", default="EQT Corporation")
     args = parser.parse_args()
     warehouse = cli(args.profile, "warehouses", "list")[0]["id"]
     as_of = args.as_of or __import__("datetime").date.today().isoformat()
     parameters = [
         {"name": "as_of_date", "value": as_of, "type": "DATE"},
         {"name": "sector_name", "value": args.sector, "type": "STRING"},
+        {"name": "company_name", "value": args.company, "type": "STRING"},
     ]
     for name, (title, query) in DATASETS.items():
         out = run(args.profile, warehouse, args.catalog, query, parameters)
