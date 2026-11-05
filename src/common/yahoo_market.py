@@ -3,6 +3,7 @@
 # network here; the notebook calls yfinance and writes the JSON Lines files.
 import json
 import math
+import re
 from datetime import date, timedelta
 
 NEW_SYMBOL_DAYS = 365
@@ -19,8 +20,8 @@ EVENT_COLUMNS = {"Dividends": "dividend", "Stock Splits": "split"}
 
 
 def yahoo_symbol(symbol: str) -> str:
-    """Yahoo writes a share class with a dash: BRK.B is BRK-B."""
-    return symbol.replace(".", "-")
+    """Yahoo writes a share class with a dash: BRK.B is BRK-B. Other dots stay (the dollar index is DX-Y.NYB)."""
+    return re.sub(r"\.([A-Z])$", r"-\1", symbol)
 
 
 def text(value) -> str | None:

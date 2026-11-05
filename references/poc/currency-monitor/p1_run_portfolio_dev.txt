@@ -1,0 +1,2 @@
+[dev svc_cicd_github] run--portfolio--dev: run 240835010566717
+SUCCESS https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/831544146865398/run/240835010566717
