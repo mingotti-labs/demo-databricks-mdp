@@ -6,7 +6,7 @@ Each run SHALL fetch every series named in `src/common/fred_series.py`
 rate; `DFEDTARU` and `DFEDTARL`, the upper and lower limit of the federal funds
 target range; `CPIAUCSL`, `CPIAUCNS` and `CPILFESL`, the US consumer price index
 for all urban consumers: all items seasonally adjusted, all items not seasonally
-adjusted, and all items less food and energy seasonally adjusted; the daily exchange rates `DEXUSEU`,
+adjusted, and all items less food and energy seasonally adjusted; the Nominal Broad U.S. Dollar Index `DTWEXBGS`; the daily exchange rates `DEXUSEU`,
 `DEXJPUS`, `DEXUSUK`, `DEXSZUS`, `DEXCAUS`, `DEXSDUS`, `DEXUSAL`, `DEXUSNZ` and `DEXCHUS`; the ECB deposit
 facility rate `ECBDFR`; the OECD short-term rates `IRSTCI01GBM156N`, `IR3TIB01JPM156N`, `IR3TIB01CAM156N`,
 `IR3TIB01CHM156N`, `IR3TIB01SEM156N`, `IR3TIB01NZM156N`, `IR3TIB01CNM156N`; and the OECD long-term rates

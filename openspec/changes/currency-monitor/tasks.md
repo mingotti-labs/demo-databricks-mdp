@@ -1,10 +1,10 @@
 ## 1. Sources (D1)
 
-- [ ] 1.1 FRED: add the 24 series to `src/common/fred_series.py`; `RATES` rows in `src/common/investments.py` for them
+- [ ] 1.1 FRED: add the 25 series (with `DTWEXBGS`) to `src/common/fred_series.py`; `RATES` rows in `src/common/investments.py` for them
       and for RBA `FCMYGBAG10D`; Yahoo benchmark row `DX-Y.NYB` in `data/portfolio/benchmarks.csv`. Check: unit tests
       of the rate list pass
 - [ ] 1.2 P1 in dev (draft PR deployed, one run at a time): `run_fred`, `run_portfolio`, `run_yahoo`. Check: FRED rows
-      from the first dates in `p0_fred_series.txt`; `DX-Y.NYB` prices from 1971
+      from the first dates in `p0_fred_series.txt` (`DTWEXBGS` from 2006); `DX-Y.NYB` prices from 1971
 
 ## 2. Silver (D2, D3)
 

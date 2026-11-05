@@ -13,8 +13,9 @@ what each country pays in interest. That picture comes before any decision to ho
   - nine exchange rates from FRED's daily H.10 series (euro, yen, pound, Swiss franc, Canadian dollar, Swedish krona,
     Australian dollar, New Zealand dollar, yuan, each against the US dollar), added to the FRED fetch and to
     `market_rate_daily`; the six currencies of the US Dollar Index (EUR, JPY, GBP, CAD, SEK, CHF) are all included;
-  - the US Dollar Index (`DX-Y.NYB`) as a Yahoo benchmark row in `data/portfolio/benchmarks.csv`, so `price_daily` and
-    `price_indicator_daily` carry it with its 200-day average;
+  - the US Dollar Index (`DX-Y.NYB`, ICE, six currencies) as a Yahoo benchmark row in `data/portfolio/benchmarks.csv`, so
+    `price_daily` and `price_indicator_daily` carry it with its 200-day average; and, for context, the Federal Reserve's
+    Nominal Broad U.S. Dollar Index (`DTWEXBGS`, about 26 currencies weighted by trade, daily from 2006) from FRED;
   - short-term interest rates: the ECB deposit facility rate (`ECBDFR`, daily), the OECD 3-month interbank rates of Japan,
     Canada, Switzerland, Sweden, New Zealand and China and the OECD call money rate of the UK (monthly, on FRED; the
     freshest series per country, and a 3-month rate is close to what a CD pays), next to the federal funds and RBA cash
@@ -28,11 +29,11 @@ what each country pays in interest. That picture comes before any decision to ho
   `market_rate_indicator_daily` (with their 200-day average and its 20-day change), as do the rates, carried from their
   latest reading.
 - **The monitor (gold)**: rows of `monitor_daily_signal` with monitor `currency`: lens `us_dollar` (the dollar megatrend:
-  the US Dollar Index against its 200-day average; and each of the nine other currencies against the dollar) and lens
+  the US Dollar Index against its 200-day average; the broad index the same way, as context, not counted; and each of the nine other currencies against the dollar) and lens
   `australian_dollar` (each of the nine others, the US dollar included, against the Australian dollar). A currency is
   gaining (`is_yes`) when its value in the base currency is above its 200-day average. A summary row per lens counts the
   currencies gaining. No rating or advice yet.
-- **Dashboard "Currency Monitor"** (generated like the other two): first page "Currency Monitor" with the dollar megatrend,
+- **Dashboard "Currency Monitor"** (generated like the other two): first page "Currency Monitor" with two circles, the US Dollar Index and the broad index (each strong or weak),
   the currencies against USD and against AUD (gaining or losing, distance from the average) and the interest rate table (short-term
   and 10-year with the date of each reading); a "Currency Deep Dive" page with a currency selector (its value in USD and AUD
   with their averages, its short-term rate and its 10-year yield over time, the 10-year when the country has one).
@@ -43,7 +44,8 @@ what each country pays in interest. That picture comes before any decision to ho
 
 - Monitor name: Currency Monitor; built gradually; part 1 is the dollar megatrend, the currencies against USD and AUD,
   and the interest rates.
-- Megatrend: the 200-day average, as the other monitors.
+- Megatrend: the 200-day average, as the other monitors. The US Dollar Index (DXY) is the megatrend; the Fed's broad
+  dollar index is added as context and shown as a second circle on the first page (user, 2026-11-05).
 - Main currencies: USD, EUR, JPY, GBP, CHF, CAD, SEK, AUD, NZD, CNY (the six currencies of the US Dollar Index plus
   AUD, NZD and CNY; SEK added by the user after checking the index, 2026-11-05).
 - The Currency Deep Dive page shows the 10-year yield when the country has one.
