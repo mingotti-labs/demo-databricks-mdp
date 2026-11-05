@@ -46,7 +46,7 @@ WHERE s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code
 """)
 
 dataset("ds_light_history", "Light history", """
-SELECT signal_date, lens_name, yes_count, band_code AS light_code
+SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code
 FROM monitor_daily_signal WHERE signal_code = 'climate' ORDER BY signal_date, lens_name
 """)
 

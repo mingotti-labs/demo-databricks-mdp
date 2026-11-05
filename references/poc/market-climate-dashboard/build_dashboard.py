@@ -181,6 +181,51 @@ def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
             "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
+def vega(name: str, title: str, dataset: str, fields: list[str], spec: dict, x: int, y: int, w: int, h: int,
+         description: str | None = None) -> dict:
+    spec = {"$schema": "https://vega.github.io/schema/vega-lite/v6.json", "data": {"name": "databricks_query"},
+            "width": "container", "height": "container", "config": {"autosize": {"type": "fit", "contains": "padding"}}, **spec}
+    frame = {"showTitle": True, "title": title}
+    if description:
+        frame.update({"showDescription": True, "description": description})
+    return {"widget": {"name": name,
+                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": [{"name": n, "expression": f"`{n}`"} for n in fields], "disaggregated": True}}],
+                       "spec": {"version": 1, "widgetType": "custom-vega-viz", "jsonSpec": {"type": "vega-lite", "spec": json.dumps(spec)},
+                                "encodings": {"fields": [{"fieldName": n} for n in fields]}, "data": {"queryName": "main_query"}, "frame": frame}},
+            "position": {"x": x, "y": y, "width": w, "height": h}}
+
+
+def light_history(x: int, y: int, w: int, h: int) -> dict:
+    """Both climates; the long-run line is drawn wide and pale under the thin modern line so equal answers stay visible."""
+    time_x = {"field": "signal_date", "type": "temporal", "title": None}
+    spec = {"encoding": {"x": time_x, "y": {"field": "yes_count", "type": "quantitative", "title": "Yes answers", "scale": {"domain": [0, 3]}, "axis": {"tickMinStep": 1}},
+                         "color": {"field": "lens_name", "type": "nominal", "title": "Climate"},
+                         "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "lens_name", "title": "Climate"}, {"field": "yes_count", "title": "Yes answers"}]},
+            "layer": [{"transform": [{"filter": "datum.lens_code == 'long_run'"}], "mark": {"type": "line", "strokeWidth": 9, "opacity": 0.35, "interpolate": "step-after"}},
+                      {"transform": [{"filter": "datum.lens_code == 'modern'"}], "mark": {"type": "line", "strokeWidth": 2.5, "interpolate": "step-after"}}]}
+    return vega("light-history", "Yes answers per day (0 green, 1 yellow, 2 or 3 red)", "ds_light_history",
+                ["signal_date", "lens_name", "lens_code", "yes_count"], spec, x, y, w, h,
+                "Both climates are drawn; where the wide pale line shows around the thin one, they gave the same answer.")
+
+
+def fed_history(x: int, y: int, w: int, h: int) -> dict:
+    """Target rate line over a background: red within 6 months of a hike, green within 6 months of a cut."""
+    time_x = {"field": "signal_date", "type": "temporal", "title": None}
+    spec = {"layer": [
+        {"transform": [{"window": [{"op": "lead", "field": "signal_date", "as": "next_date"}], "sort": [{"field": "signal_date"}]},
+                       {"filter": "datum.fed_band_code == 'red' || datum.fed_band_code == 'green'"}],
+         "mark": {"type": "rect", "opacity": 0.22},
+         "encoding": {"x": time_x, "x2": {"field": "next_date"}, "y": {"value": 0}, "y2": {"value": {"expr": "height"}},
+                      "color": {"field": "fed_band_code", "type": "nominal", "title": "Fed",
+                                "scale": {"domain": ["red", "green"], "range": [RED, GREEN]},
+                                "legend": {"labelExpr": "datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'"}}}},
+        {"mark": {"type": "line", "interpolate": "step-after", "strokeWidth": 2.5, "color": "#2B3A55"},
+         "encoding": {"x": time_x, "y": {"field": "fed_target_rate", "type": "quantitative", "title": "Target rate (%)", "scale": {"zero": False}},
+                      "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "fed_target_rate", "title": "Target rate (%)"}]}}]}
+    return vega("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", ["signal_date", "fed_target_rate", "fed_band_code"], spec, x, y, w, h,
+                "Red background: within 6 months of a hike. Green background: within 6 months of a cut.")
+
+
 def counter(name: str, title: str, dataset: str, field: str, fmt: dict, x: int, y: int, w: int, h: int) -> dict:
     return {"widget": {"name": name,
                        "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": [{"name": field, "expression": f"`{field}`"}], "disaggregated": True}}],
@@ -193,8 +238,8 @@ def company_page() -> dict:
     steps = [("step_number", "Step", NUMBER0), ("step_name", "What", None), ("value_text", "Value", None), ("how_text", "How", None)]
     money = {"type": "number", "decimalPlaces": {"type": "exact", "places": 2}}
     percent = {"type": "number-percent", "decimalPlaces": {"type": "exact", "places": 2}}
-    return {"name": "company-check", "displayName": "Company Check", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
-        text("company-title", ["# Company Check\n", "\n", "Pick a company: its price first, then the steps that turn its filing and price into the P/E the climate uses.\n", "\n", "- Step 5 is the trailing P/E finance sites show\n", "- Step 9 is the one the climate uses; they differ when earnings were low in earlier years\n", "- Bollinger bands: 20-day average of the close, plus and minus 2 standard deviations"], 0, 0, 12, 4),
+    return {"name": "company-deep-dive", "displayName": "Company Deep Dive", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+        text("company-title", ["# Company Deep Dive\n", "\n", "Pick a company: its price first, then the steps that turn its filing and price into the P/E the climate uses.\n", "\n", "- Step 5 is the trailing P/E finance sites show\n", "- Step 9 is the one the climate uses; they differ when earnings were low in earlier years\n", "- Bollinger bands: 20-day average of the close, plus and minus 2 standard deviations"], 0, 0, 12, 4),
         filter_widget("filter-company", "Company", "filter-single-select",
                       [("ds_company_names", "field", "company_name"), ("ds_company_check", "parameter", "company_name"),
                        ("ds_company_price", "parameter", "company_name"), ("ds_company_figures", "parameter", "company_name")], 0, 4, 6),
@@ -220,17 +265,15 @@ def climate_page() -> dict:
              ("fed_rate_date", "Latest Fed target reading", None), ("cpi_date", "Latest CPI reading (monthly, carried forward)", None)]
     mapping = [{"value": "red", "color": RED}, {"value": "yellow", "color": YELLOW}, {"value": "green", "color": GREEN}]
     return {"name": "climate", "displayName": "Climate", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
-        text("climate-title", ["# Market climate\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
+        text("climate-title", ["# Market Climate\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
         traffic_lights("traffic-lights", 0, 5, 12, 6),
-        line("light-history", "Yes answers per day (0 green, 1 yellow, 2 or 3 red)", "ds_light_history", "signal_date",
-             [("yes_count", "Yes answers")], 0, 11, 12, 5, color_field="lens_name"),
+        light_history(0, 11, 12, 5),
         line("pe-history", "S&P 500 price/earnings ratio", "ds_pe_history", "valuation_date",
              [("pe_ten_year_adjusted", "10-year inflation-adjusted (votes)"), ("pe_trailing", "Trailing 12 months")], 0, 16, 12, 6,
              annotations=[horizontal("16", "cheap line, long run", GREEN), horizontal("22", "expensive line, long run", YELLOW),
                           horizontal("30", "expensive line, modern", RED)],
              description="Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern)."),
-        line("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", "signal_date", [("fed_target_rate", "Target rate")],
-             0, 22, 12, 6, description="Upper limit of the Fed's target range."),
+        fed_history(0, 22, 12, 6),
         line("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", "signal_date",
              [("sp500_close", "S&P 500 close"), ("sp500_average_200", "200-day average")], 0, 28, 12, 6),
         table("answers", "The three answers of each climate", "ds_answers", answers, 0, 34, 12, 7),

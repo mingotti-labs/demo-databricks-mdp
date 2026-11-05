@@ -76,7 +76,7 @@
       "name": "ds_light_history",
       "displayName": "Light history",
       "queryLines": [
-        "SELECT signal_date, lens_name, yes_count, band_code AS light_code FROM monitor_daily_signal WHERE signal_code = 'climate' ORDER BY signal_date, lens_name "
+        "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code FROM monitor_daily_signal WHERE signal_code = 'climate' ORDER BY signal_date, lens_name "
       ]
     },
     {
@@ -512,7 +512,7 @@
             "name": "climate-title",
             "multilineTextboxSpec": {
               "lines": [
-                "# Market climate\n",
+                "# Market Climate\n",
                 "\n",
                 "Two climates read the same three questions. Yes is the unfavourable answer.\n",
                 "\n",
@@ -625,12 +625,16 @@
                       "expression": "`signal_date`"
                     },
                     {
-                      "name": "yes_count",
-                      "expression": "`yes_count`"
-                    },
-                    {
                       "name": "lens_name",
                       "expression": "`lens_name`"
+                    },
+                    {
+                      "name": "lens_code",
+                      "expression": "`lens_code`"
+                    },
+                    {
+                      "name": "yes_count",
+                      "expression": "`yes_count`"
                     }
                   ],
                   "disaggregated": true
@@ -638,33 +642,36 @@
               }
             ],
             "spec": {
-              "version": 3,
-              "widgetType": "line",
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null}, \"y\": {\"field\": \"yes_count\", \"type\": \"quantitative\", \"title\": \"Yes answers\", \"scale\": {\"domain\": [0, 3]}, \"axis\": {\"tickMinStep\": 1}}, \"color\": {\"field\": \"lens_name\", \"type\": \"nominal\", \"title\": \"Climate\"}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"lens_name\", \"title\": \"Climate\"}, {\"field\": \"yes_count\", \"title\": \"Yes answers\"}]}, \"layer\": [{\"transform\": [{\"filter\": \"datum.lens_code == 'long_run'\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 9, \"opacity\": 0.35, \"interpolate\": \"step-after\"}}, {\"transform\": [{\"filter\": \"datum.lens_code == 'modern'\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2.5, \"interpolate\": \"step-after\"}}]}"
+              },
               "encodings": {
-                "x": {
-                  "fieldName": "signal_date",
-                  "scale": {
-                    "type": "temporal"
+                "fields": [
+                  {
+                    "fieldName": "signal_date"
                   },
-                  "displayName": "Date"
-                },
-                "y": {
-                  "fieldName": "yes_count",
-                  "scale": {
-                    "type": "quantitative"
+                  {
+                    "fieldName": "lens_name"
                   },
-                  "displayName": "Yes answers"
-                },
-                "color": {
-                  "fieldName": "lens_name",
-                  "scale": {
-                    "type": "categorical"
+                  {
+                    "fieldName": "lens_code"
+                  },
+                  {
+                    "fieldName": "yes_count"
                   }
-                }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
               },
               "frame": {
                 "showTitle": true,
-                "title": "Yes answers per day (0 green, 1 yellow, 2 or 3 red)"
+                "title": "Yes answers per day (0 green, 1 yellow, 2 or 3 red)",
+                "showDescription": true,
+                "description": "Both climates are drawn; where the wide pale line shows around the thin one, they gave the same answer."
               }
             }
           },
@@ -806,6 +813,10 @@
                     {
                       "name": "fed_target_rate",
                       "expression": "`fed_target_rate`"
+                    },
+                    {
+                      "name": "fed_band_code",
+                      "expression": "`fed_band_code`"
                     }
                   ],
                   "disaggregated": true
@@ -813,29 +824,33 @@
               }
             ],
             "spec": {
-              "version": 3,
-              "widgetType": "line",
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"layer\": [{\"transform\": [{\"window\": [{\"op\": \"lead\", \"field\": \"signal_date\", \"as\": \"next_date\"}], \"sort\": [{\"field\": \"signal_date\"}]}, {\"filter\": \"datum.fed_band_code == 'red' || datum.fed_band_code == 'green'\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0.22}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null}, \"x2\": {\"field\": \"next_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": {\"expr\": \"height\"}}, \"color\": {\"field\": \"fed_band_code\", \"type\": \"nominal\", \"title\": \"Fed\", \"scale\": {\"domain\": [\"red\", \"green\"], \"range\": [\"#E15759\", \"#59A14F\"]}, \"legend\": {\"labelExpr\": \"datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'\"}}}}, {\"mark\": {\"type\": \"line\", \"interpolate\": \"step-after\", \"strokeWidth\": 2.5, \"color\": \"#2B3A55\"}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null}, \"y\": {\"field\": \"fed_target_rate\", \"type\": \"quantitative\", \"title\": \"Target rate (%)\", \"scale\": {\"zero\": false}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"fed_target_rate\", \"title\": \"Target rate (%)\"}]}}]}"
+              },
               "encodings": {
-                "x": {
-                  "fieldName": "signal_date",
-                  "scale": {
-                    "type": "temporal"
+                "fields": [
+                  {
+                    "fieldName": "signal_date"
                   },
-                  "displayName": "Date"
-                },
-                "y": {
-                  "fieldName": "fed_target_rate",
-                  "scale": {
-                    "type": "quantitative"
+                  {
+                    "fieldName": "fed_target_rate"
                   },
-                  "displayName": "Target rate"
-                }
+                  {
+                    "fieldName": "fed_band_code"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
               },
               "frame": {
                 "showTitle": true,
                 "title": "Fed target rate (upper limit), percent",
                 "showDescription": true,
-                "description": "Upper limit of the Fed's target range."
+                "description": "Red background: within 6 months of a hike. Green background: within 6 months of a cut."
               }
             }
           },
@@ -2265,8 +2280,8 @@
       ]
     },
     {
-      "name": "company-check",
-      "displayName": "Company Check",
+      "name": "company-deep-dive",
+      "displayName": "Company Deep Dive",
       "pageType": "PAGE_TYPE_CANVAS",
       "layoutVersion": "GRID_V1",
       "layout": [
@@ -2275,7 +2290,7 @@
             "name": "company-title",
             "multilineTextboxSpec": {
               "lines": [
-                "# Company Check\n",
+                "# Company Deep Dive\n",
                 "\n",
                 "Pick a company: its price first, then the steps that turn its filing and price into the P/E the climate uses.\n",
                 "\n",

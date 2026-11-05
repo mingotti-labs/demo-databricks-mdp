@@ -1,7 +1,7 @@
 resources:
   dashboards:
     market_climate:
-      display_name: Market climate
+      display_name: Market Climate
       file_path: ../../src/dashboards/market_climate.lvdash.json
       warehouse_id: ${var.warehouse_id}
       dataset_catalog: ${var.catalog}
