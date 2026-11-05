@@ -196,8 +196,8 @@
 == ds_dollar (The dollar indexes of the day): SUCCEEDED
   columns: ['signal_date', 'signal_code', 'signal_name', 'dollar_state', 'dollar_band', 'index_order', 'index_level', 'average_200', 'reason_text']
   rows: 2
-   ['2026-11-03', 'dollar_index', 'US Dollar Index (DXY)', 'Strong', 'green', '1', '101.870003000000', '99.656050000000', 'The the US Dollar Index is 101.8700, above its 200-day average of 99.6561, so the dollar is strong on this measure.']
-   ['2026-11-03', 'dollar_broad_index', 'Broad dollar index (Federal Reserve)', 'Strong', 'green', '2', '121.665600000000', '119.538365000000', 'The the Federal Reserve broad dollar index is 121.6656, above its 200-day average of 119.5384, so the dollar is strong on this measure.']
+   ['2026-11-03', 'dollar_index', 'US Dollar Index (DXY)', 'Strong', 'green', '1', '101.870003000000', '99.656050000000', 'The US Dollar Index is 101.8700, above its 200-day average of 99.6561, so the dollar is strong on this measure.']
+   ['2026-11-03', 'dollar_broad_index', 'Broad dollar index (Federal Reserve)', 'Strong', 'green', '2', '121.665600000000', '119.538365000000', 'The Federal Reserve broad dollar index is 121.6656, above its 200-day average of 119.5384, so the dollar is strong on this measure.']
 == ds_currency_grid (Currencies against the US dollar and the Australian dollar): SUCCEEDED
   columns: ['currency_code', 'currency_name', 'value_in_usd', 'distance_usd', 'against_usd', 'band_usd', 'value_in_aud', 'distance_aud', 'against_aud', 'band_aud']
   rows: 10
@@ -240,3 +240,14 @@
    ['2023-12-01', 'Short-term rate', '1.652500000000']
    ['2023-12-01', '10-year yield', '0.656000000000']
    ['2023-12-04', 'Short-term rate', '1.652500000000']
+== ds_base_options (Base currencies): SUCCEEDED
+  columns: ['base_code', 'base_name']
+  rows: 2
+   ['AUD', 'Australian dollar']
+   ['USD', 'US dollar']
+== ds_yield_ranking (Countries ranked by short-term rate plus the currency's 12-month change): SUCCEEDED
+  columns: ['rank_position', 'currency_name', 'short_term_rate', 'short_term_date', 'ten_year_yield', 'currency_change_12m', 'distance_from_average', 'short_plus_12m']
+  rows: 10
+   ['1', 'Australian dollar', '4.60', '2026-10-29', '5.21', '0.0', '0.0', '4.6']
+   ['2', 'Chinese yuan', '1.49', '2026-08-01', None, '-0.5', '2.3', '1.0']
+   ['3', 'British pound', '3.73', '2026-09-01', '5.24', '-5.2', '0.0', '-1.4']

@@ -29,6 +29,9 @@
 - [x] 4.2 Genie: instructions, examples, three benchmarks
 - [x] 4.3 Every dashboard and agent query runs in dev
 
+- [x] 4.4 Yield Deep Dive page (user, 2026-11-06): ranking query with a base selector, table and bar chart; the method in the agent's
+      instructions, an example and a benchmark. Check: ranking in dev for both bases; the agent's answer matches
+
 ## 5. Run and check in dev
 
 - [x] 5.1 `run_investments verify=true` in dev

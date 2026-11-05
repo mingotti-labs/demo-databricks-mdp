@@ -42,6 +42,7 @@ def main() -> None:
     parser.add_argument("--company", default="EQT Corporation")
     parser.add_argument("--range", default="6M")
     parser.add_argument("--currency", default="CHF")
+    parser.add_argument("--base", default="AUD")
     args = parser.parse_args()
     warehouse = cli(args.profile, "warehouses", "list")[0]["id"]
     as_of = args.as_of or __import__("datetime").date.today().isoformat()
@@ -51,6 +52,7 @@ def main() -> None:
         {"name": "company_name", "value": args.company, "type": "STRING"},
         {"name": "range_code", "value": args.range, "type": "STRING"},
         {"name": "currency_code", "value": args.currency, "type": "STRING"},
+        {"name": "base_code", "value": args.base, "type": "STRING"},
     ]
     for name, (title, query) in {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS}.items():
         out = run(args.profile, warehouse, args.catalog, query, parameters)
