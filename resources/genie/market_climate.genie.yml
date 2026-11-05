@@ -137,7 +137,8 @@
                   "A currency is gaining against a base (is_yes true, band green when its average is rising) when the value of one unit of it in that base (measured_value) is above its 200-day average (threshold_value); losing otherwise (band red). For the dollar indexes is_yes true means the dollar is strong.\n",
                   "Values are worked out from FRED exchange rates quoted against the US dollar: a rate quoted as units per US dollar is inverted, and the value in Australian dollars is the value in US dollars divided by the value of one Australian dollar in US dollars on the same day (market_rate_indicator_daily rate_code currency_value_<code>_in_usd and currency_value_<code>_in_aud).\n",
                   "Interest rates of the main countries are in market_rate_daily and market_rate_indicator_daily: short-term (the federal funds, RBA cash, ECB deposit rates and 3-month interbank rates of Japan, Canada, Switzerland, Sweden, New Zealand and China, and the UK call money rate) and 10-year government bond yields (none for China). Most are monthly readings carried forward; observation_date is the date of the reading. The euro area 10-year yield is stale (last reading 2026-01).\n",
-                  "When a question about a market climate answer or light does not name a lens, answer for both lenses (long_run and modern) of the latest day, even when they agree.\n"
+                  "When a question about a market climate answer or light does not name a lens, answer for both lenses (long_run and modern) of the latest day, even when they agree.\n",
+                  "For the latest interest rate of a country, read market_rate_daily (one row per reading) and show observation_date, the date of the reading; market_rate_indicator_daily repeats the last reading on every trading day, so its indicator_date is not the date of the reading.\n"
                 ]
               }
             ],
