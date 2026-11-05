@@ -8,7 +8,7 @@
 - [x] 1.1 Minimal `resources/genie/market_climate.genie.yml` (one table `${var.catalog}.gold_analytics_gateway.monitor_daily_signal`,
       one text instruction, `users` `CAN_RUN`); push as a draft PR. Check: `deploy-dev` passes and
       `databricks genie get-space <id> --include-serialized-space` shows `mdp_dev.gold_analytics_gateway.monitor_daily_signal`
-- [x] 1.2 Record P1 in design.md and `references/docs/registers/probes.md`, scripts and output under
+- [x] 1.2 (P1 found the sql-access gap) Record P1 in design.md and `references/docs/registers/probes.md`, scripts and output under
       `references/poc/market-climate-genie/`. If it fails: stop, report, and propose the iac grant or the D1 alternative
 
 ## 2. One source for the queries (D2)

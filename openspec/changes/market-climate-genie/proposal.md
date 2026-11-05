@@ -58,7 +58,11 @@ with the dashboard.
 
 ## Cross-repo dependencies
 
-None. The CI/CD principal already reads `gold_analytics_gateway` and `silver_domain_investments`, and the
+Depends on an iac change (found in P1): the CI service principal needs the `databricks-sql-access` entitlement so
+the bundle can read a Genie agent back on the second deploy (see design.md, P1 result). Direction: this change's
+deploy needs it; nothing in iac needs this change.
+
+Earlier text, kept for the record: None. The CI/CD principal already reads `gold_analytics_gateway` and `silver_domain_investments`, and the
 `users` group can use the warehouse. If P1 shows the principal needs a grant or entitlement to create a
 Genie agent, that becomes an iac change first and this proposal is updated.
 Planning repo: the story design marks change 5 done after archive.
