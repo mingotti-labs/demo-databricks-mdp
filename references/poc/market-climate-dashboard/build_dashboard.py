@@ -254,13 +254,13 @@ def trend_history(x: int, y: int, w: int, h: int) -> dict:
 
 def pe_history(x: int, y: int, w: int, h: int) -> dict:
     """Index P/E, both measures, with the three band lines drawn once each."""
-    time_x = {"field": "valuation_date", "type": "temporal", "title": None}
+    time_x = {"field": "valuation_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
     lines = [(16, "cheap line, long run", GREEN), (22, "expensive line, long run", YELLOW), (30, "expensive line, modern", RED)]
     spec = {"layer": [
         {"transform": [{"fold": ["pe_ten_year_adjusted", "pe_trailing"], "as": ["series", "value"]},
                        {"calculate": "datum.series == 'pe_trailing' ? 'Trailing 12 months' : '10-year inflation-adjusted (votes)'", "as": "series_label"}],
          "mark": {"type": "line", "strokeWidth": 2},
-         "encoding": {"x": time_x, "y": {"field": "value", "type": "quantitative", "title": "Price/earnings ratio", "scale": {"zero": True, "padding": Y_PADDING}},
+         "encoding": {"x": time_x, "y": {"field": "value", "type": "quantitative", "title": "Price/earnings ratio", "scale": {"zero": True, "padding": Y_PADDING}, "axis": {"format": ".0f", "minExtent": AXIS_WIDTH}},
                       "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"}},
                       "tooltip": [{"field": "valuation_date", "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Measure"},
                                   {"field": "value", "type": "quantitative", "format": ".2f", "title": "P/E"}]}}]
