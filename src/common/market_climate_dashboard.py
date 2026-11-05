@@ -1,12 +1,37 @@
 """Builds the Market Climate dashboard JSON from the shared dataset queries (openspec market-climate-dashboard).
 
-`build()` returns the file content of `src/dashboards/market_climate.lvdash.json`; `cicd/build_market_climate.py`
+`build()` returns the file content of `src/dashboards/market_climate.lvdash.json`; `cicd/build_dashboards.py`
 writes it and a test checks the committed file equals it.
 """
 
 import json
 
-from common.market_climate_queries import DATASETS, MONTHS_SHOWN
+from common.dashboard_widgets import (
+    AXIS_WIDTH,
+    GREEN,
+    INK,
+    NUMBER0,
+    NUMBER2,
+    NUMBER4,
+    PALETTE,
+    PERCENT,
+    RED,
+    SHARED_DOMAIN,
+    TEXT_COLOR,
+    TIME_AXIS,
+    YELLOW,
+    Y_PADDING,
+    counter,
+    dashboard_json,
+    dataset_entries,
+    date_parameter,
+    filter_widget,
+    string_parameter,
+    table,
+    text,
+    vega,
+)
+from common.market_climate_queries import DATASETS
 
 DATE_DATASETS = [
     "ds_freshness", "ds_lights", "ds_answers", "ds_index_day", "ds_top_up", "ds_top_down", "ds_excluded",
@@ -15,106 +40,19 @@ DATE_DATASETS = [
 SECTOR_DATASETS = ["ds_sector_up", "ds_sector_down"]
 COMPANY_DATASETS = ["ds_company_check", "ds_company_price", "ds_company_figures"]
 RANGE_DATASETS = ["ds_company_price"]
-RED, YELLOW, GREEN = "#E15759", "#F2C037", "#59A14F"
-INK = "#11171C"
-TEXT_COLOR = {"expr": "colors.textPrimary.default"}
-START_DATE = {"expr": f"datetime(year(now()), month(now()) - {MONTHS_SHOWN - 1}, 1)"}
-AXIS_WIDTH = 64
-Y_PADDING = 14
-MONTH_END = {"expr": "datetime(year(now()), month(now()) + 1, 1)"}
-SHARED_DOMAIN = [START_DATE, MONTH_END]
-TIME_AXIS = {"tickCount": {"interval": "month", "step": 3}, "labelOverlap": True,
-             "labelExpr": "month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')"}
-PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
-LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
-
-NUMBER2 = {"type": "number", "decimalPlaces": {"type": "exact", "places": 2}}
-NUMBER4 = {"type": "number", "decimalPlaces": {"type": "exact", "places": 4}}
-NUMBER0 = {"type": "number", "decimalPlaces": {"type": "exact", "places": 0}}
-PERCENT = {"type": "number-percent", "decimalPlaces": {"type": "exact", "places": 2}}
 
 
 def parameters(dataset: str) -> list[dict]:
     result = []
     if dataset in DATE_DATASETS:
-        result.append({
-            "keyword": "as_of_date", "displayName": "As of date", "dataType": "DATE",
-            "defaultSelection": {"values": {"dataType": "DATE", "values": [{"value": "now/d"}]}},
-        })
+        result.append(date_parameter())
     if dataset in SECTOR_DATASETS:
-        result.append({
-            "keyword": "sector_name", "displayName": "Sector", "dataType": "STRING",
-            "defaultSelection": {"values": {"dataType": "STRING", "values": [{"value": "Information Technology"}]}},
-        })
+        result.append(string_parameter("sector_name", "Sector", "Information Technology"))
     if dataset in COMPANY_DATASETS:
-        result.append({
-            "keyword": "company_name", "displayName": "Company", "dataType": "STRING",
-            "defaultSelection": {"values": {"dataType": "STRING", "values": [{"value": "EQT Corporation"}]}},
-        })
+        result.append(string_parameter("company_name", "Company", "EQT Corporation"))
     if dataset in RANGE_DATASETS:
-        result.append({
-            "keyword": "range_code", "displayName": "Range", "dataType": "STRING",
-            "defaultSelection": {"values": {"dataType": "STRING", "values": [{"value": "6M"}]}},
-        })
+        result.append(string_parameter("range_code", "Range", "6M"))
     return result
-
-
-def datasets() -> list[dict]:
-    out = []
-    for name, (title, query) in DATASETS.items():
-        entry = {"name": name, "displayName": title, "queryLines": [query]}
-        if parameters(name):
-            entry["parameters"] = parameters(name)
-        out.append(entry)
-    return out
-
-
-def text(name: str, lines: list[str], x: int, y: int, w: int, h: int) -> dict:
-    return {"widget": {"name": name, "multilineTextboxSpec": {"lines": lines}},
-            "position": {"x": x, "y": y, "width": w, "height": h}}
-
-
-def table(name: str, title: str, dataset: str, columns: list[tuple], x: int, y: int, w: int, h: int,
-          description: str | None = None) -> dict:
-    """columns: (field, display name, format or None, light rule field flag)."""
-    fields = [{"name": c[0], "expression": f"`{c[0]}`"} for c in columns]
-    encodings = []
-    for c in columns:
-        column = {"fieldName": c[0], "displayName": c[1], "alignContent": "left"}
-        if c[2]:
-            column["format"] = c[2]
-        if len(c) > 3 and c[3] == "light":
-            column["style"] = {"type": "basic", "rules": [
-                {"condition": {"operand": {"type": "data-value", "value": color}, "operator": "=="},
-                 "backgroundColor": {"themeColorType": "visualizationColors", "position": position}}
-                for color, position in LIGHT_POSITIONS.items()]}
-        encodings.append(column)
-    frame = {"showTitle": True, "title": title}
-    if description:
-        frame.update({"showDescription": True, "description": description})
-    return {"widget": {"name": name,
-                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": fields, "disaggregated": True}}],
-                       "spec": {"version": 2, "widgetType": "table", "encodings": {"columns": encodings}, "frame": frame}},
-            "position": {"x": x, "y": y, "width": w, "height": h}}
-
-
-def filter_widget(name: str, title: str, kind: str, bindings: list[tuple[str, str, str]], x: int, y: int, w: int) -> dict:
-    """bindings: (dataset, 'field'|'parameter', name)."""
-    queries, fields = [], []
-    for dataset, mode, ref in bindings:
-        qname = f"q_{dataset}_{ref}"
-        query = {"datasetName": dataset, "disaggregated": False}
-        if mode == "parameter":
-            query["parameters"] = [{"name": ref, "keyword": ref}]
-            fields.append({"parameterName": ref, "queryName": qname})
-        else:
-            query["fields"] = [{"name": ref, "expression": f"`{ref}`"}]
-            fields.append({"fieldName": ref, "displayName": title, "queryName": qname})
-        queries.append({"name": qname, "query": query})
-    return {"widget": {"name": name, "queries": queries,
-                       "spec": {"version": 2, "widgetType": kind, "encodings": {"fields": fields},
-                                "frame": {"showTitle": True, "title": title}}},
-            "position": {"x": x, "y": y, "width": w, "height": 2}}
 
 
 def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
@@ -145,18 +83,6 @@ def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
             "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
-def vega(name: str, title: str, dataset: str, fields: list[str], spec: dict, x: int, y: int, w: int, h: int,
-         description: str | None = None) -> dict:
-    spec = {"$schema": "https://vega.github.io/schema/vega-lite/v6.json", "data": {"name": "databricks_query"},
-            "width": "container", "height": "container", "config": {"autosize": {"type": "fit", "contains": "padding"}}, **spec}
-    frame = {"showTitle": True, "title": title}
-    if description:
-        frame.update({"showDescription": True, "description": description})
-    return {"widget": {"name": name,
-                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": [{"name": n, "expression": f"`{n}`"} for n in fields], "disaggregated": True}}],
-                       "spec": {"version": 1, "widgetType": "custom-vega-viz", "jsonSpec": {"type": "vega-lite", "spec": json.dumps(spec)},
-                                "encodings": {"fields": [{"fieldName": n} for n in fields]}, "data": {"queryName": "main_query"}, "frame": frame}},
-            "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
 def light_history(x: int, y: int, w: int, h: int) -> dict:
@@ -254,12 +180,6 @@ def sector_bars(x: int, y: int, w: int, h: int) -> dict:
     return vega("sector-pe", "Sector P/E", "ds_sectors", ["sector_name", "sector_pe"], spec, x, y, w, h)
 
 
-def counter(name: str, title: str, dataset: str, field: str, fmt: dict, x: int, y: int, w: int, h: int) -> dict:
-    return {"widget": {"name": name,
-                       "queries": [{"name": "main_query", "query": {"datasetName": dataset, "fields": [{"name": field, "expression": f"`{field}`"}], "disaggregated": True}}],
-                       "spec": {"version": 2, "widgetType": "counter", "encodings": {"value": {"fieldName": field, "displayName": title, "format": fmt}},
-                                "frame": {"showTitle": True, "title": title}}},
-            "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
 def company_page() -> dict:
@@ -290,8 +210,8 @@ def climate_page() -> dict:
                ("threshold_value", "Compared with", NUMBER2), ("reason_text", "Why", None)]
     dates = [("climate_date", "Climate as of", None), ("sp500_price_date", "Latest S&P 500 price", None),
              ("fed_rate_date", "Latest Fed target reading", None), ("cpi_date", "Latest CPI reading (monthly, carried forward)", None)]
-    return {"name": "climate", "displayName": "Climate", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
-        text("climate-title", ["# Market Climate\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
+    return {"name": "climate", "displayName": "Market Climate Monitor", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+        text("climate-title", ["# Market Climate Monitor\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
         traffic_lights("traffic-lights", 0, 5, 12, 6),
         light_history(0, 11, 12, 5),
         pe_history(0, 16, 12, 6),
@@ -368,15 +288,5 @@ def filters_page() -> dict:
 
 
 def build() -> str:
-    dashboard = {
-        "datasets": datasets(),
-        "pages": [climate_page(), deep_dive_page(), company_page(), sector_page(), filters_page()],
-        "uiSettings": {"theme": {
-            "canvasBackgroundColor": {"light": "#FCFCFC", "dark": "#1F272D"},
-            "widgetBackgroundColor": {"light": "#FFFFFF", "dark": "#11171C"},
-            "fontColor": {"light": "#11171C", "dark": "#E8ECF0"},
-            "selectionColor": {"light": "#2272B4", "dark": "#8ACAFF"},
-            "visualizationColors": PALETTE,
-            "widgetHeaderAlignment": "LEFT"}},
-    }
-    return json.dumps(dashboard, indent=2) + "\n"
+    pages = [climate_page(), deep_dive_page(), company_page(), sector_page(), filters_page()]
+    return dashboard_json(dataset_entries(DATASETS, parameters), pages)

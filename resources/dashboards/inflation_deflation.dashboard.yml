@@ -1,0 +1,11 @@
+resources:
+  dashboards:
+    inflation_deflation:
+      display_name: Inflation-Deflation Monitor
+      file_path: ../../src/dashboards/inflation_deflation.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      dataset_catalog: ${var.catalog}
+      dataset_schema: gold_analytics_gateway
+      permissions:
+        - group_name: users
+          level: CAN_READ

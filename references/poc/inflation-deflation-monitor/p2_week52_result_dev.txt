@@ -1,0 +1,4 @@
+window result (date, close, 52-week high, 52-week low):
+   ['2026-11-03', '54.250000', '68.239998', '47.939999']
+   ['2026-11-02', '54.840000', '68.239998', '47.939999']
+dashboard figures on 2026-11-03 (12 months, price_date > 2025-11-03): high 68.239998, low 47.939999

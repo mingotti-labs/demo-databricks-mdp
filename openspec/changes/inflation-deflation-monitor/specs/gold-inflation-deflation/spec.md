@@ -25,8 +25,8 @@ SHALL not change.
 - **WHEN** the change is deployed
 - **THEN** the `market_climate` rows of `monitor_daily_signal` equal the rows before it
 
-### Requirement: Inflation Deflation dashboard
-A dashboard "Inflation Deflation" SHALL read the target's catalog and show, as of a date defaulting to the latest
+### Requirement: Inflation-Deflation Monitor dashboard
+A dashboard "Inflation-Deflation Monitor" SHALL read the target's catalog and show, as of a date defaulting to the latest
 day with a rating: the rating and its label with the four stars, the rating's history, one chart per star with
 the line it is compared with, the real interest rate over time, the answers with their reasons and the date of
 each input; and on a second page the eight commodity benchmarks against their 200-day averages.
@@ -38,7 +38,7 @@ each input; and on a second page the eight commodity benchmarks against their 20
 ### Requirement: Genie agent covers the inflation monitor
 The Genie agent SHALL also read `market_rate_indicator_daily` and `price_indicator_daily`, state the four stars,
 the rating and its labels, the short-term rate and the real rate in its instructions, take its examples for these
-questions from the Inflation Deflation dashboard's queries, and carry benchmark questions with SQL answers for them.
+questions from the Inflation-Deflation Monitor dashboard's queries, and carry benchmark questions with SQL answers for them.
 
 #### Scenario: Real rate
 - **WHEN** a user asks the agent for today's real interest rate

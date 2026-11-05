@@ -28,6 +28,10 @@ trading signals or shortlists from the rating.
 (`cicd/run_dev.py yahoo --param reload_symbols=...`), then `run_investments`. Pass: first dates in dev equal prd's
 (probe P1).
 
+Finding: `reload_symbols` alone reloaded from the symbol's first stored day, which in dev was already
+2025-11-03, so the first run changed nothing. `plan()` in `common/yahoo_market.py` now loads all history Yahoo has for
+a benchmark named in `reload_symbols` (a new benchmark already did).
+
 ### D2. Commodities: the CRB votes
 The 2004 plan used the old CRB (17 commodities, equal weights). In 2005 the index was rebuilt with uneven weights
 (energy about 39%); that is the `^TRCCRB` series loaded. The old equal-weighted formula continues as the
@@ -86,15 +90,15 @@ yellow (2), green (0 or 1), blue (-1). A day without all four inputs has no rows
 `common/inflation_signals_sql.py` (plain strings, as market climate's), thresholds in `common/inflation.py`;
 `monitor_daily_signal` becomes the union of both monitors. The column comments name the new values.
 
-### D6. Dashboard "Inflation Deflation"
+### D6. Dashboard "Inflation-Deflation Monitor"
 Its own dashboard (each story its own, the agent spans them). Generic widget helpers move from
 `common/market_climate_dashboard.py` to `common/dashboard_widgets.py` (no change to the Market Climate JSON).
 New `common/inflation_queries.py` and `common/inflation_dashboard.py`; `cicd/build_market_climate.py` becomes
 `cicd/build_dashboards.py` writing all three generated files. Pages:
-- *Game plan*: bullet intro, the rating as of a date (a star row for the four vehicles, the label), the rating's
+- *Inflation-Deflation Monitor* (the first page): bullet intro, the rating as of a date (a star row for the four vehicles, the label), the rating's
   history, one chart per star with its line (CRB with its 200-day average; CPI change and its average; gold with
   its average; the effective rate with its average), the real interest rate, the answers table, data dates.
-- *Commodities*: the eight benchmarks, each against its 200-day average (context; only the CRB votes).
+- *Commodities Deep Dive*: the eight benchmarks, each against its 200-day average (context; only the CRB votes).
 Same 36-month axis and colours as Market Climate.
 
 ### D7. Genie agent

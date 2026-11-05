@@ -1,0 +1,85 @@
+{
+  "eval_results": [
+    {
+      "benchmark_answer": "SELECT band_code, yes_count, action_name FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND lens_code = 'long_run' AND signal_date = DATE '2026-10-01'",
+      "benchmark_question_id": "faa82b40470f1a61abb09c014ba95582",
+      "created_by_user": 75657101984116,
+      "question": "What did the long-run light say on 2026-10-01?",
+      "result_id": "01f1d8f429ad19eaa8fa351ac5681fe9",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT yes_count FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation')",
+      "benchmark_question_id": "eeaafb5d3b7b1b03d66f4708e275bcab",
+      "created_by_user": 75657101984116,
+      "question": "How many inflation stars are on today?",
+      "result_id": "01f1d8f429ad1142b3f4ef2420661b1e",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT rate_value FROM mdp_dev.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate' AND indicator_date = (SELECT max(indicator_date) FROM mdp_dev.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate')",
+      "benchmark_question_id": "e95c78c01922fc9371ac728fa7c0d347",
+      "created_by_user": 75657101984116,
+      "question": "What is the real interest rate today?",
+      "result_id": "01f1d8f429ac1830bcf38bc3051c0594",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT lens_name, is_yes, measured_value, threshold_value FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'too_expensive' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code",
+      "benchmark_question_id": "c83172d084a01c40a003f6c6d199cacc",
+      "created_by_user": 75657101984116,
+      "question": "Is the market too expensive right now?",
+      "result_id": "01f1d8f429ab1d3dac5a99f7d9f0b6f3",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT count(*) AS members_left_out FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member WHERE NOT is_used AND valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "benchmark_question_id": "af1e8117be8243960198b4419159dd8c",
+      "created_by_user": 75657101984116,
+      "question": "How many members are left out today?",
+      "result_id": "01f1d8f429ab13e790f258fcdff43ebd",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "benchmark_question_id": "99897103e155986440e6d9280673ade0",
+      "created_by_user": 75657101984116,
+      "question": "What are EQT's P/E on trailing earnings and on 10-year inflation-adjusted earnings?",
+      "result_id": "01f1d8f429aa1aa0920d4b72222c0841",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT c.gics_sector_name, sum(m.market_value_amount) / sum(m.earnings_ten_year_average_inflation_adjusted_amount) AS sector_pe FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member) GROUP BY c.gics_sector_name HAVING sum(m.earnings_ten_year_average_inflation_adjusted_amount) \u003e 0 ORDER BY sector_pe DESC LIMIT 1",
+      "benchmark_question_id": "6a3ef63c494e05fd43558d79eb342c34",
+      "created_by_user": 75657101984116,
+      "question": "Which sector has the highest P/E?",
+      "result_id": "01f1d8f429aa10f2981a2c405b204382",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT lens_name, is_yes, reason_text FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code",
+      "benchmark_question_id": "66fa34212000c5983b8e303ef8d5686a",
+      "created_by_user": 75657101984116,
+      "question": "Is the Fed in the way?",
+      "result_id": "01f1d8f429a91478bc5705a334ee8be3",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND measured_value = -1",
+      "benchmark_question_id": "2ba41e61a6e01869a2c69a1f315a4d84",
+      "created_by_user": 75657101984116,
+      "question": "When was the last deflation rating?",
+      "result_id": "01f1d8f429a81b44bfebe09e4e9c99f9",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    }
+  ]
+}

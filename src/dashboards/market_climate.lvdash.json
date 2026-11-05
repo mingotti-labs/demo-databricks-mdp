@@ -464,7 +464,7 @@
       "name": "ds_company_figures",
       "displayName": "Company price figures",
       "queryLines": [
-        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), listing AS (SELECT m.listing_id FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name), prices AS (SELECT p.price_date, p.price_close, p.price_high, p.price_low, avg(p.price_close) OVER w AS band_middle, stddev_pop(p.price_close) OVER w AS band_deviation, count(*) OVER w AS window_count, max(p.price_date) OVER () AS last_date FROM silver_domain_investments.price_daily p JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof) WINDOW w AS (ORDER BY p.price_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW)) , ranked AS (SELECT *, row_number() OVER (ORDER BY price_date DESC) AS recency FROM prices) SELECT max(CASE WHEN recency = 1 THEN price_close END) AS last_close, max(CASE WHEN recency = 1 THEN price_close END) / max(CASE WHEN recency = 2 THEN price_close END) - 1 AS day_change_ratio, max(CASE WHEN price_date > add_months(last_date, -12) THEN price_high END) AS high_52_weeks, min(CASE WHEN price_date > add_months(last_date, -12) THEN price_low END) AS low_52_weeks, max(last_date) AS price_date FROM ranked "
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), listing AS (SELECT m.listing_id FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name), priced AS (SELECT p.price_date, p.price_close, i.price_high_fifty_two_week_amount AS high_52_weeks, i.price_low_fifty_two_week_amount AS low_52_weeks, lag(p.price_close) OVER (ORDER BY p.price_date) AS previous_close FROM silver_domain_investments.price_daily p JOIN silver_domain_investments.price_indicator_daily i ON i.listing_id = p.listing_id AND i.price_date = p.price_date JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof)) SELECT price_close AS last_close, price_close / previous_close - 1 AS day_change_ratio, high_52_weeks, low_52_weeks, price_date FROM priced ORDER BY price_date DESC LIMIT 1 "
       ],
       "parameters": [
         {
@@ -503,7 +503,7 @@
   "pages": [
     {
       "name": "climate",
-      "displayName": "Climate",
+      "displayName": "Market Climate Monitor",
       "pageType": "PAGE_TYPE_CANVAS",
       "layoutVersion": "GRID_V1",
       "layout": [
@@ -512,7 +512,7 @@
             "name": "climate-title",
             "multilineTextboxSpec": {
               "lines": [
-                "# Market Climate\n",
+                "# Market Climate Monitor\n",
                 "\n",
                 "Two climates read the same three questions. Yes is the unfavourable answer.\n",
                 "\n",

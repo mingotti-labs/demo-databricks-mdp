@@ -203,12 +203,15 @@ SELECT price_date, price_close, band_middle, band_middle + 2 * band_deviation AS
 FROM prices WHERE window_count = 20 AND price_date >= {RANGE_START} ORDER BY price_date
 """)
 
-dataset("ds_company_figures", "Company price figures", COMPANY_PRICES + """
-, ranked AS (SELECT *, row_number() OVER (ORDER BY price_date DESC) AS recency FROM prices)
-SELECT max(CASE WHEN recency = 1 THEN price_close END) AS last_close,
-  max(CASE WHEN recency = 1 THEN price_close END) / max(CASE WHEN recency = 2 THEN price_close END) - 1 AS day_change_ratio,
-  max(CASE WHEN price_date > add_months(last_date, -12) THEN price_high END) AS high_52_weeks,
-  min(CASE WHEN price_date > add_months(last_date, -12) THEN price_low END) AS low_52_weeks,
-  max(last_date) AS price_date
-FROM ranked
+dataset("ds_company_figures", "Company price figures", f"""
+WITH {VALUATION_AS_OF},
+listing AS (SELECT m.listing_id FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day
+  JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name),
+priced AS (SELECT p.price_date, p.price_close, i.price_high_fifty_two_week_amount AS high_52_weeks,
+  i.price_low_fifty_two_week_amount AS low_52_weeks, lag(p.price_close) OVER (ORDER BY p.price_date) AS previous_close
+  FROM silver_domain_investments.price_daily p
+  JOIN silver_domain_investments.price_indicator_daily i ON i.listing_id = p.listing_id AND i.price_date = p.price_date
+  JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof))
+SELECT price_close AS last_close, price_close / previous_close - 1 AS day_change_ratio, high_52_weeks, low_52_weeks, price_date
+FROM priced ORDER BY price_date DESC LIMIT 1
 """)

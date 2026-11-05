@@ -2,7 +2,7 @@
 
 `build()` returns the file content of `resources/genie/market_climate.genie.yml` (JSON, which is YAML), with
 `${var.catalog}` left for the bundle to fill in per target. The example SQL is the dashboard's queries, so the
-agent and the dashboard give the same figures. `cicd/build_market_climate.py` writes it; a test checks the
+agent and the dashboard give the same figures. `cicd/build_dashboards.py` writes it; a test checks the
 committed file equals it.
 """
 
@@ -11,6 +11,7 @@ import json
 import re
 from pathlib import Path
 
+from common.inflation_queries import DATASETS as INFLATION_DATASETS
 from common.market_climate_queries import DATASETS
 
 CATALOG = "${var.catalog}"
@@ -34,13 +35,23 @@ EXAMPLES = {
     "ds_company_check": ("How is EQT's P/E worked out, step by step?", "Replace 'EQT Corporation' with the company asked about."),
     "ds_company_figures": ("What are EQT's last close and its 52-week high and low?", "Replace 'EQT Corporation' with the company asked about."),
     "ds_freshness": ("How fresh is the data?", "The climate date and the latest date of each input."),
+    "ds_rating": ("What is the inflation rating today?", "Rating row of the latest day: stars on, label, US consumer prices over 12 months."),
+    "ds_stars": ("Which inflation stars are on today, and why?", "One row per vehicle; On means it points to inflation."),
+    "ds_rating_history": ("How has the inflation rating changed over time?", "Rating per day, last 36 months."),
+    "ds_commodities": ("How do the commodity benchmarks compare with their 200-day averages today?", "Eight benchmarks; only the CRB index and gold vote."),
+    "ds_real_rate_history": ("What is the real interest rate over time?", "Effective rate minus the US consumer price change over 12 months, last 36 months."),
+    "ds_cpi_changes": ("How have US consumer prices changed over 12 months?", "The 12-month change and the change against the previous reading, last 36 months."),
+    "ds_rate_history": ("What is the short-term interest rate and its 200-day average?", "Federal funds effective rate, last 36 months."),
+    "ds_inflation_freshness": ("How fresh is the inflation data?", "The rating date and the latest date of each input."),
 }
+QUERIES = {**DATASETS, **INFLATION_DATASETS}
 SAMPLE_QUESTIONS = [
     "What is the market climate today?", "Is the market too expensive right now?", "Which companies push the P/E up most?",
-    "Which sector has the highest P/E?", "Why is EQT's P/E so high?",
+    "Which sector has the highest P/E?", "Why is EQT's P/E so high?", "What is the inflation rating today?",
 ]
 LATEST_SIGNAL = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal)"
 LATEST_MEMBER = f"(SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index_member)"
+LATEST_INFLATION = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation')"
 BENCHMARKS = [
     ("Is the market too expensive right now?",
      f"SELECT lens_name, is_yes, measured_value, threshold_value FROM {GOLD}.monitor_daily_signal "
@@ -64,6 +75,15 @@ BENCHMARKS = [
     ("What did the long-run light say on 2026-10-01?",
      f"SELECT band_code, yes_count, action_name FROM {GOLD}.monitor_daily_signal "
      f"WHERE signal_code = 'climate' AND lens_code = 'long_run' AND signal_date = DATE '2026-10-01'"),
+    ("How many inflation stars are on today?",
+     f"SELECT yes_count FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' "
+     f"AND signal_code = 'rating' AND signal_date = {LATEST_INFLATION}"),
+    ("What is the real interest rate today?",
+     f"SELECT rate_value FROM {SILVER}.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate' "
+     f"AND indicator_date = (SELECT max(indicator_date) FROM {SILVER}.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate')"),
+    ("When was the last deflation rating?",
+     f"SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' "
+     f"AND signal_code = 'rating' AND measured_value = -1"),
 ]
 
 
@@ -98,6 +118,8 @@ def space() -> dict:
     tables = [
         {"identifier": company, "column_configs": [entity("company_name"), entity("gics_sector_name")]},
         {"identifier": price},
+        {"identifier": f"{SILVER}.market_rate_indicator_daily"},
+        {"identifier": f"{SILVER}.price_indicator_daily"},
         {"identifier": index},
         {"identifier": members},
         {"identifier": signal, "column_configs": [entity("lens_name"), entity("signal_name")]},
@@ -109,7 +131,7 @@ def space() -> dict:
         "instructions": {
             "text_instructions": [{"id": identifier("instructions"), "content": [line + chr(10) for line in INSTRUCTIONS.read_text(encoding="utf-8").strip().splitlines()]}],
             "example_question_sqls": by_id([
-                {"id": identifier("example:" + name), "question": [question], "sql": [for_genie(DATASETS[name][1])], "usage_guidance": [guidance]}
+                {"id": identifier("example:" + name), "question": [question], "sql": [for_genie(QUERIES[name][1])], "usage_guidance": [guidance]}
                 for name, (question, guidance) in EXAMPLES.items()]),
             "join_specs": by_id([
                 join_spec(members, company, "`valuation_daily_index_member`.`company_id` = `company`.`company_id`", "MANY_TO_ONE"),
@@ -126,8 +148,8 @@ def space() -> dict:
 
 def build() -> str:
     resource = {"resources": {"genie_spaces": {"market_climate_genie": {
-        "title": "Market Climate",
-        "description": "Ask about the market climate lights, the S&P 500 price/earnings ratio and its members.",
+        "title": "Investment Intelligence",
+        "description": "Ask about the market climate lights, the inflation/deflation rating, the S&P 500 price/earnings ratio and its members.",
         "warehouse_id": "${var.warehouse_id}",
         "parent_path": "${workspace.resource_path}",
         "serialized_space": space(),

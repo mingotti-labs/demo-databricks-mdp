@@ -39,16 +39,20 @@ def plan(
 ) -> tuple[date, bool]:
     """First day to fetch and whether it is a full reload.
 
-    A new benchmark loads all the history Yahoo has (requested from 1970-01-01); any
-    other new symbol loads one year; a symbol named in reload_symbols (or `*`) reloads
-    from its first stored day; otherwise fetch from the last stored day minus one,
-    which rewrites a day stored while the market was open.
+    A new benchmark, and a benchmark named in reload_symbols (or `*`), loads all the
+    history Yahoo has (requested from 1970-01-01); any other new symbol loads one year;
+    any other symbol named in reload_symbols reloads from its first stored day; otherwise
+    fetch from the last stored day minus one, which rewrites a day stored while the
+    market was open.
     """
+    reload = symbol in reload_symbols or "*" in reload_symbols
     if not state or not state.get("last_price_date"):
         if symbol in benchmarks:
             return FULL_HISTORY_START, True
         return today - timedelta(days=NEW_SYMBOL_DAYS), True
-    if symbol in reload_symbols or "*" in reload_symbols:
+    if reload and symbol in benchmarks:
+        return FULL_HISTORY_START, True
+    if reload:
         return date.fromisoformat(state["first_price_date"]), True
     return date.fromisoformat(state["last_price_date"]) - timedelta(days=1), False
 
