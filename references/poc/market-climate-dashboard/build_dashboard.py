@@ -26,6 +26,7 @@ AXIS_WIDTH = 64
 Y_PADDING = 14
 MONTH_END = {"expr": "datetime(year(now()), month(now()) + 1, 1)"}
 SHARED_DOMAIN = [START_DATE, MONTH_END]
+TIME_AXIS = {"format": "%b %Y", "tickCount": {"interval": "month", "step": 6}, "labelOverlap": True}
 PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
 LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
 
@@ -207,7 +208,7 @@ def vega(name: str, title: str, dataset: str, fields: list[str], spec: dict, x: 
 
 def light_history(x: int, y: int, w: int, h: int) -> dict:
     """Both climates; the long-run line is drawn wide and pale under the thin modern line so equal answers stay visible."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
     spec = {"encoding": {"x": time_x, "y": {"field": "yes_count", "type": "quantitative", "title": "Yes answers", "scale": {"domain": [0, 3], "padding": Y_PADDING}, "axis": {"tickMinStep": 1, "minExtent": AXIS_WIDTH}},
                          "color": {"field": "lens_name", "type": "nominal", "title": "Climate", "legend": {"orient": "top"}},
                          "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "lens_name", "title": "Climate"}, {"field": "yes_count", "title": "Yes answers"}]},
@@ -220,7 +221,7 @@ def light_history(x: int, y: int, w: int, h: int) -> dict:
 
 def fed_history(x: int, y: int, w: int, h: int) -> dict:
     """Target rate line over a background: red within 6 months of a hike, green within 6 months of a cut."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
     spec = {"layer": [
         {"transform": [{"window": [{"op": "lead", "field": "signal_date", "as": "next_date"}], "sort": [{"field": "signal_date"}]},
                        {"filter": "datum.fed_band_code == 'red' || datum.fed_band_code == 'green'"}],
@@ -238,7 +239,7 @@ def fed_history(x: int, y: int, w: int, h: int) -> dict:
 
 def trend_history(x: int, y: int, w: int, h: int) -> dict:
     """S&P 500 and its 200-day average on the same time axis and left margin as the Fed chart."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
     spec = {"transform": [{"fold": ["sp500_close", "sp500_average_200"], "as": ["series", "value"]},
                           {"calculate": "datum.series == 'sp500_close' ? 'S&P 500 close' : '200-day average'", "as": "series_label"}],
             "mark": {"type": "line", "strokeWidth": 2},
@@ -254,7 +255,7 @@ def trend_history(x: int, y: int, w: int, h: int) -> dict:
 
 def pe_history(x: int, y: int, w: int, h: int) -> dict:
     """Index P/E, both measures, with the three band lines drawn once each."""
-    time_x = {"field": "valuation_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}}
+    time_x = {"field": "valuation_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
     lines = [(16, "cheap line, long run", GREEN), (22, "expensive line, long run", YELLOW), (30, "expensive line, modern", RED)]
     spec = {"layer": [
         {"transform": [{"fold": ["pe_ten_year_adjusted", "pe_trailing"], "as": ["series", "value"]},
