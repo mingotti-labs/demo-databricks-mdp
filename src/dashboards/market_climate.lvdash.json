@@ -28,7 +28,7 @@
       "name": "ds_lights",
       "displayName": "Lights of the day",
       "queryLines": [
-        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code = 'climate' ORDER BY s.lens_code "
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text, s.signal_date AS climate_date FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code = 'climate' ORDER BY s.lens_code "
       ],
       "parameters": [
         {
@@ -97,7 +97,7 @@
       "name": "ds_trend_history",
       "displayName": "S&P 500 and its 200-day average",
       "queryLines": [
-        "SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200 FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= date_sub(current_date(), 1100) ORDER BY signal_date "
+        "SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200 FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= DATE '2022-01-01' ORDER BY signal_date "
       ]
     },
     {
@@ -549,6 +549,10 @@
                       "expression": "`lens_name`"
                     },
                     {
+                      "name": "lens_code",
+                      "expression": "`lens_code`"
+                    },
+                    {
                       "name": "yes_count",
                       "expression": "`yes_count`"
                     },
@@ -563,6 +567,10 @@
                     {
                       "name": "reason_text",
                       "expression": "`reason_text`"
+                    },
+                    {
+                      "name": "climate_date",
+                      "expression": "`climate_date`"
                     }
                   ],
                   "disaggregated": true
@@ -574,12 +582,15 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"calculate\": \"datum.yes_count + '/3'\", \"as\": \"yes_label\"}], \"encoding\": {\"x\": {\"field\": \"lens_name\", \"type\": \"nominal\", \"axis\": {\"title\": null, \"orient\": \"top\", \"labelFontSize\": 18, \"labelAngle\": 0, \"domain\": false, \"ticks\": false}}, \"tooltip\": [{\"field\": \"lens_name\", \"title\": \"Climate\"}, {\"field\": \"action_name\", \"title\": \"Action\"}, {\"field\": \"reason_text\", \"title\": \"Why\"}]}, \"layer\": [{\"mark\": {\"type\": \"circle\", \"size\": 14000}, \"encoding\": {\"y\": {\"value\": 95}, \"color\": {\"field\": \"light_code\", \"type\": \"nominal\", \"legend\": null, \"scale\": {\"domain\": [\"red\", \"yellow\", \"green\"], \"range\": [\"#E15759\", \"#F2C037\", \"#59A14F\"]}}}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 22, \"fontWeight\": \"bold\", \"color\": \"#11171C\"}, \"encoding\": {\"y\": {\"value\": 95}, \"text\": {\"field\": \"yes_label\"}}}]}"
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"calculate\": \"datum.yes_count + '/3'\", \"as\": \"yes_label\"}, {\"calculate\": \"datum.lens_code == 'long_run' ? 'Long Run' : 'Modern'\", \"as\": \"lens_label\"}], \"title\": {\"text\": {\"expr\": \"'Market Climate as of ' + data('databricks_query')[0].climate_date\"}, \"anchor\": \"start\", \"fontSize\": 16, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"field\": \"lens_label\", \"type\": \"nominal\", \"sort\": [\"Long Run\", \"Modern\"], \"axis\": {\"title\": null, \"orient\": \"top\", \"labelFontSize\": 18, \"labelAngle\": 0, \"labelColor\": {\"expr\": \"colors.textPrimary.default\"}, \"domain\": false, \"ticks\": false}}, \"tooltip\": [{\"field\": \"lens_name\", \"title\": \"Climate\"}, {\"field\": \"action_name\", \"title\": \"Action\"}, {\"field\": \"reason_text\", \"title\": \"Why\"}]}, \"layer\": [{\"mark\": {\"type\": \"circle\", \"size\": 14000}, \"encoding\": {\"y\": {\"value\": 95}, \"color\": {\"field\": \"light_code\", \"type\": \"nominal\", \"legend\": null, \"scale\": {\"domain\": [\"red\", \"yellow\", \"green\"], \"range\": [\"#E15759\", \"#F2C037\", \"#59A14F\"]}}}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 22, \"fontWeight\": \"bold\", \"color\": \"#11171C\"}, \"encoding\": {\"y\": {\"value\": 95}, \"text\": {\"field\": \"yes_label\"}}}]}"
               },
               "encodings": {
                 "fields": [
                   {
                     "fieldName": "lens_name"
+                  },
+                  {
+                    "fieldName": "lens_code"
                   },
                   {
                     "fieldName": "yes_count"
@@ -592,6 +603,9 @@
                   },
                   {
                     "fieldName": "reason_text"
+                  },
+                  {
+                    "fieldName": "climate_date"
                   }
                 ]
               },
@@ -599,8 +613,7 @@
                 "queryName": "main_query"
               },
               "frame": {
-                "showTitle": true,
-                "title": "Market climate today"
+                "showTitle": false
               }
             }
           },
@@ -828,7 +841,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"layer\": [{\"transform\": [{\"window\": [{\"op\": \"lead\", \"field\": \"signal_date\", \"as\": \"next_date\"}], \"sort\": [{\"field\": \"signal_date\"}]}, {\"filter\": \"datum.fed_band_code == 'red' || datum.fed_band_code == 'green'\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0.22}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null}, \"x2\": {\"field\": \"next_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": {\"expr\": \"height\"}}, \"color\": {\"field\": \"fed_band_code\", \"type\": \"nominal\", \"title\": \"Fed\", \"scale\": {\"domain\": [\"red\", \"green\"], \"range\": [\"#E15759\", \"#59A14F\"]}, \"legend\": {\"labelExpr\": \"datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'\"}}}}, {\"mark\": {\"type\": \"line\", \"interpolate\": \"step-after\", \"strokeWidth\": 2.5, \"color\": \"#2B3A55\"}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null}, \"y\": {\"field\": \"fed_target_rate\", \"type\": \"quantitative\", \"title\": \"Target rate (%)\", \"scale\": {\"zero\": false}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"fed_target_rate\", \"title\": \"Target rate (%)\"}]}}]}"
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"layer\": [{\"transform\": [{\"window\": [{\"op\": \"lead\", \"field\": \"signal_date\", \"as\": \"next_date\"}], \"sort\": [{\"field\": \"signal_date\"}]}, {\"filter\": \"datum.fed_band_code == 'red' || datum.fed_band_code == 'green'\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0.22}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"year\": 2022, \"month\": 1, \"date\": 1}, {\"year\": 2030, \"month\": 1, \"date\": 1}]}}, \"x2\": {\"field\": \"next_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": {\"expr\": \"height\"}}, \"color\": {\"field\": \"fed_band_code\", \"type\": \"nominal\", \"title\": \"Fed\", \"scale\": {\"domain\": [\"red\", \"green\"], \"range\": [\"#E15759\", \"#59A14F\"]}, \"legend\": {\"orient\": \"top\", \"labelExpr\": \"datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'\"}}}}, {\"mark\": {\"type\": \"line\", \"interpolate\": \"step-after\", \"strokeWidth\": 2.5, \"color\": \"#2B3A55\"}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"year\": 2022, \"month\": 1, \"date\": 1}, {\"year\": 2030, \"month\": 1, \"date\": 1}]}}, \"y\": {\"field\": \"fed_target_rate\", \"type\": \"quantitative\", \"title\": \"Target rate (%)\", \"scale\": {\"zero\": true, \"nice\": true}, \"axis\": {\"format\": \".2f\", \"tickCount\": 6, \"minExtent\": 64}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"fed_target_rate\", \"title\": \"Target rate (%)\"}]}}]}"
               },
               "encodings": {
                 "fields": [
@@ -888,35 +901,33 @@
               }
             ],
             "spec": {
-              "version": 3,
-              "widgetType": "line",
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"sp500_close\", \"sp500_average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"datum.series == 'sp500_close' ? 'S&P 500 close' : '200-day average'\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"year\": 2022, \"month\": 1, \"date\": 1}, {\"year\": 2030, \"month\": 1, \"date\": 1}]}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Index points\", \"scale\": {\"zero\": false}, \"axis\": {\"format\": \",.0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.2f\", \"title\": \"Value\"}]}}"
+              },
               "encodings": {
-                "x": {
-                  "fieldName": "signal_date",
-                  "scale": {
-                    "type": "temporal"
+                "fields": [
+                  {
+                    "fieldName": "signal_date"
                   },
-                  "displayName": "Date"
-                },
-                "y": {
-                  "scale": {
-                    "type": "quantitative"
+                  {
+                    "fieldName": "sp500_close"
                   },
-                  "fields": [
-                    {
-                      "fieldName": "sp500_close",
-                      "displayName": "S&P 500 close"
-                    },
-                    {
-                      "fieldName": "sp500_average_200",
-                      "displayName": "200-day average"
-                    }
-                  ]
-                }
+                  {
+                    "fieldName": "sp500_average_200"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
               },
               "frame": {
                 "showTitle": true,
-                "title": "S&P 500 and its 200-day average"
+                "title": "S&P 500 and its 200-day average",
+                "showDescription": true,
+                "description": "Same dates and left margin as the Fed chart, so the two can be read one above the other."
               }
             }
           },

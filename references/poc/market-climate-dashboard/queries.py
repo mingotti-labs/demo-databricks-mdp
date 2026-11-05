@@ -31,7 +31,7 @@ SELECT (SELECT day FROM asof) AS climate_date,
 
 dataset("ds_lights", "Lights of the day", f"""
 WITH {AS_OF}
-SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text
+SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text, s.signal_date AS climate_date
 FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day
 WHERE s.signal_code = 'climate' ORDER BY s.lens_code
 """)
@@ -65,7 +65,7 @@ ORDER BY signal_date
 
 dataset("ds_trend_history", "S&P 500 and its 200-day average", """
 SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200
-FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= date_sub(current_date(), 1100)
+FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= DATE '2022-01-01'
 ORDER BY signal_date
 """)
 

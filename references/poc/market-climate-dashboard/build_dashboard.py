@@ -19,6 +19,10 @@ SECTOR_DATASETS = ["ds_sector_up", "ds_sector_down"]
 COMPANY_DATASETS = ["ds_company_check", "ds_company_price", "ds_company_figures"]
 RANGE_DATASETS = ["ds_company_price"]
 RED, YELLOW, GREEN = "#E15759", "#F2C037", "#59A14F"
+INK = "#11171C"
+TEXT_COLOR = {"expr": "colors.textPrimary.default"}
+START_DATE = {"year": 2022, "month": 1, "date": 1}
+AXIS_WIDTH = 64
 PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
 LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
 
@@ -157,27 +161,30 @@ def filter_widget(name: str, title: str, kind: str, bindings: list[tuple[str, st
 
 
 def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
-    """Big coloured circle per climate (custom Vega-Lite), driven by ds_lights."""
+    """Big coloured circle per climate (custom Vega-Lite), driven by ds_lights; the title carries the climate date."""
     spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v6.json", "data": {"name": "databricks_query"},
         "width": "container", "height": "container", "config": {"autosize": {"type": "fit", "contains": "padding"}},
-        "transform": [{"calculate": "datum.yes_count + '/3'", "as": "yes_label"}],
-        "encoding": {"x": {"field": "lens_name", "type": "nominal", "axis": {"title": None, "orient": "top", "labelFontSize": 18, "labelAngle": 0, "domain": False, "ticks": False}},
+        "transform": [{"calculate": "datum.yes_count + '/3'", "as": "yes_label"},
+                      {"calculate": "datum.lens_code == 'long_run' ? 'Long Run' : 'Modern'", "as": "lens_label"}],
+        "title": {"text": {"expr": "'Market Climate as of ' + data('databricks_query')[0].climate_date"}, "anchor": "start", "fontSize": 16, "color": TEXT_COLOR},
+        "encoding": {"x": {"field": "lens_label", "type": "nominal", "sort": ["Long Run", "Modern"],
+                           "axis": {"title": None, "orient": "top", "labelFontSize": 18, "labelAngle": 0, "labelColor": TEXT_COLOR, "domain": False, "ticks": False}},
                      "tooltip": [{"field": "lens_name", "title": "Climate"}, {"field": "action_name", "title": "Action"}, {"field": "reason_text", "title": "Why"}]},
         "layer": [
             {"mark": {"type": "circle", "size": 14000},
              "encoding": {"y": {"value": 95}, "color": {"field": "light_code", "type": "nominal", "legend": None,
                           "scale": {"domain": ["red", "yellow", "green"], "range": [RED, YELLOW, GREEN]}}}},
-            {"mark": {"type": "text", "fontSize": 22, "fontWeight": "bold", "color": "#11171C"},
+            {"mark": {"type": "text", "fontSize": 22, "fontWeight": "bold", "color": INK},
              "encoding": {"y": {"value": 95}, "text": {"field": "yes_label"}}},
         ],
     }
-    names = ["lens_name", "yes_count", "light_code", "action_name", "reason_text"]
+    names = ["lens_name", "lens_code", "yes_count", "light_code", "action_name", "reason_text", "climate_date"]
     return {"widget": {"name": name,
                        "queries": [{"name": "main_query", "query": {"datasetName": "ds_lights", "fields": [{"name": n, "expression": f"`{n}`"} for n in names], "disaggregated": True}}],
                        "spec": {"version": 1, "widgetType": "custom-vega-viz", "jsonSpec": {"type": "vega-lite", "spec": json.dumps(spec)},
                                 "encodings": {"fields": [{"fieldName": n} for n in names]}, "data": {"queryName": "main_query"},
-                                "frame": {"showTitle": True, "title": "Market climate today"}}},
+                                "frame": {"showTitle": False}}},
             "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
@@ -210,7 +217,7 @@ def light_history(x: int, y: int, w: int, h: int) -> dict:
 
 def fed_history(x: int, y: int, w: int, h: int) -> dict:
     """Target rate line over a background: red within 6 months of a hike, green within 6 months of a cut."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None}
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": [START_DATE, {"year": 2030, "month": 1, "date": 1}]}}
     spec = {"layer": [
         {"transform": [{"window": [{"op": "lead", "field": "signal_date", "as": "next_date"}], "sort": [{"field": "signal_date"}]},
                        {"filter": "datum.fed_band_code == 'red' || datum.fed_band_code == 'green'"}],
@@ -218,12 +225,28 @@ def fed_history(x: int, y: int, w: int, h: int) -> dict:
          "encoding": {"x": time_x, "x2": {"field": "next_date"}, "y": {"value": 0}, "y2": {"value": {"expr": "height"}},
                       "color": {"field": "fed_band_code", "type": "nominal", "title": "Fed",
                                 "scale": {"domain": ["red", "green"], "range": [RED, GREEN]},
-                                "legend": {"labelExpr": "datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'"}}}},
+                                "legend": {"orient": "top", "labelExpr": "datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'"}}}},
         {"mark": {"type": "line", "interpolate": "step-after", "strokeWidth": 2.5, "color": "#2B3A55"},
-         "encoding": {"x": time_x, "y": {"field": "fed_target_rate", "type": "quantitative", "title": "Target rate (%)", "scale": {"zero": False}},
+         "encoding": {"x": time_x, "y": {"field": "fed_target_rate", "type": "quantitative", "title": "Target rate (%)", "scale": {"zero": True, "nice": True}, "axis": {"format": ".2f", "tickCount": 6, "minExtent": AXIS_WIDTH}},
                       "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "fed_target_rate", "title": "Target rate (%)"}]}}]}
     return vega("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", ["signal_date", "fed_target_rate", "fed_band_code"], spec, x, y, w, h,
                 "Red background: within 6 months of a hike. Green background: within 6 months of a cut.")
+
+
+def trend_history(x: int, y: int, w: int, h: int) -> dict:
+    """S&P 500 and its 200-day average on the same time axis and left margin as the Fed chart."""
+    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": [START_DATE, {"year": 2030, "month": 1, "date": 1}]}}
+    spec = {"transform": [{"fold": ["sp500_close", "sp500_average_200"], "as": ["series", "value"]},
+                          {"calculate": "datum.series == 'sp500_close' ? 'S&P 500 close' : '200-day average'", "as": "series_label"}],
+            "mark": {"type": "line", "strokeWidth": 2},
+            "encoding": {"x": time_x,
+                         "y": {"field": "value", "type": "quantitative", "title": "Index points", "scale": {"zero": False},
+                               "axis": {"format": ",.0f", "minExtent": AXIS_WIDTH}},
+                         "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"}},
+                         "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Line"},
+                                     {"field": "value", "type": "quantitative", "format": ",.2f", "title": "Value"}]}}
+    return vega("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", ["signal_date", "sp500_close", "sp500_average_200"], spec, x, y, w, h,
+                "Same dates and left margin as the Fed chart, so the two can be read one above the other.")
 
 
 def counter(name: str, title: str, dataset: str, field: str, fmt: dict, x: int, y: int, w: int, h: int) -> dict:
@@ -274,8 +297,7 @@ def climate_page() -> dict:
                           horizontal("30", "expensive line, modern", RED)],
              description="Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern)."),
         fed_history(0, 22, 12, 6),
-        line("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", "signal_date",
-             [("sp500_close", "S&P 500 close"), ("sp500_average_200", "200-day average")], 0, 28, 12, 6),
+        trend_history(0, 28, 12, 6),
         table("answers", "The three answers of each climate", "ds_answers", answers, 0, 34, 12, 7),
         table("lights", "Lights of the day", "ds_lights", lights, 0, 41, 12, 3),
         table("data-dates", "Data dates", "ds_freshness", dates, 0, 44, 12, 3,
