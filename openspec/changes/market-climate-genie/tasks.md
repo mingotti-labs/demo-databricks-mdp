@@ -34,7 +34,7 @@
 - [x] 4.2 P3: benchmark evaluation in dev; every question passes or the miss is explained and fixed (dev-only
       `CAN_MANAGE` for `users` if the evaluation needs it). Check: eval result saved
 - [ ] 4.3 P4: the user asks the spec's three scenarios in the dev agent and confirms the answers
-- [ ] 4.4 Open question: "Ask Genie" link on the dashboard if it is one field; otherwise noted for later
+- [x] 4.4 (not a single field; left for later, see design.md) Open question: "Ask Genie" link on the dashboard if it is one field; otherwise noted for later
 
 ## 5. After merge
 

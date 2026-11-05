@@ -130,5 +130,7 @@ agent. No tables, so no drops and no quota change.
 
 ## Open Questions
 
-- Whether the dashboard can link to the agent ("Ask Genie") with a single field; if it is one field, add it,
-  otherwise leave it for later.
+- Resolved in implementation: an "Ask Genie" link on the dashboard is `uiSettings.genieSpace.overrideId` with the
+  agent's space id, which differs per target and exists only after the agent is created. The dashboard file is
+  static JSON, so it would need the dashboard inlined in YAML with `${resources.genie_spaces.market_climate_genie.id}`
+  and the dashboard made to depend on the agent. Not a single field; left for a later change.
