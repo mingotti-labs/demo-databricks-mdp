@@ -224,3 +224,11 @@ The member valuation table, the renames and the dashboard queries (2026-11-05, d
 | P2 | Does the member query give sensible figures? | Yes: 128,000 rows (500 members x 256 days); on 2026-11-03 489 used, 7 `no_share_count`, 2 `no_net_income`, 1 `no_filing`, 1 `no_ten_year_average`; Nvidia pushes the P/E up most (+2.38), JPMorgan Chase down most (-0.62). |
 | P3 | Does every dashboard dataset query run with the dashboard's catalog and schema defaults? | Yes, all 17, with the date and sector parameters bound; silver tables are reachable by two-part name. Latest day member sums equal the index row (differences 0.00). |
 | P4 | Can the CI principal deploy a dashboard? | Yes with the warehouse id; a lookup by name fails (`databricks-sql-access` entitlement missing for the principal, 403 on listing warehouses). A dashboard created with `--json` shows no dataset catalog. |
+
+## market-climate-genie
+
+The Genie agent as code (2026-11-05, dev). Scripts and results in `references/poc/market-climate-genie/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P1 | Can the CI principal deploy a `genie_spaces` resource, and is `${var.catalog}` filled in inside `serialized_space`? | Yes to both: the agent `[dev svc_cicd_github] Market Climate` was created on `c36e1ff0d4e62a24`, its table is `mdp_dev.gold_analytics_gateway.monitor_daily_signal`, `users` has `CAN_RUN`. A resource key must be unique across resource types (`market_climate_genie`, not `market_climate`, which the dashboard has). |

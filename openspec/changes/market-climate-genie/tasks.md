@@ -1,14 +1,14 @@
 ## 0. Housekeeping
 
-- [ ] 0.1 Tick task 6.3 in `openspec/changes/archive/2026-11-05-market-climate-dashboard/tasks.md` (user confirmed
+- [x] 0.1 Tick task 6.3 in `openspec/changes/archive/2026-11-05-market-climate-dashboard/tasks.md` (user confirmed
       the prd dashboard on 2026-11-05). Check: the file has no open box.
 
 ## 1. Probe P1: can CI deploy a Genie agent?
 
-- [ ] 1.1 Minimal `resources/genie/market_climate.genie.yml` (one table `${var.catalog}.gold_analytics_gateway.monitor_daily_signal`,
+- [x] 1.1 Minimal `resources/genie/market_climate.genie.yml` (one table `${var.catalog}.gold_analytics_gateway.monitor_daily_signal`,
       one text instruction, `users` `CAN_RUN`); push as a draft PR. Check: `deploy-dev` passes and
       `databricks genie get-space <id> --include-serialized-space` shows `mdp_dev.gold_analytics_gateway.monitor_daily_signal`
-- [ ] 1.2 Record P1 in design.md and `references/docs/registers/probes.md`, scripts and output under
+- [x] 1.2 Record P1 in design.md and `references/docs/registers/probes.md`, scripts and output under
       `references/poc/market-climate-genie/`. If it fails: stop, report, and propose the iac grant or the D1 alternative
 
 ## 2. One source for the queries (D2)
