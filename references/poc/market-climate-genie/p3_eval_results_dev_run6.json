@@ -1,0 +1,112 @@
+{
+  "eval_results": [
+    {
+      "benchmark_answer": "SELECT band_code, yes_count, action_name FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND lens_code = 'long_run' AND signal_date = DATE '2026-10-01'",
+      "benchmark_question_id": "faa82b40470f1a61abb09c014ba95582",
+      "created_by_user": 75657101984116,
+      "question": "What did the long-run light say on 2026-10-01?",
+      "result_id": "01f1d917a09d1a7e9f1fb889a16565d3",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT yes_count FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation')",
+      "benchmark_question_id": "eeaafb5d3b7b1b03d66f4708e275bcab",
+      "created_by_user": 75657101984116,
+      "question": "How many inflation stars are on today?",
+      "result_id": "01f1d917a09d10ea8806bad4cd0bbf30",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT rate_value FROM mdp_dev.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate' AND indicator_date = (SELECT max(indicator_date) FROM mdp_dev.silver_domain_investments.market_rate_indicator_daily WHERE rate_code = 'us_real_federal_funds_rate')",
+      "benchmark_question_id": "e95c78c01922fc9371ac728fa7c0d347",
+      "created_by_user": 75657101984116,
+      "question": "What is the real interest rate today?",
+      "result_id": "01f1d917a09c17cda3a30c00e58d7d65",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT lens_name, is_yes, measured_value, threshold_value FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'too_expensive' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code",
+      "benchmark_question_id": "c83172d084a01c40a003f6c6d199cacc",
+      "created_by_user": 75657101984116,
+      "question": "Is the market too expensive right now?",
+      "result_id": "01f1d917a09b1ea491f6fc265705cbff",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT count(*) AS members_left_out FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member WHERE NOT is_used AND valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "benchmark_question_id": "af1e8117be8243960198b4419159dd8c",
+      "created_by_user": 75657101984116,
+      "question": "How many members are left out today?",
+      "result_id": "01f1d917a09b158ca7aba1b1bf4cdd2f",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT m.market_value_amount / m.earnings_trailing_twelve_months_amount AS pe_trailing, m.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = 'EQT Corporation' AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member)",
+      "benchmark_question_id": "99897103e155986440e6d9280673ade0",
+      "created_by_user": 75657101984116,
+      "question": "What are EQT's P/E on trailing earnings and on 10-year inflation-adjusted earnings?",
+      "result_id": "01f1d917a09a1c618a55e56f74d79f5b",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT signal_name FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency' AND lens_code = 'australian_dollar' AND signal_code \u003c\u003e 'summary' AND is_yes AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency') ORDER BY signal_name",
+      "benchmark_question_id": "8ed7407caa1b719efcfeccc693509081",
+      "created_by_user": 75657101984116,
+      "question": "Which currencies are gaining against the Australian dollar today?",
+      "result_id": "01f1d917a09a134b920cd15262c50a38",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT c.gics_sector_name, sum(m.market_value_amount) / sum(m.earnings_ten_year_average_inflation_adjusted_amount) AS sector_pe FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member m JOIN mdp_dev.silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.is_used AND m.valuation_date = (SELECT max(valuation_date) FROM mdp_dev.gold_analytics_gateway.valuation_daily_index_member) GROUP BY c.gics_sector_name HAVING sum(m.earnings_ten_year_average_inflation_adjusted_amount) \u003e 0 ORDER BY sector_pe DESC LIMIT 1",
+      "benchmark_question_id": "6a3ef63c494e05fd43558d79eb342c34",
+      "created_by_user": 75657101984116,
+      "question": "Which sector has the highest P/E?",
+      "result_id": "01f1d917a09919878ef49070b5f6a82a",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT lens_name, is_yes, reason_text FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code",
+      "benchmark_question_id": "66fa34212000c5983b8e303ef8d5686a",
+      "created_by_user": 75657101984116,
+      "question": "Is the Fed in the way?",
+      "result_id": "01f1d917a0981ffdaed14b6f3c5e9b3c",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT rate_value, observation_date FROM mdp_dev.silver_domain_investments.market_rate_daily WHERE rate_code = 'japan_3_month_interbank_rate' ORDER BY observation_date DESC LIMIT 1",
+      "benchmark_question_id": "51b6128143485f3b742ad053ff65da92",
+      "created_by_user": 75657101984116,
+      "question": "What is Japan's short-term interest rate?",
+      "result_id": "01f1d917a098167886c28e63a9ae6fb4",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT signal_name, CASE WHEN is_yes THEN 'Strong' ELSE 'Weak' END AS dollar_state FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code IN ('dollar_index', 'dollar_broad_index') AND signal_date = (SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency') ORDER BY signal_code",
+      "benchmark_question_id": "3f3bde94756cc08d08602dcecc70130f",
+      "created_by_user": 75657101984116,
+      "question": "Is the dollar strong or weak today?",
+      "result_id": "01f1d917a0971c7fa603ca4401e43a77",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    },
+    {
+      "benchmark_answer": "SELECT max(signal_date) FROM mdp_dev.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' AND signal_code = 'rating' AND measured_value = -1",
+      "benchmark_question_id": "2ba41e61a6e01869a2c69a1f315a4d84",
+      "created_by_user": 75657101984116,
+      "question": "When was the last deflation rating?",
+      "result_id": "01f1d917a097132fb3eeb441b30f87a4",
+      "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+      "status": "DONE"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ from probe import run
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 from common.inflation_signals_sql import inflation_signal_query  # noqa: E402
-from common.inflation_sql import market_rate_indicator_query  # noqa: E402
+from common.market_rate_indicator_sql import market_rate_indicator_query  # noqa: E402
 
 domain = "mdp_prd.silver_domain_investments"
 q = inflation_signal_query(domain, f"({market_rate_indicator_query(domain + '.')})")

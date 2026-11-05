@@ -37,7 +37,9 @@ what each country pays in interest. That picture comes before any decision to ho
   the currencies against USD and against AUD (gaining or losing, distance from the average) and the interest rate table (short-term
   and 10-year with the date of each reading); a "Currency Deep Dive" page with a currency selector (its value in USD and AUD
   with their averages, its short-term rate and its 10-year yield over time, the 10-year when the country has one).
-- **Investment Intelligence agent**: the currency rows, rules, examples and benchmarks.
+- **Yield Deep Dive page** (user, 2026-11-06): countries ranked by short-term rate plus the 12-month change of the currency against a
+  base (Australian dollar by default, US dollar selectable), in one table with a base selector.
+- **Investment Intelligence agent**: the currency rows, rules, the yield ranking method, examples and benchmarks.
 - **Verification**: one row per currency, base and day; a cross rate equals its two USD rates; the summary counts its rows.
 
 ## Decisions (user, 2026-11-05)

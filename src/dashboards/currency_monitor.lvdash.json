@@ -1,0 +1,1629 @@
+{
+  "datasets": [
+    {
+      "name": "ds_currency_freshness",
+      "displayName": "Data dates",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT (SELECT day FROM asof) AS currency_date, (SELECT max(price_date) FROM silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = 'DX-Y.NYB') AS dollar_index_date, (SELECT max(observation_date) FROM silver_domain_investments.market_rate_daily WHERE rate_code = 'us_dollar_broad_index') AS broad_index_date, (SELECT max(observation_date) FROM silver_domain_investments.market_rate_daily WHERE rate_code = 'swiss_francs_per_us_dollar') AS exchange_rate_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_dollar",
+      "displayName": "The dollar indexes of the day",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.signal_date, s.signal_code, s.signal_name, CASE WHEN s.is_yes THEN 'Strong' ELSE 'Weak' END AS dollar_state, s.band_code AS dollar_band, CASE s.signal_code WHEN 'dollar_index' THEN 1 ELSE 2 END AS index_order, s.measured_value AS index_level, s.threshold_value AS average_200, s.reason_text FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'currency' AND s.signal_code IN ('dollar_index', 'dollar_broad_index') ORDER BY index_order "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_currency_grid",
+      "displayName": "Currencies against the US dollar and the Australian dollar",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')), names AS (SELECT * FROM VALUES ('USD', 'US dollar', 1), ('EUR', 'Euro', 2), ('JPY', 'Japanese yen', 3), ('GBP', 'British pound', 4), ('CHF', 'Swiss franc', 5), ('CAD', 'Canadian dollar', 6), ('SEK', 'Swedish krona', 7), ('AUD', 'Australian dollar', 8), ('NZD', 'New Zealand dollar', 9), ('CNY', 'Chinese yuan', 10) AS names(currency_code, currency_name, currency_order)), against_usd AS (SELECT upper(s.signal_code) AS currency_code, s.is_yes, s.band_code, s.measured_value, s.threshold_value FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'currency' AND s.lens_code = 'us_dollar' AND signal_code NOT IN ('summary', 'dollar_index', 'dollar_broad_index')), against_aud AS (SELECT upper(s.signal_code) AS currency_code, s.is_yes, s.band_code, s.measured_value, s.threshold_value FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'currency' AND s.lens_code = 'australian_dollar' AND signal_code NOT IN ('summary', 'dollar_index', 'dollar_broad_index')) SELECT n.currency_code, n.currency_name, u.measured_value AS value_in_usd, u.measured_value / u.threshold_value - 1 AS distance_usd, CASE u.is_yes WHEN true THEN 'Gaining' WHEN false THEN 'Losing' ELSE 'Base' END AS against_usd, coalesce(u.band_code, 'blue') AS band_usd, a.measured_value AS value_in_aud, a.measured_value / a.threshold_value - 1 AS distance_aud, CASE a.is_yes WHEN true THEN 'Gaining' WHEN false THEN 'Losing' ELSE 'Base' END AS against_aud, coalesce(a.band_code, 'blue') AS band_aud FROM names n LEFT JOIN against_usd u ON u.currency_code = n.currency_code LEFT JOIN against_aud a ON a.currency_code = n.currency_code ORDER BY n.currency_order "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_currency_distance",
+      "displayName": "Distance from the 200-day average",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')), names AS (SELECT * FROM VALUES ('USD', 'US dollar', 1), ('EUR', 'Euro', 2), ('JPY', 'Japanese yen', 3), ('GBP', 'British pound', 4), ('CHF', 'Swiss franc', 5), ('CAD', 'Canadian dollar', 6), ('SEK', 'Swedish krona', 7), ('AUD', 'Australian dollar', 8), ('NZD', 'New Zealand dollar', 9), ('CNY', 'Chinese yuan', 10) AS names(currency_code, currency_name, currency_order)), against_usd AS (SELECT upper(s.signal_code) AS currency_code, s.is_yes, s.band_code, s.measured_value, s.threshold_value FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'currency' AND s.lens_code = 'us_dollar' AND signal_code NOT IN ('summary', 'dollar_index', 'dollar_broad_index')), against_aud AS (SELECT upper(s.signal_code) AS currency_code, s.is_yes, s.band_code, s.measured_value, s.threshold_value FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'currency' AND s.lens_code = 'australian_dollar' AND signal_code NOT IN ('summary', 'dollar_index', 'dollar_broad_index')) SELECT n.currency_name, n.currency_order, 'Against the US dollar' AS base_label, u.measured_value / u.threshold_value - 1 AS distance_ratio FROM names n JOIN against_usd u ON u.currency_code = n.currency_code UNION ALL SELECT n.currency_name, n.currency_order, 'Against the Australian dollar', a.measured_value / a.threshold_value - 1 FROM names n JOIN against_aud a ON a.currency_code = n.currency_code ORDER BY currency_order "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_dollar_history",
+      "displayName": "The dollar indexes over time",
+      "queryLines": [
+        "SELECT b.indicator_date, d.price_close_adjusted AS dxy_close, d.close_adjusted_two_hundred_day_average_amount AS dxy_average, b.rate_value AS broad_value, b.two_hundred_day_average_value AS broad_average FROM silver_domain_investments.market_rate_indicator_daily b LEFT JOIN silver_domain_investments.price_indicator_daily d ON d.trading_symbol_code = 'DX-Y.NYB' AND d.price_date = b.indicator_date WHERE b.rate_code = 'us_dollar_broad_index' AND b.indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY b.indicator_date "
+      ]
+    },
+    {
+      "name": "ds_country_rates",
+      "displayName": "Interest rates of the main countries",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')), countries AS (SELECT * FROM VALUES ('USD', 'US dollar', 'us_federal_funds_effective_rate', 'us_10_year_treasury_yield'), ('EUR', 'Euro', 'euro_area_deposit_facility_rate', 'euro_area_10_year_government_bond_yield'), ('JPY', 'Japanese yen', 'japan_3_month_interbank_rate', 'japan_10_year_government_bond_yield'), ('GBP', 'British pound', 'uk_call_money_rate', 'uk_10_year_government_bond_yield'), ('CHF', 'Swiss franc', 'switzerland_3_month_interbank_rate', 'switzerland_10_year_government_bond_yield'), ('CAD', 'Canadian dollar', 'canada_3_month_interbank_rate', 'canada_10_year_government_bond_yield'), ('SEK', 'Swedish krona', 'sweden_3_month_interbank_rate', 'sweden_10_year_government_bond_yield'), ('AUD', 'Australian dollar', 'rba_cash_rate_target', 'australia_10_year_government_bond_yield'), ('NZD', 'New Zealand dollar', 'new_zealand_3_month_interbank_rate', 'new_zealand_10_year_government_bond_yield'), ('CNY', 'Chinese yuan', 'china_3_month_interbank_rate', '-') AS countries(currency_code, currency_name, short_rate_code, long_rate_code)), latest AS (SELECT i.rate_code, i.rate_value, i.observation_date FROM silver_domain_investments.market_rate_indicator_daily i JOIN asof a ON i.indicator_date = a.day) SELECT c.currency_name AS country_currency, s.rate_value AS short_term_rate, s.observation_date AS short_term_date, CASE WHEN s.observation_date < add_months(a.day, -4) THEN 'Older than 4 months' END AS short_term_note, l.rate_value AS ten_year_yield, l.observation_date AS ten_year_date, CASE WHEN c.long_rate_code = '-' THEN 'Not available' WHEN l.observation_date < add_months(a.day, -4) THEN 'Older than 4 months' END AS ten_year_note FROM countries c CROSS JOIN asof a LEFT JOIN latest s ON s.rate_code = c.short_rate_code LEFT JOIN latest l ON l.rate_code = c.long_rate_code "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_currency_options",
+      "displayName": "Currencies",
+      "queryLines": [
+        "WITH names AS (SELECT * FROM VALUES ('USD', 'US dollar', 1), ('EUR', 'Euro', 2), ('JPY', 'Japanese yen', 3), ('GBP', 'British pound', 4), ('CHF', 'Swiss franc', 5), ('CAD', 'Canadian dollar', 6), ('SEK', 'Swedish krona', 7), ('AUD', 'Australian dollar', 8), ('NZD', 'New Zealand dollar', 9), ('CNY', 'Chinese yuan', 10) AS names(currency_code, currency_name, currency_order)) SELECT currency_code, currency_name FROM names ORDER BY currency_order "
+      ]
+    },
+    {
+      "name": "ds_currency_history",
+      "displayName": "Value of the chosen currency",
+      "queryLines": [
+        "SELECT indicator_date, max(CASE WHEN rate_code = concat('currency_value_', lower(:currency_code), '_in_usd') THEN rate_value END) AS value_in_usd, max(CASE WHEN rate_code = concat('currency_value_', lower(:currency_code), '_in_usd') THEN two_hundred_day_average_value END) AS average_in_usd, max(CASE WHEN rate_code = concat('currency_value_', lower(:currency_code), '_in_aud') THEN rate_value END) AS value_in_aud, max(CASE WHEN rate_code = concat('currency_value_', lower(:currency_code), '_in_aud') THEN two_hundred_day_average_value END) AS average_in_aud FROM silver_domain_investments.market_rate_indicator_daily WHERE rate_code IN (concat('currency_value_', lower(:currency_code), '_in_usd'), concat('currency_value_', lower(:currency_code), '_in_aud')) AND indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) GROUP BY indicator_date ORDER BY indicator_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "currency_code",
+          "displayName": "Currency",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "CHF"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_currency_rates_history",
+      "displayName": "Interest rates of the chosen currency's country",
+      "queryLines": [
+        "WITH countries AS (SELECT * FROM VALUES ('USD', 'US dollar', 'us_federal_funds_effective_rate', 'us_10_year_treasury_yield'), ('EUR', 'Euro', 'euro_area_deposit_facility_rate', 'euro_area_10_year_government_bond_yield'), ('JPY', 'Japanese yen', 'japan_3_month_interbank_rate', 'japan_10_year_government_bond_yield'), ('GBP', 'British pound', 'uk_call_money_rate', 'uk_10_year_government_bond_yield'), ('CHF', 'Swiss franc', 'switzerland_3_month_interbank_rate', 'switzerland_10_year_government_bond_yield'), ('CAD', 'Canadian dollar', 'canada_3_month_interbank_rate', 'canada_10_year_government_bond_yield'), ('SEK', 'Swedish krona', 'sweden_3_month_interbank_rate', 'sweden_10_year_government_bond_yield'), ('AUD', 'Australian dollar', 'rba_cash_rate_target', 'australia_10_year_government_bond_yield'), ('NZD', 'New Zealand dollar', 'new_zealand_3_month_interbank_rate', 'new_zealand_10_year_government_bond_yield'), ('CNY', 'Chinese yuan', 'china_3_month_interbank_rate', '-') AS countries(currency_code, currency_name, short_rate_code, long_rate_code)) SELECT i.indicator_date, CASE i.rate_code WHEN c.short_rate_code THEN 'Short-term rate' ELSE '10-year yield' END AS rate_label, i.rate_value FROM countries c JOIN silver_domain_investments.market_rate_indicator_daily i ON i.rate_code IN (c.short_rate_code, c.long_rate_code) WHERE c.currency_code = :currency_code AND i.indicator_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY i.indicator_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "currency_code",
+          "displayName": "Currency",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "CHF"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_base_options",
+      "displayName": "Base currencies",
+      "queryLines": [
+        "SELECT * FROM VALUES ('AUD', 'Australian dollar'), ('USD', 'US dollar') AS bases(base_code, base_name) "
+      ]
+    },
+    {
+      "name": "ds_yield_ranking",
+      "displayName": "Countries ranked by short-term rate plus the currency's 12-month change",
+      "queryLines": [
+        "WITH asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')), countries AS (SELECT * FROM VALUES ('USD', 'US dollar', 'us_federal_funds_effective_rate', 'us_10_year_treasury_yield'), ('EUR', 'Euro', 'euro_area_deposit_facility_rate', 'euro_area_10_year_government_bond_yield'), ('JPY', 'Japanese yen', 'japan_3_month_interbank_rate', 'japan_10_year_government_bond_yield'), ('GBP', 'British pound', 'uk_call_money_rate', 'uk_10_year_government_bond_yield'), ('CHF', 'Swiss franc', 'switzerland_3_month_interbank_rate', 'switzerland_10_year_government_bond_yield'), ('CAD', 'Canadian dollar', 'canada_3_month_interbank_rate', 'canada_10_year_government_bond_yield'), ('SEK', 'Swedish krona', 'sweden_3_month_interbank_rate', 'sweden_10_year_government_bond_yield'), ('AUD', 'Australian dollar', 'rba_cash_rate_target', 'australia_10_year_government_bond_yield'), ('NZD', 'New Zealand dollar', 'new_zealand_3_month_interbank_rate', 'new_zealand_10_year_government_bond_yield'), ('CNY', 'Chinese yuan', 'china_3_month_interbank_rate', '-') AS countries(currency_code, currency_name, short_rate_code, long_rate_code)), series_values AS (SELECT rate_code, indicator_date, rate_value, two_hundred_day_average_value AS average_value, lag(rate_value, 252) OVER (PARTITION BY rate_code ORDER BY indicator_date) AS year_ago FROM silver_domain_investments.market_rate_indicator_daily WHERE rate_code LIKE concat('currency_value_%_in_', lower(:base_code))), today AS (SELECT v.* FROM series_values v JOIN asof a ON v.indicator_date = a.day), latest AS (SELECT i.rate_code, i.rate_value, i.observation_date FROM silver_domain_investments.market_rate_indicator_daily i JOIN asof a ON i.indicator_date = a.day), ranked AS ( SELECT c.currency_code, c.currency_name, s.rate_value AS short_term_rate, s.observation_date AS short_term_date, l.rate_value AS ten_year_yield, CASE WHEN c.currency_code = upper(:base_code) THEN 0 ELSE (t.rate_value / t.year_ago - 1) * 100 END AS currency_change_12m, CASE WHEN c.currency_code = upper(:base_code) THEN 0 ELSE (t.rate_value / t.average_value - 1) * 100 END AS distance_from_average FROM countries c LEFT JOIN latest s ON s.rate_code = c.short_rate_code LEFT JOIN latest l ON l.rate_code = c.long_rate_code LEFT JOIN today t ON t.rate_code = concat('currency_value_', lower(c.currency_code), '_in_', lower(:base_code)) WHERE s.rate_value IS NOT NULL AND (c.currency_code = upper(:base_code) OR t.year_ago IS NOT NULL)) SELECT rank() OVER (ORDER BY short_term_rate + currency_change_12m DESC) AS rank_position, currency_name, round(short_term_rate, 2) AS short_term_rate, short_term_date, round(ten_year_yield, 2) AS ten_year_yield, round(currency_change_12m, 1) AS currency_change_12m, round(distance_from_average, 1) AS distance_from_average, round(short_term_rate + currency_change_12m, 1) AS short_plus_12m FROM ranked ORDER BY rank_position "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "base_code",
+          "displayName": "Base currency",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "AUD"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "currency-monitor",
+      "displayName": "Currency Monitor",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "currency-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Currency Monitor\n",
+                "\n",
+                "Is the dollar strong or weak, and which main currencies are gaining or losing against the US dollar and against the Australian dollar?\n",
+                "\n",
+                "- A currency is gaining when its value is above its 200-day average\n",
+                "- The US Dollar Index (DXY) is the dollar's megatrend; the Federal Reserve's broad index covers about 26 currencies\n",
+                "- Each value is worked out from the US dollar rates: a Swiss franc in Australian dollars is the franc in US dollars divided by the Australian dollar in US dollars\n",
+                "- Interest rates: the short-term rate and the 10-year yield of each country, with the date of the reading\n",
+                "\n",
+                "Change the date at the top. A dollar index above its average is a strong dollar (green: gaining), at or below it a weak dollar (red)."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "dollar-tiles",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_dollar",
+                  "fields": [
+                    {
+                      "name": "signal_date",
+                      "expression": "`signal_date`"
+                    },
+                    {
+                      "name": "signal_name",
+                      "expression": "`signal_name`"
+                    },
+                    {
+                      "name": "index_order",
+                      "expression": "`index_order`"
+                    },
+                    {
+                      "name": "dollar_state",
+                      "expression": "`dollar_state`"
+                    },
+                    {
+                      "name": "dollar_band",
+                      "expression": "`dollar_band`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"title\": {\"text\": {\"expr\": \"'The dollar as of ' + utcFormat(toDate(data('databricks_query')[0].signal_date), '%Y-%m-%d')\"}, \"anchor\": \"start\", \"fontSize\": 16, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"field\": \"signal_name\", \"type\": \"nominal\", \"sort\": {\"field\": \"index_order\"}, \"axis\": {\"title\": null, \"orient\": \"bottom\", \"labelFontSize\": 15, \"labelAngle\": 0, \"labelColor\": {\"expr\": \"colors.textPrimary.default\"}, \"domain\": false, \"ticks\": false}}, \"tooltip\": [{\"field\": \"signal_name\", \"title\": \"Index\"}, {\"field\": \"reason_text\", \"title\": \"Why\"}]}, \"layer\": [{\"mark\": {\"type\": \"circle\", \"size\": 14000}, \"encoding\": {\"y\": {\"value\": 90}, \"color\": {\"field\": \"dollar_band\", \"type\": \"nominal\", \"legend\": null, \"scale\": {\"domain\": [\"red\", \"yellow\", \"green\", \"blue\"], \"range\": [\"#E15759\", \"#F2C037\", \"#59A14F\", \"#4E79A7\"]}}}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 22, \"fontWeight\": \"bold\", \"color\": \"#11171C\"}, \"encoding\": {\"y\": {\"value\": 90}, \"text\": {\"field\": \"dollar_state\"}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "signal_date"
+                  },
+                  {
+                    "fieldName": "signal_name"
+                  },
+                  {
+                    "fieldName": "index_order"
+                  },
+                  {
+                    "fieldName": "dollar_state"
+                  },
+                  {
+                    "fieldName": "dollar_band"
+                  },
+                  {
+                    "fieldName": "reason_text"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": false
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "dollar-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_dollar_history",
+                  "fields": [
+                    {
+                      "name": "indicator_date",
+                      "expression": "`indicator_date`"
+                    },
+                    {
+                      "name": "dxy_close",
+                      "expression": "`dxy_close`"
+                    },
+                    {
+                      "name": "dxy_average",
+                      "expression": "`dxy_average`"
+                    },
+                    {
+                      "name": "broad_value",
+                      "expression": "`broad_value`"
+                    },
+                    {
+                      "name": "broad_average",
+                      "expression": "`broad_average`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"dxy_close\", \"dxy_average\", \"broad_value\", \"broad_average\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"dxy_close\\\": \\\"US Dollar Index (DXY)\\\", \\\"dxy_average\\\": \\\"DXY 200-day average\\\", \\\"broad_value\\\": \\\"Broad dollar index\\\", \\\"broad_average\\\": \\\"Broad 200-day average\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Index points\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.1f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.1f\", \"title\": \"Index points\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "indicator_date"
+                  },
+                  {
+                    "fieldName": "dxy_close"
+                  },
+                  {
+                    "fieldName": "dxy_average"
+                  },
+                  {
+                    "fieldName": "broad_value"
+                  },
+                  {
+                    "fieldName": "broad_average"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "The dollar indexes and their 200-day averages"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "currency-grid",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_currency_grid",
+                  "fields": [
+                    {
+                      "name": "currency_name",
+                      "expression": "`currency_name`"
+                    },
+                    {
+                      "name": "value_in_usd",
+                      "expression": "`value_in_usd`"
+                    },
+                    {
+                      "name": "against_usd",
+                      "expression": "`against_usd`"
+                    },
+                    {
+                      "name": "band_usd",
+                      "expression": "`band_usd`"
+                    },
+                    {
+                      "name": "distance_usd",
+                      "expression": "`distance_usd`"
+                    },
+                    {
+                      "name": "value_in_aud",
+                      "expression": "`value_in_aud`"
+                    },
+                    {
+                      "name": "against_aud",
+                      "expression": "`against_aud`"
+                    },
+                    {
+                      "name": "band_aud",
+                      "expression": "`band_aud`"
+                    },
+                    {
+                      "name": "distance_aud",
+                      "expression": "`distance_aud`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "currency_name",
+                    "displayName": "Currency",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "value_in_usd",
+                    "displayName": "Value in US dollars",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "against_usd",
+                    "displayName": "Against the US dollar",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "band_usd",
+                    "displayName": "Band",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "distance_usd",
+                    "displayName": "From 200-day average",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "value_in_aud",
+                    "displayName": "Value in Australian dollars",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "against_aud",
+                    "displayName": "Against the Australian dollar",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "band_aud",
+                    "displayName": "Band",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "distance_aud",
+                    "displayName": "From 200-day average",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Currencies against the US dollar and the Australian dollar"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "distance-bars",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_currency_distance",
+                  "fields": [
+                    {
+                      "name": "currency_name",
+                      "expression": "`currency_name`"
+                    },
+                    {
+                      "name": "currency_order",
+                      "expression": "`currency_order`"
+                    },
+                    {
+                      "name": "base_label",
+                      "expression": "`base_label`"
+                    },
+                    {
+                      "name": "distance_ratio",
+                      "expression": "`distance_ratio`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"mark\": {\"type\": \"bar\"}, \"encoding\": {\"y\": {\"field\": \"currency_name\", \"type\": \"nominal\", \"sort\": {\"field\": \"currency_order\"}, \"title\": null}, \"yOffset\": {\"field\": \"base_label\", \"type\": \"nominal\"}, \"x\": {\"field\": \"distance_ratio\", \"type\": \"quantitative\", \"title\": \"Distance from the 200-day average (positive: gaining)\", \"axis\": {\"format\": \".0%\"}, \"scale\": {\"padding\": 14}}, \"color\": {\"field\": \"base_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"currency_name\", \"title\": \"Currency\"}, {\"field\": \"base_label\", \"title\": \"Against\"}, {\"field\": \"distance_ratio\", \"type\": \"quantitative\", \"format\": \".1%\", \"title\": \"Distance\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "currency_name"
+                  },
+                  {
+                    "fieldName": "currency_order"
+                  },
+                  {
+                    "fieldName": "base_label"
+                  },
+                  {
+                    "fieldName": "distance_ratio"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "How far each currency is from its 200-day average"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 27,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "country-rates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_country_rates",
+                  "fields": [
+                    {
+                      "name": "country_currency",
+                      "expression": "`country_currency`"
+                    },
+                    {
+                      "name": "short_term_rate",
+                      "expression": "`short_term_rate`"
+                    },
+                    {
+                      "name": "short_term_date",
+                      "expression": "`short_term_date`"
+                    },
+                    {
+                      "name": "short_term_note",
+                      "expression": "`short_term_note`"
+                    },
+                    {
+                      "name": "ten_year_yield",
+                      "expression": "`ten_year_yield`"
+                    },
+                    {
+                      "name": "ten_year_date",
+                      "expression": "`ten_year_date`"
+                    },
+                    {
+                      "name": "ten_year_note",
+                      "expression": "`ten_year_note`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "country_currency",
+                    "displayName": "Country (currency)",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "short_term_rate",
+                    "displayName": "Short-term rate, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "short_term_date",
+                    "displayName": "Reading of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "short_term_note",
+                    "displayName": "Note",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "ten_year_yield",
+                    "displayName": "10-year yield, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "ten_year_date",
+                    "displayName": "Reading of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "ten_year_note",
+                    "displayName": "Note",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Interest rates of the main countries",
+                "showDescription": true,
+                "description": "Monthly readings are shown with their date; a note says when a reading is older than 4 months. China has no 10-year yield on FRED."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 35,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "currency-dates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_currency_freshness",
+                  "fields": [
+                    {
+                      "name": "currency_date",
+                      "expression": "`currency_date`"
+                    },
+                    {
+                      "name": "dollar_index_date",
+                      "expression": "`dollar_index_date`"
+                    },
+                    {
+                      "name": "broad_index_date",
+                      "expression": "`broad_index_date`"
+                    },
+                    {
+                      "name": "exchange_rate_date",
+                      "expression": "`exchange_rate_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "currency_date",
+                    "displayName": "Currency Monitor as of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "dollar_index_date",
+                    "displayName": "Latest US Dollar Index",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "broad_index_date",
+                    "displayName": "Latest broad dollar index",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "exchange_rate_date",
+                    "displayName": "Latest exchange rate (weekly from FRED)",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data dates"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 43,
+            "width": 12,
+            "height": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "currency-deep-dive",
+      "displayName": "Currency Deep Dive",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "dive-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Currency Deep Dive\n",
+                "\n",
+                "Pick a currency: its value in US and Australian dollars against their 200-day averages, and the short-term rate and 10-year yield of its country when it has one.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-currency",
+            "queries": [
+              {
+                "name": "q_ds_currency_options_currency_code",
+                "query": {
+                  "datasetName": "ds_currency_options",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "currency_code",
+                      "expression": "`currency_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_currency_history_currency_code",
+                "query": {
+                  "datasetName": "ds_currency_history",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "currency_code",
+                      "keyword": "currency_code"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_currency_rates_history_currency_code",
+                "query": {
+                  "datasetName": "ds_currency_rates_history",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "currency_code",
+                      "keyword": "currency_code"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "currency_code",
+                    "displayName": "Currency",
+                    "queryName": "q_ds_currency_options_currency_code"
+                  },
+                  {
+                    "parameterName": "currency_code",
+                    "queryName": "q_ds_currency_history_currency_code"
+                  },
+                  {
+                    "parameterName": "currency_code",
+                    "queryName": "q_ds_currency_rates_history_currency_code"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Currency"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "currency-history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_currency_history",
+                  "fields": [
+                    {
+                      "name": "indicator_date",
+                      "expression": "`indicator_date`"
+                    },
+                    {
+                      "name": "value_in_usd",
+                      "expression": "`value_in_usd`"
+                    },
+                    {
+                      "name": "average_in_usd",
+                      "expression": "`average_in_usd`"
+                    },
+                    {
+                      "name": "value_in_aud",
+                      "expression": "`value_in_aud`"
+                    },
+                    {
+                      "name": "average_in_aud",
+                      "expression": "`average_in_aud`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"value_in_usd\", \"average_in_usd\", \"value_in_aud\", \"average_in_aud\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{\\\"value_in_usd\\\": \\\"In US dollars\\\", \\\"average_in_usd\\\": \\\"US dollars, 200-day average\\\", \\\"value_in_aud\\\": \\\"In Australian dollars\\\", \\\"average_in_aud\\\": \\\"Australian dollars, 200-day average\\\"}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Value of one unit\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.4f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.4f\", \"title\": \"Value of one unit\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "indicator_date"
+                  },
+                  {
+                    "fieldName": "value_in_usd"
+                  },
+                  {
+                    "fieldName": "average_in_usd"
+                  },
+                  {
+                    "fieldName": "value_in_aud"
+                  },
+                  {
+                    "fieldName": "average_in_aud"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Value of one unit of the currency"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "rate-lines",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_currency_rates_history",
+                  "fields": [
+                    {
+                      "name": "indicator_date",
+                      "expression": "`indicator_date`"
+                    },
+                    {
+                      "name": "rate_label",
+                      "expression": "`rate_label`"
+                    },
+                    {
+                      "name": "rate_value",
+                      "expression": "`rate_value`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"mark\": {\"type\": \"line\", \"strokeWidth\": 2, \"interpolate\": \"step-after\"}, \"encoding\": {\"x\": {\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"rate_value\", \"type\": \"quantitative\", \"title\": \"Percent\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \".2f\", \"minExtent\": 64}}, \"color\": {\"field\": \"rate_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"indicator_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"rate_label\", \"title\": \"Rate\"}, {\"field\": \"rate_value\", \"type\": \"quantitative\", \"format\": \".2f\", \"title\": \"Percent\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "indicator_date"
+                  },
+                  {
+                    "fieldName": "rate_label"
+                  },
+                  {
+                    "fieldName": "rate_value"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Short-term rate and 10-year yield of the currency's country (monthly readings are carried forward)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "yield-deep-dive",
+      "displayName": "Yield Deep Dive",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "yield-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Yield Deep Dive\n",
+                "\n",
+                "Which country would have paid the most, in your base currency? Each country is ranked by its short-term interest rate plus the change of its currency against the base over the last 12 months (252 trading days).\n",
+                "\n",
+                "- Pick the base currency: the Australian dollar or the US dollar\n",
+                "- The currency change looks backward; it is not a forecast, and high-rate currencies often fall\n",
+                "- The rates are interbank or policy rates, not what a bank pays on a CD; the date of each reading is shown\n",
+                "- The base currency is shown with no currency change\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-base",
+            "queries": [
+              {
+                "name": "q_ds_base_options_base_code",
+                "query": {
+                  "datasetName": "ds_base_options",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "base_code",
+                      "expression": "`base_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_yield_ranking_base_code",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "base_code",
+                      "keyword": "base_code"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "base_code",
+                    "displayName": "Base currency",
+                    "queryName": "q_ds_base_options_base_code"
+                  },
+                  {
+                    "parameterName": "base_code",
+                    "queryName": "q_ds_yield_ranking_base_code"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Base currency"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "yield-ranking",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "fields": [
+                    {
+                      "name": "rank_position",
+                      "expression": "`rank_position`"
+                    },
+                    {
+                      "name": "currency_name",
+                      "expression": "`currency_name`"
+                    },
+                    {
+                      "name": "short_term_rate",
+                      "expression": "`short_term_rate`"
+                    },
+                    {
+                      "name": "short_term_date",
+                      "expression": "`short_term_date`"
+                    },
+                    {
+                      "name": "ten_year_yield",
+                      "expression": "`ten_year_yield`"
+                    },
+                    {
+                      "name": "currency_change_12m",
+                      "expression": "`currency_change_12m`"
+                    },
+                    {
+                      "name": "distance_from_average",
+                      "expression": "`distance_from_average`"
+                    },
+                    {
+                      "name": "short_plus_12m",
+                      "expression": "`short_plus_12m`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "rank_position",
+                    "displayName": "Rank",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "currency_name",
+                    "displayName": "Currency",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "short_term_rate",
+                    "displayName": "Short-term rate, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "short_term_date",
+                    "displayName": "Reading of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "ten_year_yield",
+                    "displayName": "10-year yield, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "currency_change_12m",
+                    "displayName": "Currency change, last 12 months, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "distance_from_average",
+                    "displayName": "From 200-day average, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "short_plus_12m",
+                    "displayName": "Short-term rate + 12-month change, %",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Countries ranked by short-term rate plus 12-month currency change"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "score-bars",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "fields": [
+                    {
+                      "name": "rank_position",
+                      "expression": "`rank_position`"
+                    },
+                    {
+                      "name": "currency_name",
+                      "expression": "`currency_name`"
+                    },
+                    {
+                      "name": "short_term_rate",
+                      "expression": "`short_term_rate`"
+                    },
+                    {
+                      "name": "currency_change_12m",
+                      "expression": "`currency_change_12m`"
+                    },
+                    {
+                      "name": "short_plus_12m",
+                      "expression": "`short_plus_12m`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"mark\": {\"type\": \"bar\"}, \"encoding\": {\"y\": {\"field\": \"currency_name\", \"type\": \"nominal\", \"sort\": {\"field\": \"rank_position\"}, \"title\": null}, \"x\": {\"field\": \"short_plus_12m\", \"type\": \"quantitative\", \"title\": \"Short-term rate plus 12-month currency change, percent\", \"scale\": {\"padding\": 14}}, \"color\": {\"condition\": {\"test\": \"datum.short_plus_12m > 0\", \"value\": \"#59A14F\"}, \"value\": \"#E15759\"}, \"tooltip\": [{\"field\": \"currency_name\", \"title\": \"Currency\"}, {\"field\": \"short_term_rate\", \"title\": \"Short-term rate, %\"}, {\"field\": \"currency_change_12m\", \"title\": \"12-month change, %\"}, {\"field\": \"short_plus_12m\", \"title\": \"Total, %\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "rank_position"
+                  },
+                  {
+                    "fieldName": "currency_name"
+                  },
+                  {
+                    "fieldName": "short_term_rate"
+                  },
+                  {
+                    "fieldName": "currency_change_12m"
+                  },
+                  {
+                    "fieldName": "short_plus_12m"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Short-term rate plus the 12-month change of the currency"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "filters",
+      "displayName": "Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter-as-of",
+            "queries": [
+              {
+                "name": "q_ds_currency_freshness_as_of_date",
+                "query": {
+                  "datasetName": "ds_currency_freshness",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_dollar_as_of_date",
+                "query": {
+                  "datasetName": "ds_dollar",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_currency_grid_as_of_date",
+                "query": {
+                  "datasetName": "ds_currency_grid",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_currency_distance_as_of_date",
+                "query": {
+                  "datasetName": "ds_currency_distance",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_country_rates_as_of_date",
+                "query": {
+                  "datasetName": "ds_country_rates",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_yield_ranking_as_of_date",
+                "query": {
+                  "datasetName": "ds_yield_ranking",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_currency_freshness_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_dollar_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_currency_grid_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_currency_distance_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_country_rates_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_yield_ranking_as_of_date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "As of date (latest day on or before it)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FCFCFC",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#4E79A7",
+        "#F28E2C",
+        "#76B7B2",
+        "#59A14F",
+        "#B07AA1",
+        "#E15759",
+        "#F2C037"
+      ],
+      "widgetHeaderAlignment": "LEFT"
+    }
+  }
+}

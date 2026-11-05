@@ -12,7 +12,7 @@ from probe import run
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 from common.inflation_signals_sql import inflation_signal_query  # noqa: E402
-from common.inflation_sql import market_rate_indicator_query  # noqa: E402
+from common.market_rate_indicator_sql import market_rate_indicator_query  # noqa: E402
 
 
 def main() -> None:

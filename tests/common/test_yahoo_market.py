@@ -42,6 +42,8 @@ def prices(days, dividends=None, splits=None):
 def test_yahoo_symbol():
     assert yahoo_symbol("BRK.B") == "BRK-B"
     assert yahoo_symbol("^VIX") == "^VIX"
+    assert yahoo_symbol("BF.B") == "BF-B"
+    assert yahoo_symbol("DX-Y.NYB") == "DX-Y.NYB"
 
 
 def test_plan():

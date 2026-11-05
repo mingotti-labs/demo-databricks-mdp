@@ -6,6 +6,8 @@ pipeline files splice the SQL snippets these functions return into their queries
 
 import hashlib
 
+from common.currency import CURRENCY_RATES
+
 IDENTIFIER_SOURCE = "sec"
 FAR_FUTURE_DATE = "9999-12-31"
 SPECIAL_DIVIDEND_FACTOR = 2
@@ -54,6 +56,7 @@ YAHOO_EXCHANGE_TO_MARKET = {
     "NYM": "XNYM",
     "FGI": "XXXX",
     "SNP": "XXXX",
+    "NYB": "XXXX",
 }
 
 # (rate_code, rate_name, source, series_id, unit); the source is the Landing table's source.
@@ -169,8 +172,8 @@ def figure_values_sql() -> str:
 
 
 def rate_values_sql() -> str:
-    """VALUES rows (rate_code, rate_name, source, series_id, unit)."""
-    return ", ".join(f"('{c}', '{n}', '{s}', '{i}', '{u}')" for c, n, s, i, u in RATES)
+    """VALUES rows (rate_code, rate_name, source, series_id, unit): the daily rates and the Currency Monitor series."""
+    return ", ".join(f"('{c}', '{n}', '{s}', '{i}', '{u}')" for c, n, s, i, u in RATES + CURRENCY_RATES)
 
 
 def cpi_values_sql() -> str:

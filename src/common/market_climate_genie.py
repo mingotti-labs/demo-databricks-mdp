@@ -11,6 +11,7 @@ import json
 import re
 from pathlib import Path
 
+from common.currency_queries import DATASETS as CURRENCY_DATASETS
 from common.inflation_queries import DATASETS as INFLATION_DATASETS
 from common.market_climate_queries import DATASETS
 
@@ -19,7 +20,13 @@ GOLD = f"{CATALOG}.gold_analytics_gateway"
 SILVER = f"{CATALOG}.silver_domain_investments"
 INSTRUCTIONS = Path(__file__).with_name("market_climate_genie_instructions.md")
 GOLD_TABLES = ["valuation_daily_index_member", "valuation_daily_index", "monitor_daily_signal"]
-LITERALS = {":sector_name": "'Information Technology'", ":company_name": "'EQT Corporation'", ":range_code": "'6M'"}
+LITERALS = {
+    ":sector_name": "'Information Technology'",
+    ":company_name": "'EQT Corporation'",
+    ":range_code": "'6M'",
+    ":currency_code": "'CHF'",
+    ":base_code": "'AUD'",
+}
 
 EXAMPLES = {
     "ds_lights": ("What is the market climate today?", "Both lights with the yes count and the climate date."),
@@ -43,14 +50,23 @@ EXAMPLES = {
     "ds_cpi_changes": ("How have US consumer prices changed over 12 months?", "The 12-month change and the change against the previous reading, last 36 months."),
     "ds_rate_history": ("What is the short-term interest rate and its 200-day average?", "Federal funds effective rate, last 36 months."),
     "ds_inflation_freshness": ("How fresh is the inflation data?", "The rating date and the latest date of each input."),
+    "ds_dollar": ("Is the dollar strong or weak today?", "The US Dollar Index (megatrend) and the Federal Reserve broad dollar index against their 200-day averages."),
+    "ds_currency_grid": ("Which currencies are gaining or losing against the US dollar and the Australian dollar today?", "One row per currency; value, distance from the 200-day average and Gaining or Losing against each base."),
+    "ds_country_rates": ("What are the short-term interest rates and 10-year yields of the main countries?", "Each reading with its date; a note says when a reading is older than 4 months."),
+    "ds_currency_history": ("How has the Swiss franc moved against the US and Australian dollars?", "Replace 'CHF' with the currency code asked about (USD, EUR, JPY, GBP, CHF, CAD, SEK, AUD, NZD, CNY)."),
+    "ds_currency_rates_history": ("How have Switzerland's interest rates changed?", "Replace 'CHF' with the currency code of the country asked about."),
+    "ds_dollar_history": ("How have the dollar indexes moved over time?", "Both indexes and their 200-day averages, last 36 months."),
+    "ds_yield_ranking": ("Which country can deliver the highest yield, considering its interest rate and its currency's change, in a table ranking?", "Short-term rate plus the 12-month change of the currency against the base; replace 'AUD' with 'USD' for a US dollar base. Backward-looking."),
 }
-QUERIES = {**DATASETS, **INFLATION_DATASETS}
+QUERIES = {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS}
 SAMPLE_QUESTIONS = [
     "What is the market climate today?", "Is the market too expensive right now?", "Which companies push the P/E up most?",
     "Which sector has the highest P/E?", "Why is EQT's P/E so high?", "What is the inflation rating today?",
+    "Which currencies are gaining against the Australian dollar?", "Rank the countries by interest rate and currency change.",
 ]
 LATEST_SIGNAL = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal)"
 LATEST_MEMBER = f"(SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index_member)"
+LATEST_CURRENCY = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency')"
 LATEST_INFLATION = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation')"
 BENCHMARKS = [
     ("Is the market too expensive right now?",
@@ -84,6 +100,15 @@ BENCHMARKS = [
     ("When was the last deflation rating?",
      f"SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' "
      f"AND signal_code = 'rating' AND measured_value = -1"),
+    ("Is the dollar strong or weak today?",
+     f"SELECT signal_name, CASE WHEN is_yes THEN 'Strong' ELSE 'Weak' END AS dollar_state FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency' "
+     f"AND signal_code IN ('dollar_index', 'dollar_broad_index') AND signal_date = {LATEST_CURRENCY} ORDER BY signal_code"),
+    ("Which currencies are gaining against the Australian dollar today?",
+     f"SELECT signal_name FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency' AND lens_code = 'australian_dollar' "
+     f"AND signal_code <> 'summary' AND is_yes AND signal_date = {LATEST_CURRENCY} ORDER BY signal_name"),
+    ("What is Japan's short-term interest rate?",
+     f"SELECT rate_value, observation_date FROM {SILVER}.market_rate_daily WHERE rate_code = 'japan_3_month_interbank_rate' "
+     f"ORDER BY observation_date DESC LIMIT 1"),
 ]
 
 
@@ -111,6 +136,15 @@ def join_spec(left: str, right: str, condition: str, relationship: str) -> dict:
             "sql": [condition, f"--rt=FROM_RELATIONSHIP_TYPE_{relationship}--"]}
 
 
+def extra_benchmarks() -> list[tuple[str, str]]:
+    """Benchmarks built from the dashboard's own query, so the expected answer follows it."""
+    ranking = for_genie(QUERIES["ds_yield_ranking"][1])
+    return [(
+        "Which country has the highest short-term rate plus 12-month currency change against the Australian dollar?",
+        f"SELECT currency_name, short_plus_12m FROM ({ranking}) WHERE rank_position = 1",
+    )]
+
+
 def space() -> dict:
     members, index, signal = (f"{GOLD}.{name}" for name in GOLD_TABLES)
     company, price = f"{SILVER}.company", f"{SILVER}.price_daily"
@@ -118,6 +152,7 @@ def space() -> dict:
     tables = [
         {"identifier": company, "column_configs": [entity("company_name"), entity("gics_sector_name")]},
         {"identifier": price},
+        {"identifier": f"{SILVER}.market_rate_daily"},
         {"identifier": f"{SILVER}.market_rate_indicator_daily"},
         {"identifier": f"{SILVER}.price_indicator_daily"},
         {"identifier": index},
@@ -142,7 +177,7 @@ def space() -> dict:
         },
         "benchmarks": {"questions": by_id([
             {"id": identifier("benchmark:" + question), "question": [question], "answer": [{"format": "SQL", "content": [sql]}]}
-            for question, sql in BENCHMARKS])},
+            for question, sql in BENCHMARKS + extra_benchmarks()])},
     }
 
 

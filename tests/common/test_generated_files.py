@@ -37,7 +37,7 @@ def test_genie_examples_name_the_catalog_and_no_parameters():
     space = json.loads(market_climate_genie.build())["resources"]["genie_spaces"]["market_climate_genie"]["serialized_space"]
     for example in space["instructions"]["example_question_sqls"]:
         sql = example["sql"][0]
-        assert ":as_of_date" not in sql and ":sector_name" not in sql and ":company_name" not in sql and ":range_code" not in sql
+        assert ":as_of_date" not in sql and ":sector_name" not in sql and ":company_name" not in sql and ":range_code" not in sql and ":currency_code" not in sql
         assert "${var.catalog}.gold_analytics_gateway." in sql or "${var.catalog}.silver_domain_investments." in sql
         assert " FROM monitor_daily_signal" not in sql and " JOIN silver_domain_investments." not in sql
 
@@ -47,3 +47,10 @@ def test_inflation_dashboard_file_equals_its_builder():
 
     committed = (ROOT / "src" / "dashboards" / "inflation_deflation.lvdash.json").read_text(encoding="utf-8")
     assert committed.replace("\r\n", "\n") == inflation_dashboard.build()
+
+
+def test_currency_dashboard_file_equals_its_builder():
+    from common import currency_dashboard
+
+    committed = (ROOT / "src" / "dashboards" / "currency_monitor.lvdash.json").read_text(encoding="utf-8")
+    assert committed.replace("\r\n", "\n") == currency_dashboard.build()

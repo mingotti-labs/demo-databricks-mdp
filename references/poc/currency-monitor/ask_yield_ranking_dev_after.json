@@ -1,0 +1,75 @@
+{
+  "attachments": [
+    {
+      "attachment_id": "01f1d91c4c651b30aabe780b145335c4",
+      "query": {
+        "description": "You want to see a ranking of countries based on their ability to deliver the highest yield, considering both their short-term interest rates and the 12-month change in their currency value against the Australian dollar.",
+        "query": "WITH asof AS (SELECT max(signal_date) AS day FROM `mdp_dev`.`gold_analytics_gateway`.`monitor_daily_signal` WHERE monitor_code = 'currency' AND signal_code = 'summary' AND signal_date \u003c= current_date()), countries AS (SELECT * FROM VALUES ('USD', 'US dollar', 'us_federal_funds_effective_rate', 'us_10_year_treasury_yield'), ('EUR', 'Euro', 'euro_area_deposit_facility_rate', 'euro_area_10_year_government_bond_yield'), ('JPY', 'Japanese yen', 'japan_3_month_interbank_rate', 'japan_10_year_government_bond_yield'), ('GBP', 'British pound', 'uk_call_money_rate', 'uk_10_year_government_bond_yield'), ('CHF', 'Swiss franc', 'switzerland_3_month_interbank_rate', 'switzerland_10_year_government_bond_yield'), ('CAD', 'Canadian dollar', 'canada_3_month_interbank_rate', 'canada_10_year_government_bond_yield'), ('SEK', 'Swedish krona', 'sweden_3_month_interbank_rate', 'sweden_10_year_government_bond_yield'), ('AUD', 'Australian dollar', 'rba_cash_rate_target', 'australia_10_year_government_bond_yield'), ('NZD', 'New Zealand dollar', 'new_zealand_3_month_interbank_rate', 'new_zealand_10_year_government_bond_yield'), ('CNY', 'Chinese yuan', 'china_3_month_interbank_rate', '-') AS countries(currency_code, currency_name, short_rate_code, long_rate_code)), series_values AS (SELECT rate_code, indicator_date, rate_value, two_hundred_day_average_value AS average_value, lag(rate_value, 252) OVER (PARTITION BY rate_code ORDER BY indicator_date) AS year_ago FROM `mdp_dev`.`silver_domain_investments`.`market_rate_indicator_daily` WHERE rate_code LIKE concat('currency_value_%_in_', lower('AUD'))), today AS (SELECT v.* FROM series_values v JOIN asof a ON v.indicator_date = a.day), latest AS (SELECT i.rate_code, i.rate_value, i.observation_date FROM `mdp_dev`.`silver_domain_investments`.`market_rate_indicator_daily` i JOIN asof a ON i.indicator_date = a.day), ranked AS ( SELECT c.currency_code, c.currency_name, s.rate_value AS short_term_rate, s.observation_date AS short_term_date, l.rate_value AS ten_year_yield, CASE WHEN c.currency_code = upper('AUD') THEN 0 ELSE (try_divide(t.rate_value,t.year_ago) - 1) * 100 END AS currency_change_12m, CASE WHEN c.currency_code = upper('AUD') THEN 0 ELSE (try_divide(t.rate_value,t.average_value) - 1) * 100 END AS distance_from_average FROM countries c LEFT JOIN latest s ON s.rate_code = c.short_rate_code LEFT JOIN latest l ON l.rate_code = c.long_rate_code LEFT JOIN today t ON t.rate_code = concat('currency_value_', lower(c.currency_code), '_in_', lower('AUD')) WHERE s.rate_value IS NOT NULL AND (c.currency_code = upper('AUD') OR t.year_ago IS NOT NULL)) SELECT rank() OVER (ORDER BY short_term_rate + currency_change_12m DESC) AS rank_position, currency_name, round(short_term_rate, 2) AS short_term_rate, short_term_date, round(ten_year_yield, 2) AS ten_year_yield, round(currency_change_12m, 1) AS currency_change_12m, round(distance_from_average, 1) AS distance_from_average, round(short_term_rate + currency_change_12m, 1) AS short_plus_12m FROM ranked ORDER BY rank_position",
+        "query_result_metadata": {
+          "row_count": 10
+        },
+        "statement_id": "01f1d91c-4c74-169a-ba39-5b5dc77602d0",
+        "thoughts": [
+          {
+            "content": "You want to see a ranking of countries based on their ability to deliver the highest yield, considering both their short-term interest rates and the 12-month change in their currency value against the Australian dollar.",
+            "thought_type": "THOUGHT_TYPE_DESCRIPTION"
+          },
+          {
+            "content": "- Base currency for currency change: The query assumes the Australian dollar (AUD) as the base currency for calculating the 12-month currency change, but the user might have intended the US dollar or another base currency.\n- Yield definition: The yield is defined as the sum of the short-term interest rate and the 12-month currency change percentage. Alternative definitions could include using the 10-year yield or other combinations.",
+            "thought_type": "THOUGHT_TYPE_UNDERSTANDING"
+          },
+          {
+            "content": "- mdp_dev.gold_analytics_gateway.monitor_daily_signal\n- mdp_dev.silver_domain_investments.market_rate_indicator_daily",
+            "thought_type": "THOUGHT_TYPE_DATA_SOURCING"
+          },
+          {
+            "content": "- Identify the latest trading day for currency signals.\n- List the main countries with their short-term interest rate codes and 10-year yield codes.\n- Retrieve the latest short-term interest rates and 10-year yields for these countries.\n- Calculate the 12-month percentage change in each currency's value against the Australian dollar.\n- Rank countries by the sum of their short-term interest rate and the 12-month currency change.",
+            "thought_type": "THOUGHT_TYPE_STEPS"
+          }
+        ]
+      }
+    },
+    {
+      "attachment_id": "01f1d91c4dd11c6b8148f9656a1f396d",
+      "suggested_questions": {
+        "questions": [
+          "Can you provide a ranking of countries by their short-term interest rates and the 12-month change in their currency value against the Australian dollar, including the dates of the interest rate readings?",
+          "What are the current short-term interest rates and 10-year government bond yields for the main countries, along with the dates of these readings?",
+          "Can you show the 12-month percentage change in currency value for each main currency against the Australian dollar, along with their current short-term interest rates?"
+        ]
+      }
+    },
+    {
+      "text": {
+        "content": "The ranking shows that the **Australian dollar** currently delivers the highest yield when combining its short-term interest rate and 12-month currency change, with a total of **4.6%**. All other countries have a lower combined yield, with the Chinese yuan in second place at **0.9%** and the British pound at **-1.6%**. \n\nSome of the top values are:\n- **Australian dollar**: short-term rate 4.60%, currency change 0.0%, combined yield 4.6%\n- **Chinese yuan**: short-term rate 1.49%, currency change -0.6%, combined yield 0.9%\n- **British pound**: short-term rate 3.73%, currency change -5.4%, combined yield -1.6%\n- **US dollar**: short-term rate 3.88%, currency change -7.1%, combined yield -3.2%\n- **Canadian dollar**: short-term rate 2.33%, currency change -6.5%, combined yield -4.2%",
+        "purpose": "TEXT_ATTACHMENT_PURPOSE_ANSWER"
+      }
+    },
+    {
+      "attachment_id": "01f1d91c544f11f196b21ef0b2f956c9",
+      "text": {
+        "content": "Would you prefer to see the ranking using the US dollar as the base currency for the currency change, or to include the 10-year yields in the yield calculation instead?",
+        "purpose": "FOLLOW_UP_QUESTION"
+      }
+    },
+    {
+      "attachment_id": "01f1d91c54521b2ca9a0a03f5f993755",
+      "viz": {
+        "query_attachment_id": "01f1d91c4c651b30aabe780b145335c4"
+      }
+    }
+  ],
+  "content": "Based on the information available in the currency monitor, is it possible to determine which country can currently deliver the highest yield considering their currency valuation and also their interest rate? Can you generate a ranking in a table format?",
+  "conversation_id": "01f1d91c48381bee8f7652a0105cde93",
+  "created_timestamp": 1793885092070,
+  "id": "01f1d91c4850140395b71af28620208d",
+  "last_updated_timestamp": 1793885120359,
+  "message_id": "01f1d91c4850140395b71af28620208d",
+  "query_result": {
+    "row_count": 10,
+    "statement_id": "01f1d91c-4c74-169a-ba39-5b5dc77602d0"
+  },
+  "space_id": "01f1d8d92f9e17c398a3e4f3dadb5c72",
+  "status": "COMPLETED",
+  "user_id": 75657101984116
+}

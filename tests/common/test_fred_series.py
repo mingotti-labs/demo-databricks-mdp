@@ -6,6 +6,7 @@ import pytest
 import requests
 
 from common import fred_series
+from common.currency import fred_series_ids
 from common.fred_series import (
     first_day,
     get_json,
@@ -165,7 +166,7 @@ def test_a_connection_error_never_leaks_the_key_in_the_message_or_traceback(
     assert KEY not in rendered
 
 
-def test_series_list_holds_rates_and_consumer_prices():
+def test_series_list_holds_rates_consumer_prices_and_currency_series():
     assert fred_series.SERIES == [
         "DGS10",
         "DFF",
@@ -174,4 +175,4 @@ def test_series_list_holds_rates_and_consumer_prices():
         "CPIAUCSL",
         "CPIAUCNS",
         "CPILFESL",
-    ]
+    ] + fred_series_ids()

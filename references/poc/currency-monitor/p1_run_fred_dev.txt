@@ -1,0 +1,2 @@
+[dev svc_cicd_github] run--fred--dev: run 621296967819147
+SUCCESS https://dbc-e3197e2d-933b.cloud.databricks.com/?o=7474656246309217#job/266310893821439/run/621296967819147
