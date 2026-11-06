@@ -6,13 +6,17 @@
 `strategy_name`, `event_name`, `listing_id`, `setup_start_date` (the date of its setup period's `setup_start`), a plain
 `reason_text`, `currency_code` and `ingested_timestamp`; an `entry` row SHALL also carry `entry_number` (1, 2, ... by date
 within the setup period) and `is_first_entry` (true on number 1). Events SHALL be evaluated on complete Monday-based weeks
-(the last trading day is a Friday or a later week has a price) whose last day has a market climate row, and the setup
+(the last trading day is a Friday, or that week's Friday has passed) whose last day has a market climate row, and the setup
 SHALL count as on only when either climate lens is red on that day. Every column SHALL carry a Unity Catalog description.
 
 #### Scenario: A setup period
 - **WHEN** a strategy's setup is off in week 1, on in weeks 2 to 4 and off in week 5
 - **THEN** the table has a `setup_start` on week 2's last day and a `setup_end` on week 5's last day, both with
   `setup_start_date` week 2's last day, and no row for weeks 1, 3 and 4 unless an entry fires
+
+#### Scenario: A holiday Friday
+- **WHEN** a week's last trading day is a Thursday because Friday is a holiday, and the run is after that Friday
+- **THEN** the week is evaluated with Thursday's close as its week close
 
 #### Scenario: The current week
 - **WHEN** the latest price is on a Wednesday
