@@ -45,3 +45,8 @@ preferred_stock,1,us-gaap,PreferredStockValue
 earnings_per_share_amount,1,us-gaap,EarningsPerShareDiluted
 earnings_per_share_amount,2,us-gaap,EarningsPerShareBasic
 weighted_average_shares_basic_count,1,us-gaap,WeightedAverageNumberOfSharesOutstandingBasic
+revenue,1,us-gaap,Revenues
+revenue,2,us-gaap,RevenueFromContractWithCustomerExcludingAssessedTax
+revenue,3,us-gaap,RevenuesNetOfInterestExpense
+revenue,4,us-gaap,SalesRevenueNet
+revenue,5,us-gaap,RevenueFromContractWithCustomerIncludingAssessedTax

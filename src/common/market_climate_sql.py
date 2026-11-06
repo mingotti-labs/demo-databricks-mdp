@@ -79,6 +79,7 @@ def index_member_valuation_query() -> str:
                AS share_count_source_code,
              coalesce(f.shares_outstanding_count, f.weighted_average_shares_basic_count) AS share_count,
              f.net_income AS earnings_trailing_twelve_months_amount,
+             f.revenue AS revenue_trailing_twelve_months_amount,
              f.earnings_ten_year_average_amount,
              f.earnings_ten_year_average_inflation_adjusted_amount AS adjusted_average_amount,
              f.earnings_year_count,
@@ -140,6 +141,7 @@ def index_member_valuation_query() -> str:
            share_count,
            share_count_source_code,
            earnings_trailing_twelve_months_amount,
+           revenue_trailing_twelve_months_amount,
            earnings_ten_year_average_amount,
            earnings_year_count,
            filing_consumer_price_index_value,
@@ -155,6 +157,9 @@ def index_member_valuation_query() -> str:
            without_ratio AS price_earnings_without_member_ratio,
            CASE WHEN is_used AND index_ratio IS NOT NULL AND without_ratio IS NOT NULL
                 THEN index_ratio - without_ratio END AS price_earnings_effect_ratio,
+           CASE WHEN market_value_amount IS NOT NULL AND revenue_trailing_twelve_months_amount > 0
+                THEN CAST(market_value_amount / revenue_trailing_twelve_months_amount AS DECIMAL(18, 4)) END
+             AS price_to_sales_ratio,
            'USD' AS currency_code,
            CASE WHEN price_ingested_timestamp IS NULL THEN fundamentals_ingested_timestamp
                 WHEN fundamentals_ingested_timestamp IS NULL THEN price_ingested_timestamp
