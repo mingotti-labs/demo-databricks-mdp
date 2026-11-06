@@ -7,7 +7,7 @@ catalog) fill them in; silver tables carry their schema name. `:as_of_date` is a
 
 AS_OF = (
     "asof AS (SELECT max(signal_date) AS day FROM monitor_daily_signal "
-    "WHERE signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31'))"
+    "WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31'))"
 )
 VALUATION_AS_OF = (
     "asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index "
@@ -36,7 +36,7 @@ dataset("ds_lights", "Lights of the day", f"""
 WITH {AS_OF}
 SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text, s.signal_date AS climate_date
 FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day
-WHERE s.signal_code = 'climate' ORDER BY s.lens_code
+WHERE s.monitor_code = 'market_climate' AND s.signal_code = 'climate' ORDER BY s.lens_code
 """)
 
 dataset("ds_answers", "Answers of the day", f"""
@@ -45,12 +45,12 @@ SELECT s.lens_name, s.lens_code, s.signal_name, s.signal_code,
   CASE WHEN s.is_yes THEN 'Yes' ELSE 'No' END AS answer_text,
   s.band_code, s.measured_value, s.threshold_value, s.reason_text
 FROM monitor_daily_signal s JOIN asof a ON s.signal_date = a.day
-WHERE s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code
+WHERE s.monitor_code = 'market_climate' AND s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code
 """)
 
 dataset("ds_light_history", "Light history", f"""
 SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code
-FROM monitor_daily_signal WHERE signal_code = 'climate' AND signal_date >= {CHART_START} ORDER BY signal_date, lens_name
+FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= {CHART_START} ORDER BY signal_date, lens_name
 """)
 
 dataset("ds_pe_history", "Price/earnings history", f"""
@@ -62,13 +62,13 @@ FROM valuation_daily_index i WHERE i.valuation_date >= {CHART_START} ORDER BY i.
 
 dataset("ds_fed_history", "Fed target rate", f"""
 SELECT signal_date, measured_value AS fed_target_rate, band_code AS fed_band_code
-FROM monitor_daily_signal WHERE signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
+FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
 ORDER BY signal_date
 """)
 
 dataset("ds_trend_history", "S&P 500 and its 200-day average", f"""
 SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200
-FROM monitor_daily_signal WHERE signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
+FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
 ORDER BY signal_date
 """)
 
