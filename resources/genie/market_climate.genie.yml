@@ -168,7 +168,7 @@
                   "How has the S&P 500 P/E moved over time?"
                 ],
                 "sql": [
-                  "SELECT i.valuation_date, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index i WHERE i.valuation_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY i.valuation_date"
+                  "SELECT i.valuation_date, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing, add_months(current_date(), -(CASE '36M' WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index i WHERE i.valuation_date >= add_months(current_date(), -(CASE '36M' WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) ORDER BY i.valuation_date"
                 ],
                 "usage_guidance": [
                   "Both measures per day, last 36 months."
@@ -384,7 +384,7 @@
                   "How have the lights changed over time?"
                 ],
                 "sql": [
-                  "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date, lens_name"
+                  "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code, add_months(current_date(), -(CASE '36M' WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= add_months(current_date(), -(CASE '36M' WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) ORDER BY signal_date, lens_name"
                 ],
                 "usage_guidance": [
                   "Yes answers per day for each climate, last 36 months."

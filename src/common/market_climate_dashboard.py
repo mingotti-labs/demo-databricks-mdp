@@ -16,9 +16,7 @@ from common.dashboard_widgets import (
     PALETTE,
     PERCENT,
     RED,
-    SHARED_DOMAIN,
     TEXT_COLOR,
-    TIME_AXIS,
     YELLOW,
     Y_PADDING,
     counter,
@@ -26,10 +24,12 @@ from common.dashboard_widgets import (
     dataset_entries,
     date_parameter,
     filter_widget,
+    range_time_x,
     string_parameter,
     table,
     text,
     vega,
+    with_range_dates,
 )
 from common.market_climate_queries import DATASETS
 
@@ -40,6 +40,7 @@ DATE_DATASETS = [
 SECTOR_DATASETS = ["ds_sector_up", "ds_sector_down"]
 COMPANY_DATASETS = ["ds_company_check", "ds_company_price", "ds_company_figures"]
 RANGE_DATASETS = ["ds_company_price"]
+HISTORY_DATASETS = ["ds_light_history", "ds_pe_history", "ds_fed_history", "ds_trend_history"]
 
 
 def parameters(dataset: str) -> list[dict]:
@@ -52,6 +53,8 @@ def parameters(dataset: str) -> list[dict]:
         result.append(string_parameter("company_name", "Company", "EQT Corporation"))
     if dataset in RANGE_DATASETS:
         result.append(string_parameter("range_code", "Range", "6M"))
+    if dataset in HISTORY_DATASETS:
+        result.append(string_parameter("history_range_code", "History range", "36M"))
     return result
 
 
@@ -87,20 +90,20 @@ def traffic_lights(name: str, x: int, y: int, w: int, h: int) -> dict:
 
 def light_history(x: int, y: int, w: int, h: int) -> dict:
     """Both climates; the long-run line is drawn wide and pale under the thin modern line so equal answers stay visible."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
+    time_x = range_time_x("signal_date")
     spec = {"encoding": {"x": time_x, "y": {"field": "yes_count", "type": "quantitative", "title": "Yes answers", "scale": {"domain": [0, 3], "padding": Y_PADDING}, "axis": {"tickMinStep": 1, "minExtent": AXIS_WIDTH}},
                          "color": {"field": "lens_name", "type": "nominal", "title": "Climate", "legend": {"orient": "top"}},
                          "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "lens_name", "title": "Climate"}, {"field": "yes_count", "title": "Yes answers"}]},
             "layer": [{"transform": [{"filter": "datum.lens_code == 'long_run'"}], "mark": {"type": "line", "strokeWidth": 9, "opacity": 0.35, "interpolate": "step-after"}},
                       {"transform": [{"filter": "datum.lens_code == 'modern'"}], "mark": {"type": "line", "strokeWidth": 2.5, "interpolate": "step-after"}}]}
     return vega("light-history", "Yes answers per day (0 green, 1 yellow, 2 or 3 red)", "ds_light_history",
-                ["signal_date", "lens_name", "lens_code", "yes_count"], spec, x, y, w, h,
+                ["signal_date", "lens_name", "lens_code", "yes_count", "range_start_date", "range_end_date"], with_range_dates(spec), x, y, w, h,
                 "Both climates are drawn; where the wide pale line shows around the thin one, they gave the same answer.")
 
 
 def fed_history(x: int, y: int, w: int, h: int) -> dict:
     """Target rate line over a background: red within 6 months of a hike, green within 6 months of a cut."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
+    time_x = range_time_x("signal_date")
     spec = {"layer": [
         {"transform": [{"window": [{"op": "lead", "field": "signal_date", "as": "next_date"}], "sort": [{"field": "signal_date"}]},
                        {"filter": "datum.fed_band_code == 'red' || datum.fed_band_code == 'green'"}],
@@ -112,13 +115,13 @@ def fed_history(x: int, y: int, w: int, h: int) -> dict:
         {"mark": {"type": "line", "interpolate": "step-after", "strokeWidth": 2.5, "color": "#2B3A55"},
          "encoding": {"x": time_x, "y": {"field": "fed_target_rate", "type": "quantitative", "title": "Target rate (%)", "scale": {"zero": True, "nice": True, "padding": Y_PADDING}, "axis": {"format": ".2f", "tickCount": 6, "minExtent": AXIS_WIDTH}},
                       "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "fed_target_rate", "title": "Target rate (%)"}]}}]}
-    return vega("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", ["signal_date", "fed_target_rate", "fed_band_code"], spec, x, y, w, h,
+    return vega("fed-history", "Fed target rate (upper limit), percent", "ds_fed_history", ["signal_date", "fed_target_rate", "fed_band_code", "range_start_date", "range_end_date"], with_range_dates(spec), x, y, w, h,
                 "Red background: within 6 months of a hike. Green background: within 6 months of a cut.")
 
 
 def trend_history(x: int, y: int, w: int, h: int) -> dict:
     """S&P 500 and its 200-day average on the same time axis and left margin as the Fed chart."""
-    time_x = {"field": "signal_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
+    time_x = range_time_x("signal_date")
     spec = {"transform": [{"fold": ["sp500_close", "sp500_average_200"], "as": ["series", "value"]},
                           {"calculate": "datum.series == 'sp500_close' ? 'S&P 500 close' : '200-day average'", "as": "series_label"}],
             "mark": {"type": "line", "strokeWidth": 2},
@@ -128,13 +131,13 @@ def trend_history(x: int, y: int, w: int, h: int) -> dict:
                          "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"}},
                          "tooltip": [{"field": "signal_date", "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Line"},
                                      {"field": "value", "type": "quantitative", "format": ",.2f", "title": "Value"}]}}
-    return vega("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", ["signal_date", "sp500_close", "sp500_average_200"], spec, x, y, w, h,
+    return vega("trend-history", "S&P 500 and its 200-day average", "ds_trend_history", ["signal_date", "sp500_close", "sp500_average_200", "range_start_date", "range_end_date"], with_range_dates(spec), x, y, w, h,
                 "Same dates and left margin as the Fed chart, so the two can be read one above the other.")
 
 
 def pe_history(x: int, y: int, w: int, h: int) -> dict:
     """Index P/E, both measures, with the three band lines drawn once each."""
-    time_x = {"field": "valuation_date", "type": "temporal", "title": None, "scale": {"domain": SHARED_DOMAIN}, "axis": TIME_AXIS}
+    time_x = range_time_x("valuation_date")
     lines = [(16, "cheap line, long run", GREEN), (22, "expensive line, long run", YELLOW), (30, "expensive line, modern", RED)]
     spec = {"layer": [
         {"transform": [{"fold": ["pe_ten_year_adjusted", "pe_trailing"], "as": ["series", "value"]},
@@ -150,7 +153,7 @@ def pe_history(x: int, y: int, w: int, h: int) -> dict:
         + [{"transform": [{"window": [{"op": "row_number", "as": "row_rank"}]}, {"filter": "datum.row_rank == 1"}],
             "mark": {"type": "text", "align": "left", "dx": 4, "dy": -6, "fontSize": 11, "color": TEXT_COLOR},
             "encoding": {"x": {"value": 0}, "y": {"datum": value, "type": "quantitative"}, "text": {"value": label}}} for value, label, _ in lines]}
-    return vega("pe-history", "S&P 500 price/earnings ratio", "ds_pe_history", ["valuation_date", "pe_ten_year_adjusted", "pe_trailing"], spec, x, y, w, h,
+    return vega("pe-history", "S&P 500 price/earnings ratio", "ds_pe_history", ["valuation_date", "pe_ten_year_adjusted", "pe_trailing", "range_start_date", "range_end_date"], with_range_dates(spec), x, y, w, h,
                 "Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern).")
 
 
@@ -211,15 +214,17 @@ def climate_page() -> dict:
     dates = [("climate_date", "Climate as of", None), ("sp500_price_date", "Latest S&P 500 price", None),
              ("fed_rate_date", "Latest Fed target reading", None), ("cpi_date", "Latest CPI reading (monthly, carried forward)", None)]
     return {"name": "climate", "displayName": "Market Climate Monitor", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
-        text("climate-title", ["# Market Climate Monitor\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
+        text("climate-title", ["# Market Climate Monitor\n", "\n", "Two climates read the same three questions. Yes is the unfavourable answer.\n", "\n", "- Is the market too expensive?\n", "- Is the Fed in the way?\n", "- Is the market going up?\n", "\n", "- Red (2 or 3 yes): sell\n", "- Yellow (1 yes): buy and hold\n", "- Green (0 yes): strong buy\n", "\n", "Change the date at the top and the history range above the charts. The other pages show the numbers behind the valuation answer."], 0, 0, 12, 5),
         traffic_lights("traffic-lights", 0, 5, 12, 6),
-        light_history(0, 11, 12, 5),
-        pe_history(0, 16, 12, 6),
-        fed_history(0, 22, 12, 6),
-        trend_history(0, 28, 12, 6),
-        table("answers", "The three answers of each climate", "ds_answers", answers, 0, 34, 12, 7),
-        table("lights", "Lights of the day", "ds_lights", lights, 0, 41, 12, 3),
-        table("data-dates", "Data dates", "ds_freshness", dates, 0, 44, 12, 3,
+        filter_widget("filter-history-range", "History range (the four charts below)", "filter-single-select",
+                      [("ds_history_range_options", "field", "history_range_code")] + [(d, "parameter", "history_range_code") for d in HISTORY_DATASETS], 0, 11, 6),
+        light_history(0, 13, 12, 5),
+        pe_history(0, 18, 12, 6),
+        fed_history(0, 24, 12, 6),
+        trend_history(0, 30, 12, 6),
+        table("answers", "The three answers of each climate", "ds_answers", answers, 0, 36, 12, 7),
+        table("lights", "Lights of the day", "ds_lights", lights, 0, 43, 12, 3),
+        table("data-dates", "Data dates", "ds_freshness", dates, 0, 46, 12, 3,
               "The climate is shown as of the latest day on or before the chosen date; the other columns say how fresh each input is."),
     ]}
 

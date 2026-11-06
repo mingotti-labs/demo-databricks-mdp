@@ -24,6 +24,7 @@ LITERALS = {
     ":sector_name": "'Information Technology'",
     ":company_name": "'EQT Corporation'",
     ":range_code": "'6M'",
+    ":history_range_code": "'36M'",
     ":currency_code": "'CHF'",
     ":base_code": "'AUD'",
 }

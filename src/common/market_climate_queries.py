@@ -17,6 +17,11 @@ VALUATION_AS_OF = (
 MONTHS_SHOWN = 36
 CHART_START = f"add_months(date_trunc('MONTH', current_date()), -{MONTHS_SHOWN - 1})"
 
+HISTORY_RANGES = [("1M", 1), ("3M", 3), ("6M", 6), ("12M", 12), ("24M", 24), ("36M", 36)]
+HISTORY_MONTHS = "CASE :history_range_code " + " ".join(f"WHEN '{code}' THEN {months}" for code, months in HISTORY_RANGES) + f" ELSE {MONTHS_SHOWN} END"
+HISTORY_START = f"add_months(current_date(), -({HISTORY_MONTHS}))"
+HISTORY_DATES = f"{HISTORY_START} AS range_start_date, current_date() AS range_end_date"
+
 DATASETS: dict[str, tuple[str, str]] = {}
 
 
@@ -49,26 +54,26 @@ WHERE s.monitor_code = 'market_climate' AND s.signal_code <> 'climate' ORDER BY 
 """)
 
 dataset("ds_light_history", "Light history", f"""
-SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code
-FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= {CHART_START} ORDER BY signal_date, lens_name
+SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code, {HISTORY_DATES}
+FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= {HISTORY_START} ORDER BY signal_date, lens_name
 """)
 
 dataset("ds_pe_history", "Price/earnings history", f"""
 SELECT i.valuation_date,
   i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted,
-  i.price_earnings_trailing_twelve_months_ratio AS pe_trailing
-FROM valuation_daily_index i WHERE i.valuation_date >= {CHART_START} ORDER BY i.valuation_date
+  i.price_earnings_trailing_twelve_months_ratio AS pe_trailing, {HISTORY_DATES}
+FROM valuation_daily_index i WHERE i.valuation_date >= {HISTORY_START} ORDER BY i.valuation_date
 """)
 
 dataset("ds_fed_history", "Fed target rate", f"""
-SELECT signal_date, measured_value AS fed_target_rate, band_code AS fed_band_code
-FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
+SELECT signal_date, measured_value AS fed_target_rate, band_code AS fed_band_code, {HISTORY_DATES}
+FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= {HISTORY_START}
 ORDER BY signal_date
 """)
 
 dataset("ds_trend_history", "S&P 500 and its 200-day average", f"""
-SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200
-FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= {CHART_START}
+SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200, {HISTORY_DATES}
+FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= {HISTORY_START}
 ORDER BY signal_date
 """)
 
@@ -196,6 +201,7 @@ prices AS (SELECT p.price_date, p.price_close, p.price_high, p.price_low,
   WHERE p.price_date <= (SELECT day FROM asof)
   WINDOW w AS (ORDER BY p.price_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW))
 """
+dataset("ds_history_range_options", "History ranges", "SELECT * FROM VALUES " + ", ".join(f"('{code}', {months})" for code, months in HISTORY_RANGES) + " AS t(history_range_code, history_range_months) ORDER BY history_range_months")
 dataset("ds_range_options", "Price ranges", "SELECT * FROM VALUES ('5D', 1), ('1M', 2), ('6M', 3), ('YTD', 4), ('1Y', 5) AS t(range_code, range_order) ORDER BY range_order")
 
 dataset("ds_company_price", "Company price with Bollinger bands", COMPANY_PRICES + f"""

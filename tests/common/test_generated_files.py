@@ -16,6 +16,23 @@ def test_every_dataset_has_a_title_and_query():
         assert dataset["displayName"] and dataset["queryLines"][0].strip()
 
 
+def test_climate_page_history_charts_follow_the_range_filter():
+    dashboard = json.loads(market_climate_dashboard.build())
+    history = ["ds_light_history", "ds_pe_history", "ds_fed_history", "ds_trend_history"]
+    datasets = {d["name"]: d for d in dashboard["datasets"]}
+    for name in history:
+        assert "range_start_date" in datasets[name]["queryLines"][0]
+        assert datasets[name]["parameters"][0]["keyword"] == "history_range_code"
+    first_page = dashboard["pages"][0]["layout"]
+    filter_widget = next(w["widget"] for w in first_page if w["widget"]["name"] == "filter-history-range")
+    assert {q["query"]["datasetName"] for q in filter_widget["queries"]} == {"ds_history_range_options", *history}
+    charts = [w["widget"] for w in first_page if w["widget"]["name"].endswith("-history")]
+    assert len(charts) == 4
+    for chart in charts:
+        spec = chart["spec"]["jsonSpec"]["spec"]
+        assert "range_start_date" in spec and "SHARED_DOMAIN" not in spec and '"domain": [{"expr"' not in spec
+
+
 def test_genie_file_equals_its_builder():
     committed = (ROOT / "resources" / "genie" / "market_climate.genie.yml").read_text(encoding="utf-8")
     assert committed.replace("\r\n", "\n") == market_climate_genie.build()
@@ -37,7 +54,7 @@ def test_genie_examples_name_the_catalog_and_no_parameters():
     space = json.loads(market_climate_genie.build())["resources"]["genie_spaces"]["market_climate_genie"]["serialized_space"]
     for example in space["instructions"]["example_question_sqls"]:
         sql = example["sql"][0]
-        assert ":as_of_date" not in sql and ":sector_name" not in sql and ":company_name" not in sql and ":range_code" not in sql and ":currency_code" not in sql
+        assert ":as_of_date" not in sql and ":sector_name" not in sql and ":company_name" not in sql and ":range_code" not in sql and ":history_range_code" not in sql and ":currency_code" not in sql
         assert "${var.catalog}.gold_analytics_gateway." in sql or "${var.catalog}.silver_domain_investments." in sql
         assert " FROM monitor_daily_signal" not in sql and " JOIN silver_domain_investments." not in sql
 
