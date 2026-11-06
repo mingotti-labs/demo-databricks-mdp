@@ -1,0 +1,5 @@
+SQQQ ProShares UltraPro Short QQQ NGM ETF rows 4210 first 2010-02-11 last 2026-11-05 last close 49.55
+PSQ ProShares Short QQQ PCX ETF rows 5127 first 2006-06-21 last 2026-11-05 last close 28.28
+SH ProShares Short S&P500 PCX ETF rows 5127 first 2006-06-21 last 2026-11-05 last close 33.83
+SDS ProShares UltraShort S&P500 PCX ETF rows 5112 first 2006-07-13 last 2026-11-05 last close 59.09
+SPXU ProShares UltraPro Short S&P500 PCX ETF rows 4369 first 2009-06-25 last 2026-11-05 last close 39.01

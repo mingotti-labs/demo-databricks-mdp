@@ -259,3 +259,13 @@ The Currency Monitor part 1 (2026-11-05, 2026-11-06). Scripts and results in `re
 | P4 | Do the dashboard and agent queries run, and does the agent pass its benchmarks? | All 43 dashboard queries and all 39 agent queries run in dev (`p4_dashboard_queries_dev.txt`). Evaluation: 10 of 12, then 11 of 12, then 12 of 12 (`p3_eval_results_dev_run7.json`) after the instructions asked for both lenses when none is named and for the date of an interest reading, and one benchmark was aligned to the example's answer shape. |
 | P5 | Can the agent answer "which country can deliver the highest yield considering its currency and interest rate, as a ranking table"? | Asked as is (`ask_yield_ranking_dev.json`) it answered, but added a short-term rate in percent to the currency's distance from its 200-day average as a fraction, so the ranking was the rate ranking, against the US dollar only. After the Yield Deep Dive (short-term rate plus the 12-month change in the base, percent) and its method as an instruction and example, the same question gave the sound ranking (AUD 4.6, CNY 0.9, GBP -1.6, USD -3.2, CAD -4.2; `ask_yield_ranking_dev_after.json`); it did not add the backward-looking caveat the instruction asks for. 45 dashboard queries run, evaluation 13 of 13 (`p3_eval_results_dev_run8.json`). |
 
+## strategies (design 2026-11-06; change strategy-inputs)
+
+Scripts and results in `references/poc/strategies/`.
+
+| Probe | Question | Result |
+|---|---|---|
+| P0 | Does Yahoo return full daily history for the bear funds? | Yes, all five (`p0_result.txt`): SQQQ (NGM) from 2010-02-11, PSQ, SH (PCX) from 2006-06-21, SDS from 2006-07-13, SPXU from 2009-06-25; both exchange codes already map. |
+| P1 | How would strategy 001 have fired on prd, 2025-10-29 to 2026-11-04? | 54 weeks with a climate row, 51 with a red light, 14 setup weeks (red and the S&P 500 below five weeks earlier); no week fell 2.5% or more and no interim day did, so no entry (`p1_result_prd.txt`). The climate lights start 2025-10-29, so the history is one year. |
+| P2 | Which SEC revenue concepts do companies report? | Several, and companies switch (`p2_result.txt`): Apple the contract concept since 2018 (`SalesRevenueNet` before), NVIDIA and Realty Income `Revenues`, Palantir only the contract concept, JPMorgan `RevenuesNetOfInterestExpense` on its latest filings, Berkshire both. Silver picks a concept per filing, so a priority list works. |
+| P3 | How often do current members close six straight weeks down? | On prd for the same year: a streak reached six 150 times (125 under a red light), 135 of 500 members (`p3_result_prd.txt`); price-to-sales above 15 is not applied yet (no revenue). |
