@@ -1,0 +1,2 @@
+members, weeks a streak reaches 6, of which red, members reaching 6:
+[['500', '150', '125', '135']]

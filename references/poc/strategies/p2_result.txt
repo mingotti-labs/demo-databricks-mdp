@@ -1,0 +1,8 @@
+AAPL | Revenues: 11 facts, latest end 2018-09-29 ; RevenueFromContractWithCustomerExcludingAssessedTax: 120 facts, latest end 2026-09-26 ; SalesRevenueNet: 210 facts, latest end 2018-06-30
+NVDA | Revenues: 280 facts, latest end 2026-07-26 ; RevenueFromContractWithCustomerExcludingAssessedTax: 28 facts, latest end 2022-01-30
+PLTR | RevenueFromContractWithCustomerExcludingAssessedTax: 78 facts, latest end 2026-09-30 ; RevenueFromContractWithCustomerIncludingAssessedTax: 4 facts, latest end 2020-09-30
+JPM | Revenues: 120 facts, latest end 2025-12-31 ; RevenuesNetOfInterestExpense: 153 facts, latest end 2026-09-30 ; InterestAndDividendIncomeOperating: 54 facts, latest end 2012-06-30
+XOM (old CIK) | Revenues: 127 facts, latest end 2026-03-31 ; RevenueFromContractWithCustomerExcludingAssessedTax: 49 facts, latest end 2023-06-30
+XOM (new CIK) | Revenues: 8 facts, latest end 2026-09-30
+O (REIT) | Revenues: 149 facts, latest end 2026-09-30 ; RevenueFromContractWithCustomerExcludingAssessedTax: 16 facts, latest end 2018-12-31
+BRK.B | Revenues: 309 facts, latest end 2026-06-30 ; RevenueFromContractWithCustomerExcludingAssessedTax: 100 facts, latest end 2026-06-30 ; RevenueFromContractWithCustomerIncludingAssessedTax: 1 facts, latest end 2018-03-31 ; SalesRevenueNet: 12 facts, latest end 2017-12-31
