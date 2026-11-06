@@ -19,9 +19,11 @@
 
 ### D1. Weeks from daily prices
 
-A week is Monday-based (`date_trunc('WEEK', price_date)`); its close is the close of its last trading day. A week is
-complete when its last day is a Friday or a later week has a price; only complete weeks are evaluated, so the current
-week writes nothing until it ends (the dashboard shows it as provisional). The S&P 500 uses `price_close`; stocks use
+A week is Monday-based (`date_trunc('WEEK', price_date)`); its close is the close of its last trading day so far. Every
+week is evaluated, the current one too: its latest close stands in for the week's close, and its rows carry
+`is_provisional` true until the week is complete (its last day is a Friday or a later week has a price). The table is
+recomputed every run, so a provisional event moves or disappears if the week turns, and becomes final when the week ends
+(user, 2026-11-07: events must show as they happen; an earlier draft wrote nothing for the current week). The S&P 500 uses `price_close`; stocks use
 `price_close_adjusted` (a split must not look like a fall). Rejected: a weekly table (the user's daily-data rule; costs
 slots).
 
