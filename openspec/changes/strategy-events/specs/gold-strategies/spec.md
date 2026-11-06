@@ -20,7 +20,7 @@ SHALL count as on only when either climate lens is red on that day. Every column
 
 #### Scenario: The current week
 - **WHEN** the latest price is on a Wednesday
-- **THEN** that week writes no event
+- **THEN** that week is not evaluated as a week yet; only an interim entry (strategy 001) can be dated in it
 
 ### Requirement: Strategy 001 bear market fund
 For `strategy_code` `bear_market_fund` on `^GSPC` (`price_close`), the setup SHALL be on in a week when the climate is red
