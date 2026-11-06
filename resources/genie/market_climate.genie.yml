@@ -192,7 +192,7 @@
                   "How fresh is the data?"
                 ],
                 "sql": [
-                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= current_date()) SELECT (SELECT day FROM asof) AS climate_date, (SELECT max(price_date) FROM ${var.catalog}.silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = '^GSPC') AS sp500_price_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_federal_funds_target_upper') AS fed_rate_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted') AS cpi_date"
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date <= current_date()) SELECT (SELECT day FROM asof) AS climate_date, (SELECT max(price_date) FROM ${var.catalog}.silver_domain_investments.price_indicator_daily WHERE trading_symbol_code = '^GSPC') AS sp500_price_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_federal_funds_target_upper') AS fed_rate_date, (SELECT max(observation_date) FROM ${var.catalog}.silver_domain_investments.market_rate_daily WHERE rate_code = 'us_cpi_all_items_not_seasonally_adjusted') AS cpi_date"
                 ],
                 "usage_guidance": [
                   "The climate date and the latest date of each input."
@@ -384,7 +384,7 @@
                   "How have the lights changed over time?"
                 ],
                 "sql": [
-                  "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date, lens_name"
+                  "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date, lens_name"
                 ],
                 "usage_guidance": [
                   "Yes answers per day for each climate, last 36 months."
@@ -408,7 +408,7 @@
                   "What is the market climate today?"
                 ],
                 "sql": [
-                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= current_date()) SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text, s.signal_date AS climate_date FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code = 'climate' ORDER BY s.lens_code"
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date <= current_date()) SELECT s.lens_name, s.lens_code, s.yes_count, s.band_code AS light_code, s.action_name, s.reason_text, s.signal_date AS climate_date FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'market_climate' AND s.signal_code = 'climate' ORDER BY s.lens_code"
                 ],
                 "usage_guidance": [
                   "Both lights with the yes count and the climate date."
@@ -420,7 +420,7 @@
                   "What are the three answers of each climate today, and why?"
                 ],
                 "sql": [
-                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'climate' AND signal_date <= current_date()) SELECT s.lens_name, s.lens_code, s.signal_name, s.signal_code, CASE WHEN s.is_yes THEN 'Yes' ELSE 'No' END AS answer_text, s.band_code, s.measured_value, s.threshold_value, s.reason_text FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code"
+                  "WITH asof AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date <= current_date()) SELECT s.lens_name, s.lens_code, s.signal_name, s.signal_code, CASE WHEN s.is_yes THEN 'Yes' ELSE 'No' END AS answer_text, s.band_code, s.measured_value, s.threshold_value, s.reason_text FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN asof a ON s.signal_date = a.day WHERE s.monitor_code = 'market_climate' AND s.signal_code <> 'climate' ORDER BY s.lens_code, s.signal_code"
                 ],
                 "usage_guidance": [
                   "One row per climate and question."
