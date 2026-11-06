@@ -15,6 +15,12 @@ MONTH_END = {"expr": "datetime(year(now()), month(now()) + 1, 1)"}
 SHARED_DOMAIN = [START_DATE, MONTH_END]
 TIME_AXIS = {"tickCount": {"interval": "month", "step": 3}, "labelOverlap": True,
              "labelExpr": "month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')"}
+RANGE_DATES_LAYER = {
+    "transform": [{"window": [{"op": "row_number", "as": "row_rank"}]}, {"filter": "datum.row_rank == 1"}],
+    "mark": {"type": "rect", "opacity": 0},
+    "encoding": {"x": {"field": "range_start_date", "type": "temporal", "title": None}, "x2": {"field": "range_end_date"},
+                 "y": {"value": 0}, "y2": {"value": 0}},
+}
 PALETTE = ["#4E79A7", "#F28E2C", "#76B7B2", "#59A14F", "#B07AA1", "#E15759", "#F2C037"]
 LIGHT_POSITIONS = {"red": 5, "yellow": 6, "green": 3}
 
@@ -22,6 +28,20 @@ NUMBER2 = {"type": "number", "decimalPlaces": {"type": "exact", "places": 2}}
 NUMBER4 = {"type": "number", "decimalPlaces": {"type": "exact", "places": 4}}
 NUMBER0 = {"type": "number", "decimalPlaces": {"type": "exact", "places": 0}}
 PERCENT = {"type": "number-percent", "decimalPlaces": {"type": "exact", "places": 2}}
+
+
+def range_time_x(field: str) -> dict:
+    """Time axis without a fixed domain or tick step: both follow the chosen range through `with_range_dates`."""
+    return {"field": field, "type": "temporal", "title": None, "axis": {"labelOverlap": True}}
+
+
+def with_range_dates(spec: dict) -> dict:
+    """Adds an invisible layer plotting the dataset's `range_start_date` and `range_end_date`, so the x axis spans the
+    whole chosen range and charts of different data lengths stay aligned."""
+    if "layer" in spec:
+        return {**spec, "layer": [*spec["layer"], RANGE_DATES_LAYER]}
+    inner = {k: v for k, v in spec.items() if k != "transform"}
+    return {**({"transform": spec["transform"]} if "transform" in spec else {}), "layer": [inner, RANGE_DATES_LAYER]}
 
 
 def date_parameter() -> dict:

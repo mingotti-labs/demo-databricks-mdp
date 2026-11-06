@@ -76,28 +76,96 @@
       "name": "ds_light_history",
       "displayName": "Light history",
       "queryLines": [
-        "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date, lens_name "
+        "SELECT signal_date, lens_name, lens_code, yes_count, band_code AS light_code, add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date >= add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) ORDER BY signal_date, lens_name "
+      ],
+      "parameters": [
+        {
+          "keyword": "history_range_code",
+          "displayName": "History range",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "36M"
+                }
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "name": "ds_pe_history",
       "displayName": "Price/earnings history",
       "queryLines": [
-        "SELECT i.valuation_date, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing FROM valuation_daily_index i WHERE i.valuation_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY i.valuation_date "
+        "SELECT i.valuation_date, i.price_earnings_ten_year_average_inflation_adjusted_ratio AS pe_ten_year_adjusted, i.price_earnings_trailing_twelve_months_ratio AS pe_trailing, add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM valuation_daily_index i WHERE i.valuation_date >= add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) ORDER BY i.valuation_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "history_range_code",
+          "displayName": "History range",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "36M"
+                }
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "name": "ds_fed_history",
       "displayName": "Fed target rate",
       "queryLines": [
-        "SELECT signal_date, measured_value AS fed_target_rate, band_code AS fed_band_code FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date "
+        "SELECT signal_date, measured_value AS fed_target_rate, band_code AS fed_band_code, add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'fed_in_the_way' AND lens_code = 'long_run' AND signal_date >= add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) ORDER BY signal_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "history_range_code",
+          "displayName": "History range",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "36M"
+                }
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "name": "ds_trend_history",
       "displayName": "S&P 500 and its 200-day average",
       "queryLines": [
-        "SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200 FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= add_months(date_trunc('MONTH', current_date()), -35) ORDER BY signal_date "
+        "SELECT signal_date, measured_value AS sp500_close, threshold_value AS sp500_average_200, add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'market_going_up' AND lens_code = 'long_run' AND signal_date >= add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) ORDER BY signal_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "history_range_code",
+          "displayName": "History range",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "36M"
+                }
+              ]
+            }
+          }
+        }
       ]
     },
     {
@@ -400,6 +468,13 @@
       ]
     },
     {
+      "name": "ds_history_range_options",
+      "displayName": "History ranges",
+      "queryLines": [
+        "SELECT * FROM VALUES ('1M', 1), ('3M', 3), ('6M', 6), ('12M', 12), ('24M', 24), ('36M', 36) AS t(history_range_code, history_range_months) ORDER BY history_range_months "
+      ]
+    },
+    {
       "name": "ds_range_options",
       "displayName": "Price ranges",
       "queryLines": [
@@ -524,7 +599,7 @@
                 "- Yellow (1 yes): buy and hold\n",
                 "- Green (0 yes): strong buy\n",
                 "\n",
-                "Change the date at the top. The other pages show the numbers behind the valuation answer."
+                "Change the date at the top and the history range above the charts. The other pages show the numbers behind the valuation answer."
               ]
             }
           },
@@ -626,6 +701,117 @@
         },
         {
           "widget": {
+            "name": "filter-history-range",
+            "queries": [
+              {
+                "name": "q_ds_history_range_options_history_range_code",
+                "query": {
+                  "datasetName": "ds_history_range_options",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "history_range_code",
+                      "expression": "`history_range_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_light_history_history_range_code",
+                "query": {
+                  "datasetName": "ds_light_history",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "history_range_code",
+                      "keyword": "history_range_code"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_pe_history_history_range_code",
+                "query": {
+                  "datasetName": "ds_pe_history",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "history_range_code",
+                      "keyword": "history_range_code"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_fed_history_history_range_code",
+                "query": {
+                  "datasetName": "ds_fed_history",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "history_range_code",
+                      "keyword": "history_range_code"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_trend_history_history_range_code",
+                "query": {
+                  "datasetName": "ds_trend_history",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "history_range_code",
+                      "keyword": "history_range_code"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "history_range_code",
+                    "displayName": "History range (the four charts below)",
+                    "queryName": "q_ds_history_range_options_history_range_code"
+                  },
+                  {
+                    "parameterName": "history_range_code",
+                    "queryName": "q_ds_light_history_history_range_code"
+                  },
+                  {
+                    "parameterName": "history_range_code",
+                    "queryName": "q_ds_pe_history_history_range_code"
+                  },
+                  {
+                    "parameterName": "history_range_code",
+                    "queryName": "q_ds_fed_history_history_range_code"
+                  },
+                  {
+                    "parameterName": "history_range_code",
+                    "queryName": "q_ds_trend_history_history_range_code"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "History range (the four charts below)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
             "name": "light-history",
             "queries": [
               {
@@ -648,6 +834,14 @@
                     {
                       "name": "yes_count",
                       "expression": "`yes_count`"
+                    },
+                    {
+                      "name": "range_start_date",
+                      "expression": "`range_start_date`"
+                    },
+                    {
+                      "name": "range_end_date",
+                      "expression": "`range_end_date`"
                     }
                   ],
                   "disaggregated": true
@@ -659,7 +853,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"yes_count\", \"type\": \"quantitative\", \"title\": \"Yes answers\", \"scale\": {\"domain\": [0, 3], \"padding\": 14}, \"axis\": {\"tickMinStep\": 1, \"minExtent\": 64}}, \"color\": {\"field\": \"lens_name\", \"type\": \"nominal\", \"title\": \"Climate\", \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"lens_name\", \"title\": \"Climate\"}, {\"field\": \"yes_count\", \"title\": \"Yes answers\"}]}, \"layer\": [{\"transform\": [{\"filter\": \"datum.lens_code == 'long_run'\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 9, \"opacity\": 0.35, \"interpolate\": \"step-after\"}}, {\"transform\": [{\"filter\": \"datum.lens_code == 'modern'\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2.5, \"interpolate\": \"step-after\"}}]}"
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"y\": {\"field\": \"yes_count\", \"type\": \"quantitative\", \"title\": \"Yes answers\", \"scale\": {\"domain\": [0, 3], \"padding\": 14}, \"axis\": {\"tickMinStep\": 1, \"minExtent\": 64}}, \"color\": {\"field\": \"lens_name\", \"type\": \"nominal\", \"title\": \"Climate\", \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"lens_name\", \"title\": \"Climate\"}, {\"field\": \"yes_count\", \"title\": \"Yes answers\"}]}, \"layer\": [{\"transform\": [{\"filter\": \"datum.lens_code == 'long_run'\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 9, \"opacity\": 0.35, \"interpolate\": \"step-after\"}}, {\"transform\": [{\"filter\": \"datum.lens_code == 'modern'\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2.5, \"interpolate\": \"step-after\"}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0}, \"encoding\": {\"x\": {\"field\": \"range_start_date\", \"type\": \"temporal\", \"title\": null}, \"x2\": {\"field\": \"range_end_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": 0}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -674,6 +868,12 @@
                   },
                   {
                     "fieldName": "yes_count"
+                  },
+                  {
+                    "fieldName": "range_start_date"
+                  },
+                  {
+                    "fieldName": "range_end_date"
                   }
                 ]
               },
@@ -690,7 +890,7 @@
           },
           "position": {
             "x": 0,
-            "y": 11,
+            "y": 13,
             "width": 12,
             "height": 5
           }
@@ -715,6 +915,14 @@
                     {
                       "name": "pe_trailing",
                       "expression": "`pe_trailing`"
+                    },
+                    {
+                      "name": "range_start_date",
+                      "expression": "`range_start_date`"
+                    },
+                    {
+                      "name": "range_end_date",
+                      "expression": "`range_end_date`"
                     }
                   ],
                   "disaggregated": true
@@ -726,7 +934,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"layer\": [{\"transform\": [{\"fold\": [\"pe_ten_year_adjusted\", \"pe_trailing\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"datum.series == 'pe_trailing' ? 'Trailing 12 months' : '10-year inflation-adjusted (votes)'\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"valuation_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Price/earnings ratio\", \"scale\": {\"zero\": true, \"padding\": 14}, \"axis\": {\"format\": \".0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"valuation_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Measure\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \".2f\", \"title\": \"P/E\"}]}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rule\", \"strokeDash\": [6, 4], \"color\": \"#59A14F\", \"strokeWidth\": 1.5}, \"encoding\": {\"y\": {\"datum\": 16, \"type\": \"quantitative\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rule\", \"strokeDash\": [6, 4], \"color\": \"#F2C037\", \"strokeWidth\": 1.5}, \"encoding\": {\"y\": {\"datum\": 22, \"type\": \"quantitative\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rule\", \"strokeDash\": [6, 4], \"color\": \"#E15759\", \"strokeWidth\": 1.5}, \"encoding\": {\"y\": {\"datum\": 30, \"type\": \"quantitative\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"text\", \"align\": \"left\", \"dx\": 4, \"dy\": -6, \"fontSize\": 11, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"value\": 0}, \"y\": {\"datum\": 16, \"type\": \"quantitative\"}, \"text\": {\"value\": \"cheap line, long run\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"text\", \"align\": \"left\", \"dx\": 4, \"dy\": -6, \"fontSize\": 11, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"value\": 0}, \"y\": {\"datum\": 22, \"type\": \"quantitative\"}, \"text\": {\"value\": \"expensive line, long run\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"text\", \"align\": \"left\", \"dx\": 4, \"dy\": -6, \"fontSize\": 11, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"value\": 0}, \"y\": {\"datum\": 30, \"type\": \"quantitative\"}, \"text\": {\"value\": \"expensive line, modern\"}}}]}"
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"layer\": [{\"transform\": [{\"fold\": [\"pe_ten_year_adjusted\", \"pe_trailing\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"datum.series == 'pe_trailing' ? 'Trailing 12 months' : '10-year inflation-adjusted (votes)'\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"valuation_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Price/earnings ratio\", \"scale\": {\"zero\": true, \"padding\": 14}, \"axis\": {\"format\": \".0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"valuation_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Measure\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \".2f\", \"title\": \"P/E\"}]}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rule\", \"strokeDash\": [6, 4], \"color\": \"#59A14F\", \"strokeWidth\": 1.5}, \"encoding\": {\"y\": {\"datum\": 16, \"type\": \"quantitative\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rule\", \"strokeDash\": [6, 4], \"color\": \"#F2C037\", \"strokeWidth\": 1.5}, \"encoding\": {\"y\": {\"datum\": 22, \"type\": \"quantitative\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rule\", \"strokeDash\": [6, 4], \"color\": \"#E15759\", \"strokeWidth\": 1.5}, \"encoding\": {\"y\": {\"datum\": 30, \"type\": \"quantitative\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"text\", \"align\": \"left\", \"dx\": 4, \"dy\": -6, \"fontSize\": 11, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"value\": 0}, \"y\": {\"datum\": 16, \"type\": \"quantitative\"}, \"text\": {\"value\": \"cheap line, long run\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"text\", \"align\": \"left\", \"dx\": 4, \"dy\": -6, \"fontSize\": 11, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"value\": 0}, \"y\": {\"datum\": 22, \"type\": \"quantitative\"}, \"text\": {\"value\": \"expensive line, long run\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"text\", \"align\": \"left\", \"dx\": 4, \"dy\": -6, \"fontSize\": 11, \"color\": {\"expr\": \"colors.textPrimary.default\"}}, \"encoding\": {\"x\": {\"value\": 0}, \"y\": {\"datum\": 30, \"type\": \"quantitative\"}, \"text\": {\"value\": \"expensive line, modern\"}}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0}, \"encoding\": {\"x\": {\"field\": \"range_start_date\", \"type\": \"temporal\", \"title\": null}, \"x2\": {\"field\": \"range_end_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": 0}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -738,6 +946,12 @@
                   },
                   {
                     "fieldName": "pe_trailing"
+                  },
+                  {
+                    "fieldName": "range_start_date"
+                  },
+                  {
+                    "fieldName": "range_end_date"
                   }
                 ]
               },
@@ -754,7 +968,7 @@
           },
           "position": {
             "x": 0,
-            "y": 16,
+            "y": 18,
             "width": 12,
             "height": 6
           }
@@ -779,6 +993,14 @@
                     {
                       "name": "fed_band_code",
                       "expression": "`fed_band_code`"
+                    },
+                    {
+                      "name": "range_start_date",
+                      "expression": "`range_start_date`"
+                    },
+                    {
+                      "name": "range_end_date",
+                      "expression": "`range_end_date`"
                     }
                   ],
                   "disaggregated": true
@@ -790,7 +1012,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"layer\": [{\"transform\": [{\"window\": [{\"op\": \"lead\", \"field\": \"signal_date\", \"as\": \"next_date\"}], \"sort\": [{\"field\": \"signal_date\"}]}, {\"filter\": \"datum.fed_band_code == 'red' || datum.fed_band_code == 'green'\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0.22}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"x2\": {\"field\": \"next_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": {\"expr\": \"height\"}}, \"color\": {\"field\": \"fed_band_code\", \"type\": \"nominal\", \"title\": \"Fed\", \"scale\": {\"domain\": [\"red\", \"green\"], \"range\": [\"#E15759\", \"#59A14F\"]}, \"legend\": {\"orient\": \"top\", \"labelExpr\": \"datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'\"}}}}, {\"mark\": {\"type\": \"line\", \"interpolate\": \"step-after\", \"strokeWidth\": 2.5, \"color\": \"#2B3A55\"}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"fed_target_rate\", \"type\": \"quantitative\", \"title\": \"Target rate (%)\", \"scale\": {\"zero\": true, \"nice\": true, \"padding\": 14}, \"axis\": {\"format\": \".2f\", \"tickCount\": 6, \"minExtent\": 64}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"fed_target_rate\", \"title\": \"Target rate (%)\"}]}}]}"
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"layer\": [{\"transform\": [{\"window\": [{\"op\": \"lead\", \"field\": \"signal_date\", \"as\": \"next_date\"}], \"sort\": [{\"field\": \"signal_date\"}]}, {\"filter\": \"datum.fed_band_code == 'red' || datum.fed_band_code == 'green'\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0.22}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"x2\": {\"field\": \"next_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": {\"expr\": \"height\"}}, \"color\": {\"field\": \"fed_band_code\", \"type\": \"nominal\", \"title\": \"Fed\", \"scale\": {\"domain\": [\"red\", \"green\"], \"range\": [\"#E15759\", \"#59A14F\"]}, \"legend\": {\"orient\": \"top\", \"labelExpr\": \"datum.value == 'red' ? 'in the way (hike)' : 'out of the way (cut)'\"}}}}, {\"mark\": {\"type\": \"line\", \"interpolate\": \"step-after\", \"strokeWidth\": 2.5, \"color\": \"#2B3A55\"}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"y\": {\"field\": \"fed_target_rate\", \"type\": \"quantitative\", \"title\": \"Target rate (%)\", \"scale\": {\"zero\": true, \"nice\": true, \"padding\": 14}, \"axis\": {\"format\": \".2f\", \"tickCount\": 6, \"minExtent\": 64}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"fed_target_rate\", \"title\": \"Target rate (%)\"}]}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0}, \"encoding\": {\"x\": {\"field\": \"range_start_date\", \"type\": \"temporal\", \"title\": null}, \"x2\": {\"field\": \"range_end_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": 0}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -802,6 +1024,12 @@
                   },
                   {
                     "fieldName": "fed_band_code"
+                  },
+                  {
+                    "fieldName": "range_start_date"
+                  },
+                  {
+                    "fieldName": "range_end_date"
                   }
                 ]
               },
@@ -818,7 +1046,7 @@
           },
           "position": {
             "x": 0,
-            "y": 22,
+            "y": 24,
             "width": 12,
             "height": 6
           }
@@ -843,6 +1071,14 @@
                     {
                       "name": "sp500_average_200",
                       "expression": "`sp500_average_200`"
+                    },
+                    {
+                      "name": "range_start_date",
+                      "expression": "`range_start_date`"
+                    },
+                    {
+                      "name": "range_end_date",
+                      "expression": "`range_end_date`"
                     }
                   ],
                   "disaggregated": true
@@ -854,7 +1090,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"sp500_close\", \"sp500_average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"datum.series == 'sp500_close' ? 'S&P 500 close' : '200-day average'\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"scale\": {\"domain\": [{\"expr\": \"datetime(year(now()), month(now()) - 35, 1)\"}, {\"expr\": \"datetime(year(now()), month(now()) + 1, 1)\"}]}, \"axis\": {\"tickCount\": {\"interval\": \"month\", \"step\": 3}, \"labelOverlap\": true, \"labelExpr\": \"month(datum.value) == 0 ? timeFormat(datum.value, '%b %y') : timeFormat(datum.value, '%b')\"}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Index points\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.2f\", \"title\": \"Value\"}]}}"
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"sp500_close\", \"sp500_average_200\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"datum.series == 'sp500_close' ? 'S&P 500 close' : '200-day average'\", \"as\": \"series_label\"}], \"layer\": [{\"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Index points\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.0f\", \"minExtent\": 64}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}}, \"tooltip\": [{\"field\": \"signal_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.2f\", \"title\": \"Value\"}]}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0}, \"encoding\": {\"x\": {\"field\": \"range_start_date\", \"type\": \"temporal\", \"title\": null}, \"x2\": {\"field\": \"range_end_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": 0}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -866,6 +1102,12 @@
                   },
                   {
                     "fieldName": "sp500_average_200"
+                  },
+                  {
+                    "fieldName": "range_start_date"
+                  },
+                  {
+                    "fieldName": "range_end_date"
                   }
                 ]
               },
@@ -882,7 +1124,7 @@
           },
           "position": {
             "x": 0,
-            "y": 28,
+            "y": 30,
             "width": 12,
             "height": 6
           }
@@ -1037,7 +1279,7 @@
           },
           "position": {
             "x": 0,
-            "y": 34,
+            "y": 36,
             "width": 12,
             "height": 7
           }
@@ -1167,7 +1409,7 @@
           },
           "position": {
             "x": 0,
-            "y": 41,
+            "y": 43,
             "width": 12,
             "height": 3
           }
@@ -1239,7 +1481,7 @@
           },
           "position": {
             "x": 0,
-            "y": 44,
+            "y": 46,
             "width": 12,
             "height": 3
           }

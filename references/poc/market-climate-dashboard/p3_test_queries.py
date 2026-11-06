@@ -41,6 +41,7 @@ def main() -> None:
     parser.add_argument("--sector", default="Information Technology")
     parser.add_argument("--company", default="EQT Corporation")
     parser.add_argument("--range", default="6M")
+    parser.add_argument("--history-range", default="36M")
     parser.add_argument("--currency", default="CHF")
     parser.add_argument("--base", default="AUD")
     args = parser.parse_args()
@@ -51,6 +52,7 @@ def main() -> None:
         {"name": "sector_name", "value": args.sector, "type": "STRING"},
         {"name": "company_name", "value": args.company, "type": "STRING"},
         {"name": "range_code", "value": args.range, "type": "STRING"},
+        {"name": "history_range_code", "value": args.history_range, "type": "STRING"},
         {"name": "currency_code", "value": args.currency, "type": "STRING"},
         {"name": "base_code", "value": args.base, "type": "STRING"},
     ]
