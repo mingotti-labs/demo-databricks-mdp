@@ -11,8 +11,8 @@ keeps the history: a gold table of strategy events, a row only when something ha
   `src/layers/gold/analytics_gateway/strategy_daily_event.py`): one row per `strategy_code`, `trading_symbol_code`,
   `event_date` and `event_code` (`setup_start`, `entry`, `setup_end`); `strategy_name`, `event_name`, `listing_id`,
   `setup_start_date` (ties a setup period together), `entry_number` and `is_first_entry`, `entry_band_code` (001), the
-  measured values, `reason_text`, `is_provisional` (the current week, until it ends), `currency_code`, `ingested_timestamp`; every column described for a Genie agent.
-- **Strategy 001 `bear_market_fund`** on `^GSPC`, every Monday-based week (the current one with its latest close, provisional): setup = any market climate light red
+  measured values, `reason_text`, `currency_code`, `ingested_timestamp`; every column described for a Genie agent.
+- **Strategy 001 `bear_market_fund`** on `^GSPC`, every complete Monday-based week: setup = any market climate light red
   and the week close below the close five weeks earlier; entry = the week's change at most -5% (`half_of_equity`) or
   -2.5% (`quarter_of_equity`), or the interim entry (a Monday-Wednesday close at least 2.5% below the week just ended,
   after a week down less than 2.5%: `interim_quarter_of_equity`).

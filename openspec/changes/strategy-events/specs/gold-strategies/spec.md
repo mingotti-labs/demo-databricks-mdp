@@ -4,11 +4,9 @@
 `gold_analytics_gateway.strategy_daily_event` SHALL have one row per `strategy_code`, `trading_symbol_code`,
 `event_date` and `event_code`, only when an event happens: `setup_start`, `entry` or `setup_end`. Each row SHALL carry
 `strategy_name`, `event_name`, `listing_id`, `setup_start_date` (the date of its setup period's `setup_start`), a plain
-`reason_text`, `is_provisional`, `currency_code` and `ingested_timestamp`; an `entry` row SHALL also carry `entry_number` (1, 2, ... by date
-within the setup period) and `is_first_entry` (true on number 1). Events SHALL be evaluated on every Monday-based week whose
-latest day has a market climate row, the current week included with its latest close as the week's close;
-`is_provisional` SHALL be true on rows of a week that is not complete (its last trading day is not a Friday and no later
-week has a price), and the setup
+`reason_text`, `currency_code` and `ingested_timestamp`; an `entry` row SHALL also carry `entry_number` (1, 2, ... by date
+within the setup period) and `is_first_entry` (true on number 1). Events SHALL be evaluated on complete Monday-based weeks
+(the last trading day is a Friday or a later week has a price) whose last day has a market climate row, and the setup
 SHALL count as on only when either climate lens is red on that day. Every column SHALL carry a Unity Catalog description.
 
 #### Scenario: A setup period
@@ -17,9 +15,8 @@ SHALL count as on only when either climate lens is red on that day. Every column
   `setup_start_date` week 2's last day, and no row for weeks 1, 3 and 4 unless an entry fires
 
 #### Scenario: The current week
-- **WHEN** the latest price is on a Wednesday and the setup turns on with that day's close
-- **THEN** a `setup_start` is dated on that Wednesday with `is_provisional` true, and it disappears on a later run if the
-  setup is off again with Friday's close
+- **WHEN** the latest price is on a Wednesday
+- **THEN** that week writes no event
 
 ### Requirement: Strategy 001 bear market fund
 For `strategy_code` `bear_market_fund` on `^GSPC` (`price_close`), the setup SHALL be on in a week when the climate is red
