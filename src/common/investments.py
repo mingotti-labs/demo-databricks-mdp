@@ -209,7 +209,8 @@ COMPANY_FUNDAMENTALS_COMMENTS = {
         "the latest annual value plus this year's year-to-date minus last year's. A rolling window that moves "
         "one quarter per filing. Total revenue (SEC concept Revenues) when reported, else the revenue from "
         "contracts with customers; a bank's is net of interest expense. Empty when the filing reports none. "
-        "Not adjusted for inflation."
+        "Can be only part of the company's revenue for filers that book most of it under another concept "
+        "(some real estate trusts and banks). Not adjusted for inflation."
     ),
     "shares_outstanding_count": (
         "Shares outstanding from the filing's cover page; empty for companies with several share classes "

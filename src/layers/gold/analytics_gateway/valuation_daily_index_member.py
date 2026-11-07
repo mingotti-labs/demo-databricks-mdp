@@ -85,8 +85,10 @@ COMMENTS = {
     "price_to_sales_ratio": (
         "Price over sales: market_value_amount divided by revenue_trailing_twelve_months_amount, on the same "
         "rolling twelve months of revenue and the day's price. A value of 15 means the market values the company "
-        "at 15 times its yearly revenue. Empty when market value or revenue is missing or revenue is not above "
-        "zero. Not limited to used members: a member left out of the index P/E can still have it."
+        "at 15 times its yearly revenue. Empty when market value or revenue is missing, revenue is not above "
+        "zero, or revenue is below the net income (the filing's revenue line is then only part of the company's "
+        "revenue, as for some real estate trusts and banks). Not limited to used members: a member left out of "
+        "the index P/E can still have it."
     ),
     "currency_code": "Currency of the amounts: USD.",
     "ingested_timestamp": "Earliest fetch time of the price and filing rows behind this member and day.",

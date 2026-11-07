@@ -1,0 +1,11 @@
+BusinessCombinationProFormaInformationRevenueOfAcquireeSinceAcquisitionDateActual: latest 10-K 2014-12-31 value 800,000
+ConstructionRevenue: latest 10-K 2011-12-31 value 700,000
+CostOfRealEstateRevenue: latest 10-K 2017-12-31 value 328,742,000
+DisposalGroupIncludingDiscontinuedOperationRevenue: latest 10-K 2016-12-31 value 19,184,000
+EquityMethodInvestmentSummarizedFinancialInformationRevenue: latest 10-K 2019-12-31 value 131,700,000
+ManagementFeesRevenue: latest 10-K 2017-12-31 value 8,176,000
+OperatingLeaseLeaseIncome: latest 10-K 2025-12-31 value 1,573,544,000
+OperatingLeasesIncomeStatementMinimumLeaseRevenue: latest 10-K 2019-12-31 value 842,000,000
+OtherRealEstateRevenue: latest 10-K 2017-12-31 value 130,356,000
+RealEstateRevenueNet: latest 10-K 2017-12-31 value 900,896,000
+RevenueFromContractWithCustomerExcludingAssessedTax: latest 10-K 2025-12-31 value 12,967,000

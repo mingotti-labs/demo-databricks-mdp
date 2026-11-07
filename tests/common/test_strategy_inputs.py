@@ -34,3 +34,4 @@ def test_member_query_has_price_to_sales_and_does_not_exclude_on_revenue():
     sql = index_member_valuation_query()
     assert "AS price_to_sales_ratio" in sql and "revenue_trailing_twelve_months_amount > 0" in sql
     assert "no_revenue" not in sql
+    assert "revenue_trailing_twelve_months_amount >= earnings_trailing_twelve_months_amount" in sql

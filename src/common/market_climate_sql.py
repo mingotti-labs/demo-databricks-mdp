@@ -158,6 +158,8 @@ def index_member_valuation_query() -> str:
            CASE WHEN is_used AND index_ratio IS NOT NULL AND without_ratio IS NOT NULL
                 THEN index_ratio - without_ratio END AS price_earnings_effect_ratio,
            CASE WHEN market_value_amount IS NOT NULL AND revenue_trailing_twelve_months_amount > 0
+                 AND (earnings_trailing_twelve_months_amount IS NULL
+                      OR revenue_trailing_twelve_months_amount >= earnings_trailing_twelve_months_amount)
                 THEN CAST(market_value_amount / revenue_trailing_twelve_months_amount AS DECIMAL(18, 4)) END
              AS price_to_sales_ratio,
            'USD' AS currency_code,
