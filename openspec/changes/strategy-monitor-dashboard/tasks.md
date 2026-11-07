@@ -1,7 +1,7 @@
 ## 1. States (D1)
 
-- [ ] 1.1 `strategy_states_query` in `src/common/strategy_events_sql.py`; the events query reads it; tests
-- [ ] 1.2 Probe: the events query output on dev is identical before and after the split (EXCEPT both ways = 0 rows)
+- [x] 1.1 `strategy_states_query` in `src/common/strategy_events_sql.py`; the events query reads it; tests
+- [x] 1.2 Probe: the events query output on dev is identical before and after the split (EXCEPT both ways = 0 rows: 106 rows before and after, probe P13)
 
 ## 2. Dashboard (D2-D4)
 

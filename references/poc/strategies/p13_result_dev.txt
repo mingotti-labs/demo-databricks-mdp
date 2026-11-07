@@ -1,0 +1,3 @@
+rows before, after: [['106', '106']]
+in before, not in after: [['0']]
+in after, not in before: [['0']]
