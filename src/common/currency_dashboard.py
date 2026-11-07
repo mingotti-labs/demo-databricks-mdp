@@ -4,13 +4,13 @@
 and a test checks the committed file equals it. Same date axis, colours and theme as the other dashboards.
 """
 
-from common.company_page import DATE_BOUND, company_datasets, company_page, company_parameters
 from common.dashboard_widgets import (
     AXIS_WIDTH,
     BAND_SCALE,
     INK,
     NUMBER0,
     NUMBER2,
+    PALETTE,
     PERCENT,
     GREEN,
     RED,
@@ -23,15 +23,20 @@ from common.dashboard_widgets import (
     dataset_entries,
     date_parameter,
     filter_widget,
+    range_time_x,
     string_parameter,
     table,
     text,
     time_lines,
+    vega,
+    with_range_dates,
 )
-from common.currency_queries import DATASETS
+from common.currency_queries import DATASETS, US_SHORT_YIELDS
+from common.market_climate_queries import DATASETS as CLIMATE_DATASETS
 
-DATE_DATASETS = ["ds_currency_freshness", "ds_dollar", "ds_currency_grid", "ds_currency_distance", "ds_country_rates", "ds_yield_ranking"] + DATE_BOUND
+DATE_DATASETS = ["ds_currency_freshness", "ds_dollar", "ds_currency_grid", "ds_currency_distance", "ds_country_rates", "ds_yield_ranking"]
 CURRENCY_DATASETS = ["ds_currency_history", "ds_currency_rates_history"]
+DATASETS = {**DATASETS, "ds_history_range_options": CLIMATE_DATASETS["ds_history_range_options"]}
 
 
 def parameters(dataset: str) -> list[dict]:
@@ -40,7 +45,9 @@ def parameters(dataset: str) -> list[dict]:
         result.append(string_parameter("currency_code", "Currency", "CHF"))
     if dataset == "ds_yield_ranking":
         result.append(string_parameter("base_code", "Base currency", "AUD"))
-    return result + company_parameters(dataset)
+    if dataset == "ds_us_yield_curve":
+        result.append(string_parameter("history_range_code", "History range", "36M"))
+    return result
 
 
 def dollar_tiles(x: int, y: int, w: int, h: int) -> dict:
@@ -144,6 +151,35 @@ def score_bars(x: int, y: int, w: int, h: int) -> dict:
                   spec, x, y, w, h, "Short-term rate plus the 12-month change of the currency")
 
 
+def us_yield_chart(x: int, y: int, w: int, h: int) -> dict:
+    """The US 10-year yield against the chosen short-term US yields; the 10-year repeats on each maturity's rows, so it is
+    drawn from one row per day."""
+    time_x = range_time_x("observation_date")
+    names = [name for _, name, _ in US_SHORT_YIELDS]
+    colour = {"field": "series_name", "type": "nominal", "title": "Short-term yield",
+              "scale": {"domain": names, "range": PALETTE[1:5]}}
+    value_y = {"field": "yield_value", "type": "quantitative", "title": "Yield, percent",
+               "scale": {"zero": False, "padding": Y_PADDING}, "axis": {"format": ".2f", "minExtent": AXIS_WIDTH}}
+    day = {"field": "observation_date", "type": "temporal", "title": "Day"}
+    spec = {"layer": [
+        {"transform": [{"filter": "datum.series_name == '10-year'"},
+                       {"aggregate": [{"op": "max", "field": "yield_value", "as": "yield_value"}], "groupby": ["observation_date"]}],
+         "mark": {"type": "line", "strokeWidth": 2.6, "color": INK},
+         "encoding": {"x": time_x, "y": value_y,
+                      "tooltip": [day, {"field": "yield_value", "type": "quantitative", "format": ".2f", "title": "10-year yield, %"}]}},
+        {"transform": [{"filter": "datum.series_name != '10-year'"}],
+         "mark": {"type": "line", "strokeWidth": 1.8},
+         "encoding": {"x": time_x, "y": value_y, "color": colour,
+                      "tooltip": [day, {"field": "series_name", "title": "Short-term yield"},
+                                  {"field": "yield_value", "type": "quantitative", "format": ".2f", "title": "Yield, %"},
+                                  {"field": "spread", "type": "quantitative", "format": ".2f", "title": "10-year minus it, points"}]}},
+    ]}
+    return vega("us-yield-chart", "US 10-year Treasury yield against short-term US yields", "ds_us_yield_curve",
+                ["observation_date", "maturity_name", "series_name", "yield_value", "spread", "range_start_date", "range_end_date"],
+                with_range_dates(spec), x, y, w, h,
+                "Black: the 10-year. Pick one or several short-term yields; the tooltip gives the gap to the 10-year in percentage points.")
+
+
 def yield_page() -> dict:
     ranking = [("rank_position", "Rank", NUMBER0), ("currency_name", "Currency", None), ("short_term_rate", "Short-term rate, %", NUMBER2),
                ("short_term_date", "Reading of", None), ("ten_year_yield", "10-year yield, %", NUMBER2),
@@ -157,9 +193,13 @@ def yield_page() -> dict:
                              "- The rates are interbank or policy rates, not what a bank pays on a CD; the date of each reading is shown\n",
                              "- The base currency is shown with no currency change\n"], 0, 0, 12, 5),
         filter_widget("filter-base", "Base currency", "filter-single-select",
-                      [("ds_base_options", "field", "base_code"), ("ds_yield_ranking", "parameter", "base_code")], 0, 5, 6),
-        table("yield-ranking", "Countries ranked by short-term rate plus 12-month currency change", "ds_yield_ranking", ranking, 0, 7, 12, 9),
-        score_bars(0, 16, 12, 7),
+                      [("ds_base_options", "field", "base_code"), ("ds_yield_ranking", "parameter", "base_code")], 0, 7, 6),
+        table("yield-ranking", "Countries ranked by short-term rate plus 12-month currency change", "ds_yield_ranking", ranking, 0, 9, 12, 9),
+        score_bars(0, 18, 12, 7),
+        filter_widget("filter-maturity", "Short-term US yields", "filter-multi-select", [("ds_us_yield_curve", "field", "maturity_name")], 0, 25, 6),
+        filter_widget("filter-yield-range", "History range", "filter-single-select",
+                      [("ds_history_range_options", "field", "history_range_code"), ("ds_us_yield_curve", "parameter", "history_range_code")], 6, 25, 6),
+        us_yield_chart(0, 27, 12, 9),
     ]}
 
 
@@ -170,4 +210,4 @@ def filters_page() -> dict:
 
 
 def build() -> str:
-    return dashboard_json(dataset_entries({**DATASETS, **company_datasets()}, parameters), [currency_monitor_page(), deep_dive_page(), yield_page(), company_page(), filters_page()])
+    return dashboard_json(dataset_entries(DATASETS, parameters), [currency_monitor_page(), deep_dive_page(), yield_page(), filters_page()])

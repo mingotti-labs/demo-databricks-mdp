@@ -6,7 +6,6 @@ from common.company_page import DATASET_NAMES, DATE_BOUND
 BUILDERS = {
     "market climate": market_climate_dashboard,
     "inflation": inflation_dashboard,
-    "currency": currency_dashboard,
     "strategy": strategy_dashboard,
 }
 
@@ -37,3 +36,9 @@ def test_the_date_filter_of_every_dashboard_drives_the_company_datasets():
         filters = next(p for p in json.loads(module.build())["pages"] if p["name"] == "filters")
         bound = {q["query"]["datasetName"] for w in filters["layout"] for q in w["widget"]["queries"]}
         assert set(DATE_BOUND) <= bound, name
+
+
+def test_the_currency_monitor_has_no_company_page():
+    dashboard = json.loads(currency_dashboard.build())
+    assert "company-deep-dive" not in {p["name"] for p in dashboard["pages"]}
+    assert not set(DATASET_NAMES) & {d["name"] for d in dashboard["datasets"]}
