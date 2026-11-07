@@ -710,7 +710,7 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   (`setup_start`, `entry` numbered with `is_first_entry`, `setup_end`), only when something happens; strategy 001
   `bear_market_fund` on `^GSPC` (setup: any climate light red and the week close below five weeks earlier; entry: a
   week down 2.5% or 5%, or an interim Monday-Wednesday close 2.5% below the week) and strategy 002 `short_selling` on the
-  members (setup: red and price-to-sales above 15; entry: the sixth straight weekly close down); weeks are Monday-based
+  members (setup: red, price-to-sales above 15 and three straight weekly closes down, `strategy-short-selling-setup`; entry: the sixth straight weekly close down); weeks are Monday-based
   and complete on their Friday or once it has passed, so a holiday week uses Thursday's close; rules in
   `src/common/strategy.py`, query in `strategy_events_sql.py`; story files `strategy-001`, `strategy-002`.
   `monitor_daily_signal`: long table (day, monitor,
