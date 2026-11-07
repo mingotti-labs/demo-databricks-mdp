@@ -180,10 +180,13 @@ checks["strategy_daily_event: a first entry that is not entry number 1, or an en
   FROM {GOLD}.strategy_daily_event WHERE event_code = 'entry'
   GROUP BY strategy_code, trading_symbol_code, setup_start_date
   HAVING min(entry_number) != 1 OR max(entry_number) != count(*) OR count_if(is_first_entry) != 1"""
-checks["strategy_daily_event: a short selling event of a stock with price-to-sales at or below 15 on a setup start"] = f"""
+checks["strategy_daily_event: a short selling setup start without price-to-sales above 15 and three weeks down"] = f"""
   SELECT concat_ws(',', trading_symbol_code, CAST(event_date AS STRING)) FROM {GOLD}.strategy_daily_event
   WHERE strategy_code = 'short_selling' AND event_code = 'setup_start'
-    AND (price_to_sales_ratio IS NULL OR price_to_sales_ratio <= 15)"""
+    AND (price_to_sales_ratio IS NULL OR price_to_sales_ratio <= 15 OR down_week_count IS NULL OR down_week_count < 3)"""
+checks["strategy_daily_event: a short selling entry whose streak is not six weeks"] = f"""
+  SELECT concat_ws(',', trading_symbol_code, CAST(event_date AS STRING)) FROM {GOLD}.strategy_daily_event
+  WHERE strategy_code = 'short_selling' AND event_code = 'entry' AND down_week_count != 6"""
 checks["strategy_daily_event: a bear fund entry whose band does not follow the week change"] = f"""
   SELECT concat_ws(',', CAST(event_date AS STRING), entry_band_code) FROM {GOLD}.strategy_daily_event
   WHERE strategy_code = 'bear_market_fund' AND event_code = 'entry' AND (
