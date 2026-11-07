@@ -1,0 +1,64 @@
+[
+  {
+    "sql": "SELECT rate_code, min(observation_date) first_day, max(observation_date) last_day, count(*) n FROM mdp_dev.silver_domain_investments.market_rate_daily WHERE rate_code LIKE 'us_%treasury_yield' GROUP BY 1 ORDER BY 1",
+    "statement_id": "01f1da9f-5695-1496-bbd1-3791d484e6e5",
+    "state": "SUCCEEDED",
+    "elapsed_ms": 1911,
+    "columns": [
+      "rate_code",
+      "first_day",
+      "last_day",
+      "n"
+    ],
+    "rows": [
+      [
+        "us_10_year_treasury_yield",
+        "1962-01-02",
+        "2026-11-05",
+        "16197"
+      ],
+      [
+        "us_1_year_treasury_yield",
+        "1962-01-02",
+        "2026-11-05",
+        "16197"
+      ],
+      [
+        "us_2_year_treasury_yield",
+        "1976-06-01",
+        "2026-11-05",
+        "12605"
+      ],
+      [
+        "us_3_month_treasury_yield",
+        "1981-09-01",
+        "2026-11-05",
+        "11295"
+      ],
+      [
+        "us_3_year_treasury_yield",
+        "1962-01-02",
+        "2026-11-05",
+        "16197"
+      ]
+    ]
+  },
+  {
+    "sql": "SELECT max(efficiency_r60_ratio) r60_max, max(efficiency_tr60_ratio) tr60_max, count(efficiency_r60_ratio) n FROM mdp_dev.silver_domain_investments.price_indicator_daily WHERE price_date=(SELECT max(price_date) FROM mdp_dev.silver_domain_investments.price_indicator_daily WHERE trading_symbol_code='^GSPC')",
+    "statement_id": "01f1da9f-5697-113e-950c-0c3dd1c6f72c",
+    "state": "SUCCEEDED",
+    "elapsed_ms": 2355,
+    "columns": [
+      "r60_max",
+      "tr60_max",
+      "n"
+    ],
+    "rows": [
+      [
+        "13.316090",
+        "10.288408",
+        "530"
+      ]
+    ]
+  }
+]

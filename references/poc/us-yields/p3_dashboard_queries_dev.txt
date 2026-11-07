@@ -1,0 +1,324 @@
+== ds_freshness (Data dates): SUCCEEDED
+  columns: ['climate_date', 'sp500_price_date', 'fed_rate_date', 'cpi_date']
+  rows: 1
+   ['2026-11-06', '2026-11-06', '2026-11-06', '2026-11-06']
+== ds_lights (Lights of the day): SUCCEEDED
+  columns: ['lens_name', 'lens_code', 'yes_count', 'light_code', 'action_name', 'reason_text', 'climate_date']
+  rows: 2
+   ['Market climate long run', 'long_run', '3', 'red', 'sell', 'Market climate long run is red (sell): 3 of 3 answers are yes.', '2026-11-06']
+   ['Market climate modern', 'modern', '3', 'red', 'sell', 'Market climate modern is red (sell): 3 of 3 answers are yes.', '2026-11-06']
+== ds_answers (Answers of the day): SUCCEEDED
+  columns: ['lens_name', 'lens_code', 'signal_name', 'signal_code', 'answer_text', 'band_code', 'measured_value', 'threshold_value', 'reason_text']
+  rows: 6
+   ['Market climate long run', 'long_run', 'Fed in the way', 'fed_in_the_way', 'Yes', 'red', '4.000000000000', '3.750000000000', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+   ['Market climate long run', 'long_run', 'Market going up', 'market_going_up', 'Yes', 'green', '7376.859863000000', '7325.053262000000', 'The S&P 500 closed at 7,376.86, above its 200-day average of 7,325.05 (the average moved 1.0% over the last 20 days).']
+   ['Market climate long run', 'long_run', 'Too expensive', 'too_expensive', 'Yes', 'red', '39.005400000000', '22.000000000000', 'The S&P 500 price/earnings ratio on 10-year inflation-adjusted earnings is 39.0, above 22 (the line of the long run lens).']
+== ds_light_history (Light history): SUCCEEDED
+  columns: ['signal_date', 'lens_name', 'lens_code', 'yes_count', 'light_code', 'range_start_date', 'range_end_date']
+  rows: 518
+   ['2025-10-28', 'Market climate long run', 'long_run', '2', 'red', '2023-11-07', '2026-11-07']
+   ['2025-10-28', 'Market climate modern', 'modern', '2', 'red', '2023-11-07', '2026-11-07']
+   ['2025-10-29', 'Market climate long run', 'long_run', '2', 'red', '2023-11-07', '2026-11-07']
+== ds_pe_history (Price/earnings history): SUCCEEDED
+  columns: ['valuation_date', 'pe_ten_year_adjusted', 'pe_trailing', 'range_start_date', 'range_end_date']
+  rows: 259
+   ['2025-10-28', '40.3459', '30.3104', '2023-11-07', '2026-11-07']
+   ['2025-10-29', '40.3659', '30.4067', '2023-11-07', '2026-11-07']
+   ['2025-10-30', '39.8746', '29.9086', '2023-11-07', '2026-11-07']
+== ds_fed_history (Fed target rate): SUCCEEDED
+  columns: ['signal_date', 'fed_target_rate', 'fed_band_code', 'range_start_date', 'range_end_date']
+  rows: 753
+   ['2023-11-07', '5.500000000000', 'red', '2023-11-07', '2026-11-07']
+   ['2023-11-08', '5.500000000000', 'red', '2023-11-07', '2026-11-07']
+   ['2023-11-09', '5.500000000000', 'red', '2023-11-07', '2026-11-07']
+== ds_trend_history (S&P 500 and its 200-day average): SUCCEEDED
+  columns: ['signal_date', 'sp500_close', 'sp500_average_200', 'range_start_date', 'range_end_date']
+  rows: 753
+   ['2023-11-07', '4378.379883000000', '4251.368696000000', '2023-11-07', '2026-11-07']
+   ['2023-11-08', '4382.779785000000', '4253.197845000000', '2023-11-07', '2026-11-07']
+   ['2023-11-09', '4347.350098000000', '4254.853496000000', '2023-11-07', '2026-11-07']
+== ds_index_day (Index of the day): SUCCEEDED
+  columns: ['valuation_date', 'market_value_trillion', 'earnings_adjusted_billion', 'pe_ten_year_adjusted', 'pe_trailing', 'members_used_count', 'member_count', 'members_without_shares_count', 'members_under_ten_years_count']
+  rows: 1
+   ['2026-11-06', '64.77633367902149', '1660.70380060793', '39.0054', '23.7017', '488', '500', '9', '51']
+== ds_top_up (Members pushing the P/E up): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'member_pe_trailing', 'pe_without_member', 'pe_effect']
+  rows: 10
+   ['Nvidia', 'Information Technology', '0.0694390000', '165.3504', '23.320323', '36.9013', '2.1041']
+   ['Amazon', 'Consumer Discretionary', '0.0432850000', '100.7080', '20.803290', '37.9533', '1.0521']
+   ['Tesla, Inc.', 'Consumer Discretionary', '0.0218590000', '323.4018', '440.011484', '38.2536', '0.7518']
+== ds_top_down (Members pushing the P/E down): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'member_pe_trailing', 'pe_without_member', 'pe_effect']
+  rows: 10
+   ['JPMorgan Chase', 'Financials', '0.0137130000', '18.7289', '13.462993', '39.6014', '-0.5960']
+   ['Bank of America', 'Financials', '0.0052640000', '11.1266', '10.577837', '39.5295', '-0.5241']
+   ['Verizon', 'Communication Services', '0.0029230000', '8.2811', '11.532685', '39.4343', '-0.4289']
+== ds_excluded (Members left out): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'exclusion_reason_code', 'price_date']
+  rows: 12
+   ['Okta, Inc.', 'Information Technology', 'no_filing', '2026-11-06']
+   ['Vylor', 'Consumer Staples', 'no_filing', '2026-11-06']
+   ['Honeywell Aerospace', 'Industrials', 'no_net_income', '2026-11-06']
+== ds_members (All members): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'member_pe_trailing', 'pe_without_member', 'pe_effect', 'is_used', 'exclusion_reason_code', 'price_close', 'share_count', 'market_value_billion']
+  rows: 500
+   ['Apple Inc.', 'Information Technology', '0.0768090000', '50.9453', '37.642391', '38.2593', '0.7461', 'true', None, '342.369995', '14532182000', '4975.3830786790895']
+   ['Nvidia', 'Information Technology', '0.0694390000', '165.3504', '23.320323', '36.9013', '2.1041', 'true', None, '186.639999', '24100000000', '4498.0239759']
+   ['Microsoft', 'Information Technology', '0.0608310000', '53.5919', '27.626624', '38.3296', '0.6758', 'true', None, '530.609985', '7426194552', '3940.4129798438016']
+== ds_checks (Checks of the day): SUCCEEDED
+  columns: ['index_used_count', 'member_used_count', 'market_value_difference_amount', 'earnings_difference_amount', 'pe_index', 'pe_from_members']
+  rows: 1
+   ['488', '488', '0.00', '0.00', '39.0054', '39.0054']
+== ds_sectors (Sectors of the day): SUCCEEDED
+  columns: ['sector_name', 'member_count', 'market_value_trillion', 'market_value_share_ratio', 'sector_pe', 'pe_without_sector', 'pe_index']
+  rows: 11
+   ['Information Technology', '75', '23.089550934694476', '0.356450', '62.782582', '32.242009', '39.005350']
+   ['Health Care', '59', '6.939502519620232', '0.107130', '35.402352', '39.487538', '39.005350']
+   ['Consumer Discretionary', '47', '6.8365412668221435', '0.105541', '51.375886', '37.927779', '39.005350']
+== ds_sector_up (Sector members pushing the P/E up): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'member_pe_trailing', 'pe_without_member', 'pe_effect', 'pe_effect_sort']
+  rows: 10
+   ['Nvidia', 'Information Technology', '0.0694390000', '165.3504', '23.320323', '36.9013', '2.1041', '2.1041']
+   ['Apple Inc.', 'Information Technology', '0.0768090000', '50.9453', '37.642391', '38.2593', '0.7461', '0.7461']
+   ['Microsoft', 'Information Technology', '0.0608310000', '53.5919', '27.626624', '38.3296', '0.6758', '0.6758']
+== ds_sector_down (Sector members pushing the P/E down): SUCCEEDED
+  columns: ['company_name', 'sector_name', 'market_value_share_ratio', 'member_pe', 'member_pe_trailing', 'pe_without_member', 'pe_effect', 'pe_effect_sort']
+  rows: 10
+   ['Intel', 'Information Technology', '0.0046180000', '23.9209', None, '39.1198', '-0.1144', '-0.1144']
+   ['HP Inc.', 'Information Technology', '0.0003960000', '6.0336', '10.471224', '39.0900', '-0.0846', '-0.0846']
+   ['Oracle Corporation', 'Information Technology', '0.0054200000', '28.8472', '18.554743', '39.0803', '-0.0749', '-0.0749']
+== ds_sector_names (Sector names): SUCCEEDED
+  columns: ['sector_name']
+  rows: 11
+   ['Communication Services']
+   ['Consumer Discretionary']
+   ['Consumer Staples']
+== ds_company_names (Company names): SUCCEEDED
+  columns: ['company_name']
+  rows: 500
+   ['3M']
+   ['A. O. Smith']
+   ['AES Corporation']
+== ds_company_check (Company check, step by step): SUCCEEDED
+  columns: ['step_number', 'step_name', 'value_text', 'how_text']
+  rows: 12
+   ['1', 'Closing price', '49.40 US$ on 2026-11-06', 'Latest close on or before the day']
+   ['2', 'Shares outstanding', '625,549,000 (cover_page)', 'From the latest filing']
+   ['3', 'Market value', '30.90 US$ billion', 'Step 1 x step 2']
+== ds_history_range_options (History ranges): SUCCEEDED
+  columns: ['history_range_code', 'history_range_months']
+  rows: 6
+   ['1M', '1']
+   ['3M', '3']
+   ['6M', '6']
+== ds_range_options (Price ranges): SUCCEEDED
+  columns: ['range_code', 'range_order']
+  rows: 5
+   ['5D', '1']
+   ['1M', '2']
+   ['6M', '3']
+== ds_company_price (Company price with Bollinger bands): SUCCEEDED
+  columns: ['price_date', 'price_close', 'band_middle', 'band_upper', 'band_lower']
+  rows: 129
+   ['2026-05-06', '57.360001', '58.3900001500', '60.28851621577476', '56.491484084225235']
+   ['2026-05-07', '56.220001', '58.2275001500', '60.278655226293566', '56.17634507370643']
+   ['2026-05-08', '55.959999', '58.0915001000', '60.35437750781624', '55.82862269218376']
+== ds_company_figures (Company price figures): SUCCEEDED
+  columns: ['last_close', 'day_change_ratio', 'high_52_weeks', 'low_52_weeks', 'price_date']
+  rows: 1
+   ['49.400002', '-0.0241010870031822798', '68.239998', '47.939999', '2026-11-06']
+== ds_inflation_freshness (Data dates): SUCCEEDED
+  columns: ['rating_date', 'crb_price_date', 'gold_price_date', 'rate_date', 'cpi_reading_date']
+  rows: 1
+   ['2026-11-06', '2026-11-06', '2026-11-06', '2026-11-05', '2026-09-01']
+== ds_rating (Rating of the day): SUCCEEDED
+  columns: ['rating_date', 'stars_on', 'rating', 'label', 'rating_band', 'cpi_change_twelve_months', 'reason_text']
+  rows: 1
+   ['2026-11-06', '3', '3', 'Inflation Danger', 'red', '3.737685000000', 'Inflation Danger: 3 of 4 indicators point to inflation; US consumer prices changed 3.7% over 12 months.']
+== ds_stars (Stars of the day): SUCCEEDED
+  columns: ['signal_name', 'signal_code', 'star_order', 'star_state', 'star_band', 'measured_value', 'threshold_value', 'reason_text']
+  rows: 4
+   ['Commodity prices', 'commodity_prices', '1', 'On', 'red', '0.029958000000', '0E-12', 'The CRB commodity index closed at 390.05; its 200-day average of 376.70 moved 3.0% over the last 20 days, so the star is on.']
+   ['Consumer prices', 'consumer_prices', '2', 'On', 'red', '1.204740000000', '0E-12', 'The 200-day average of the US consumer price index is 333.44 and moved 1.20 points over the last 20 days, so the star is on.']
+   ['Gold prices', 'gold_prices', '3', 'Off', 'green', '4079.500000000000', '4501.518497000000', 'Gold closed at 4,079.50, at or below its 200-day average of 4,501.52, so the star is off.']
+== ds_rating_history (Rating history): SUCCEEDED
+  columns: ['signal_date', 'stars_on', 'rating', 'label']
+  rows: 736
+   ['2023-12-01', '4', '4', 'Increasing Inflation']
+   ['2023-12-04', '3', '3', 'Inflation Danger']
+   ['2023-12-05', '3', '3', 'Inflation Danger']
+== ds_crb_history (CRB commodity index): SUCCEEDED
+  columns: ['price_date', 'price_close', 'average_200']
+  rows: 725
+   ['2023-12-01', '270.769989', '272.213549']
+   ['2023-12-04', '267.609985', '272.188249']
+   ['2023-12-05', '266.320007', '272.155899']
+== ds_gold_history (Gold futures): SUCCEEDED
+  columns: ['price_date', 'price_close', 'average_200']
+  rows: 738
+   ['2023-12-01', '2089.699951', '1955.563500']
+   ['2023-12-04', '2042.199951', '1956.523500']
+   ['2023-12-05', '2036.300049', '1957.492501']
+== ds_cpi_history (US consumer price index): SUCCEEDED
+  columns: ['indicator_date', 'rate_value', 'average_200']
+  rows: 736
+   ['2023-12-01', '306.746000000000', '305.328525000000']
+   ['2023-12-04', '306.746000000000', '305.358055000000']
+   ['2023-12-05', '306.746000000000', '305.387585000000']
+== ds_rate_history (Federal funds effective rate): SUCCEEDED
+  columns: ['indicator_date', 'rate_value', 'average_200']
+  rows: 736
+   ['2023-12-01', '5.330000000000', '5.095300000000']
+   ['2023-12-04', '5.330000000000', '5.099050000000']
+   ['2023-12-05', '5.330000000000', '5.102800000000']
+== ds_real_rate_history (Real federal funds rate): SUCCEEDED
+  columns: ['indicator_date', 'rate_value', 'average_200']
+  rows: 736
+   ['2023-12-01', '1.977877000000', '1.105403780000']
+   ['2023-12-04', '1.977877000000', '1.122571230000']
+   ['2023-12-05', '1.977877000000', '1.139738680000']
+== ds_cpi_changes (US consumer price changes): SUCCEEDED
+  columns: ['indicator_date', 'cpi_change', 'change_label']
+  rows: 1472
+   ['2023-12-01', '-0.099332000000', 'Against the previous reading']
+   ['2023-12-01', '3.352123000000', 'Over 12 months']
+   ['2023-12-04', '-0.099332000000', 'Against the previous reading']
+== ds_commodities (Commodity benchmarks of the day): SUCCEEDED
+  columns: ['benchmark_name', 'symbol', 'price_date', 'price_close', 'average_200', 'distance_ratio', 'slope_ratio', 'position_text', 'direction_text', 'is_vote']
+  rows: 8
+   ['CRB commodity index (votes)', '^TRCCRB', '2026-11-06', '390.049988', '376.695050', '0.0354529160922077420', '0.02995818', 'Above', 'Rising', 'true']
+   ['S&P GSCI commodity index', '^SPGSCI', '2026-11-06', '698.811096', '694.874857', '0.0056646732290674895', '0.02645383', 'Above', 'Rising', 'false']
+   ['Gold futures (votes as gold)', 'GC=F', '2026-11-06', '4079.500000', '4501.518497', '-0.0937502527827555876', '-0.01022413', 'Below', 'Falling', 'false']
+== ds_commodities_history (Commodity benchmarks against their 200-day average): SUCCEEDED
+  columns: ['price_date', 'benchmark_name', 'distance_ratio']
+  rows: 5885
+   ['2023-12-01', 'Copper futures', '0.0252434395828945646']
+   ['2023-12-01', 'Silver futures', '0.0908166537011254888']
+   ['2023-12-01', 'Gold futures (votes as gold)', '0.0685922246963598983']
+== ds_currency_freshness (Data dates): SUCCEEDED
+  columns: ['currency_date', 'dollar_index_date', 'broad_index_date', 'exchange_rate_date']
+  rows: 1
+   ['2026-11-06', '2026-11-06', '2026-10-30', '2026-10-30']
+== ds_dollar (The dollar indexes of the day): SUCCEEDED
+  columns: ['signal_date', 'signal_code', 'signal_name', 'dollar_state', 'dollar_band', 'index_order', 'index_level', 'average_200', 'reason_text']
+  rows: 2
+   ['2026-11-06', 'dollar_index', 'US Dollar Index (DXY)', 'Strong', 'green', '1', '102.278999000000', '99.703945000000', 'The US Dollar Index is 102.2790, above its 200-day average of 99.7039, so the dollar is strong on this measure.']
+   ['2026-11-06', 'dollar_broad_index', 'Broad dollar index (Federal Reserve)', 'Strong', 'green', '2', '121.665600000000', '119.573425000000', 'The Federal Reserve broad dollar index is 121.6656, above its 200-day average of 119.5734, so the dollar is strong on this measure.']
+== ds_currency_grid (Currencies against the US dollar and the Australian dollar): SUCCEEDED
+  columns: ['currency_code', 'currency_name', 'value_in_usd', 'distance_usd', 'against_usd', 'band_usd', 'value_in_aud', 'distance_aud', 'against_aud', 'band_aud']
+  rows: 10
+   ['USD', 'US dollar', None, None, 'Base', 'blue', '1.420858000000', '0.002659678', 'Gaining', 'yellow']
+   ['EUR', 'Euro', '1.116300000000', '-0.033555862', 'Losing', 'red', '1.586104000000', '-0.030880857', 'Losing', 'red']
+   ['JPY', 'Japanese yen', '0.006350000000', '0.006179686', 'Gaining', 'yellow', '0.009023000000', '0.008945544', 'Gaining', 'yellow']
+== ds_currency_distance (Distance from the 200-day average): SUCCEEDED
+  columns: ['currency_name', 'currency_order', 'base_label', 'distance_ratio']
+  rows: 18
+   ['US dollar', '1', 'Against the Australian dollar', '0.002659678']
+   ['Euro', '2', 'Against the US dollar', '-0.033555862']
+   ['Euro', '2', 'Against the Australian dollar', '-0.030880857']
+== ds_dollar_history (The dollar indexes over time): SUCCEEDED
+  columns: ['indicator_date', 'dxy_close', 'dxy_average', 'broad_value', 'broad_average']
+  rows: 736
+   ['2023-12-01', '103.269997', '103.616600', '119.942400000000', '120.407652000000']
+   ['2023-12-04', '103.639999', '103.615500', '120.472700000000', '120.407690000000']
+   ['2023-12-05', '104.050003', '103.616450', '120.791300000000', '120.408883500000']
+== ds_country_rates (Interest rates of the main countries): SUCCEEDED
+  columns: ['country_currency', 'short_term_rate', 'short_term_date', 'short_term_note', 'ten_year_yield', 'ten_year_date', 'ten_year_note']
+  rows: 10
+   ['US dollar', '3.880000000000', '2026-11-05', None, '4.840000000000', '2026-11-05', None]
+   ['Euro', '2.500000000000', '2026-11-06', None, '3.220984000000', '2026-01-01', 'Older than 4 months']
+   ['Japanese yen', '1.559910000000', '2026-08-01', None, '3.050000000000', '2026-09-01', None]
+== ds_currency_options (Currencies): SUCCEEDED
+  columns: ['currency_code', 'currency_name']
+  rows: 10
+   ['USD', 'US dollar']
+   ['EUR', 'Euro']
+   ['JPY', 'Japanese yen']
+== ds_currency_history (Value of the chosen currency): SUCCEEDED
+  columns: ['indicator_date', 'value_in_usd', 'average_in_usd', 'value_in_aud', 'average_in_aud']
+  rows: 736
+   ['2023-12-01', '1.148633000000', '1.114303020000', '1.724674000000', '1.692285035000']
+   ['2023-12-04', '1.145475000000', '1.114622065000', '1.730325000000', '1.693085985000']
+   ['2023-12-05', '1.141553000000', '1.114933760000', '1.742562000000', '1.693938530000']
+== ds_currency_rates_history (Interest rates of the chosen currency's country): SUCCEEDED
+  columns: ['indicator_date', 'rate_label', 'rate_value']
+  rows: 1472
+   ['2023-12-01', '10-year yield', '0.656000000000']
+   ['2023-12-01', 'Short-term rate', '1.652500000000']
+   ['2023-12-04', '10-year yield', '0.656000000000']
+== ds_base_options (Base currencies): SUCCEEDED
+  columns: ['base_code', 'base_name']
+  rows: 2
+   ['AUD', 'Australian dollar']
+   ['USD', 'US dollar']
+== ds_yield_ranking (Countries ranked by short-term rate plus the currency's 12-month change): SUCCEEDED
+  columns: ['rank_position', 'currency_name', 'short_term_rate', 'short_term_date', 'ten_year_yield', 'currency_change_12m', 'distance_from_average', 'short_plus_12m']
+  rows: 10
+   ['1', 'Australian dollar', '4.85', '2026-11-05', '5.08', '0.0', '0.0', '4.9']
+   ['2', 'Chinese yuan', '1.49', '2026-08-01', None, '-0.9', '2.3', '0.6']
+   ['3', 'British pound', '3.73', '2026-09-01', '5.24', '-5.0', '0.0', '-1.3']
+== ds_us_yield_curve (US 10-year Treasury yield against the short-term US yields): SUCCEEDED
+  columns: ['observation_date', 'maturity_name', 'maturity_order', 'series_name', 'yield_value', 'spread', 'range_start_date', 'range_end_date']
+  rows: 5992
+   ['2023-11-07', '3-month', '1', '10-year', '4.580000', '-0.970000', '2023-11-07', '2026-11-07']
+   ['2023-11-07', '3-month', '1', '3-month', '5.550000', '-0.970000', '2023-11-07', '2026-11-07']
+   ['2023-11-07', '1-year', '2', '1-year', '5.330000', '-0.750000', '2023-11-07', '2026-11-07']
+== ds_strategy_freshness (Data dates): SUCCEEDED
+  columns: ['bear_week_date', 'short_week_date', 'climate_date', 'sp500_price_date', 'latest_event_date']
+  rows: 1
+   ['2026-11-06', '2026-11-06', '2026-11-06', '2026-11-06', '2026-11-06']
+== ds_bear_week (Strategy 001 setup and entry of the week): SUCCEEDED
+  columns: ['week_end_date', 'week_close_amount', 'five_weeks_close_amount', 'week_change_ratio', 'is_red', 'is_lower_than_five_weeks', 'is_setup_on', 'setup_text', 'setup_light', 'entry_band_code', 'action_text']
+  rows: 1
+   ['2026-11-06', '7376.859863', '7722.720215', '-0.0268084550', 'true', 'true', 'true', 'GO', 'green', 'quarter_of_equity', 'Entry: invest a quarter of equity in the bear fund on Monday.']
+== ds_bear_checks (Strategy 001 checks): SUCCEEDED
+  columns: ['step_number', 'step_group', 'check_name', 'answer_text', 'value_text']
+  rows: 8
+   ['1', 'Setup', 'A market climate light is red', 'Yes', None]
+   ['2', 'Setup', 'The S&P 500 closed the week below its close 5 weeks earlier', 'Yes', '7,376.86 against 7,722.72']
+   ['3', 'Entry', 'The week fell 5% or more: invest half of equity', 'No', '-2.7% on the week']
+== ds_bear_funds (Bear funds): SUCCEEDED
+  columns: ['fund_code', 'fund_name', 'fund_description', 'fund_order', 'last_date', 'last_close', 'week_change_ratio']
+  rows: 5
+   ['SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', '1', '2026-11-06', '47.700001', '0.1403298761496592804']
+   ['PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', '2', '2026-11-06', '27.950001', '0.0495682331794304611']
+   ['SH', 'ProShares Short S&P500', '1x short S&P 500', '3', '2026-11-06', '33.740002', '0.0267803095928085943']
+== ds_fund_options (Bear fund choices): SUCCEEDED
+  columns: ['fund_code', 'fund_name', 'fund_description', 'fund_order']
+  rows: 5
+   ['SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', '1']
+   ['PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', '2']
+   ['SH', 'ProShares Short S&P500', '1x short S&P 500', '3']
+== ds_bear_periods (Past setup periods of strategy 001): SUCCEEDED
+  columns: ['period_code', 'period_label', 'setup_start_date']
+  rows: 7
+   ['2026-10-23', '2026-10-23 to now, 1 entry', '2026-10-23']
+   ['2026-09-11', '2026-09-11 to 2026-09-25, 0 entries', '2026-09-11']
+   ['2026-07-24', '2026-07-24 to 2026-07-31, 0 entries', '2026-07-24']
+== ds_bear_period_events (Events of the chosen setup period): SUCCEEDED
+  columns: ['event_date', 'event_name', 'setup_start_date', 'entry_number', 'entry_band_code', 'week_close_amount', 'five_weeks_close_amount', 'week_change_ratio', 'reason_text']
+  rows: 12
+   ['2026-11-06', 'Entry', '2026-10-23', '1', 'quarter_of_equity', '7376.859863', '7722.720215', '-0.0268084550', 'The S&P 500 fell 2.7% on the week: invest a quarter of equity in the bear fund on Monday.']
+   ['2026-10-23', 'Setup starts', '2026-10-23', None, None, '7623.680176', '7650.500000', '-0.0046687180', 'A market climate light is red and the S&P 500 closed the week at 7623.68, below 7650.50 five weeks earlier.']
+   ['2026-09-25', 'Setup ends', '2026-09-11', None, None, '7743.410156', '7674.370117', '0.0121443247', 'No climate light is red, or the S&P 500 closed the week at 7743.41 at or above its close five weeks earlier (7674.37).']
+== ds_fund_chart (Bear fund, S&P 500 and the setup periods): SUCCEEDED
+  columns: ['price_date', 'fund_close', 'sp500_close', 'is_in_setup', 'entry_band_code', 'range_start_date', 'range_end_date']
+  rows: 753
+   ['2023-11-07', '452.500000', '4378.379883', 'false', None, '2023-11-07', '2026-11-07']
+   ['2023-11-08', '451.500000', '4382.779785', 'false', None, '2023-11-07', '2026-11-07']
+   ['2023-11-09', '462.750000', '4347.350098', 'false', None, '2023-11-07', '2026-11-07']
+== ds_short_gate (Market climate gate of strategy 002): SUCCEEDED
+  columns: ['climate_date', 'is_red', 'lights_text', 'gate_text', 'gate_light']
+  rows: 1
+   ['2026-11-06', 'true', 'Market climate long run: red, Market climate modern: red', 'Red light: the strategy can run', 'red']
+== ds_short_candidates (Short selling candidates of the week): SUCCEEDED
+  columns: ['trading_symbol_code', 'company_name', 'setup_start_date', 'week_end_date', 'price_to_sales_ratio', 'down_week_count', 'week_change_ratio', 'setup_light', 'entry_light']
+  rows: 2
+   ['AMD', 'Advanced Micro Devices', '2026-10-23', '2026-11-06', '16.2088', '5', '-0.1104595490', 'green', 'grey']
+   ['TPL', 'Texas Pacific Land Corporation', '2026-10-30', '2026-11-06', '19.4101', '4', '-0.1788471094', 'green', 'grey']
+== ds_short_events (Latest short selling events): SUCCEEDED
+  columns: ['event_date', 'trading_symbol_code', 'event_name', 'setup_start_date', 'entry_number', 'price_to_sales_ratio', 'down_week_count', 'reason_text']
+  rows: 40
+   ['2026-11-06', 'ANET', 'Setup ends', '2026-10-30', None, '18.1486', '0', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (0 weeks down now).']
+   ['2026-11-06', 'HOOD', 'Setup ends', '2026-10-09', None, '14.2970', '7', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (7 weeks down now).']
+   ['2026-11-06', 'NVDA', 'Setup ends', '2026-10-23', None, '14.8464', '5', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (5 weeks down now).']
