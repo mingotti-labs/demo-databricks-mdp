@@ -1,0 +1,17 @@
+== rows (indicator vs price_daily)
+indicator_rows,price_rows
+241178,241178
+
+== top r60 and tr60 on the latest day
+r60_max,tr60_max,r60_15,volume_ok
+13.307484,10.288411,0,523
+
+== true range at least the range, equal on first rows
+true_below_range,gaps
+0,84175
+
+== AAPL latest
+price_date,close_sixty_day_change_amount,price_range_sixty_day_average_amount,true_range_sixty_day_average_amount,efficiency_r60_ratio,efficiency_tr60_ratio,volume_sixty_day_average_count
+2026-11-06,37.109985,6.833501,7.301168,5.430596,5.082746,43000922
+2026-11-05,41.920013,6.774500,7.242168,6.187912,5.788324,42928805
+

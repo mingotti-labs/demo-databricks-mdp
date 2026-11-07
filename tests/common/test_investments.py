@@ -67,8 +67,9 @@ def test_commodity_exchanges_map_to_a_market_or_to_no_market():
 
 def test_rate_codes_are_unique_and_spelled_out():
     codes = [code for code, _, _, _, _ in RATES]
-    assert len(codes) == len(set(codes)) == 6
+    assert len(codes) == len(set(codes)) == 10
     assert "australian_dollar_in_us_dollars" in codes
+    assert {"us_3_month_treasury_yield", "us_1_year_treasury_yield", "us_2_year_treasury_yield", "us_3_year_treasury_yield"} <= set(codes)
 
 
 def test_cpi_rate_codes_are_unique_and_do_not_overlap_the_daily_rates():

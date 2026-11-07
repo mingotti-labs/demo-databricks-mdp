@@ -169,6 +169,10 @@ def test_a_connection_error_never_leaks_the_key_in_the_message_or_traceback(
 def test_series_list_holds_rates_consumer_prices_and_currency_series():
     assert fred_series.SERIES == [
         "DGS10",
+        "DGS3MO",
+        "DGS1",
+        "DGS2",
+        "DGS3",
         "DFF",
         "DFEDTARU",
         "DFEDTARL",
