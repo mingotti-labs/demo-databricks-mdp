@@ -9,7 +9,7 @@ from common.strategy import (
     short_selling_entry,
     short_selling_setup,
 )
-from common.strategy_events_sql import reason_text_sql, strategy_events_query, week_complete
+from common.strategy_events_sql import reason_text_sql, strategy_events_query, strategy_states_query, week_complete
 
 
 def week(close=100.0, previous=100.0, five=105.0, red=True, price_to_sales=None, down=0) -> Week:
@@ -68,3 +68,13 @@ def test_a_week_is_complete_on_its_friday_or_after_it_so_a_holiday_week_counts()
 
 def test_the_reason_texts_name_both_strategies():
     assert reason_text_sql().count("WHEN") >= 6
+
+
+def test_the_states_query_is_what_the_events_query_reads():
+    states = strategy_states_query()
+    for text in ("is_setup_on", "is_red", "down_week_count", "price_to_sales_ratio", "'bear_market_fund'", "'short_selling'"):
+        assert text in states, text
+    assert "setup_start" not in states and "entry_number" not in states
+    assert strategy_states_query(domain="d", climate_source="c", member_source="m") in strategy_events_query(
+        domain="d", climate_source="c", member_source="m"
+    )

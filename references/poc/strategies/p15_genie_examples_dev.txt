@@ -1,0 +1,140 @@
+== example: How fresh is the inflation data?: SUCCEEDED, rows 1
+   ['2026-11-06', '2026-11-06', '2026-11-06', '2026-11-03', '2026-09-01']
+== example: How has the S&P 500 P/E moved over time?: SUCCEEDED, rows 259
+   ['2025-10-28', '40.3459', '30.3104', '2023-11-07', '2026-11-07']
+   ['2025-10-29', '40.3659', '30.4067', '2023-11-07', '2026-11-07']
+== example: How have Switzerland's interest rates changed?: SUCCEEDED, rows 1472
+   ['2023-12-01', 'Short-term rate', '1.652500000000']
+   ['2023-12-01', '10-year yield', '0.656000000000']
+== example: How fresh is the data?: SUCCEEDED, rows 1
+   ['2026-11-06', '2026-11-06', '2026-11-04', '2026-11-06']
+== example: Which stocks are short selling candidates this week?: SUCCEEDED, rows 2
+   ['AMD', 'Advanced Micro Devices', '2026-10-23', '2026-11-06', '16.2088', '5', '-0.1104595490', 'green', 'grey']
+   ['TPL', 'Texas Pacific Land Corporation', '2026-10-30', '2026-11-06', '19.4101', '4', '-0.1788471094', 'green', 'grey']
+== example: Which members are left out today, and why?: SUCCEEDED, rows 12
+   ['Okta, Inc.', 'Information Technology', 'no_filing', '2026-11-06']
+   ['Vylor', 'Consumer Staples', 'no_filing', '2026-11-06']
+== example: Is the market climate red, so that short selling can run?: SUCCEEDED, rows 1
+   ['2026-11-06', 'true', 'Market climate modern: red, Market climate long run: red', 'Red light: the strategy can run', 'red']
+== example: What is the inflation rating today?: SUCCEEDED, rows 1
+   ['2026-11-06', '3', '3', 'Inflation Danger', 'red', '3.737685000000', 'Inflation Danger: 3 of 4 indicators point to inflation; US consumer prices changed 3.7% over 12 months.']
+== example: Which companies push the index P/E up most?: SUCCEEDED, rows 10
+   ['Nvidia', 'Information Technology', '0.0694390000', '165.3504', '23.320323', '36.9013', '2.1041']
+   ['Amazon', 'Consumer Discretionary', '0.0432850000', '100.7080', '20.803290', '37.9533', '1.0521']
+== example: What is the P/E of each sector, and the index P/E without it?: SUCCEEDED, rows 11
+   ['Information Technology', '75', '23.089550934694476', '0.356450', '62.782582', '32.242009', '39.005350']
+   ['Health Care', '59', '6.939502519620232', '0.107130', '35.402352', '39.487538', '39.005350']
+== example: What is the S&P 500 P/E today, on 10-year inflation-adjusted and on trailing earnings?: SUCCEEDED, rows 1
+   ['2026-11-06', '64.77633367902149', '1660.70380060793', '39.0054', '23.7017', '488', '500', '9', '51']
+== example: Is the bear market fund setup on, and is there an entry this week?: SUCCEEDED, rows 1
+   ['2026-11-06', '7376.859863', '7722.720215', '-0.0268084550', 'true', 'true', 'true', 'GO', 'green', 'quarter_of_equity', 'Entry: invest a quarter of equity in the bear fund on Monday.']
+== example: How is EQT's P/E worked out, step by step?: SUCCEEDED, rows 12
+   ['1', 'Closing price', '49.40 US$ on 2026-11-06', 'Latest close on or before the day']
+   ['2', 'Shares outstanding', '625,549,000 (cover_page)', 'From the latest filing']
+== example: What are EQT's last close and its 52-week high and low?: SUCCEEDED, rows 1
+   ['49.400002', '-0.0241010870031822798', '68.239998', '47.939999', '2026-11-06']
+== example: What are the short-term interest rates and 10-year yields of the main countries?: SUCCEEDED, rows 10
+   ['US dollar', '3.880000000000', '2026-11-03', None, '4.950000000000', '2026-11-03', None]
+   ['Euro', '2.500000000000', '2026-11-04', None, '3.220984000000', '2026-01-01', 'Older than 4 months']
+== example: What are the latest short selling events?: SUCCEEDED, rows 40
+   ['2026-11-06', 'ANET', 'Setup ends', '2026-10-30', None, '18.1486', '0', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (0 weeks down now).']
+   ['2026-11-06', 'HOOD', 'Setup ends', '2026-10-09', None, '14.2970', '7', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (7 weeks down now).']
+== example: How has the bear fund SQQQ moved against the S&P 500, and when was the setup on?: SUCCEEDED, rows 753
+   ['2023-11-07', '452.500000', '4378.379883', 'false', None, '2023-11-07', '2026-11-07']
+   ['2023-11-08', '451.500000', '4382.779785', 'false', None, '2023-11-07', '2026-11-07']
+== example: What is the real interest rate over time?: SUCCEEDED, rows 736
+   ['2023-12-01', '1.977877000000', '1.105403780000']
+   ['2023-12-04', '1.977877000000', '1.122571230000']
+== example: Is the dollar strong or weak today?: SUCCEEDED, rows 2
+   ['2026-11-06', 'dollar_index', 'US Dollar Index (DXY)', 'Strong', 'green', '1', '102.278999000000', '99.703945000000', 'The US Dollar Index is 102.2790, above its 200-day average of 99.7039, so the dollar is strong on this measure.']
+   ['2026-11-06', 'dollar_broad_index', 'Broad dollar index (Federal Reserve)', 'Strong', 'green', '2', '121.665600000000', '119.573425000000', 'The Federal Reserve broad dollar index is 121.6656, above its 200-day average of 119.5734, so the dollar is strong on this measure.']
+== example: Which inflation stars are on today, and why?: SUCCEEDED, rows 4
+   ['Commodity prices', 'commodity_prices', '1', 'On', 'red', '0.029958000000', '0E-12', 'The CRB commodity index closed at 390.05; its 200-day average of 376.70 moved 3.0% over the last 20 days, so the star is on.']
+   ['Consumer prices', 'consumer_prices', '2', 'On', 'red', '1.204740000000', '0E-12', 'The 200-day average of the US consumer price index is 333.44 and moved 1.20 points over the last 20 days, so the star is on.']
+== example: How have US consumer prices changed over 12 months?: SUCCEEDED, rows 1472
+   ['2023-12-01', '-0.099332000000', 'Against the previous reading']
+   ['2023-12-01', '3.352123000000', 'Over 12 months']
+== example: Which country can deliver the highest yield, considering its interest rate and its currency's change, in a table ranking?: SUCCEEDED, rows 10
+   ['1', 'Australian dollar', '4.85', '2026-11-05', '5.08', '0.0', '0.0', '4.9']
+   ['2', 'Chinese yuan', '1.49', '2026-08-01', None, '-0.9', '2.3', '0.6']
+== example: How has the inflation rating changed over time?: SUCCEEDED, rows 736
+   ['2023-12-01', '4', '4', 'Increasing Inflation']
+   ['2023-12-04', '3', '3', 'Inflation Danger']
+== example: How has the Swiss franc moved against the US and Australian dollars?: SUCCEEDED, rows 736
+   ['2023-12-01', '1.148633000000', '1.114303020000', '1.724674000000', '1.692285035000']
+   ['2023-12-04', '1.145475000000', '1.114622065000', '1.730325000000', '1.693085985000']
+== example: How have the lights changed over time?: SUCCEEDED, rows 518
+   ['2025-10-28', 'Market climate long run', 'long_run', '2', 'red', '2023-11-07', '2026-11-07']
+   ['2025-10-28', 'Market climate modern', 'modern', '2', 'red', '2023-11-07', '2026-11-07']
+== example: What happened in the bear market fund setup periods?: SUCCEEDED, rows 12
+   ['2026-11-06', 'Entry', '2026-10-23', '1', 'quarter_of_equity', '7376.859863', '7722.720215', '-0.0268084550', 'The S&P 500 fell 2.7% on the week: invest a quarter of equity in the bear fund on Monday.']
+   ['2026-10-23', 'Setup starts', '2026-10-23', None, None, '7623.680176', '7650.500000', '-0.0046687180', 'A market climate light is red and the S&P 500 closed the week at 7623.68, below 7650.50 five weeks earlier.']
+== example: How have the dollar indexes moved over time?: SUCCEEDED, rows 736
+   ['2023-12-01', '103.269997', '103.616600', '119.942400000000', '120.407652000000']
+   ['2023-12-04', '103.639999', '103.615500', '120.472700000000', '120.407690000000']
+== example: What is the market climate today?: SUCCEEDED, rows 2
+   ['Market climate long run', 'long_run', '3', 'red', 'sell', 'Market climate long run is red (sell): 3 of 3 answers are yes.', '2026-11-06']
+   ['Market climate modern', 'modern', '3', 'red', 'sell', 'Market climate modern is red (sell): 3 of 3 answers are yes.', '2026-11-06']
+== example: What are the three answers of each climate today, and why?: SUCCEEDED, rows 6
+   ['Market climate long run', 'long_run', 'Fed in the way', 'fed_in_the_way', 'Yes', 'red', '4.000000000000', '3.750000000000', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+   ['Market climate long run', 'long_run', 'Market going up', 'market_going_up', 'Yes', 'green', '7376.859863000000', '7325.053262000000', 'The S&P 500 closed at 7,376.86, above its 200-day average of 7,325.05 (the average moved 1.0% over the last 20 days).']
+== example: How are the bear funds doing?: SUCCEEDED, rows 5
+   ['SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', '1', '2026-11-06', '47.700001', '0.1403298761496592804']
+   ['PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', '2', '2026-11-06', '27.950001', '0.0495682331794304611']
+== example: What is the short-term interest rate and its 200-day average?: SUCCEEDED, rows 736
+   ['2023-12-01', '5.330000000000', '5.095300000000']
+   ['2023-12-04', '5.330000000000', '5.099050000000']
+== example: How do the commodity benchmarks compare with their 200-day averages today?: SUCCEEDED, rows 8
+   ['CRB commodity index (votes)', '^TRCCRB', '2026-11-06', '390.049988', '376.695050', '0.0354529160922077420', '0.02995818', 'Above', 'Rising', 'true']
+   ['S&P GSCI commodity index', '^SPGSCI', '2026-11-06', '698.811096', '694.874857', '0.0056646732290674895', '0.02645383', 'Above', 'Rising', 'false']
+== example: Do the member rows add up to the index row?: SUCCEEDED, rows 1
+   ['488', '488', '0.00', '0.00', '39.0054', '39.0054']
+== example: Which companies push the index P/E down most?: SUCCEEDED, rows 10
+   ['JPMorgan Chase', 'Financials', '0.0137130000', '18.7289', '13.462993', '39.6014', '-0.5960']
+   ['Bank of America', 'Financials', '0.0052640000', '11.1266', '10.577837', '39.5295', '-0.5241']
+== example: Which currencies are gaining or losing against the US dollar and the Australian dollar today?: SUCCEEDED, rows 10
+   ['USD', 'US dollar', None, None, 'Base', 'blue', '1.420858000000', '0.002659678', 'Gaining', 'yellow']
+   ['EUR', 'Euro', '1.116300000000', '-0.033555862', 'Losing', 'red', '1.586104000000', '-0.030880857', 'Losing', 'red']
+== example: What are the checks behind the bear market fund setup, entry and exit?: SUCCEEDED, rows 8
+   ['1', 'Setup', 'A market climate light is red', 'Yes', None]
+   ['2', 'Setup', 'The S&P 500 closed the week below its close 5 weeks earlier', 'Yes', '7,376.86 against 7,722.72']
+== benchmark: Is the bear market fund setup on?: SUCCEEDED, rows 1
+   ['GO']
+== benchmark: When was the last deflation rating?: SUCCEEDED, rows 1
+   ['2015-05-29']
+== benchmark: Is the dollar strong or weak today?: SUCCEEDED, rows 2
+   ['Broad dollar index (Federal Reserve)', 'Strong']
+   ['US Dollar Index (DXY)', 'Strong']
+== benchmark: Which strategy entries fired in the last 6 months?: SUCCEEDED, rows 3
+   ['Short selling', 'LRCX', '2026-07-31']
+   ['Short selling', 'HOOD', '2026-10-30']
+== benchmark: What is Japan's short-term interest rate?: SUCCEEDED, rows 1
+   ['1.559910', '2026-08-01']
+== benchmark: Is the Fed in the way?: SUCCEEDED, rows 2
+   ['Market climate long run', 'true', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+   ['Market climate modern', 'true', 'The Fed target rate (upper limit) is 4.000000%; its latest change was a hike from 3.750000% on 2026-09-17, less than 6 months ago.']
+== benchmark: Which sector has the highest P/E?: SUCCEEDED, rows 1
+   ['Information Technology', '62.782582']
+== benchmark: Which currencies are gaining against the Australian dollar today?: SUCCEEDED, rows 4
+   ['British pound']
+   ['Chinese yuan']
+== benchmark: Which country has the highest short-term rate plus 12-month currency change against the Australian dollar?: SUCCEEDED, rows 1
+   ['Australian dollar', '4.9']
+== benchmark: What are EQT's P/E on trailing earnings and on 10-year inflation-adjusted earnings?: SUCCEEDED, rows 1
+   ['11.641655', '682.7082']
+== benchmark: When did the bear market fund setup last start?: SUCCEEDED, rows 1
+   ['2026-10-23']
+== benchmark: How many members are left out today?: SUCCEEDED, rows 1
+   ['12']
+== benchmark: Is the market too expensive right now?: SUCCEEDED, rows 2
+   ['Market climate long run', 'true', '39.005400000000', '22.000000000000']
+   ['Market climate modern', 'true', '39.005400000000', '30.000000000000']
+== benchmark: Which stocks are short selling candidates this week?: SUCCEEDED, rows 2
+   ['AMD']
+   ['TPL']
+== benchmark: What is the real interest rate today?: SUCCEEDED, rows 1
+   ['0.142315000000']
+== benchmark: How many inflation stars are on today?: SUCCEEDED, rows 1
+   ['3']
+== benchmark: What did the long-run light say on 2026-10-01?: SUCCEEDED, rows 1
+   ['red', '3', 'sell']

@@ -48,13 +48,16 @@ def test_genie_lists_are_sorted_and_ids_unique():
     assert len(ids) == len(set(ids))
     identifiers = [t["identifier"] for t in space["data_sources"]["tables"]]
     assert identifiers == sorted(identifiers)
+    for table in space["data_sources"]["tables"]:
+        names = [c["column_name"] for c in table.get("column_configs", [])]
+        assert names == sorted(names), table["identifier"]
 
 
 def test_genie_examples_name_the_catalog_and_no_parameters():
     space = json.loads(market_climate_genie.build())["resources"]["genie_spaces"]["market_climate_genie"]["serialized_space"]
     for example in space["instructions"]["example_question_sqls"]:
         sql = example["sql"][0]
-        assert ":as_of_date" not in sql and ":sector_name" not in sql and ":company_name" not in sql and ":range_code" not in sql and ":history_range_code" not in sql and ":currency_code" not in sql
+        assert ":as_of_date" not in sql and ":sector_name" not in sql and ":company_name" not in sql and ":range_code" not in sql and ":history_range_code" not in sql and ":currency_code" not in sql and ":fund_code" not in sql and ":setup_period" not in sql
         assert "${var.catalog}.gold_analytics_gateway." in sql or "${var.catalog}.silver_domain_investments." in sql
         assert " FROM monitor_daily_signal" not in sql and " JOIN silver_domain_investments." not in sql
 
@@ -71,3 +74,34 @@ def test_currency_dashboard_file_equals_its_builder():
 
     committed = (ROOT / "src" / "dashboards" / "currency_monitor.lvdash.json").read_text(encoding="utf-8")
     assert committed.replace("\r\n", "\n") == currency_dashboard.build()
+
+
+def test_strategy_dashboard_file_equals_its_builder():
+    from common import strategy_dashboard
+
+    committed = (ROOT / "src" / "dashboards" / "strategy_monitor.lvdash.json").read_text(encoding="utf-8")
+    assert committed.replace(chr(13) + chr(10), chr(10)) == strategy_dashboard.build()
+
+
+def test_strategy_dashboard_pages_datasets_and_parameters():
+    from common import strategy_dashboard
+
+    dashboard = json.loads(strategy_dashboard.build())
+    assert [p["displayName"] for p in dashboard["pages"]] == ["Bear Market Fund", "Bear Fund Deep Dive", "Short Selling", "Filters"]
+    datasets = {d["name"]: d for d in dashboard["datasets"]}
+    assert all(d["queryLines"][0].strip() for d in datasets.values())
+    assert {p["keyword"] for p in datasets["ds_fund_chart"]["parameters"]} == {"fund_code", "history_range_code"}
+    assert {p["keyword"] for p in datasets["ds_bear_period_events"]["parameters"]} == {"setup_period"}
+    assert {p["keyword"] for p in datasets["ds_short_candidates"]["parameters"]} == {"as_of_date"}
+    widgets = {w["widget"]["name"] for page in dashboard["pages"] for w in page["layout"]}
+    assert {"bear-week", "bear-checks", "bear-funds", "fund-chart", "short-candidates", "short-gate"} <= widgets
+    chart = next(w["widget"] for page in dashboard["pages"] for w in page["layout"] if w["widget"]["name"] == "fund-chart")
+    assert "range_start_date" in chart["spec"]["jsonSpec"]["spec"]
+
+
+def test_strategy_queries_read_the_shared_states_and_use_the_rule_thresholds():
+    from common.strategy_queries import DATASETS
+
+    assert "is_setup_on" in DATASETS["ds_short_candidates"][1] and "is_setup_on" in DATASETS["ds_bear_week"][1]
+    assert "-0.05" in DATASETS["ds_bear_week"][1] and "-0.025" in DATASETS["ds_bear_week"][1]
+    assert ":as_of_date" in DATASETS["ds_bear_week"][1] and ":setup_period" in DATASETS["ds_bear_period_events"][1]
