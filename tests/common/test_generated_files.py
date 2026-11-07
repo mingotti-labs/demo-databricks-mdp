@@ -87,7 +87,7 @@ def test_strategy_dashboard_pages_datasets_and_parameters():
     from common import strategy_dashboard
 
     dashboard = json.loads(strategy_dashboard.build())
-    assert [p["displayName"] for p in dashboard["pages"]] == ["Bear Market Fund", "Bear Fund Deep Dive", "Short Selling", "Filters"]
+    assert [p["displayName"] for p in dashboard["pages"]] == ["Bear Market Fund", "Bear Fund Deep Dive", "Short Selling", "Company Deep Dive", "Filters"]
     datasets = {d["name"]: d for d in dashboard["datasets"]}
     assert all(d["queryLines"][0].strip() for d in datasets.values())
     assert {p["keyword"] for p in datasets["ds_fund_chart"]["parameters"]} == {"fund_code", "history_range_code"}

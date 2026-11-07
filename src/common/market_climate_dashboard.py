@@ -19,7 +19,6 @@ from common.dashboard_widgets import (
     TEXT_COLOR,
     YELLOW,
     Y_PADDING,
-    counter,
     dashboard_json,
     dataset_entries,
     date_parameter,
@@ -31,6 +30,7 @@ from common.dashboard_widgets import (
     vega,
     with_range_dates,
 )
+from common.company_page import company_page, company_parameters
 from common.market_climate_queries import DATASETS
 
 DATE_DATASETS = [
@@ -38,8 +38,6 @@ DATE_DATASETS = [
     "ds_members", "ds_checks", "ds_company_check", "ds_company_price", "ds_company_figures", "ds_sectors", "ds_sector_up", "ds_sector_down",
 ]
 SECTOR_DATASETS = ["ds_sector_up", "ds_sector_down"]
-COMPANY_DATASETS = ["ds_company_check", "ds_company_price", "ds_company_figures"]
-RANGE_DATASETS = ["ds_company_price"]
 HISTORY_DATASETS = ["ds_light_history", "ds_pe_history", "ds_fed_history", "ds_trend_history"]
 
 
@@ -49,10 +47,7 @@ def parameters(dataset: str) -> list[dict]:
         result.append(date_parameter())
     if dataset in SECTOR_DATASETS:
         result.append(string_parameter("sector_name", "Sector", "Information Technology"))
-    if dataset in COMPANY_DATASETS:
-        result.append(string_parameter("company_name", "Company", "EQT Corporation"))
-    if dataset in RANGE_DATASETS:
-        result.append(string_parameter("range_code", "Range", "6M"))
+    result.extend(company_parameters(dataset))
     if dataset in HISTORY_DATASETS:
         result.append(string_parameter("history_range_code", "History range", "36M"))
     return result
@@ -157,23 +152,6 @@ def pe_history(x: int, y: int, w: int, h: int) -> dict:
                 "Price over earnings of the current members. Valuation answer: too expensive above 22 (long run) or 30 (modern).")
 
 
-def company_price(x: int, y: int, w: int, h: int) -> dict:
-    """Close line with the Bollinger bands."""
-    spec = {"transform": [{"fold": ["price_close", "band_upper", "band_middle", "band_lower"], "as": ["series", "value"]},
-                          {"calculate": "{'price_close': 'Close', 'band_upper': 'Upper band', 'band_middle': '20-day average', 'band_lower': 'Lower band'}[datum.series]", "as": "series_label"}],
-            "mark": {"type": "line", "strokeWidth": 2},
-            "encoding": {"x": {"field": "price_date", "type": "temporal", "title": None},
-                         "y": {"field": "value", "type": "quantitative", "title": "US$", "scale": {"zero": False, "padding": Y_PADDING}},
-                         "color": {"field": "series_label", "type": "nominal", "title": None, "legend": {"orient": "top"},
-                                   "scale": {"domain": ["Close", "Upper band", "20-day average", "Lower band"], "range": [PALETTE[0], PALETTE[1], PALETTE[2], PALETTE[1]]}},
-                         "strokeDash": {"field": "series_label", "type": "nominal", "legend": None,
-                                        "scale": {"domain": ["Close", "Upper band", "20-day average", "Lower band"], "range": [[1, 0], [5, 3], [1, 0], [5, 3]]}},
-                         "tooltip": [{"field": "price_date", "type": "temporal", "title": "Day"}, {"field": "series_label", "title": "Line"},
-                                     {"field": "value", "type": "quantitative", "format": ",.2f", "title": "US$"}]}}
-    return vega("company-price", "Close with Bollinger bands", "ds_company_price", ["price_date", "price_close", "band_upper", "band_middle", "band_lower"], spec, x, y, w, h,
-                "Bands: 20-day average of the close, plus and minus 2 standard deviations.")
-
-
 def sector_bars(x: int, y: int, w: int, h: int) -> dict:
     spec = {"mark": {"type": "bar"},
             "encoding": {"x": {"field": "sector_name", "type": "nominal", "sort": "-y", "title": None, "axis": {"labelAngle": -30}},
@@ -183,26 +161,6 @@ def sector_bars(x: int, y: int, w: int, h: int) -> dict:
     return vega("sector-pe", "Sector P/E", "ds_sectors", ["sector_name", "sector_pe"], spec, x, y, w, h)
 
 
-
-
-def company_page() -> dict:
-    steps = [("step_number", "Step", NUMBER0), ("step_name", "What", None), ("value_text", "Value", None), ("how_text", "How", None)]
-    money = {"type": "number", "decimalPlaces": {"type": "exact", "places": 2}}
-    percent = {"type": "number-percent", "decimalPlaces": {"type": "exact", "places": 2}}
-    return {"name": "company-deep-dive", "displayName": "Company Deep Dive", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
-        text("company-title", ["# Company Deep Dive\n", "\n", "Pick a company: its price first, then the steps that turn its filing and price into the P/E the climate uses.\n", "\n", "- Step 5 is the trailing P/E finance sites show\n", "- Step 9 is the one the climate uses; they differ when earnings were low in earlier years\n", "- Bollinger bands: 20-day average of the close, plus and minus 2 standard deviations"], 0, 0, 12, 4),
-        filter_widget("filter-company", "Company", "filter-single-select",
-                      [("ds_company_names", "field", "company_name"), ("ds_company_check", "parameter", "company_name"),
-                       ("ds_company_price", "parameter", "company_name"), ("ds_company_figures", "parameter", "company_name")], 0, 4, 6),
-        filter_widget("filter-range", "Range", "filter-single-select",
-                      [("ds_range_options", "field", "range_code"), ("ds_company_price", "parameter", "range_code")], 6, 4, 6),
-        counter("last-close", "Last close (US$)", "ds_company_figures", "last_close", money, 0, 6, 3, 3),
-        counter("day-change", "Change on the day", "ds_company_figures", "day_change_ratio", percent, 3, 6, 3, 3),
-        counter("high-52", "52-week high (US$)", "ds_company_figures", "high_52_weeks", money, 6, 6, 3, 3),
-        counter("low-52", "52-week low (US$)", "ds_company_figures", "low_52_weeks", money, 9, 6, 3, 3),
-        company_price(0, 9, 12, 8),
-        table("company-steps", "From the numbers to the P/E", "ds_company_check", steps, 0, 17, 12, 10),
-    ]}
 
 
 def climate_page() -> dict:

@@ -5,6 +5,7 @@ and a test checks the committed file equals it. Same colours and theme as the ot
 its history range from the same filter as the Market Climate page.
 """
 
+from common.company_page import DATE_BOUND, company_datasets, company_page, company_parameters
 from common.dashboard_widgets import (
     AXIS_WIDTH,
     BLUE,
@@ -30,7 +31,7 @@ from common.strategy_queries import DATASETS as STRATEGY_DATASETS
 
 DATASETS = {**STRATEGY_DATASETS, "ds_history_range_options": CLIMATE_DATASETS["ds_history_range_options"]}
 DATE_DATASETS = ["ds_strategy_freshness", "ds_bear_week", "ds_bear_checks", "ds_bear_funds", "ds_short_gate",
-                 "ds_short_candidates", "ds_short_events"]
+                 "ds_short_candidates", "ds_short_events"] + DATE_BOUND
 CHART_DATASETS = ["ds_fund_chart"]
 GREY = "#8A8F98"
 
@@ -42,7 +43,7 @@ def parameters(dataset: str) -> list[dict]:
     if dataset in CHART_DATASETS:
         result.append(string_parameter("fund_code", "Bear fund", "SQQQ"))
         result.append(string_parameter("history_range_code", "History range", "36M"))
-    return result
+    return result + company_parameters(dataset)
 
 
 def bear_page() -> dict:
@@ -153,4 +154,4 @@ def filters_page() -> dict:
 
 
 def build() -> str:
-    return dashboard_json(dataset_entries(DATASETS, parameters), [bear_page(), fund_page(), short_page(), filters_page()])
+    return dashboard_json(dataset_entries({**DATASETS, **company_datasets()}, parameters), [bear_page(), fund_page(), short_page(), company_page(), filters_page()])

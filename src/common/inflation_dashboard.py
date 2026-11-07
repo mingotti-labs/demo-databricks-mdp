@@ -4,6 +4,7 @@
 writes it and a test checks the committed file equals it. Same date axis, colours and theme as Market Climate.
 """
 
+from common.company_page import DATE_BOUND, company_datasets, company_page, company_parameters
 from common.dashboard_widgets import (
     AXIS_WIDTH,
     BAND_SCALE,
@@ -29,11 +30,11 @@ from common.dashboard_widgets import (
 from common.inflation_queries import DATASETS
 
 
-DATE_DATASETS = ["ds_inflation_freshness", "ds_rating", "ds_stars", "ds_commodities"]
+DATE_DATASETS = ["ds_inflation_freshness", "ds_rating", "ds_stars", "ds_commodities"] + DATE_BOUND
 
 
 def parameters(dataset: str) -> list[dict]:
-    return [date_parameter()] if dataset in DATE_DATASETS else []
+    return ([date_parameter()] if dataset in DATE_DATASETS else []) + company_parameters(dataset)
 
 
 
@@ -161,4 +162,4 @@ def filters_page() -> dict:
 
 
 def build() -> str:
-    return dashboard_json(dataset_entries(DATASETS, parameters), [game_plan_page(), commodities_page(), filters_page()])
+    return dashboard_json(dataset_entries({**DATASETS, **company_datasets()}, parameters), [game_plan_page(), commodities_page(), company_page(), filters_page()])

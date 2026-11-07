@@ -4,6 +4,7 @@
 and a test checks the committed file equals it. Same date axis, colours and theme as the other dashboards.
 """
 
+from common.company_page import DATE_BOUND, company_datasets, company_page, company_parameters
 from common.dashboard_widgets import (
     AXIS_WIDTH,
     BAND_SCALE,
@@ -29,7 +30,7 @@ from common.dashboard_widgets import (
 )
 from common.currency_queries import DATASETS
 
-DATE_DATASETS = ["ds_currency_freshness", "ds_dollar", "ds_currency_grid", "ds_currency_distance", "ds_country_rates", "ds_yield_ranking"]
+DATE_DATASETS = ["ds_currency_freshness", "ds_dollar", "ds_currency_grid", "ds_currency_distance", "ds_country_rates", "ds_yield_ranking"] + DATE_BOUND
 CURRENCY_DATASETS = ["ds_currency_history", "ds_currency_rates_history"]
 
 
@@ -39,7 +40,7 @@ def parameters(dataset: str) -> list[dict]:
         result.append(string_parameter("currency_code", "Currency", "CHF"))
     if dataset == "ds_yield_ranking":
         result.append(string_parameter("base_code", "Base currency", "AUD"))
-    return result
+    return result + company_parameters(dataset)
 
 
 def dollar_tiles(x: int, y: int, w: int, h: int) -> dict:
@@ -169,4 +170,4 @@ def filters_page() -> dict:
 
 
 def build() -> str:
-    return dashboard_json(dataset_entries(DATASETS, parameters), [currency_monitor_page(), deep_dive_page(), yield_page(), filters_page()])
+    return dashboard_json(dataset_entries({**DATASETS, **company_datasets()}, parameters), [currency_monitor_page(), deep_dive_page(), yield_page(), company_page(), filters_page()])
