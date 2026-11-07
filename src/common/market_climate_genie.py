@@ -61,6 +61,7 @@ EXAMPLES = {
     "ds_currency_rates_history": ("How have Switzerland's interest rates changed?", "Replace 'CHF' with the currency code of the country asked about."),
     "ds_dollar_history": ("How have the dollar indexes moved over time?", "Both indexes and their 200-day averages, last 36 months."),
     "ds_yield_ranking": ("Which country can deliver the highest yield, considering its interest rate and its currency's change, in a table ranking?", "Short-term rate plus the 12-month change of the currency against the base; replace 'AUD' with 'USD' for a US dollar base. Backward-looking."),
+    "ds_us_yield_curve": ("How does the US 10-year Treasury yield compare with the 3-month, 1-year, 2-year and 3-year yields?", "One row per day and short-term maturity: both yields and the gap (10-year minus the short-term one, percentage points) over the last 36 months."),
     "ds_bear_week": ("Is the bear market fund setup on, and is there an entry this week?", "GO or NO GO for the latest complete week, the S&P 500 week change, the entry band and what to do."),
     "ds_bear_checks": ("What are the checks behind the bear market fund setup, entry and exit?", "Eight rows: the two setup checks, three entry bands and three exit checks of the latest complete week."),
     "ds_bear_funds": ("How are the bear funds doing?", "SQQQ, PSQ, SH, SDS and SPXU: last close and the change over 5 trading days."),

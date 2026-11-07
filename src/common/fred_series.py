@@ -9,7 +9,7 @@ import requests
 
 from common.currency import fred_series_ids
 
-SERIES = ["DGS10", "DFF", "DFEDTARU", "DFEDTARL", "CPIAUCSL", "CPIAUCNS", "CPILFESL"] + fred_series_ids()
+SERIES = ["DGS10", "DGS3MO", "DGS1", "DGS2", "DGS3", "DFF", "DFEDTARU", "DFEDTARL", "CPIAUCSL", "CPIAUCNS", "CPILFESL"] + fred_series_ids()
 LOOKBACK_DAYS = 31
 MISSING = "."
 

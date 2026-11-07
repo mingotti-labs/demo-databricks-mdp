@@ -15,7 +15,7 @@ from common.currency import (
     YEAR_TRADING_DAYS,
     value_code,
 )
-from common.market_climate_queries import CHART_START
+from common.market_climate_queries import CHART_START, HISTORY_DATES, HISTORY_START
 
 DATASETS: dict[str, tuple[str, str]] = {}
 SILVER = "silver_domain_investments"
@@ -159,4 +159,25 @@ SELECT rank() OVER (ORDER BY short_term_rate + currency_change_12m DESC) AS rank
   round(currency_change_12m, 1) AS currency_change_12m, round(distance_from_average, 1) AS distance_from_average,
   round(short_term_rate + currency_change_12m, 1) AS short_plus_12m
 FROM ranked ORDER BY rank_position
+""")
+
+US_SHORT_YIELDS = [
+    ("us_3_month_treasury_yield", "3-month", 1), ("us_1_year_treasury_yield", "1-year", 2),
+    ("us_2_year_treasury_yield", "2-year", 3), ("us_3_year_treasury_yield", "3-year", 4),
+]
+SHORT_YIELD_VALUES = ", ".join(f"('{code}', '{name}', {order})" for code, name, order in US_SHORT_YIELDS)
+
+dataset("ds_us_yield_curve", "US 10-year Treasury yield against the short-term US yields", f"""
+WITH short_yields AS (SELECT * FROM VALUES {SHORT_YIELD_VALUES} AS m(rate_code, maturity_name, maturity_order)),
+ten AS (SELECT observation_date, rate_value FROM {SILVER}.market_rate_daily
+        WHERE rate_code = 'us_10_year_treasury_yield' AND observation_date >= {HISTORY_START}),
+pairs AS (SELECT d.observation_date, m.maturity_name, m.maturity_order, d.rate_value AS short_value, t.rate_value AS ten_value
+          FROM {SILVER}.market_rate_daily d JOIN short_yields m ON d.rate_code = m.rate_code
+          JOIN ten t ON t.observation_date = d.observation_date)
+SELECT observation_date, maturity_name, maturity_order, '10-year' AS series_name, ten_value AS yield_value,
+  ten_value - short_value AS spread, {HISTORY_DATES} FROM pairs
+UNION ALL
+SELECT observation_date, maturity_name, maturity_order, maturity_name AS series_name, short_value AS yield_value,
+  ten_value - short_value AS spread, {HISTORY_DATES} FROM pairs
+ORDER BY observation_date, maturity_order, series_name
 """)

@@ -81,7 +81,7 @@ shows as a small fall in the 60-day change.
 
 - [A field filter on a chart with the 10-year drawn from one maturity's rows] → if the filter leaves no maturity, the
   chart is empty; the filter's default is all four.
-- [`price_indicator_daily` grows by 14 columns and its run takes longer] → one more window pass over `price_daily`
+- [`price_indicator_daily` grows by 13 columns and its run takes longer] → one more window pass over `price_daily`
   (the run time is compared before and after in dev).
 - [`fred` loads four full histories once] → four requests; FRED's limits are far above that.
 
