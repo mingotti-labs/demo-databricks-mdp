@@ -5,7 +5,7 @@
 3. First and last price date of the five bear funds.
 4. The index P/E of a day both environments have, dev (with the change) against prd (without it).
 
-Usage: uv run python -I references/poc/strategies/p4_inputs_dev.py
+Usage: uv run python -I references/poc/strategies/p4_inputs_dev.py [dev|prd]
 """
 
 import sys
@@ -14,8 +14,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "inflation-deflation-monitor"))
 from probe import run  # noqa: E402
 
-G = "mdp_dev.gold_analytics_gateway"
-S = "mdp_dev.silver_domain_investments"
+ENV = sys.argv[1] if len(sys.argv) > 1 else "dev"
+G = f"mdp_{ENV}.gold_analytics_gateway"
+S = f"mdp_{ENV}.silver_domain_investments"
 LATEST = f"(SELECT max(valuation_date) FROM {G}.valuation_daily_index_member)"
 
 print("1. latest day, members, with revenue, with price_to_sales_ratio, used:")
