@@ -1,0 +1,17 @@
+[
+  {
+    "ar_amount_15": "0",
+    "ar_amount_max": "13.307481807972962",
+    "ar_amount_p90": "5.179525068690737",
+    "atr_amount_15": "0",
+    "atr_amount_max": "10.288410661118315",
+    "er_dollars_15": "7",
+    "er_dollars_p90": "4.1298218000000055",
+    "er_percent_15": "1",
+    "er_percent_max": "32.938955",
+    "er_percent_p90": "5.467996900000001",
+    "ert_percent_15": "1",
+    "members": "503",
+    "volume_ok": "502"
+  }
+]

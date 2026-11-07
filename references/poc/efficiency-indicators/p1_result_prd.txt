@@ -1,0 +1,12 @@
+[
+  {
+    "er_dollars_15": "7",
+    "er_dollars_p90": "4.1298218000000055",
+    "er_percent_15": "1",
+    "er_percent_max": "32.938955",
+    "er_percent_p90": "5.467996900000001",
+    "ert_percent_15": "1",
+    "members": "503",
+    "volume_ok": "502"
+  }
+]
