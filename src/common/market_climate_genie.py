@@ -186,7 +186,7 @@ def space() -> dict:
         {"identifier": members},
         {"identifier": signal, "column_configs": [entity("lens_name"), entity("signal_name")]},
         {"identifier": f"{GOLD}.strategy_daily_event",
-         "column_configs": [entity("strategy_name"), entity("event_name"), entity("trading_symbol_code")]},
+         "column_configs": [entity("event_name"), entity("strategy_name"), entity("trading_symbol_code")]},
     ]
     return {
         "version": 2,

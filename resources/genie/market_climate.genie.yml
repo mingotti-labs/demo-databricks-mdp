@@ -93,12 +93,12 @@
                 "identifier": "${var.catalog}.gold_analytics_gateway.strategy_daily_event",
                 "column_configs": [
                   {
-                    "column_name": "strategy_name",
+                    "column_name": "event_name",
                     "enable_entity_matching": true,
                     "enable_format_assistance": true
                   },
                   {
-                    "column_name": "event_name",
+                    "column_name": "strategy_name",
                     "enable_entity_matching": true,
                     "enable_format_assistance": true
                   },

@@ -48,6 +48,9 @@ def test_genie_lists_are_sorted_and_ids_unique():
     assert len(ids) == len(set(ids))
     identifiers = [t["identifier"] for t in space["data_sources"]["tables"]]
     assert identifiers == sorted(identifiers)
+    for table in space["data_sources"]["tables"]:
+        names = [c["column_name"] for c in table.get("column_configs", [])]
+        assert names == sorted(names), table["identifier"]
 
 
 def test_genie_examples_name_the_catalog_and_no_parameters():
