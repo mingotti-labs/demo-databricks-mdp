@@ -18,9 +18,9 @@
 ## 4. Run and check in dev
 
 - [x] 4.1 Draft PR deployed (dashboard and agent in dev); benchmark evaluation in dev passes (17 of 17, probe P16, `p16_genie_eval_dev.txt`)
-- [ ] 4.2 The user checks the dev pages and agent; quota read (488, no change)
+- [x] 4.2 The user checks the dev pages and agent; quota read (488, no change)
 
 ## 5. After merge
 
-- [ ] 5.1 prd: CI deploys; dashboard queries run on prd; benchmark evaluation on prd; the user checks prd
-- [ ] 5.2 Archive; planning design status; memory
+- [x] 5.1 prd: CI deploys; dashboard queries run on prd; benchmark evaluation on prd; the user checks prd
+- [x] 5.2 Archive; planning design status; memory

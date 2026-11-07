@@ -1,0 +1,2 @@
+Genie benchmark evaluation of the prd agent (space 01f1d8df699b15e6bda93826298b4855), eval run 01f1da8be0d21fb48eab34313b83c743, 2026-11-07: DONE, correct 17, needs review 0, of 17.
+Run after the prd deploy of #194 (which includes #192). Dashboard strategy queries on prd (p3_test_queries.py --catalog mdp_prd --only-strategy): all 11 datasets succeeded.

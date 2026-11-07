@@ -12,5 +12,5 @@
 
 ## 3. After merge
 
-- [ ] 3.1 prd: CI deploys; the user opens the tab in each dashboard
-- [ ] 3.2 Archive; memory
+- [x] 3.1 prd: CI deploys; the user opens the tab in each dashboard
+- [x] 3.2 Archive; memory
