@@ -282,3 +282,4 @@ Scripts and results in `references/poc/strategies/`.
 | P14 | Do the Strategy Monitor dataset queries run? | All 11 on dev (`p14_strategy_queries_dev.txt`): the week to 2026-11-06 is GO with a quarter-of-equity entry, SQQQ +14% on the week, candidates AMD (5 weeks down, price-to-sales 16.2) and TPL (4, 19.4). |
 | P15 | Do the agent's examples and benchmarks run? | All 53 on dev (`p15_genie_examples_dev.txt`). |
 | P16 | Does the agent pass its benchmark evaluation with the strategies? | 17 of 17 on dev (`p16_genie_eval_dev.txt`). The first deploy failed because the Genie API wants a table's column_configs sorted by column name (400); fixed and the sorting test now covers the column lists. |
+| P17 | Does the prd agent pass its benchmark evaluation after the strategy monitor deploy? | 17 of 17 on prd (`p17_genie_eval_prd.txt`); all 11 strategy dashboard queries run on prd. |

@@ -36,11 +36,11 @@
 
 - [x] 5.1 `run_investments verify=true` in dev
 - [x] 5.2 Genie benchmark evaluation in dev passes
-- [ ] 5.3 P4: the user checks the dashboard and the agent; quota read (no change expected, 486)
+- [x] 5.3 P4: the user checks the dashboard and the agent; quota read (no change expected, 486)
 
 ## 6. After merge
 
-- [ ] 6.1 prd: CI runs `fred`, `investments`, `portfolio`, `yahoo`; the user starts one more `run--investments--prd` so the
+- [x] 6.1 prd: CI runs `fred`, `investments`, `portfolio`, `yahoo`; the user starts one more `run--investments--prd` so the
       dollar index reaches gold; prd matches dev for the latest day
-- [ ] 6.2 The user checks the prd dashboard and agent
-- [ ] 6.3 Planning: the story renamed Currency Monitor with an Analysis section; memory updated
+- [x] 6.2 The user checks the prd dashboard and agent
+- [x] 6.3 Planning: the story renamed Currency Monitor with an Analysis section; memory updated
