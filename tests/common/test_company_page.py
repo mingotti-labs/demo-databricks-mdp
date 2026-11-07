@@ -1,12 +1,13 @@
 import json
 
-from common import currency_dashboard, inflation_dashboard, market_climate_dashboard
+from common import currency_dashboard, inflation_dashboard, market_climate_dashboard, strategy_dashboard
 from common.company_page import DATASET_NAMES, DATE_BOUND
 
 BUILDERS = {
     "market climate": market_climate_dashboard,
     "inflation": inflation_dashboard,
     "currency": currency_dashboard,
+    "strategy": strategy_dashboard,
 }
 
 

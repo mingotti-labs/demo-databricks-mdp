@@ -251,6 +251,152 @@
       "queryLines": [
         "SELECT * FROM VALUES ('1M', 1), ('3M', 3), ('6M', 6), ('12M', 12), ('24M', 24), ('36M', 36) AS t(history_range_code, history_range_months) ORDER BY history_range_months "
       ]
+    },
+    {
+      "name": "ds_company_names",
+      "displayName": "Company names",
+      "queryLines": [
+        "SELECT DISTINCT c.company_name FROM valuation_daily_index_member m JOIN silver_domain_investments.company c ON c.company_id = m.company_id ORDER BY 1 "
+      ]
+    },
+    {
+      "name": "ds_company_check",
+      "displayName": "Company check, step by step",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), m AS (SELECT m.*, c.company_name FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name), steps AS ( SELECT 1 AS step_number, 'Closing price' AS step_name, format_number(price_close, 2) || ' US$ on ' || CAST(price_date AS STRING) AS value_text, 'Latest close on or before the day' AS how_text FROM m UNION ALL SELECT 2, 'Shares outstanding', format_number(share_count, 0) || ' (' || coalesce(share_count_source_code, 'none') || ')', 'From the latest filing' FROM m UNION ALL SELECT 3, 'Market value', format_number(market_value_amount / 1e9, 2) || ' US$ billion', 'Step 1 x step 2' FROM m UNION ALL SELECT 4, 'Earnings, trailing 12 months', format_number(earnings_trailing_twelve_months_amount / 1e6, 1) || ' US$ million', 'Net income of the latest 12 months' FROM m UNION ALL SELECT 5, 'P/E on trailing earnings (what finance sites show)', format_number(market_value_amount / nullif(earnings_trailing_twelve_months_amount, 0), 2), 'Step 3 / step 4' FROM m UNION ALL SELECT 6, 'Earnings, average of the last ' || coalesce(CAST(earnings_year_count AS STRING), '0') || ' years', format_number(earnings_ten_year_average_amount / 1e6, 1) || ' US$ million', 'Average yearly net income, up to 10 years' FROM m UNION ALL SELECT 7, 'Inflation factor', format_number(consumer_price_index_value / nullif(filing_consumer_price_index_value, 0), 4), 'Price index today / price index at the filing' FROM m UNION ALL SELECT 8, 'Average earnings in today''s money', format_number(earnings_ten_year_average_inflation_adjusted_amount / 1e6, 1) || ' US$ million', 'Step 6 x step 7' FROM m UNION ALL SELECT 9, 'P/E on 10-year inflation-adjusted earnings (the climate uses this)', format_number(price_earnings_ten_year_average_inflation_adjusted_ratio, 2), 'Step 3 / step 8' FROM m UNION ALL SELECT 10, 'Index P/E without this member', format_number(price_earnings_without_member_ratio, 2), 'Same calculation over the other members' FROM m UNION ALL SELECT 11, 'Effect on the index P/E', format_number(price_earnings_effect_ratio, 4), 'Index P/E minus step 10' FROM m UNION ALL SELECT 12, 'Used in the index', CASE WHEN is_used THEN 'Yes' ELSE 'No: ' || exclusion_reason_code END, 'A member is left out when an input is missing' FROM m) SELECT step_number, step_name, value_text, how_text FROM steps ORDER BY step_number "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "company_name",
+          "displayName": "Company",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "EQT Corporation"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_company_price",
+      "displayName": "Company price with Bollinger bands",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), listing AS (SELECT m.listing_id FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name), prices AS (SELECT p.price_date, p.price_close, p.price_high, p.price_low, avg(p.price_close) OVER w AS band_middle, stddev_pop(p.price_close) OVER w AS band_deviation, count(*) OVER w AS window_count, max(p.price_date) OVER () AS last_date FROM silver_domain_investments.price_daily p JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof) WINDOW w AS (ORDER BY p.price_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW)) SELECT price_date, price_close, band_middle, band_middle + 2 * band_deviation AS band_upper, band_middle - 2 * band_deviation AS band_lower FROM prices WHERE window_count = 20 AND price_date >= CASE :range_code WHEN '5D' THEN date_sub(last_date, 7) WHEN '1M' THEN add_months(last_date, -1) WHEN '6M' THEN add_months(last_date, -6) WHEN 'YTD' THEN trunc(last_date, 'YEAR') ELSE add_months(last_date, -12) END ORDER BY price_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "company_name",
+          "displayName": "Company",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "EQT Corporation"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "range_code",
+          "displayName": "Range",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "6M"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_company_figures",
+      "displayName": "Company price figures",
+      "queryLines": [
+        "WITH asof AS (SELECT max(valuation_date) AS day FROM valuation_daily_index WHERE valuation_date <= coalesce(:as_of_date, DATE '9999-12-31')), listing AS (SELECT m.listing_id FROM valuation_daily_index_member m JOIN asof a ON m.valuation_date = a.day JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE c.company_name = :company_name), priced AS (SELECT p.price_date, p.price_close, i.price_high_fifty_two_week_amount AS high_52_weeks, i.price_low_fifty_two_week_amount AS low_52_weeks, lag(p.price_close) OVER (ORDER BY p.price_date) AS previous_close FROM silver_domain_investments.price_daily p JOIN silver_domain_investments.price_indicator_daily i ON i.listing_id = p.listing_id AND i.price_date = p.price_date JOIN listing l ON l.listing_id = p.listing_id WHERE p.price_date <= (SELECT day FROM asof)) SELECT price_close AS last_close, price_close / previous_close - 1 AS day_change_ratio, high_52_weeks, low_52_weeks, price_date FROM priced ORDER BY price_date DESC LIMIT 1 "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "company_name",
+          "displayName": "Company",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "EQT Corporation"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_range_options",
+      "displayName": "Price ranges",
+      "queryLines": [
+        "SELECT * FROM VALUES ('5D', 1), ('1M', 2), ('6M', 3), ('YTD', 4), ('1Y', 5) AS t(range_code, range_order) ORDER BY range_order "
+      ]
     }
   ],
   "pages": [
@@ -1641,6 +1787,533 @@
       ]
     },
     {
+      "name": "company-deep-dive",
+      "displayName": "Company Deep Dive",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "company-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Company Deep Dive\n",
+                "\n",
+                "Pick a company: its price first, then the steps that turn its filing and price into the P/E the climate uses.\n",
+                "\n",
+                "- Step 5 is the trailing P/E finance sites show\n",
+                "- Step 9 is the one the climate uses; they differ when earnings were low in earlier years\n",
+                "- Bollinger bands: 20-day average of the close, plus and minus 2 standard deviations"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-company",
+            "queries": [
+              {
+                "name": "q_ds_company_names_company_name",
+                "query": {
+                  "datasetName": "ds_company_names",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_company_check_company_name",
+                "query": {
+                  "datasetName": "ds_company_check",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "company_name",
+                      "keyword": "company_name"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_company_price_company_name",
+                "query": {
+                  "datasetName": "ds_company_price",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "company_name",
+                      "keyword": "company_name"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_company_figures_company_name",
+                "query": {
+                  "datasetName": "ds_company_figures",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "company_name",
+                      "keyword": "company_name"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company",
+                    "queryName": "q_ds_company_names_company_name"
+                  },
+                  {
+                    "parameterName": "company_name",
+                    "queryName": "q_ds_company_check_company_name"
+                  },
+                  {
+                    "parameterName": "company_name",
+                    "queryName": "q_ds_company_price_company_name"
+                  },
+                  {
+                    "parameterName": "company_name",
+                    "queryName": "q_ds_company_figures_company_name"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Company"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-range",
+            "queries": [
+              {
+                "name": "q_ds_range_options_range_code",
+                "query": {
+                  "datasetName": "ds_range_options",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "range_code",
+                      "expression": "`range_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_company_price_range_code",
+                "query": {
+                  "datasetName": "ds_company_price",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "range_code",
+                      "keyword": "range_code"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "range_code",
+                    "displayName": "Range",
+                    "queryName": "q_ds_range_options_range_code"
+                  },
+                  {
+                    "parameterName": "range_code",
+                    "queryName": "q_ds_company_price_range_code"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Range"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "last-close",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_company_figures",
+                  "fields": [
+                    {
+                      "name": "last_close",
+                      "expression": "`last_close`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "last_close",
+                  "displayName": "Last close (US$)",
+                  "format": {
+                    "type": "number",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Last close (US$)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "day-change",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_company_figures",
+                  "fields": [
+                    {
+                      "name": "day_change_ratio",
+                      "expression": "`day_change_ratio`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "day_change_ratio",
+                  "displayName": "Change on the day",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Change on the day"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "high-52",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_company_figures",
+                  "fields": [
+                    {
+                      "name": "high_52_weeks",
+                      "expression": "`high_52_weeks`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "high_52_weeks",
+                  "displayName": "52-week high (US$)",
+                  "format": {
+                    "type": "number",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "52-week high (US$)"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "low-52",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_company_figures",
+                  "fields": [
+                    {
+                      "name": "low_52_weeks",
+                      "expression": "`low_52_weeks`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "low_52_weeks",
+                  "displayName": "52-week low (US$)",
+                  "format": {
+                    "type": "number",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "52-week low (US$)"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "company-price",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_company_price",
+                  "fields": [
+                    {
+                      "name": "price_date",
+                      "expression": "`price_date`"
+                    },
+                    {
+                      "name": "price_close",
+                      "expression": "`price_close`"
+                    },
+                    {
+                      "name": "band_upper",
+                      "expression": "`band_upper`"
+                    },
+                    {
+                      "name": "band_middle",
+                      "expression": "`band_middle`"
+                    },
+                    {
+                      "name": "band_lower",
+                      "expression": "`band_lower`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"transform\": [{\"fold\": [\"price_close\", \"band_upper\", \"band_middle\", \"band_lower\"], \"as\": [\"series\", \"value\"]}, {\"calculate\": \"{'price_close': 'Close', 'band_upper': 'Upper band', 'band_middle': '20-day average', 'band_lower': 'Lower band'}[datum.series]\", \"as\": \"series_label\"}], \"mark\": {\"type\": \"line\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"US$\", \"scale\": {\"zero\": false, \"padding\": 14}}, \"color\": {\"field\": \"series_label\", \"type\": \"nominal\", \"title\": null, \"legend\": {\"orient\": \"top\"}, \"scale\": {\"domain\": [\"Close\", \"Upper band\", \"20-day average\", \"Lower band\"], \"range\": [\"#4E79A7\", \"#F28E2C\", \"#76B7B2\", \"#F28E2C\"]}}, \"strokeDash\": {\"field\": \"series_label\", \"type\": \"nominal\", \"legend\": null, \"scale\": {\"domain\": [\"Close\", \"Upper band\", \"20-day average\", \"Lower band\"], \"range\": [[1, 0], [5, 3], [1, 0], [5, 3]]}}, \"tooltip\": [{\"field\": \"price_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"series_label\", \"title\": \"Line\"}, {\"field\": \"value\", \"type\": \"quantitative\", \"format\": \",.2f\", \"title\": \"US$\"}]}}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "price_date"
+                  },
+                  {
+                    "fieldName": "price_close"
+                  },
+                  {
+                    "fieldName": "band_upper"
+                  },
+                  {
+                    "fieldName": "band_middle"
+                  },
+                  {
+                    "fieldName": "band_lower"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Close with Bollinger bands",
+                "showDescription": true,
+                "description": "Bands: 20-day average of the close, plus and minus 2 standard deviations."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "company-steps",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_company_check",
+                  "fields": [
+                    {
+                      "name": "step_number",
+                      "expression": "`step_number`"
+                    },
+                    {
+                      "name": "step_name",
+                      "expression": "`step_name`"
+                    },
+                    {
+                      "name": "value_text",
+                      "expression": "`value_text`"
+                    },
+                    {
+                      "name": "how_text",
+                      "expression": "`how_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "step_number",
+                    "displayName": "Step",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "step_name",
+                    "displayName": "What",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "value_text",
+                    "displayName": "Value",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "how_text",
+                    "displayName": "How",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "From the numbers to the P/E"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 12,
+            "height": 10
+          }
+        }
+      ]
+    },
+    {
       "name": "filters",
       "displayName": "Filters",
       "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
@@ -1740,6 +2413,45 @@
                     }
                   ]
                 }
+              },
+              {
+                "name": "q_ds_company_check_as_of_date",
+                "query": {
+                  "datasetName": "ds_company_check",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_company_price_as_of_date",
+                "query": {
+                  "datasetName": "ds_company_price",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_company_figures_as_of_date",
+                "query": {
+                  "datasetName": "ds_company_figures",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
               }
             ],
             "spec": {
@@ -1774,6 +2486,18 @@
                   {
                     "parameterName": "as_of_date",
                     "queryName": "q_ds_short_events_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_company_check_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_company_price_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_company_figures_as_of_date"
                   }
                 ]
               },
