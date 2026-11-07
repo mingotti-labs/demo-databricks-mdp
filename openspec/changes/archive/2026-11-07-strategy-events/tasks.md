@@ -19,5 +19,6 @@
 
 ## 4. After merge
 
-- [ ] 4.1 prd: CI runs `investments`; counts compared with dev
-- [ ] 4.2 Archive; memory updated; then propose change 3 (`strategy-monitor-dashboard`)
+- [x] 4.1 prd: CI ran `investments` (success); the table equals dev: 6/5/1 and 108/94/2, all columns described
+      (`p10_strategy_table_dev_prd.txt`); quota 486 then 488 once the prd count catches up
+- [x] 4.2 Archive; memory updated; then propose change 3 (`strategy-monitor-dashboard`)
