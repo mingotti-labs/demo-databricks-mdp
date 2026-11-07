@@ -68,16 +68,15 @@ highest `price_high` and lowest `price_low` of the listing over the price dates 
 including that date), `currency_code` and `ingested_timestamp`.
 
 It SHALL also have the strategy 004 indicators, over the listing's price rows up to and including that date:
-`close_adjusted_sixty_day_change_ratio` (the adjusted close divided by the adjusted close 60 rows earlier, minus 1;
-empty with fewer than 61 rows), `price_range_amount` (high minus low) and `price_range_ratio` (that divided by the
+`close_sixty_day_change_amount` (the close minus the close 60 rows earlier; empty with fewer than 61 rows) and
+`close_sixty_day_change_ratio` (the close divided by the close 60 rows earlier, minus 1), `price_range_amount` (high minus low) and `price_range_ratio` (that divided by the
 close), `true_range_amount` (the higher of the high and the previous close minus the lower of the low and the previous
 close; high minus low on the listing's first row) and `true_range_ratio` (that divided by the close),
 `price_range_sixty_day_average_amount`, `price_range_sixty_day_average_ratio`, `true_range_sixty_day_average_amount`
 and `true_range_sixty_day_average_ratio` (simple averages of the last 60 rows; empty with fewer than 60 rows),
-`efficiency_range_ratio` (`close_adjusted_sixty_day_change_ratio` divided by `price_range_sixty_day_average_ratio`),
-`efficiency_true_range_ratio` (`close_adjusted_sixty_day_change_ratio` divided by
-`true_range_sixty_day_average_ratio`) and `volume_sixty_day_average_count` (the simple average volume of the last 60
-rows). The ranges SHALL use the reported high, low and close; the change SHALL use the adjusted close. Every column
+`efficiency_range_ratio` (`close_sixty_day_change_amount` divided by `price_range_sixty_day_average_amount`),
+`efficiency_true_range_ratio` (`close_sixty_day_change_amount` divided by `true_range_sixty_day_average_amount`) and `volume_sixty_day_average_count` (the simple average volume of the last 60
+rows). The change and the ranges SHALL use the reported high, low and close. Every column
 SHALL carry a Unity Catalog description.
 
 #### Scenario: Enough history
@@ -93,10 +92,10 @@ SHALL carry a Unity Catalog description.
 - **THEN** its row on 2026-11-03 has `price_high_fifty_two_week_amount` 68.24 and `price_low_fifty_two_week_amount` 47.94
 
 #### Scenario: An efficient rise
-- **WHEN** a listing's adjusted close rose 30% over its last 60 rows and its high minus low averaged 2% of the close
-  over the last 60 rows
-- **THEN** its row has `close_adjusted_sixty_day_change_ratio` 0.30, `price_range_sixty_day_average_ratio` 0.02 and
-  `efficiency_range_ratio` 15
+- **WHEN** a listing's close rose from 100 to 130 over its last 60 rows and its high minus low averaged 2 over the last 60
+  rows
+- **THEN** its row has `close_sixty_day_change_amount` 30, `close_sixty_day_change_ratio` 0.30,
+  `price_range_sixty_day_average_amount` 2 and `efficiency_range_ratio` 15
 
 #### Scenario: A gap counts in the true range
 - **WHEN** a listing closed at 100, then opened higher and traded between 104 and 106, closing at 105

@@ -24,8 +24,9 @@ Two asks from the user, packaged together on 2026-11-07 because both are small a
   is removed from the Currency Monitor (it stays in the other three dashboards). The Genie agent gets the chart's query
   as an example, like every dashboard query.
 - `silver_domain_investments.price_indicator_daily`: new columns for strategy 004, each with a Unity Catalog description:
-  the 60-day change of the adjusted close, the day's range and true range (in dollars and as a fraction of the close),
-  their 60-day averages, the two efficiency ratios and the 60-day average volume.
+  the 60-day change, the day's range and true range, each in dollars and as a fraction of the close, their 60-day
+  averages, the two efficiency ratios (dollars over dollars: the 60-day change over the 60-day average range or true
+  range) and the 60-day average volume.
 
 ## Capabilities
 
@@ -57,4 +58,4 @@ None.
 ## Model
 
 Sonnet: four series in an existing list, columns on an existing view and one chart in an existing dashboard, all on
-established patterns; the one decision that needed reasoning (the units of the efficiency ratio) is in the design.
+established patterns; the units of the efficiency ratio were settled by the user.

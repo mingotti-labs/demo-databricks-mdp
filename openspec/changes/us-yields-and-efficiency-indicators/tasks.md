@@ -5,9 +5,9 @@
 
 ## 2. Strategy 004 indicators (D4)
 
-- [ ] 2.1 `price_indicator_daily`: the 13 columns with their descriptions; the 60-day windows and the previous close
+- [ ] 2.1 `price_indicator_daily`: the 14 columns with their descriptions; the 60-day windows and the previous close
 - [ ] 2.2 Probe in dev after the run: the gap and too-little-history scenarios on real rows, efficiency ratios equal
-      probe P1's for prd's latest day (same formula), run time before and after
+      probe E3's for prd's latest day (same formula), run time before and after
 
 ## 3. Yield Deep Dive chart and the Currency Monitor (D2, D3)
 
