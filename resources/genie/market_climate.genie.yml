@@ -3,7 +3,7 @@
     "genie_spaces": {
       "market_climate_genie": {
         "title": "Investment Intelligence",
-        "description": "Ask about the market climate lights, the inflation/deflation rating, the S&P 500 price/earnings ratio and its members.",
+        "description": "Ask about the market climate lights, the inflation/deflation rating, the currencies, the S&P 500 price/earnings ratio and its members, and the bear market fund and short selling strategies.",
         "warehouse_id": "${var.warehouse_id}",
         "parent_path": "${workspace.resource_path}",
         "serialized_space": {
@@ -41,9 +41,21 @@
                 ]
               },
               {
+                "id": "bc9f889b4a21d8b1fcea2474d26f83aa",
+                "question": [
+                  "Is the bear market fund setup on?"
+                ]
+              },
+              {
                 "id": "be1f95b8d10a785d3c86c3348dee5b44",
                 "question": [
                   "Rank the countries by interest rate and currency change."
+                ]
+              },
+              {
+                "id": "c8d2a87948b014441d9f4740594d32a2",
+                "question": [
+                  "Which stocks are short selling candidates this week?"
                 ]
               },
               {
@@ -72,6 +84,26 @@
                   },
                   {
                     "column_name": "signal_name",
+                    "enable_entity_matching": true,
+                    "enable_format_assistance": true
+                  }
+                ]
+              },
+              {
+                "identifier": "${var.catalog}.gold_analytics_gateway.strategy_daily_event",
+                "column_configs": [
+                  {
+                    "column_name": "strategy_name",
+                    "enable_entity_matching": true,
+                    "enable_format_assistance": true
+                  },
+                  {
+                    "column_name": "event_name",
+                    "enable_entity_matching": true,
+                    "enable_format_assistance": true
+                  },
+                  {
+                    "column_name": "trading_symbol_code",
                     "enable_entity_matching": true,
                     "enable_format_assistance": true
                   }
@@ -145,7 +177,13 @@
                   "Interest rates of the main countries are in market_rate_daily and market_rate_indicator_daily: short-term (the federal funds, RBA cash, ECB deposit rates and 3-month interbank rates of Japan, Canada, Switzerland, Sweden, New Zealand and China, and the UK call money rate) and 10-year government bond yields (none for China). Most are monthly readings carried forward; observation_date is the date of the reading. The euro area 10-year yield is stale (last reading 2026-01).\n",
                   "When a question about a market climate answer or light does not name a lens, answer for both lenses (long_run and modern) of the latest day, even when they agree.\n",
                   "For the latest interest rate of a country, read market_rate_daily (one row per reading) and show observation_date, the date of the reading; market_rate_indicator_daily repeats the last reading on every trading day, so its indicator_date is not the date of the reading.\n",
-                  "To rank countries by what their currency and interest rate would have paid, in a base currency (default the Australian dollar; the US dollar is the other base), use the Yield Deep Dive method: short-term interest rate in percent plus the change of the currency's value in the base over the last 12 months in percent (the value in market_rate_indicator_daily, rate_code currency_value_<code>_in_<base>, divided by the same value 252 trading days earlier, minus 1, times 100). The base currency itself has no currency change. Never add a ratio such as a distance from an average to a percent rate without multiplying it by 100. Always say the result looks backward, is not a forecast and that the rates are interbank or policy rates, not bank CD rates; show the date of each rate reading.\n"
+                  "To rank countries by what their currency and interest rate would have paid, in a base currency (default the Australian dollar; the US dollar is the other base), use the Yield Deep Dive method: short-term interest rate in percent plus the change of the currency's value in the base over the last 12 months in percent (the value in market_rate_indicator_daily, rate_code currency_value_<code>_in_<base>, divided by the same value 252 trading days earlier, minus 1, times 100). The base currency itself has no currency change. Never add a ratio such as a distance from an average to a percent rate without multiplying it by 100. Always say the result looks backward, is not a forecast and that the rates are interbank or policy rates, not bank CD rates; show the date of each rate reading.\n",
+                  "\n",
+                  "The strategies are in strategy_daily_event: one row per strategy_code, trading_symbol_code, event_date and event_code, only when something happens. strategy_code is bear_market_fund (strategy 001, on the S&P 500, trading_symbol_code ^GSPC) or short_selling (strategy 002, on index members). event_code is setup_start (the first week all setup conditions hold), entry or setup_end (the first week one fails). setup_start_date is the date of the setup_start that opened the period and is the same on every event of that period; no setup_end yet means the period is still on. Entries are numbered within a period (entry_number, is_first_entry). Events are dated on the week's last trading day (a Friday, or Thursday before a holiday Friday); only complete weeks count and the history starts on 2025-10-29, when the market climate begins.\n",
+                  "Both strategies run only when a market climate light is red: either lens (long_run or modern) red is enough.\n",
+                  "Strategy 001, the bear market mutual fund: setup is on when a climate light is red and the S&P 500 closed the week below its close five weeks earlier. Entry (week_change_ratio is the Friday-to-Friday change): a fall of 5% or more is half of equity (entry_band_code half_of_equity), 2.5% to 5% a quarter (quarter_of_equity), a smaller fall waits for Monday to Wednesday and a close 2.5% below that week's close is an interim entry (interim_quarter_of_equity, dated on that day). Exits (not stored, because they depend on what is held): the week up 3% or more sell 10% of equity per 3%; a Friday close above its close five weeks earlier or a VIX above 50 sell everything. Invest at most 50% of equity in 25% steps. The bear funds are SQQQ and PSQ (Nasdaq-100, 3x and 1x), SH, SDS and SPXU (S&P 500, 1x, 2x and 3x); their prices are in price_daily by trading_symbol_code.\n",
+                  "Strategy 002, short selling: setup is on when a climate light is red, price_to_sales_ratio is above 15 and the stock's weekly close has fallen three weeks in a row (down_week_count 3 or more). Entry is the sixth week in a row down (down_week_count 6) while the setup is on. A stock leaves the setup when it rises for a week, its price-to-sales falls to 15 or below, or the climate leaves red. Hold 3 to 5 stocks and risk at most 1% of equity in each; exits (climate no longer red, 25% against you, 25% trailing stop) need a position and are not stored.\n",
+                  "A short selling candidate is a stock whose latest setup period has a setup_start and no setup_end yet; its entry light is green when that period has an entry. When asked for candidates, answer for the latest complete week.\n"
                 ]
               }
             ],
@@ -199,6 +237,18 @@
                 ]
               },
               {
+                "id": "38b205b268214204c5b52b2b7947b5bb",
+                "question": [
+                  "Which stocks are short selling candidates this week?"
+                ],
+                "sql": [
+                  "WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), short_week AS (SELECT max(week_end_date) AS day FROM states WHERE strategy_code = 'short_selling' AND week_end_date <= current_date()), short AS (SELECT * FROM states WHERE strategy_code = 'short_selling' AND week_end_date = (SELECT day FROM short_week)), starts AS (SELECT trading_symbol_code, max(setup_start_date) AS setup_start_date FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'short_selling' AND event_code = 'setup_start' AND event_date <= (SELECT day FROM short_week) GROUP BY trading_symbol_code), entries AS (SELECT trading_symbol_code, setup_start_date, count(*) AS entry_count FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'short_selling' AND event_code = 'entry' AND event_date <= (SELECT day FROM short_week) GROUP BY trading_symbol_code, setup_start_date) SELECT s.trading_symbol_code, c.company_name, st.setup_start_date, s.week_end_date, s.price_to_sales_ratio, s.down_week_count, s.week_change_ratio, 'green' AS setup_light, CASE WHEN coalesce(e.entry_count, 0) > 0 THEN 'green' ELSE 'grey' END AS entry_light FROM short s JOIN starts st ON st.trading_symbol_code = s.trading_symbol_code LEFT JOIN entries e ON e.trading_symbol_code = s.trading_symbol_code AND e.setup_start_date = st.setup_start_date LEFT JOIN ${var.catalog}.silver_domain_investments.listing l ON l.listing_id = s.listing_id LEFT JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = l.company_id WHERE s.is_setup_on ORDER BY s.down_week_count DESC, s.price_to_sales_ratio DESC"
+                ],
+                "usage_guidance": [
+                  "Open setup periods of the latest complete week: price-to-sales, weeks down, setup and entry lights."
+                ]
+              },
+              {
                 "id": "3b165a89cb2ebf36a12d6ec92ae4c678",
                 "question": [
                   "Which members are left out today, and why?"
@@ -208,6 +258,18 @@
                 ],
                 "usage_guidance": [
                   "Members that are not used, with the reason."
+                ]
+              },
+              {
+                "id": "3c4875b7bdcd03ab7f3466aa905c0e8b",
+                "question": [
+                  "Is the market climate red, so that short selling can run?"
+                ],
+                "sql": [
+                  "WITH latest AS (SELECT max(signal_date) AS day FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date <= current_date()) SELECT s.signal_date AS climate_date, max(CASE WHEN s.band_code = 'red' THEN 1 ELSE 0 END) = 1 AS is_red, concat_ws(', ', collect_list(concat(s.lens_name, ': ', s.band_code))) AS lights_text, CASE WHEN max(CASE WHEN s.band_code = 'red' THEN 1 ELSE 0 END) = 1 THEN 'Red light: the strategy can run' ELSE 'No red light: do not short' END AS gate_text, CASE WHEN max(CASE WHEN s.band_code = 'red' THEN 1 ELSE 0 END) = 1 THEN 'red' ELSE 'green' END AS gate_light FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal s JOIN latest l ON s.signal_date = l.day WHERE s.monitor_code = 'market_climate' AND s.signal_code = 'climate' GROUP BY s.signal_date"
+                ],
+                "usage_guidance": [
+                  "The lights of the latest climate day and the gate."
                 ]
               },
               {
@@ -259,6 +321,18 @@
                 ]
               },
               {
+                "id": "6c7dd273cc33b2e3a60947f3cf196f85",
+                "question": [
+                  "Is the bear market fund setup on, and is there an entry this week?"
+                ],
+                "sql": [
+                  "WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), bear AS (SELECT * FROM states WHERE strategy_code = 'bear_market_fund' AND week_end_date <= current_date() ORDER BY week_end_date DESC LIMIT 1) SELECT week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, is_red, week_close_amount < five_weeks_close_amount AS is_lower_than_five_weeks, is_setup_on, CASE WHEN is_setup_on THEN 'GO' ELSE 'NO GO' END AS setup_text, CASE WHEN is_setup_on THEN 'green' ELSE 'red' END AS setup_light, CASE WHEN NOT is_setup_on THEN NULL WHEN week_change_ratio <= -0.05 THEN 'half_of_equity' WHEN week_change_ratio <= -0.025 THEN 'quarter_of_equity' END AS entry_band_code, CASE WHEN NOT is_setup_on THEN 'No action: the setup is off.' WHEN week_change_ratio <= -0.05 THEN 'Entry: invest half of equity in the bear fund on Monday.' WHEN week_change_ratio <= -0.025 THEN 'Entry: invest a quarter of equity in the bear fund on Monday.' WHEN week_change_ratio < 0 THEN 'No entry yet: the week fell less than 2.5%. On Monday to Wednesday a close 2.5% below this week close is an interim entry (a quarter of equity).' ELSE 'No entry: the S&P 500 did not fall this week.' END AS action_text FROM bear"
+                ],
+                "usage_guidance": [
+                  "GO or NO GO for the latest complete week, the S&P 500 week change, the entry band and what to do."
+                ]
+              },
+              {
                 "id": "6d93eb8f69177e1eaea45d4f4ff8d12a",
                 "question": [
                   "How is EQT's P/E worked out, step by step?"
@@ -292,6 +366,30 @@
                 ],
                 "usage_guidance": [
                   "Each reading with its date; a note says when a reading is older than 4 months."
+                ]
+              },
+              {
+                "id": "835ac8af518fd9aab33915cce2f4f45e",
+                "question": [
+                  "What are the latest short selling events?"
+                ],
+                "sql": [
+                  "SELECT e.event_date, e.trading_symbol_code, e.event_name, e.setup_start_date, e.entry_number, e.price_to_sales_ratio, e.down_week_count, e.reason_text FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event e WHERE e.strategy_code = 'short_selling' AND e.event_date <= current_date() ORDER BY e.event_date DESC, e.trading_symbol_code LIMIT 40"
+                ],
+                "usage_guidance": [
+                  "The 40 latest setup starts, entries and setup ends."
+                ]
+              },
+              {
+                "id": "85d3225ee7b2528a38bcd7812df0686a",
+                "question": [
+                  "How has the bear fund SQQQ moved against the S&P 500, and when was the setup on?"
+                ],
+                "sql": [
+                  "WITH fund AS (SELECT price_date, price_close FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = 'SQQQ' AND price_date >= add_months(current_date(), -(CASE '36M' WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END))), sp500 AS (SELECT price_date, price_close AS sp500_close FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' AND price_date >= add_months(current_date(), -(CASE '36M' WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END))), periods AS (SELECT setup_start_date AS start_date, min(CASE WHEN event_code = 'setup_end' THEN event_date END) AS end_date FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'bear_market_fund' GROUP BY setup_start_date), entries AS (SELECT event_date, entry_band_code FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'bear_market_fund' AND event_code = 'entry') SELECT f.price_date, f.price_close AS fund_close, s.sp500_close, p.start_date IS NOT NULL AS is_in_setup, e.entry_band_code, add_months(current_date(), -(CASE '36M' WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM fund f JOIN sp500 s ON s.price_date = f.price_date LEFT JOIN periods p ON f.price_date >= p.start_date AND f.price_date < coalesce(p.end_date, DATE '9999-12-31') LEFT JOIN entries e ON e.event_date = f.price_date ORDER BY f.price_date"
+                ],
+                "usage_guidance": [
+                  "Daily fund close, S&P 500 close, whether the day is in a setup period and the entry days; replace 'SQQQ' with another bear fund."
                 ]
               },
               {
@@ -391,6 +489,18 @@
                 ]
               },
               {
+                "id": "c15dcc0ac29ec07ba36de63032435aaa",
+                "question": [
+                  "What happened in the bear market fund setup periods?"
+                ],
+                "sql": [
+                  "SELECT event_date, event_name, setup_start_date, entry_number, entry_band_code, week_close_amount, five_weeks_close_amount, week_change_ratio, reason_text FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'bear_market_fund' AND ('all' = 'all' OR CAST(setup_start_date AS STRING) = 'all') ORDER BY event_date DESC"
+                ],
+                "usage_guidance": [
+                  "Events of every setup period; replace 'all' with a setup start date to see one period."
+                ]
+              },
+              {
                 "id": "c7e4228464e41fd6693920e892392b12",
                 "question": [
                   "How have the dollar indexes moved over time?"
@@ -424,6 +534,18 @@
                 ],
                 "usage_guidance": [
                   "One row per climate and question."
+                ]
+              },
+              {
+                "id": "de05b11b46deb2f206afe853fb716e38",
+                "question": [
+                  "How are the bear funds doing?"
+                ],
+                "sql": [
+                  "WITH funds AS (SELECT * FROM VALUES ('SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', 1), ('PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', 2), ('SH', 'ProShares Short S&P500', '1x short S&P 500', 3), ('SDS', 'ProShares UltraShort S&P500', '2x short S&P 500', 4), ('SPXU', 'ProShares UltraPro Short S&P500', '3x short S&P 500', 5) AS funds(fund_code, fund_name, fund_description, fund_order)), prices AS (SELECT p.trading_symbol_code AS fund_code, p.price_date, p.price_close, row_number() OVER (PARTITION BY p.trading_symbol_code ORDER BY p.price_date DESC) AS recency FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN funds f ON f.fund_code = p.trading_symbol_code WHERE p.price_date <= current_date()) SELECT f.fund_code, f.fund_name, f.fund_description, f.fund_order, max(CASE WHEN p.recency = 1 THEN p.price_date END) AS last_date, max(CASE WHEN p.recency = 1 THEN p.price_close END) AS last_close, max(CASE WHEN p.recency = 1 THEN p.price_close END) / max(CASE WHEN p.recency = 6 THEN p.price_close END) - 1 AS week_change_ratio FROM funds f LEFT JOIN prices p ON p.fund_code = f.fund_code AND p.recency <= 6 GROUP BY f.fund_code, f.fund_name, f.fund_description, f.fund_order ORDER BY f.fund_order"
+                ],
+                "usage_guidance": [
+                  "SQQQ, PSQ, SH, SDS and SPXU: last close and the change over 5 trading days."
                 ]
               },
               {
@@ -485,6 +607,18 @@
                 "usage_guidance": [
                   "One row per currency; value, distance from the 200-day average and Gaining or Losing against each base."
                 ]
+              },
+              {
+                "id": "fce5fc081fc53f1133f2c4a28bbb744c",
+                "question": [
+                  "What are the checks behind the bear market fund setup, entry and exit?"
+                ],
+                "sql": [
+                  "WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), bear AS (SELECT * FROM states WHERE strategy_code = 'bear_market_fund' AND week_end_date <= current_date() ORDER BY week_end_date DESC LIMIT 1), vix AS (SELECT max_by(price_close, price_date) AS vix_close FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = '^VIX' AND price_date <= (SELECT week_end_date FROM bear) AND price_date > date_sub((SELECT week_end_date FROM bear), 7)) SELECT 1 AS step_number, 'Setup' AS step_group, 'A market climate light is red' AS check_name, CASE WHEN is_red THEN 'Yes' ELSE 'No' END AS answer_text, CAST(NULL AS STRING) AS value_text FROM bear UNION ALL SELECT 2, 'Setup', 'The S&P 500 closed the week below its close 5 weeks earlier', CASE WHEN week_close_amount < five_weeks_close_amount THEN 'Yes' ELSE 'No' END, concat(format_number(week_close_amount, 2), ' against ', format_number(five_weeks_close_amount, 2)) FROM bear UNION ALL SELECT 3, 'Entry', 'The week fell 5% or more: invest half of equity', CASE WHEN week_change_ratio <= -0.05 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 4, 'Entry', 'The week fell 2.5% to 5%: invest a quarter of equity', CASE WHEN week_change_ratio <= -0.025 AND week_change_ratio > -0.05 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 5, 'Entry', 'The week fell less than 2.5%: watch Monday to Wednesday for a 2.5% drop', CASE WHEN week_change_ratio < 0 AND week_change_ratio > -0.025 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 6, 'Exit', 'The week rose 3% or more: sell 10% of equity for every 3%', CASE WHEN week_change_ratio >= 0.03 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 7, 'Exit', 'The week closed above its close 5 weeks earlier: sell everything', CASE WHEN week_close_amount > five_weeks_close_amount THEN 'Yes' ELSE 'No' END, concat(format_number(week_close_amount, 2), ' against ', format_number(five_weeks_close_amount, 2)) FROM bear UNION ALL SELECT 8, 'Exit', 'The VIX closed above 50: sell everything', CASE WHEN (SELECT vix_close FROM vix) > 50 THEN 'Yes' ELSE 'No' END, concat('VIX ', format_number((SELECT vix_close FROM vix), 1)) FROM bear ORDER BY step_number"
+                ],
+                "usage_guidance": [
+                  "Eight rows: the two setup checks, three entry bands and three exit checks of the latest complete week."
+                ]
               }
             ],
             "join_specs": [
@@ -538,6 +672,20 @@
           "benchmarks": {
             "questions": [
               {
+                "id": "1b911a4d8184c369a9b4fac74f137608",
+                "question": [
+                  "Is the bear market fund setup on?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT setup_text FROM (WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), bear AS (SELECT * FROM states WHERE strategy_code = 'bear_market_fund' AND week_end_date <= current_date() ORDER BY week_end_date DESC LIMIT 1) SELECT week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, is_red, week_close_amount < five_weeks_close_amount AS is_lower_than_five_weeks, is_setup_on, CASE WHEN is_setup_on THEN 'GO' ELSE 'NO GO' END AS setup_text, CASE WHEN is_setup_on THEN 'green' ELSE 'red' END AS setup_light, CASE WHEN NOT is_setup_on THEN NULL WHEN week_change_ratio <= -0.05 THEN 'half_of_equity' WHEN week_change_ratio <= -0.025 THEN 'quarter_of_equity' END AS entry_band_code, CASE WHEN NOT is_setup_on THEN 'No action: the setup is off.' WHEN week_change_ratio <= -0.05 THEN 'Entry: invest half of equity in the bear fund on Monday.' WHEN week_change_ratio <= -0.025 THEN 'Entry: invest a quarter of equity in the bear fund on Monday.' WHEN week_change_ratio < 0 THEN 'No entry yet: the week fell less than 2.5%. On Monday to Wednesday a close 2.5% below this week close is an interim entry (a quarter of equity).' ELSE 'No entry: the S&P 500 did not fall this week.' END AS action_text FROM bear)"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "2ba41e61a6e01869a2c69a1f315a4d84",
                 "question": [
                   "When was the last deflation rating?"
@@ -561,6 +709,20 @@
                     "format": "SQL",
                     "content": [
                       "SELECT signal_name, CASE WHEN is_yes THEN 'Strong' ELSE 'Weak' END AS dollar_state FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency' AND signal_code IN ('dollar_index', 'dollar_broad_index') AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'currency') ORDER BY signal_code"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "4c3cc0ff0fa578b28a0b473f7ab41517",
+                "question": [
+                  "Which strategy entries fired in the last 6 months?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT strategy_name, trading_symbol_code, event_date FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE event_code = 'entry' AND event_date >= add_months(current_date(), -6) ORDER BY event_date, trading_symbol_code"
                     ]
                   }
                 ]
@@ -650,6 +812,20 @@
                 ]
               },
               {
+                "id": "ad3bb339135d00d32ab491af28c0ae74",
+                "question": [
+                  "When did the bear market fund setup last start?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT max(event_date) AS last_setup_start FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'bear_market_fund' AND event_code = 'setup_start'"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "af1e8117be8243960198b4419159dd8c",
                 "question": [
                   "How many members are left out today?"
@@ -673,6 +849,20 @@
                     "format": "SQL",
                     "content": [
                       "SELECT lens_name, is_yes, measured_value, threshold_value FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE signal_code = 'too_expensive' AND signal_date = (SELECT max(signal_date) FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal) ORDER BY lens_code"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "da801c3c296a1430e8257a5141f9bf95",
+                "question": [
+                  "Which stocks are short selling candidates this week?"
+                ],
+                "answer": [
+                  {
+                    "format": "SQL",
+                    "content": [
+                      "SELECT trading_symbol_code FROM (WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM ${var.catalog}.gold_analytics_gateway.monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM ${var.catalog}.silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN ${var.catalog}.gold_analytics_gateway.valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), short_week AS (SELECT max(week_end_date) AS day FROM states WHERE strategy_code = 'short_selling' AND week_end_date <= current_date()), short AS (SELECT * FROM states WHERE strategy_code = 'short_selling' AND week_end_date = (SELECT day FROM short_week)), starts AS (SELECT trading_symbol_code, max(setup_start_date) AS setup_start_date FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'short_selling' AND event_code = 'setup_start' AND event_date <= (SELECT day FROM short_week) GROUP BY trading_symbol_code), entries AS (SELECT trading_symbol_code, setup_start_date, count(*) AS entry_count FROM ${var.catalog}.gold_analytics_gateway.strategy_daily_event WHERE strategy_code = 'short_selling' AND event_code = 'entry' AND event_date <= (SELECT day FROM short_week) GROUP BY trading_symbol_code, setup_start_date) SELECT s.trading_symbol_code, c.company_name, st.setup_start_date, s.week_end_date, s.price_to_sales_ratio, s.down_week_count, s.week_change_ratio, 'green' AS setup_light, CASE WHEN coalesce(e.entry_count, 0) > 0 THEN 'green' ELSE 'grey' END AS entry_light FROM short s JOIN starts st ON st.trading_symbol_code = s.trading_symbol_code LEFT JOIN entries e ON e.trading_symbol_code = s.trading_symbol_code AND e.setup_start_date = st.setup_start_date LEFT JOIN ${var.catalog}.silver_domain_investments.listing l ON l.listing_id = s.listing_id LEFT JOIN ${var.catalog}.silver_domain_investments.company c ON c.company_id = l.company_id WHERE s.is_setup_on ORDER BY s.down_week_count DESC, s.price_to_sales_ratio DESC) ORDER BY trading_symbol_code"
                     ]
                   }
                 ]

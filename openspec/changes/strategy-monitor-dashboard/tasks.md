@@ -12,8 +12,8 @@
 
 ## 3. Genie (D5)
 
-- [ ] 3.1 `GOLD_TABLES`, instructions, examples and the four benchmarks; generated agent file
-- [ ] 3.2 Every example and benchmark SQL runs in dev
+- [x] 3.1 `GOLD_TABLES`, instructions, examples and the four benchmarks; generated agent file
+- [x] 3.2 Every example and benchmark SQL runs in dev (53 of 53, probe P15, `p15_genie_examples_dev.txt`)
 
 ## 4. Run and check in dev
 

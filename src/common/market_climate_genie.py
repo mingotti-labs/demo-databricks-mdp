@@ -14,12 +14,13 @@ from pathlib import Path
 from common.currency_queries import DATASETS as CURRENCY_DATASETS
 from common.inflation_queries import DATASETS as INFLATION_DATASETS
 from common.market_climate_queries import DATASETS
+from common.strategy_queries import DATASETS as STRATEGY_DATASETS
 
 CATALOG = "${var.catalog}"
 GOLD = f"{CATALOG}.gold_analytics_gateway"
 SILVER = f"{CATALOG}.silver_domain_investments"
 INSTRUCTIONS = Path(__file__).with_name("market_climate_genie_instructions.md")
-GOLD_TABLES = ["valuation_daily_index_member", "valuation_daily_index", "monitor_daily_signal"]
+GOLD_TABLES = ["valuation_daily_index_member", "valuation_daily_index", "monitor_daily_signal", "strategy_daily_event"]
 LITERALS = {
     ":sector_name": "'Information Technology'",
     ":company_name": "'EQT Corporation'",
@@ -27,6 +28,8 @@ LITERALS = {
     ":history_range_code": "'36M'",
     ":currency_code": "'CHF'",
     ":base_code": "'AUD'",
+    ":fund_code": "'SQQQ'",
+    ":setup_period": "'all'",
 }
 
 EXAMPLES = {
@@ -58,12 +61,21 @@ EXAMPLES = {
     "ds_currency_rates_history": ("How have Switzerland's interest rates changed?", "Replace 'CHF' with the currency code of the country asked about."),
     "ds_dollar_history": ("How have the dollar indexes moved over time?", "Both indexes and their 200-day averages, last 36 months."),
     "ds_yield_ranking": ("Which country can deliver the highest yield, considering its interest rate and its currency's change, in a table ranking?", "Short-term rate plus the 12-month change of the currency against the base; replace 'AUD' with 'USD' for a US dollar base. Backward-looking."),
+    "ds_bear_week": ("Is the bear market fund setup on, and is there an entry this week?", "GO or NO GO for the latest complete week, the S&P 500 week change, the entry band and what to do."),
+    "ds_bear_checks": ("What are the checks behind the bear market fund setup, entry and exit?", "Eight rows: the two setup checks, three entry bands and three exit checks of the latest complete week."),
+    "ds_bear_funds": ("How are the bear funds doing?", "SQQQ, PSQ, SH, SDS and SPXU: last close and the change over 5 trading days."),
+    "ds_bear_period_events": ("What happened in the bear market fund setup periods?", "Events of every setup period; replace 'all' with a setup start date to see one period."),
+    "ds_fund_chart": ("How has the bear fund SQQQ moved against the S&P 500, and when was the setup on?", "Daily fund close, S&P 500 close, whether the day is in a setup period and the entry days; replace 'SQQQ' with another bear fund."),
+    "ds_short_gate": ("Is the market climate red, so that short selling can run?", "The lights of the latest climate day and the gate."),
+    "ds_short_candidates": ("Which stocks are short selling candidates this week?", "Open setup periods of the latest complete week: price-to-sales, weeks down, setup and entry lights."),
+    "ds_short_events": ("What are the latest short selling events?", "The 40 latest setup starts, entries and setup ends."),
 }
-QUERIES = {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS}
+QUERIES = {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS, **STRATEGY_DATASETS}
 SAMPLE_QUESTIONS = [
     "What is the market climate today?", "Is the market too expensive right now?", "Which companies push the P/E up most?",
     "Which sector has the highest P/E?", "Why is EQT's P/E so high?", "What is the inflation rating today?",
     "Which currencies are gaining against the Australian dollar?", "Rank the countries by interest rate and currency change.",
+    "Is the bear market fund setup on?", "Which stocks are short selling candidates this week?",
 ]
 LATEST_SIGNAL = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal)"
 LATEST_MEMBER = f"(SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index_member)"
@@ -101,6 +113,12 @@ BENCHMARKS = [
     ("When was the last deflation rating?",
      f"SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'inflation_deflation' "
      f"AND signal_code = 'rating' AND measured_value = -1"),
+    ("When did the bear market fund setup last start?",
+     f"SELECT max(event_date) AS last_setup_start FROM {GOLD}.strategy_daily_event "
+     f"WHERE strategy_code = 'bear_market_fund' AND event_code = 'setup_start'"),
+    ("Which strategy entries fired in the last 6 months?",
+     f"SELECT strategy_name, trading_symbol_code, event_date FROM {GOLD}.strategy_daily_event "
+     f"WHERE event_code = 'entry' AND event_date >= add_months(current_date(), -6) ORDER BY event_date, trading_symbol_code"),
     ("Is the dollar strong or weak today?",
      f"SELECT signal_name, CASE WHEN is_yes THEN 'Strong' ELSE 'Weak' END AS dollar_state FROM {GOLD}.monitor_daily_signal WHERE monitor_code = 'currency' "
      f"AND signal_code IN ('dollar_index', 'dollar_broad_index') AND signal_date = {LATEST_CURRENCY} ORDER BY signal_code"),
@@ -140,14 +158,22 @@ def join_spec(left: str, right: str, condition: str, relationship: str) -> dict:
 def extra_benchmarks() -> list[tuple[str, str]]:
     """Benchmarks built from the dashboard's own query, so the expected answer follows it."""
     ranking = for_genie(QUERIES["ds_yield_ranking"][1])
+    candidates = for_genie(QUERIES["ds_short_candidates"][1])
+    bear_week = for_genie(QUERIES["ds_bear_week"][1])
     return [(
         "Which country has the highest short-term rate plus 12-month currency change against the Australian dollar?",
         f"SELECT currency_name, short_plus_12m FROM ({ranking}) WHERE rank_position = 1",
+    ), (
+        "Is the bear market fund setup on?",
+        f"SELECT setup_text FROM ({bear_week})",
+    ), (
+        "Which stocks are short selling candidates this week?",
+        f"SELECT trading_symbol_code FROM ({candidates}) ORDER BY trading_symbol_code",
     )]
 
 
 def space() -> dict:
-    members, index, signal = (f"{GOLD}.{name}" for name in GOLD_TABLES)
+    members, index, signal = (f"{GOLD}.{name}" for name in GOLD_TABLES[:3])
     company, price = f"{SILVER}.company", f"{SILVER}.price_daily"
     entity = lambda name: {"column_name": name, "enable_entity_matching": True, "enable_format_assistance": True}  # noqa: E731
     tables = [
@@ -159,6 +185,8 @@ def space() -> dict:
         {"identifier": index},
         {"identifier": members},
         {"identifier": signal, "column_configs": [entity("lens_name"), entity("signal_name")]},
+        {"identifier": f"{GOLD}.strategy_daily_event",
+         "column_configs": [entity("strategy_name"), entity("event_name"), entity("trading_symbol_code")]},
     ]
     return {
         "version": 2,
@@ -185,7 +213,7 @@ def space() -> dict:
 def build() -> str:
     resource = {"resources": {"genie_spaces": {"market_climate_genie": {
         "title": "Investment Intelligence",
-        "description": "Ask about the market climate lights, the inflation/deflation rating, the S&P 500 price/earnings ratio and its members.",
+        "description": "Ask about the market climate lights, the inflation/deflation rating, the currencies, the S&P 500 price/earnings ratio and its members, and the bear market fund and short selling strategies.",
         "warehouse_id": "${var.warehouse_id}",
         "parent_path": "${workspace.resource_path}",
         "serialized_space": space(),
