@@ -10,8 +10,8 @@ Two asks from the user, packaged together on 2026-11-07 because both are small a
    Company Deep Dive page (user, 2026-11-07); it leaves that dashboard.
 2. **Strategy 004 (Trading Efficient Stocks) indicators.** The story's acceptance criteria: the 60-day rate of change,
    the daily range and its 60-day simple average, the true range and its 60-day simple average, and two efficiency
-   ratios, *ar* = 60-day rate of change / 60-day average range and *atr* = 60-day rate of change / 60-day average true
-   range; the screening also needs the 60-day average volume. The screening rules (efficiency of 15 or more, a smooth
+   ratios, *r60* = 60-day rate of change in dollars / *ar* amount SMA60 (the 60-day simple average of the daily range in
+   dollars) and *tr60* = 60-day rate of change in dollars / *atr* amount SMA60 (the same for the true range); the screening also needs the 60-day average volume. The screening rules (efficiency of 15 or more, a smooth
    rise) and the setup, entry and exit come later.
 
 ## What Changes

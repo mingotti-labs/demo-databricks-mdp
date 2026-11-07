@@ -59,18 +59,18 @@ Per listing and price date, over the listing's price rows (trading days):
 | `close_sixty_day_change_ratio` | close / close 60 rows earlier - 1 (0.30 = up 30%) |
 | `price_range_amount` | high - low |
 | `price_range_ratio` | (high - low) / close |
-| `true_range_amount` | max(high, previous close) - min(low, previous close); high - low on the first row |
+| `true_range_amount` | the largest of high - low, abs(high - previous close) and abs(low - previous close), which equals max(high, previous close) - min(low, previous close); high - low on the listing's first row |
 | `true_range_ratio` | true range / close |
 | `price_range_sixty_day_average_amount`, `price_range_sixty_day_average_ratio` | simple average of the last 60 rows; empty with fewer than 60 rows |
 | `true_range_sixty_day_average_amount`, `true_range_sixty_day_average_ratio` | the same for the true range (the average true range, ATR) |
-| `efficiency_range_ratio` | *ar*: `close_sixty_day_change_amount` / `price_range_sixty_day_average_amount` |
-| `efficiency_true_range_ratio` | *atr*: `close_sixty_day_change_amount` / `true_range_sixty_day_average_amount` |
+| `efficiency_r60_ratio` | efficiency ratio *r60*: `close_sixty_day_change_amount` (rate of change 60d amount) / `price_range_sixty_day_average_amount` (*ar* amount SMA60) |
+| `efficiency_tr60_ratio` | efficiency ratio *tr60*: `close_sixty_day_change_amount` / `true_range_sixty_day_average_amount` (*atr* amount SMA60) |
 | `volume_sixty_day_average_count` | simple average volume of the last 60 rows |
 
 **Units (user, 2026-11-07).** The change and the ranges are kept in amounts and as fractions of the close; the
 efficiency ratios use the amounts: the 60-day change in dollars over the 60-day average range (or true range) in
 dollars. Dollars over dollars, so the ratio does not depend on the share price. Probe E3 (prd, latest day, a red market):
-no member reaches 15 with either ratio (90th percentile of *ar* 5.2, highest *ar* 13.3 and *atr* 10.3). Probe E1 had
+no member reaches 15 with either ratio (90th percentile of *r60* 5.2, highest *r60* 13.3 and *tr60* 10.3). Probe E1 had
 compared the change in percent with the range in dollars (a mixed ratio); it is kept only as a record.
 
 **Prices.** Everything uses the reported high, low and close, which Yahoo already corrects for splits (probe E2: no

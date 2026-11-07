@@ -74,8 +74,8 @@ close), `true_range_amount` (the higher of the high and the previous close minus
 close; high minus low on the listing's first row) and `true_range_ratio` (that divided by the close),
 `price_range_sixty_day_average_amount`, `price_range_sixty_day_average_ratio`, `true_range_sixty_day_average_amount`
 and `true_range_sixty_day_average_ratio` (simple averages of the last 60 rows; empty with fewer than 60 rows),
-`efficiency_range_ratio` (`close_sixty_day_change_amount` divided by `price_range_sixty_day_average_amount`),
-`efficiency_true_range_ratio` (`close_sixty_day_change_amount` divided by `true_range_sixty_day_average_amount`) and `volume_sixty_day_average_count` (the simple average volume of the last 60
+`efficiency_r60_ratio` (efficiency ratio r60: `close_sixty_day_change_amount` divided by `price_range_sixty_day_average_amount`),
+`efficiency_tr60_ratio` (efficiency ratio tr60: `close_sixty_day_change_amount` divided by `true_range_sixty_day_average_amount`) and `volume_sixty_day_average_count` (the simple average volume of the last 60
 rows). The change and the ranges SHALL use the reported high, low and close. Every column
 SHALL carry a Unity Catalog description.
 
@@ -95,7 +95,7 @@ SHALL carry a Unity Catalog description.
 - **WHEN** a listing's close rose from 100 to 130 over its last 60 rows and its high minus low averaged 2 over the last 60
   rows
 - **THEN** its row has `close_sixty_day_change_amount` 30, `close_sixty_day_change_ratio` 0.30,
-  `price_range_sixty_day_average_amount` 2 and `efficiency_range_ratio` 15
+  `price_range_sixty_day_average_amount` 2 and `efficiency_r60_ratio` 15
 
 #### Scenario: A gap counts in the true range
 - **WHEN** a listing closed at 100, then opened higher and traded between 104 and 106, closing at 105
