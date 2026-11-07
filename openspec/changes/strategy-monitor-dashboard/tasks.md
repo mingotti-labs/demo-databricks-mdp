@@ -5,10 +5,10 @@
 
 ## 2. Dashboard (D2-D4)
 
-- [ ] 2.1 `src/common/strategy_queries.py` (datasets of the three pages) and `src/common/strategy_dashboard.py` (pages,
+- [x] 2.1 `src/common/strategy_queries.py` (datasets of the three pages) and `src/common/strategy_dashboard.py` (pages,
       parameters, filters); resource `resources/dashboards/strategy_monitor.dashboard.yml`; `cicd/build_dashboards.py` entry;
       generated file and its equality test
-- [ ] 2.2 Every dataset query runs on dev (`p3_test_queries.py` includes the strategy datasets)
+- [x] 2.2 Every dataset query runs on dev (`p3_test_queries.py --only-strategy`: 11 datasets, probe P14, `p14_strategy_queries_dev.txt`)
 
 ## 3. Genie (D5)
 

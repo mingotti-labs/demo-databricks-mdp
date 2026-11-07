@@ -71,3 +71,34 @@ def test_currency_dashboard_file_equals_its_builder():
 
     committed = (ROOT / "src" / "dashboards" / "currency_monitor.lvdash.json").read_text(encoding="utf-8")
     assert committed.replace("\r\n", "\n") == currency_dashboard.build()
+
+
+def test_strategy_dashboard_file_equals_its_builder():
+    from common import strategy_dashboard
+
+    committed = (ROOT / "src" / "dashboards" / "strategy_monitor.lvdash.json").read_text(encoding="utf-8")
+    assert committed.replace(chr(13) + chr(10), chr(10)) == strategy_dashboard.build()
+
+
+def test_strategy_dashboard_pages_datasets_and_parameters():
+    from common import strategy_dashboard
+
+    dashboard = json.loads(strategy_dashboard.build())
+    assert [p["displayName"] for p in dashboard["pages"]] == ["Bear Market Fund", "Bear Fund Deep Dive", "Short Selling", "Filters"]
+    datasets = {d["name"]: d for d in dashboard["datasets"]}
+    assert all(d["queryLines"][0].strip() for d in datasets.values())
+    assert {p["keyword"] for p in datasets["ds_fund_chart"]["parameters"]} == {"fund_code", "history_range_code"}
+    assert {p["keyword"] for p in datasets["ds_bear_period_events"]["parameters"]} == {"setup_period"}
+    assert {p["keyword"] for p in datasets["ds_short_candidates"]["parameters"]} == {"as_of_date"}
+    widgets = {w["widget"]["name"] for page in dashboard["pages"] for w in page["layout"]}
+    assert {"bear-week", "bear-checks", "bear-funds", "fund-chart", "short-candidates", "short-gate"} <= widgets
+    chart = next(w["widget"] for page in dashboard["pages"] for w in page["layout"] if w["widget"]["name"] == "fund-chart")
+    assert "range_start_date" in chart["spec"]["jsonSpec"]["spec"]
+
+
+def test_strategy_queries_read_the_shared_states_and_use_the_rule_thresholds():
+    from common.strategy_queries import DATASETS
+
+    assert "is_setup_on" in DATASETS["ds_short_candidates"][1] and "is_setup_on" in DATASETS["ds_bear_week"][1]
+    assert "-0.05" in DATASETS["ds_bear_week"][1] and "-0.025" in DATASETS["ds_bear_week"][1]
+    assert ":as_of_date" in DATASETS["ds_bear_week"][1] and ":setup_period" in DATASETS["ds_bear_period_events"][1]

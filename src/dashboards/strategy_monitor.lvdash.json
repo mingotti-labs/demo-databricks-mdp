@@ -1,0 +1,1826 @@
+{
+  "datasets": [
+    {
+      "name": "ds_strategy_freshness",
+      "displayName": "Data dates",
+      "queryLines": [
+        "WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), bear AS (SELECT * FROM states WHERE strategy_code = 'bear_market_fund' AND week_end_date <= coalesce(:as_of_date, DATE '9999-12-31') ORDER BY week_end_date DESC LIMIT 1), short_week AS (SELECT max(week_end_date) AS day FROM states WHERE strategy_code = 'short_selling' AND week_end_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT (SELECT week_end_date FROM bear) AS bear_week_date, (SELECT day FROM short_week) AS short_week_date, (SELECT max(signal_date) FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate') AS climate_date, (SELECT max(price_date) FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC') AS sp500_price_date, (SELECT max(event_date) FROM strategy_daily_event) AS latest_event_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_bear_week",
+      "displayName": "Strategy 001 setup and entry of the week",
+      "queryLines": [
+        "WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), bear AS (SELECT * FROM states WHERE strategy_code = 'bear_market_fund' AND week_end_date <= coalesce(:as_of_date, DATE '9999-12-31') ORDER BY week_end_date DESC LIMIT 1) SELECT week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, is_red, week_close_amount < five_weeks_close_amount AS is_lower_than_five_weeks, is_setup_on, CASE WHEN is_setup_on THEN 'GO' ELSE 'NO GO' END AS setup_text, CASE WHEN is_setup_on THEN 'green' ELSE 'red' END AS setup_light, CASE WHEN NOT is_setup_on THEN NULL WHEN week_change_ratio <= -0.05 THEN 'half_of_equity' WHEN week_change_ratio <= -0.025 THEN 'quarter_of_equity' END AS entry_band_code, CASE WHEN NOT is_setup_on THEN 'No action: the setup is off.' WHEN week_change_ratio <= -0.05 THEN 'Entry: invest half of equity in the bear fund on Monday.' WHEN week_change_ratio <= -0.025 THEN 'Entry: invest a quarter of equity in the bear fund on Monday.' WHEN week_change_ratio < 0 THEN 'No entry yet: the week fell less than 2.5%. On Monday to Wednesday a close 2.5% below this week close is an interim entry (a quarter of equity).' ELSE 'No entry: the S&P 500 did not fall this week.' END AS action_text FROM bear "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_bear_checks",
+      "displayName": "Strategy 001 checks",
+      "queryLines": [
+        "WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), bear AS (SELECT * FROM states WHERE strategy_code = 'bear_market_fund' AND week_end_date <= coalesce(:as_of_date, DATE '9999-12-31') ORDER BY week_end_date DESC LIMIT 1), vix AS (SELECT max_by(price_close, price_date) AS vix_close FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^VIX' AND price_date <= (SELECT week_end_date FROM bear) AND price_date > date_sub((SELECT week_end_date FROM bear), 7)) SELECT 1 AS step_number, 'Setup' AS step_group, 'A market climate light is red' AS check_name, CASE WHEN is_red THEN 'Yes' ELSE 'No' END AS answer_text, CAST(NULL AS STRING) AS value_text FROM bear UNION ALL SELECT 2, 'Setup', 'The S&P 500 closed the week below its close 5 weeks earlier', CASE WHEN week_close_amount < five_weeks_close_amount THEN 'Yes' ELSE 'No' END, concat(format_number(week_close_amount, 2), ' against ', format_number(five_weeks_close_amount, 2)) FROM bear UNION ALL SELECT 3, 'Entry', 'The week fell 5% or more: invest half of equity', CASE WHEN week_change_ratio <= -0.05 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 4, 'Entry', 'The week fell 2.5% to 5%: invest a quarter of equity', CASE WHEN week_change_ratio <= -0.025 AND week_change_ratio > -0.05 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 5, 'Entry', 'The week fell less than 2.5%: watch Monday to Wednesday for a 2.5% drop', CASE WHEN week_change_ratio < 0 AND week_change_ratio > -0.025 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 6, 'Exit', 'The week rose 3% or more: sell 10% of equity for every 3%', CASE WHEN week_change_ratio >= 0.03 THEN 'Yes' ELSE 'No' END, concat(format_number(week_change_ratio * 100, 1), '% on the week') FROM bear UNION ALL SELECT 7, 'Exit', 'The week closed above its close 5 weeks earlier: sell everything', CASE WHEN week_close_amount > five_weeks_close_amount THEN 'Yes' ELSE 'No' END, concat(format_number(week_close_amount, 2), ' against ', format_number(five_weeks_close_amount, 2)) FROM bear UNION ALL SELECT 8, 'Exit', 'The VIX closed above 50: sell everything', CASE WHEN (SELECT vix_close FROM vix) > 50 THEN 'Yes' ELSE 'No' END, concat('VIX ', format_number((SELECT vix_close FROM vix), 1)) FROM bear ORDER BY step_number "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_bear_funds",
+      "displayName": "Bear funds",
+      "queryLines": [
+        "WITH funds AS (SELECT * FROM VALUES ('SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', 1), ('PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', 2), ('SH', 'ProShares Short S&P500', '1x short S&P 500', 3), ('SDS', 'ProShares UltraShort S&P500', '2x short S&P 500', 4), ('SPXU', 'ProShares UltraPro Short S&P500', '3x short S&P 500', 5) AS funds(fund_code, fund_name, fund_description, fund_order)), prices AS (SELECT p.trading_symbol_code AS fund_code, p.price_date, p.price_close, row_number() OVER (PARTITION BY p.trading_symbol_code ORDER BY p.price_date DESC) AS recency FROM silver_domain_investments.price_daily p JOIN funds f ON f.fund_code = p.trading_symbol_code WHERE p.price_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT f.fund_code, f.fund_name, f.fund_description, f.fund_order, max(CASE WHEN p.recency = 1 THEN p.price_date END) AS last_date, max(CASE WHEN p.recency = 1 THEN p.price_close END) AS last_close, max(CASE WHEN p.recency = 1 THEN p.price_close END) / max(CASE WHEN p.recency = 6 THEN p.price_close END) - 1 AS week_change_ratio FROM funds f LEFT JOIN prices p ON p.fund_code = f.fund_code AND p.recency <= 6 GROUP BY f.fund_code, f.fund_name, f.fund_description, f.fund_order ORDER BY f.fund_order "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_fund_options",
+      "displayName": "Bear fund choices",
+      "queryLines": [
+        "WITH funds AS (SELECT * FROM VALUES ('SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', 1), ('PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', 2), ('SH', 'ProShares Short S&P500', '1x short S&P 500', 3), ('SDS', 'ProShares UltraShort S&P500', '2x short S&P 500', 4), ('SPXU', 'ProShares UltraPro Short S&P500', '3x short S&P 500', 5) AS funds(fund_code, fund_name, fund_description, fund_order)) SELECT fund_code, fund_name, fund_description, fund_order FROM funds ORDER BY fund_order "
+      ]
+    },
+    {
+      "name": "ds_bear_periods",
+      "displayName": "Past setup periods of strategy 001",
+      "queryLines": [
+        "WITH periods AS ( SELECT setup_start_date, min(CASE WHEN event_code = 'setup_end' THEN event_date END) AS end_date, count_if(event_code = 'entry') AS entry_count FROM strategy_daily_event WHERE strategy_code = 'bear_market_fund' GROUP BY setup_start_date) SELECT CAST(setup_start_date AS STRING) AS period_code, concat(CAST(setup_start_date AS STRING), ' to ', coalesce(CAST(end_date AS STRING), 'now'), ', ', entry_count, CASE WHEN entry_count = 1 THEN ' entry' ELSE ' entries' END) AS period_label, setup_start_date FROM periods UNION ALL SELECT 'all', 'All setup periods', DATE '1900-01-01' ORDER BY setup_start_date DESC "
+      ]
+    },
+    {
+      "name": "ds_bear_period_events",
+      "displayName": "Events of the chosen setup period",
+      "queryLines": [
+        "SELECT event_date, event_name, setup_start_date, entry_number, entry_band_code, week_close_amount, five_weeks_close_amount, week_change_ratio, reason_text FROM strategy_daily_event WHERE strategy_code = 'bear_market_fund' AND (:setup_period = 'all' OR CAST(setup_start_date AS STRING) = :setup_period) ORDER BY event_date DESC "
+      ],
+      "parameters": [
+        {
+          "keyword": "setup_period",
+          "displayName": "Setup period",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "all"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_fund_chart",
+      "displayName": "Bear fund, S&P 500 and the setup periods",
+      "queryLines": [
+        "WITH fund AS (SELECT price_date, price_close FROM silver_domain_investments.price_daily WHERE trading_symbol_code = :fund_code AND price_date >= add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END))), sp500 AS (SELECT price_date, price_close AS sp500_close FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' AND price_date >= add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END))), periods AS (SELECT setup_start_date AS start_date, min(CASE WHEN event_code = 'setup_end' THEN event_date END) AS end_date FROM strategy_daily_event WHERE strategy_code = 'bear_market_fund' GROUP BY setup_start_date), entries AS (SELECT event_date, entry_band_code FROM strategy_daily_event WHERE strategy_code = 'bear_market_fund' AND event_code = 'entry') SELECT f.price_date, f.price_close AS fund_close, s.sp500_close, p.start_date IS NOT NULL AS is_in_setup, e.entry_band_code, add_months(current_date(), -(CASE :history_range_code WHEN '1M' THEN 1 WHEN '3M' THEN 3 WHEN '6M' THEN 6 WHEN '12M' THEN 12 WHEN '24M' THEN 24 WHEN '36M' THEN 36 ELSE 36 END)) AS range_start_date, current_date() AS range_end_date FROM fund f JOIN sp500 s ON s.price_date = f.price_date LEFT JOIN periods p ON f.price_date >= p.start_date AND f.price_date < coalesce(p.end_date, DATE '9999-12-31') LEFT JOIN entries e ON e.event_date = f.price_date ORDER BY f.price_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "fund_code",
+          "displayName": "Bear fund",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "SQQQ"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "keyword": "history_range_code",
+          "displayName": "History range",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "36M"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_short_gate",
+      "displayName": "Market climate gate of strategy 002",
+      "queryLines": [
+        "WITH latest AS (SELECT max(signal_date) AS day FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' AND signal_date <= coalesce(:as_of_date, DATE '9999-12-31')) SELECT s.signal_date AS climate_date, max(CASE WHEN s.band_code = 'red' THEN 1 ELSE 0 END) = 1 AS is_red, concat_ws(', ', collect_list(concat(s.lens_name, ': ', s.band_code))) AS lights_text, CASE WHEN max(CASE WHEN s.band_code = 'red' THEN 1 ELSE 0 END) = 1 THEN 'Red light: the strategy can run' ELSE 'No red light: do not short' END AS gate_text, CASE WHEN max(CASE WHEN s.band_code = 'red' THEN 1 ELSE 0 END) = 1 THEN 'red' ELSE 'green' END AS gate_light FROM monitor_daily_signal s JOIN latest l ON s.signal_date = l.day WHERE s.monitor_code = 'market_climate' AND s.signal_code = 'climate' GROUP BY s.signal_date "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_short_candidates",
+      "displayName": "Short selling candidates of the week",
+      "queryLines": [
+        "WITH states AS ( WITH red AS ( SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red FROM monitor_daily_signal WHERE monitor_code = 'market_climate' AND signal_code = 'climate' GROUP BY signal_date ), index_days AS ( SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' ), index_weeks AS ( SELECT max(listing_id) AS listing_id, max(trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', price_date) AS DATE) AS week_start, max(price_date) AS week_end_date, max_by(price_close, price_date) AS week_close, min(ingested_timestamp) AS ingested_timestamp FROM index_days GROUP BY CAST(date_trunc('WEEK', price_date) AS DATE) ), bear_weeks AS ( SELECT w.*, lag(week_close, 1) OVER (ORDER BY week_start) AS previous_close, lag(week_close, 5) OVER (ORDER BY week_start) AS five_weeks_close FROM index_weeks w ), bear_states AS ( SELECT 'bear_market_fund' AS strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, CAST(week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count, r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ), stock_weeks AS ( SELECT p.listing_id, max(p.trading_symbol_code) AS trading_symbol_code, CAST(date_trunc('WEEK', p.price_date) AS DATE) AS week_start, max_by(p.price_close_adjusted, p.price_date) AS week_close, min(p.ingested_timestamp) AS ingested_timestamp FROM silver_domain_investments.price_daily p JOIN (SELECT DISTINCT listing_id FROM valuation_daily_index_member) m ON m.listing_id = p.listing_id WHERE p.price_date >= (SELECT date_sub(min(signal_date), 70) FROM red) GROUP BY p.listing_id, CAST(date_trunc('WEEK', p.price_date) AS DATE) ), stock_down AS ( SELECT *, coalesce(CAST(week_close < lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS INT), 0) AS is_down FROM stock_weeks ), stock_run AS ( SELECT *, sum(1 - is_down) OVER (PARTITION BY listing_id ORDER BY week_start) AS run_group FROM stock_down ), stock_streak AS ( SELECT *, sum(is_down) OVER (PARTITION BY listing_id, run_group ORDER BY week_start) AS down_weeks, lag(week_close) OVER (PARTITION BY listing_id ORDER BY week_start) AS previous_close FROM stock_run ), short_states AS ( SELECT 'short_selling' AS strategy_code, s.trading_symbol_code, s.listing_id, s.week_start, w.week_end_date, CAST(s.week_close AS DECIMAL(18, 6)) AS week_close_amount, CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount, CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio, m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count, r.is_red AND m.price_to_sales_ratio > 15 AND s.down_weeks >= 3 AS is_setup_on, r.is_red, s.ingested_timestamp FROM stock_streak s JOIN index_weeks w ON w.week_start = s.week_start JOIN red r ON r.signal_date = w.week_end_date JOIN valuation_daily_index_member m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date WHERE (w.week_end_date = date_add(w.week_start, 4) OR current_date() > date_add(w.week_start, 4)) ) SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM bear_states UNION ALL SELECT strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount, five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red, ingested_timestamp FROM short_states ), short_week AS (SELECT max(week_end_date) AS day FROM states WHERE strategy_code = 'short_selling' AND week_end_date <= coalesce(:as_of_date, DATE '9999-12-31')), short AS (SELECT * FROM states WHERE strategy_code = 'short_selling' AND week_end_date = (SELECT day FROM short_week)), starts AS (SELECT trading_symbol_code, max(setup_start_date) AS setup_start_date FROM strategy_daily_event WHERE strategy_code = 'short_selling' AND event_code = 'setup_start' AND event_date <= (SELECT day FROM short_week) GROUP BY trading_symbol_code), entries AS (SELECT trading_symbol_code, setup_start_date, count(*) AS entry_count FROM strategy_daily_event WHERE strategy_code = 'short_selling' AND event_code = 'entry' AND event_date <= (SELECT day FROM short_week) GROUP BY trading_symbol_code, setup_start_date) SELECT s.trading_symbol_code, c.company_name, st.setup_start_date, s.week_end_date, s.price_to_sales_ratio, s.down_week_count, s.week_change_ratio, 'green' AS setup_light, CASE WHEN coalesce(e.entry_count, 0) > 0 THEN 'green' ELSE 'grey' END AS entry_light FROM short s JOIN starts st ON st.trading_symbol_code = s.trading_symbol_code LEFT JOIN entries e ON e.trading_symbol_code = s.trading_symbol_code AND e.setup_start_date = st.setup_start_date LEFT JOIN silver_domain_investments.listing l ON l.listing_id = s.listing_id LEFT JOIN silver_domain_investments.company c ON c.company_id = l.company_id WHERE s.is_setup_on ORDER BY s.down_week_count DESC, s.price_to_sales_ratio DESC "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_short_events",
+      "displayName": "Latest short selling events",
+      "queryLines": [
+        "SELECT e.event_date, e.trading_symbol_code, e.event_name, e.setup_start_date, e.entry_number, e.price_to_sales_ratio, e.down_week_count, e.reason_text FROM strategy_daily_event e WHERE e.strategy_code = 'short_selling' AND e.event_date <= coalesce(:as_of_date, DATE '9999-12-31') ORDER BY e.event_date DESC, e.trading_symbol_code LIMIT 40 "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_history_range_options",
+      "displayName": "History ranges",
+      "queryLines": [
+        "SELECT * FROM VALUES ('1M', 1), ('3M', 3), ('6M', 6), ('12M', 12), ('24M', 24), ('36M', 36) AS t(history_range_code, history_range_months) ORDER BY history_range_months "
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "bear-market-fund",
+      "displayName": "Bear Market Fund",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "bear-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Strategy 001: Bear Market Mutual Fund\n",
+                "\n",
+                "Buy a bear fund when the market climate is red and the S&P 500 keeps falling.\n",
+                "\n",
+                "- Setup: a market climate light is red and the S&P 500 closed the week below its close five weeks earlier\n",
+                "- Entry (Friday to Friday change): 5% down or more, invest half of equity; 2.5% to 5% down, a quarter; less than 2.5% down, watch Monday to Wednesday for a 2.5% drop\n",
+                "- Exit: up 3% on the week sell 10% of equity per 3%; a Friday close above five weeks earlier or a VIX above 50 sell everything\n",
+                "- Invest at most 50% of equity, in 25% steps\n",
+                "\n",
+                "Change the date at the top: the week shown is the latest complete week on or before it."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "bear-week",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_bear_week",
+                  "fields": [
+                    {
+                      "name": "week_end_date",
+                      "expression": "`week_end_date`"
+                    },
+                    {
+                      "name": "setup_text",
+                      "expression": "`setup_text`"
+                    },
+                    {
+                      "name": "setup_light",
+                      "expression": "`setup_light`"
+                    },
+                    {
+                      "name": "week_change_ratio",
+                      "expression": "`week_change_ratio`"
+                    },
+                    {
+                      "name": "entry_band_code",
+                      "expression": "`entry_band_code`"
+                    },
+                    {
+                      "name": "action_text",
+                      "expression": "`action_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "week_end_date",
+                    "displayName": "Week ending",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "setup_text",
+                    "displayName": "Setup",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "setup_light",
+                    "displayName": "Light",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "week_change_ratio",
+                    "displayName": "S&P 500 week change",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "entry_band_code",
+                    "displayName": "Entry band",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "action_text",
+                    "displayName": "What to do",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Setup and entry of the week"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "bear-checks",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_bear_checks",
+                  "fields": [
+                    {
+                      "name": "step_group",
+                      "expression": "`step_group`"
+                    },
+                    {
+                      "name": "check_name",
+                      "expression": "`check_name`"
+                    },
+                    {
+                      "name": "answer_text",
+                      "expression": "`answer_text`"
+                    },
+                    {
+                      "name": "value_text",
+                      "expression": "`value_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "step_group",
+                    "displayName": "Step",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "check_name",
+                    "displayName": "Check",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "answer_text",
+                    "displayName": "Answer",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "value_text",
+                    "displayName": "Value",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "The checks behind it"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "bear-funds",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_bear_funds",
+                  "fields": [
+                    {
+                      "name": "fund_code",
+                      "expression": "`fund_code`"
+                    },
+                    {
+                      "name": "fund_name",
+                      "expression": "`fund_name`"
+                    },
+                    {
+                      "name": "fund_description",
+                      "expression": "`fund_description`"
+                    },
+                    {
+                      "name": "last_close",
+                      "expression": "`last_close`"
+                    },
+                    {
+                      "name": "week_change_ratio",
+                      "expression": "`week_change_ratio`"
+                    },
+                    {
+                      "name": "last_date",
+                      "expression": "`last_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "fund_code",
+                    "displayName": "Fund",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "fund_name",
+                    "displayName": "Name",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "fund_description",
+                    "displayName": "What it does",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "last_close",
+                    "displayName": "Last close (US$)",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "week_change_ratio",
+                    "displayName": "Change over 5 trading days",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "last_date",
+                    "displayName": "Price of",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Bear funds",
+                "showDescription": true,
+                "description": "Pick one on the Bear Fund Deep Dive page. A 3x fund moves about three times the index each day."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 20,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-setup-period",
+            "queries": [
+              {
+                "name": "q_ds_bear_periods_period_code",
+                "query": {
+                  "datasetName": "ds_bear_periods",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "period_code",
+                      "expression": "`period_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_bear_period_events_setup_period",
+                "query": {
+                  "datasetName": "ds_bear_period_events",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "setup_period",
+                      "keyword": "setup_period"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "period_code",
+                    "displayName": "Past setup period",
+                    "queryName": "q_ds_bear_periods_period_code"
+                  },
+                  {
+                    "parameterName": "setup_period",
+                    "queryName": "q_ds_bear_period_events_setup_period"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Past setup period"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 27,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "bear-period-events",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_bear_period_events",
+                  "fields": [
+                    {
+                      "name": "event_date",
+                      "expression": "`event_date`"
+                    },
+                    {
+                      "name": "event_name",
+                      "expression": "`event_name`"
+                    },
+                    {
+                      "name": "setup_start_date",
+                      "expression": "`setup_start_date`"
+                    },
+                    {
+                      "name": "entry_number",
+                      "expression": "`entry_number`"
+                    },
+                    {
+                      "name": "entry_band_code",
+                      "expression": "`entry_band_code`"
+                    },
+                    {
+                      "name": "week_change_ratio",
+                      "expression": "`week_change_ratio`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "event_date",
+                    "displayName": "Date",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "event_name",
+                    "displayName": "Event",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "setup_start_date",
+                    "displayName": "Setup period starts",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "entry_number",
+                    "displayName": "Entry no.",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "entry_band_code",
+                    "displayName": "Entry band",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "week_change_ratio",
+                    "displayName": "Week change",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "reason_text",
+                    "displayName": "Why",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Events of the chosen setup period"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 29,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "bear-dates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_strategy_freshness",
+                  "fields": [
+                    {
+                      "name": "bear_week_date",
+                      "expression": "`bear_week_date`"
+                    },
+                    {
+                      "name": "climate_date",
+                      "expression": "`climate_date`"
+                    },
+                    {
+                      "name": "sp500_price_date",
+                      "expression": "`sp500_price_date`"
+                    },
+                    {
+                      "name": "latest_event_date",
+                      "expression": "`latest_event_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "bear_week_date",
+                    "displayName": "Week shown (strategy 001)",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "climate_date",
+                    "displayName": "Latest market climate",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "sp500_price_date",
+                    "displayName": "Latest S&P 500 price",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "latest_event_date",
+                    "displayName": "Latest strategy event",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data dates"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 38,
+            "width": 12,
+            "height": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "bear-fund-deep-dive",
+      "displayName": "Bear Fund Deep Dive",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "fund-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Bear Fund Deep Dive\n",
+                "\n",
+                "Pick a bear fund and a history range: the fund against the S&P 500, with the strategy 001 setup periods shaded and the entries marked. SQQQ and PSQ follow the Nasdaq-100; SH, SDS and SPXU the S&P 500.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-fund",
+            "queries": [
+              {
+                "name": "q_ds_fund_options_fund_code",
+                "query": {
+                  "datasetName": "ds_fund_options",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "fund_code",
+                      "expression": "`fund_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_fund_chart_fund_code",
+                "query": {
+                  "datasetName": "ds_fund_chart",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "fund_code",
+                      "keyword": "fund_code"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "fund_code",
+                    "displayName": "Bear fund",
+                    "queryName": "q_ds_fund_options_fund_code"
+                  },
+                  {
+                    "parameterName": "fund_code",
+                    "queryName": "q_ds_fund_chart_fund_code"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Bear fund"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter-fund-range",
+            "queries": [
+              {
+                "name": "q_ds_history_range_options_history_range_code",
+                "query": {
+                  "datasetName": "ds_history_range_options",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "name": "history_range_code",
+                      "expression": "`history_range_code`"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_fund_chart_history_range_code",
+                "query": {
+                  "datasetName": "ds_fund_chart",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "history_range_code",
+                      "keyword": "history_range_code"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "history_range_code",
+                    "displayName": "History range",
+                    "queryName": "q_ds_history_range_options_history_range_code"
+                  },
+                  {
+                    "parameterName": "history_range_code",
+                    "queryName": "q_ds_fund_chart_history_range_code"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "History range"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "fund-chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_fund_chart",
+                  "fields": [
+                    {
+                      "name": "price_date",
+                      "expression": "`price_date`"
+                    },
+                    {
+                      "name": "fund_close",
+                      "expression": "`fund_close`"
+                    },
+                    {
+                      "name": "sp500_close",
+                      "expression": "`sp500_close`"
+                    },
+                    {
+                      "name": "is_in_setup",
+                      "expression": "`is_in_setup`"
+                    },
+                    {
+                      "name": "entry_band_code",
+                      "expression": "`entry_band_code`"
+                    },
+                    {
+                      "name": "range_start_date",
+                      "expression": "`range_start_date`"
+                    },
+                    {
+                      "name": "range_end_date",
+                      "expression": "`range_end_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\", \"data\": {\"name\": \"databricks_query\"}, \"width\": \"container\", \"height\": \"container\", \"config\": {\"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}, \"resolve\": {\"scale\": {\"y\": \"independent\"}}, \"layer\": [{\"transform\": [{\"window\": [{\"op\": \"lead\", \"field\": \"price_date\", \"as\": \"next_date\"}], \"sort\": [{\"field\": \"price_date\"}]}, {\"filter\": \"datum.is_in_setup == true || datum.is_in_setup == 'true'\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0.16, \"color\": \"#E15759\"}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"x2\": {\"field\": \"next_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": {\"expr\": \"height\"}}}}, {\"mark\": {\"type\": \"line\", \"strokeWidth\": 2.2, \"color\": \"#4E79A7\"}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"y\": {\"field\": \"fund_close\", \"type\": \"quantitative\", \"title\": \"Bear fund close (US$)\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.2f\", \"minExtent\": 64}}, \"tooltip\": [{\"field\": \"price_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"fund_close\", \"type\": \"quantitative\", \"format\": \",.2f\", \"title\": \"Fund close\"}]}}, {\"mark\": {\"type\": \"line\", \"strokeWidth\": 1.8, \"color\": \"#8A8F98\", \"strokeDash\": [4, 3]}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"y\": {\"field\": \"sp500_close\", \"type\": \"quantitative\", \"title\": \"S&P 500 (index points)\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"orient\": \"right\", \"format\": \",.0f\"}}, \"tooltip\": [{\"field\": \"price_date\", \"type\": \"temporal\", \"title\": \"Day\"}, {\"field\": \"sp500_close\", \"type\": \"quantitative\", \"format\": \",.0f\", \"title\": \"S&P 500\"}]}}, {\"mark\": {\"type\": \"point\", \"filled\": true, \"size\": 130, \"shape\": \"triangle-up\", \"color\": \"#59A14F\"}, \"encoding\": {\"x\": {\"field\": \"price_date\", \"type\": \"temporal\", \"title\": null, \"axis\": {\"labelOverlap\": true}}, \"y\": {\"field\": \"fund_close\", \"type\": \"quantitative\", \"title\": \"Bear fund close (US$)\", \"scale\": {\"zero\": false, \"padding\": 14}, \"axis\": {\"format\": \",.2f\", \"minExtent\": 64}}, \"opacity\": {\"condition\": {\"test\": \"datum.entry_band_code != null\", \"value\": 1}, \"value\": 0}, \"tooltip\": [{\"field\": \"price_date\", \"type\": \"temporal\", \"title\": \"Entry on\"}, {\"field\": \"entry_band_code\", \"title\": \"Entry band\"}]}}, {\"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"row_rank\"}]}, {\"filter\": \"datum.row_rank == 1\"}], \"mark\": {\"type\": \"rect\", \"opacity\": 0}, \"encoding\": {\"x\": {\"field\": \"range_start_date\", \"type\": \"temporal\", \"title\": null}, \"x2\": {\"field\": \"range_end_date\"}, \"y\": {\"value\": 0}, \"y2\": {\"value\": 0}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "price_date"
+                  },
+                  {
+                    "fieldName": "fund_close"
+                  },
+                  {
+                    "fieldName": "sp500_close"
+                  },
+                  {
+                    "fieldName": "is_in_setup"
+                  },
+                  {
+                    "fieldName": "entry_band_code"
+                  },
+                  {
+                    "fieldName": "range_start_date"
+                  },
+                  {
+                    "fieldName": "range_end_date"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Bear fund and S&P 500: setup periods shaded, entries marked",
+                "showDescription": true,
+                "description": "Red background: a strategy 001 setup period. Green triangle: an entry. The S&P 500 is on the right axis."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 9
+          }
+        }
+      ]
+    },
+    {
+      "name": "short-selling",
+      "displayName": "Short Selling",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "short-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Strategy 002: Short Selling\n",
+                "\n",
+                "Short expensive stocks that keep falling, only when the market climate is red.\n",
+                "\n",
+                "- Setup: a market climate light is red, price-to-sales is above 15 and the stock closed three weeks in a row down\n",
+                "- Entry: the stock closes its sixth week in a row down while the setup is on (green entry light)\n",
+                "- Exit: close all shorts when the climate leaves red; worst case a 25% move against you, and a 25% trailing stop (both need a position)\n",
+                "- Hold 3 to 5 stocks at a time and risk at most 1% of equity in each\n",
+                "\n",
+                "A stock leaves the list when its price-to-sales falls to 15 or below, or it rises for a week. Change the date at the top."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "short-gate",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_short_gate",
+                  "fields": [
+                    {
+                      "name": "climate_date",
+                      "expression": "`climate_date`"
+                    },
+                    {
+                      "name": "gate_text",
+                      "expression": "`gate_text`"
+                    },
+                    {
+                      "name": "gate_light",
+                      "expression": "`gate_light`"
+                    },
+                    {
+                      "name": "lights_text",
+                      "expression": "`lights_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "climate_date",
+                    "displayName": "Market climate of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "gate_text",
+                    "displayName": "Gate",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "gate_light",
+                    "displayName": "Light",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "lights_text",
+                    "displayName": "Lights",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Market climate gate"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "short-candidates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_short_candidates",
+                  "fields": [
+                    {
+                      "name": "trading_symbol_code",
+                      "expression": "`trading_symbol_code`"
+                    },
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "setup_start_date",
+                      "expression": "`setup_start_date`"
+                    },
+                    {
+                      "name": "setup_light",
+                      "expression": "`setup_light`"
+                    },
+                    {
+                      "name": "entry_light",
+                      "expression": "`entry_light`"
+                    },
+                    {
+                      "name": "price_to_sales_ratio",
+                      "expression": "`price_to_sales_ratio`"
+                    },
+                    {
+                      "name": "down_week_count",
+                      "expression": "`down_week_count`"
+                    },
+                    {
+                      "name": "week_change_ratio",
+                      "expression": "`week_change_ratio`"
+                    },
+                    {
+                      "name": "week_end_date",
+                      "expression": "`week_end_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "trading_symbol_code",
+                    "displayName": "Symbol",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "setup_start_date",
+                    "displayName": "Setup met on",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "setup_light",
+                    "displayName": "Setup",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "entry_light",
+                    "displayName": "Entry",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "price_to_sales_ratio",
+                    "displayName": "Price-to-sales",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "down_week_count",
+                    "displayName": "Weeks down",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "week_change_ratio",
+                    "displayName": "Week change",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "week_end_date",
+                    "displayName": "Week ending",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Candidates: setups open this week",
+                "showDescription": true,
+                "description": "Green setup light: all setup conditions hold. Green entry light: the sixth week down has happened in this setup period."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "short-events",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_short_events",
+                  "fields": [
+                    {
+                      "name": "event_date",
+                      "expression": "`event_date`"
+                    },
+                    {
+                      "name": "trading_symbol_code",
+                      "expression": "`trading_symbol_code`"
+                    },
+                    {
+                      "name": "event_name",
+                      "expression": "`event_name`"
+                    },
+                    {
+                      "name": "setup_start_date",
+                      "expression": "`setup_start_date`"
+                    },
+                    {
+                      "name": "entry_number",
+                      "expression": "`entry_number`"
+                    },
+                    {
+                      "name": "price_to_sales_ratio",
+                      "expression": "`price_to_sales_ratio`"
+                    },
+                    {
+                      "name": "down_week_count",
+                      "expression": "`down_week_count`"
+                    },
+                    {
+                      "name": "reason_text",
+                      "expression": "`reason_text`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "event_date",
+                    "displayName": "Date",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "trading_symbol_code",
+                    "displayName": "Symbol",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "event_name",
+                    "displayName": "Event",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "setup_start_date",
+                    "displayName": "Setup period starts",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "entry_number",
+                    "displayName": "Entry no.",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "price_to_sales_ratio",
+                    "displayName": "Price-to-sales",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "down_week_count",
+                    "displayName": "Weeks down",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "reason_text",
+                    "displayName": "Why",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Latest events"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "short-dates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_strategy_freshness",
+                  "fields": [
+                    {
+                      "name": "short_week_date",
+                      "expression": "`short_week_date`"
+                    },
+                    {
+                      "name": "climate_date",
+                      "expression": "`climate_date`"
+                    },
+                    {
+                      "name": "latest_event_date",
+                      "expression": "`latest_event_date`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "short_week_date",
+                    "displayName": "Week shown (strategy 002)",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "climate_date",
+                    "displayName": "Latest market climate",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "latest_event_date",
+                    "displayName": "Latest strategy event",
+                    "alignContent": "left"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data dates"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 27,
+            "width": 12,
+            "height": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "filters",
+      "displayName": "Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter-as-of",
+            "queries": [
+              {
+                "name": "q_ds_strategy_freshness_as_of_date",
+                "query": {
+                  "datasetName": "ds_strategy_freshness",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_bear_week_as_of_date",
+                "query": {
+                  "datasetName": "ds_bear_week",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_bear_checks_as_of_date",
+                "query": {
+                  "datasetName": "ds_bear_checks",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_bear_funds_as_of_date",
+                "query": {
+                  "datasetName": "ds_bear_funds",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_short_gate_as_of_date",
+                "query": {
+                  "datasetName": "ds_short_gate",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_short_candidates_as_of_date",
+                "query": {
+                  "datasetName": "ds_short_candidates",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_short_events_as_of_date",
+                "query": {
+                  "datasetName": "ds_short_events",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_strategy_freshness_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_bear_week_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_bear_checks_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_bear_funds_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_short_gate_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_short_candidates_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_short_events_as_of_date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "As of date (latest complete week on or before it)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FCFCFC",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#4E79A7",
+        "#F28E2C",
+        "#76B7B2",
+        "#59A14F",
+        "#B07AA1",
+        "#E15759",
+        "#F2C037"
+      ],
+      "widgetHeaderAlignment": "LEFT"
+    }
+  }
+}
