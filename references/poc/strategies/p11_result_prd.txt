@@ -1,0 +1,25 @@
+as built (no streak in the setup): short_selling events, symbols
+   [['entry', '2', '2'], ['setup_end', '94', '39'], ['setup_start', '108', '42']]
+setup needs 3 weeks down: events, symbols
+   [['entry', '2', '2'], ['setup_end', '45', '22'], ['setup_start', '47', '23']]
+   entries:
+      ['LRCX', '2026-07-31', '2026-07-10', '16.9009', '6']
+      ['HOOD', '2026-10-30', '2026-10-09', '15.0179', '6']
+   setups open on the latest week:
+      ['AMD', '2026-10-23', '20.4248', '3']
+      ['TPL', '2026-10-30', '25.4891', '3']
+setup needs 4 weeks down: events, symbols
+   [['entry', '2', '2'], ['setup_end', '15', '12'], ['setup_start', '17', '13']]
+   entries:
+      ['LRCX', '2026-07-31', '2026-07-17', '16.9009', '6']
+      ['HOOD', '2026-10-30', '2026-10-16', '15.0179', '6']
+   setups open on the latest week:
+      ['AMD', '2026-10-30', '19.9509', '4']
+      ['TPL', '2026-11-06', '19.4101', '4']
+setup needs 5 weeks down: events, symbols
+   [['entry', '2', '2'], ['setup_end', '7', '6'], ['setup_start', '8', '7']]
+   entries:
+      ['LRCX', '2026-07-31', '2026-07-24', '16.9009', '6']
+      ['HOOD', '2026-10-30', '2026-10-23', '15.0179', '6']
+   setups open on the latest week:
+      ['AMD', '2026-11-06', '16.2088', '5']
