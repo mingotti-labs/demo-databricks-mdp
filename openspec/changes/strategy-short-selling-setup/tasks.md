@@ -7,8 +7,8 @@
 
 ## 2. Run and check in dev
 
-- [ ] 2.1 Draft PR deployed; `run_investments verify=true`
-- [ ] 2.2 Dev counts equal probe P11 for 3 weeks (setup starts 47 and entries 2 on prd data up to 2026-11-06; dev may differ by the latest day); no quota change (488)
+- [x] 2.1 Draft PR deployed; `run_investments verify=true`
+- [x] 2.2 Dev counts equal probe P11 for 3 weeks (setup starts 47 and entries 2 on prd data up to 2026-11-06; dev may differ by the latest day); no quota change (488): dev shows 47 setup starts, 45 ends and 2 entries as in P11; TSLA's 2026-10-30 start is gone
 
 ## 3. After merge
 
