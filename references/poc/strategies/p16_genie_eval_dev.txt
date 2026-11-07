@@ -1,0 +1,2 @@
+Genie benchmark evaluation of the dev agent (space 01f1d8d92f9e17c398a3e4f3dadb5c72), eval run 01f1da75b071154c8b2cd7290afcdb06, 2026-11-07: DONE, correct 17, needs review 0, of 17 (13 earlier benchmarks + 4 strategy benchmarks).
+Agent in dev: 9 tables (strategy_daily_event added), 36 examples, 17 benchmarks.

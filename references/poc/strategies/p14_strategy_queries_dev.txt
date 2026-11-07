@@ -1,0 +1,59 @@
+== ds_strategy_freshness (Data dates): SUCCEEDED
+  columns: ['bear_week_date', 'short_week_date', 'climate_date', 'sp500_price_date', 'latest_event_date']
+  rows: 1
+   ['2026-11-06', '2026-11-06', '2026-11-06', '2026-11-06', '2026-11-06']
+== ds_bear_week (Strategy 001 setup and entry of the week): SUCCEEDED
+  columns: ['week_end_date', 'week_close_amount', 'five_weeks_close_amount', 'week_change_ratio', 'is_red', 'is_lower_than_five_weeks', 'is_setup_on', 'setup_text', 'setup_light', 'entry_band_code', 'action_text']
+  rows: 1
+   ['2026-11-06', '7376.859863', '7722.720215', '-0.0268084550', 'true', 'true', 'true', 'GO', 'green', 'quarter_of_equity', 'Entry: invest a quarter of equity in the bear fund on Monday.']
+== ds_bear_checks (Strategy 001 checks): SUCCEEDED
+  columns: ['step_number', 'step_group', 'check_name', 'answer_text', 'value_text']
+  rows: 8
+   ['1', 'Setup', 'A market climate light is red', 'Yes', None]
+   ['2', 'Setup', 'The S&P 500 closed the week below its close 5 weeks earlier', 'Yes', '7,376.86 against 7,722.72']
+   ['3', 'Entry', 'The week fell 5% or more: invest half of equity', 'No', '-2.7% on the week']
+== ds_bear_funds (Bear funds): SUCCEEDED
+  columns: ['fund_code', 'fund_name', 'fund_description', 'fund_order', 'last_date', 'last_close', 'week_change_ratio']
+  rows: 5
+   ['SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', '1', '2026-11-06', '47.700001', '0.1403298761496592804']
+   ['PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', '2', '2026-11-06', '27.950001', '0.0495682331794304611']
+   ['SH', 'ProShares Short S&P500', '1x short S&P 500', '3', '2026-11-06', '33.740002', '0.0267803095928085943']
+== ds_fund_options (Bear fund choices): SUCCEEDED
+  columns: ['fund_code', 'fund_name', 'fund_description', 'fund_order']
+  rows: 5
+   ['SQQQ', 'ProShares UltraPro Short QQQ', '3x short Nasdaq-100', '1']
+   ['PSQ', 'ProShares Short QQQ', '1x short Nasdaq-100', '2']
+   ['SH', 'ProShares Short S&P500', '1x short S&P 500', '3']
+== ds_bear_periods (Past setup periods of strategy 001): SUCCEEDED
+  columns: ['period_code', 'period_label', 'setup_start_date']
+  rows: 7
+   ['2026-10-23', '2026-10-23 to now, 1 entry', '2026-10-23']
+   ['2026-09-11', '2026-09-11 to 2026-09-25, 0 entries', '2026-09-11']
+   ['2026-07-24', '2026-07-24 to 2026-07-31, 0 entries', '2026-07-24']
+== ds_bear_period_events (Events of the chosen setup period): SUCCEEDED
+  columns: ['event_date', 'event_name', 'setup_start_date', 'entry_number', 'entry_band_code', 'week_close_amount', 'five_weeks_close_amount', 'week_change_ratio', 'reason_text']
+  rows: 12
+   ['2026-11-06', 'Entry', '2026-10-23', '1', 'quarter_of_equity', '7376.859863', '7722.720215', '-0.0268084550', 'The S&P 500 fell 2.7% on the week: invest a quarter of equity in the bear fund on Monday.']
+   ['2026-10-23', 'Setup starts', '2026-10-23', None, None, '7623.680176', '7650.500000', '-0.0046687180', 'A market climate light is red and the S&P 500 closed the week at 7623.68, below 7650.50 five weeks earlier.']
+   ['2026-09-25', 'Setup ends', '2026-09-11', None, None, '7743.410156', '7674.370117', '0.0121443247', 'No climate light is red, or the S&P 500 closed the week at 7743.41 at or above its close five weeks earlier (7674.37).']
+== ds_fund_chart (Bear fund, S&P 500 and the setup periods): SUCCEEDED
+  columns: ['price_date', 'fund_close', 'sp500_close', 'is_in_setup', 'entry_band_code', 'range_start_date', 'range_end_date']
+  rows: 753
+   ['2023-11-07', '452.500000', '4378.379883', 'false', None, '2023-11-07', '2026-11-07']
+   ['2023-11-08', '451.500000', '4382.779785', 'false', None, '2023-11-07', '2026-11-07']
+   ['2023-11-09', '462.750000', '4347.350098', 'false', None, '2023-11-07', '2026-11-07']
+== ds_short_gate (Market climate gate of strategy 002): SUCCEEDED
+  columns: ['climate_date', 'is_red', 'lights_text', 'gate_text', 'gate_light']
+  rows: 1
+   ['2026-11-06', 'true', 'Market climate modern: red, Market climate long run: red', 'Red light: the strategy can run', 'red']
+== ds_short_candidates (Short selling candidates of the week): SUCCEEDED
+  columns: ['trading_symbol_code', 'company_name', 'setup_start_date', 'week_end_date', 'price_to_sales_ratio', 'down_week_count', 'week_change_ratio', 'setup_light', 'entry_light']
+  rows: 2
+   ['AMD', 'Advanced Micro Devices', '2026-10-23', '2026-11-06', '16.2088', '5', '-0.1104595490', 'green', 'grey']
+   ['TPL', 'Texas Pacific Land Corporation', '2026-10-30', '2026-11-06', '19.4101', '4', '-0.1788471094', 'green', 'grey']
+== ds_short_events (Latest short selling events): SUCCEEDED
+  columns: ['event_date', 'trading_symbol_code', 'event_name', 'setup_start_date', 'entry_number', 'price_to_sales_ratio', 'down_week_count', 'reason_text']
+  rows: 40
+   ['2026-11-06', 'ANET', 'Setup ends', '2026-10-30', None, '18.1486', '0', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (0 weeks down now).']
+   ['2026-11-06', 'HOOD', 'Setup ends', '2026-10-09', None, '14.2970', '7', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (7 weeks down now).']
+   ['2026-11-06', 'NVDA', 'Setup ends', '2026-10-23', None, '14.8464', '5', 'The setup no longer holds: no climate light is red, price-to-sales is at or below 15, or the stock rose this week (5 weeks down now).']

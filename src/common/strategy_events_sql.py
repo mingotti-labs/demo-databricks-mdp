@@ -35,19 +35,16 @@ def week_complete(alias: str = "") -> str:
 
 
 STATE_COLUMNS = """strategy_code, trading_symbol_code, listing_id, week_start, week_end_date, week_close_amount,
-           five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, ingested_timestamp"""
+           five_weeks_close_amount, week_change_ratio, price_to_sales_ratio, down_week_count, is_setup_on, is_red,
+           ingested_timestamp"""
 
 
-def strategy_events_query(domain: str = DOMAIN, climate_source: str = "monitor_daily_signal",
+def strategy_states_query(domain: str = DOMAIN, climate_source: str = "monitor_daily_signal",
                           member_source: str = "valuation_daily_index_member") -> str:
-    """Events of both strategies, evaluated on complete weeks that have a market climate row."""
+    """One row per strategy, symbol and complete week that has a market climate row: the closes, the change, price-to-sales,
+    the weeks down, whether the climate is red and whether the setup is on. The events and the dashboard both read it."""
     return f"""
-    WITH strategies AS (
-      SELECT * FROM VALUES ('{BEAR_FUND_CODE}', '{BEAR_FUND_NAME}'), ('{SHORT_SELLING_CODE}', '{SHORT_SELLING_NAME}')
-        AS strategies(strategy_code, strategy_name)
-    ), event_names AS (
-      SELECT * FROM VALUES {events_values_sql()} AS event_names(event_code, event_name)
-    ), red AS (
+    WITH red AS (
       SELECT signal_date, max(CAST(band_code = 'red' AS INT)) = 1 AS is_red
       FROM {climate_source}
       WHERE monitor_code = '{CLIMATE_MONITOR_CODE}' AND signal_code = 'climate'
@@ -70,7 +67,7 @@ def strategy_events_query(domain: str = DOMAIN, climate_source: str = "monitor_d
              CAST(five_weeks_close AS DECIMAL(18, 6)) AS five_weeks_close_amount,
              CAST(week_close / previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio,
              CAST(NULL AS DECIMAL(18, 4)) AS price_to_sales_ratio, CAST(NULL AS INT) AS down_week_count,
-             r.is_red AND week_close < five_weeks_close AS is_setup_on, w.ingested_timestamp
+             r.is_red AND week_close < five_weeks_close AS is_setup_on, r.is_red, w.ingested_timestamp
       FROM bear_weeks w JOIN red r ON r.signal_date = w.week_end_date
       WHERE {week_complete('w')}
     ), stock_weeks AS (
@@ -98,15 +95,32 @@ def strategy_events_query(domain: str = DOMAIN, climate_source: str = "monitor_d
              CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio,
              m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count,
              r.is_red AND m.price_to_sales_ratio > {PRICE_TO_SALES_MIN} AND s.down_weeks >= {SETUP_DOWN_WEEKS} AS is_setup_on,
-             s.ingested_timestamp
+             r.is_red, s.ingested_timestamp
       FROM stock_streak s
       JOIN index_weeks w ON w.week_start = s.week_start
       JOIN red r ON r.signal_date = w.week_end_date
       JOIN {member_source} m ON m.listing_id = s.listing_id AND m.valuation_date = w.week_end_date
       WHERE {week_complete('w')}
+    )
+    SELECT {STATE_COLUMNS} FROM bear_states
+    UNION ALL SELECT {STATE_COLUMNS} FROM short_states
+    """
+
+
+def strategy_events_query(domain: str = DOMAIN, climate_source: str = "monitor_daily_signal",
+                          member_source: str = "valuation_daily_index_member") -> str:
+    """Events of both strategies, evaluated on complete weeks that have a market climate row."""
+    return f"""
+    WITH strategies AS (
+      SELECT * FROM VALUES ('{BEAR_FUND_CODE}', '{BEAR_FUND_NAME}'), ('{SHORT_SELLING_CODE}', '{SHORT_SELLING_NAME}')
+        AS strategies(strategy_code, strategy_name)
+    ), event_names AS (
+      SELECT * FROM VALUES {events_values_sql()} AS event_names(event_code, event_name)
+    ), index_days AS (
+      SELECT listing_id, trading_symbol_code, price_date, price_close, ingested_timestamp
+      FROM {domain}.price_daily WHERE trading_symbol_code = '{INDEX_SYMBOL}'
     ), states AS (
-      SELECT {STATE_COLUMNS} FROM bear_states
-      UNION ALL SELECT {STATE_COLUMNS} FROM short_states
+      {strategy_states_query(domain, climate_source, member_source)}
     ), flagged AS (
       SELECT *, coalesce(is_setup_on, false) AS is_on,
              coalesce(lag(is_setup_on) OVER (PARTITION BY strategy_code, listing_id ORDER BY week_start), false) AS was_on

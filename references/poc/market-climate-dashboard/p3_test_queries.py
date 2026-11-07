@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 from common.currency_queries import DATASETS as CURRENCY_DATASETS  # noqa: E402
 from common.inflation_queries import DATASETS as INFLATION_DATASETS  # noqa: E402
 from common.market_climate_queries import DATASETS  # noqa: E402
+from common.strategy_queries import DATASETS as STRATEGY_DATASETS  # noqa: E402
 
 
 def run(profile: str, warehouse: str, catalog: str, statement: str, parameters: list[dict]) -> dict:
@@ -44,6 +45,9 @@ def main() -> None:
     parser.add_argument("--history-range", default="36M")
     parser.add_argument("--currency", default="CHF")
     parser.add_argument("--base", default="AUD")
+    parser.add_argument("--fund", default="SQQQ")
+    parser.add_argument("--only-strategy", action="store_true", help="run only the Strategy Monitor datasets")
+    parser.add_argument("--setup-period", default="all")
     args = parser.parse_args()
     warehouse = cli(args.profile, "warehouses", "list")[0]["id"]
     as_of = args.as_of or __import__("datetime").date.today().isoformat()
@@ -55,8 +59,11 @@ def main() -> None:
         {"name": "history_range_code", "value": args.history_range, "type": "STRING"},
         {"name": "currency_code", "value": args.currency, "type": "STRING"},
         {"name": "base_code", "value": args.base, "type": "STRING"},
+        {"name": "fund_code", "value": args.fund, "type": "STRING"},
+        {"name": "setup_period", "value": args.setup_period, "type": "STRING"},
     ]
-    for name, (title, query) in {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS}.items():
+    every = STRATEGY_DATASETS if args.only_strategy else {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS, **STRATEGY_DATASETS}
+    for name, (title, query) in every.items():
         out = run(args.profile, warehouse, args.catalog, query, parameters)
         state = out["status"]["state"]
         print(f"== {name} ({title}): {state}")
