@@ -283,3 +283,13 @@ Scripts and results in `references/poc/strategies/`.
 | P15 | Do the agent's examples and benchmarks run? | All 53 on dev (`p15_genie_examples_dev.txt`). |
 | P16 | Does the agent pass its benchmark evaluation with the strategies? | 17 of 17 on dev (`p16_genie_eval_dev.txt`). The first deploy failed because the Genie API wants a table's column_configs sorted by column name (400); fixed and the sorting test now covers the column lists. |
 | P17 | Does the prd agent pass its benchmark evaluation after the strategy monitor deploy? | 17 of 17 on prd (`p17_genie_eval_prd.txt`); all 11 strategy dashboard queries run on prd. |
+
+## us-yields-and-efficiency-indicators (change us-yields-and-efficiency-indicators)
+
+Folders `references/poc/us-yields/` and `references/poc/efficiency-indicators/`.
+
+| Probe | Question | Answer |
+|---|---|---|
+| Y1 | Which US Treasury maturities and other countries' short rates does FRED have? | Every US maturity daily and current to 2026-11-05 (`DGS1MO` from 2001, `DGS3MO` and `DGS6MO` from 1981, `DGS2` from 1976, `DGS1`, `DGS3`, `DGS5` from 1962, `DGS30` from 1977); other countries only monthly OECD rates (`p1_fred_maturities.txt`). |
+| E1 | Does the efficiency ratio need the range in dollars or in percent of the close? | prd, latest day: as a fraction, 1 of 503 members reaches 15 (90th percentile 5.5, highest 32.9); in dollars 7 do, because of low share prices, so the ratio uses fractions (`p1_efficiency_units.sql`, `p1_result_prd.txt`). 502 members average more than 200,000 shares a day. |
+| E2 | Are Yahoo's reported prices corrected for splits? | Yes: no day-to-day close jump over 45% from a split in prd (`p2_jumps_prd.txt`; the jumps found are real moves); the NVDA query for June 2024 returned no rows (members have about a year of history). |
