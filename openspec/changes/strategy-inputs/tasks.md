@@ -14,12 +14,12 @@
 
 ## 3. Run and check in dev
 
-- [ ] 3.1 Draft PR deployed to dev; one run at a time: `run_portfolio`, `run_sec` (every company refetched once),
+- [x] 3.1 Draft PR deployed to dev; one run at a time: `run_portfolio`, `run_sec` (every company refetched once),
       `run_yahoo`, `run_investments verify=true`
-- [ ] 3.2 Probe P4 (dev, saved under `references/poc/strategies/`): share of current members with a revenue on the latest
+- [x] 3.2 Probe P4 (dev, saved under `references/poc/strategies/`): share of current members with a revenue on the latest
       filing; one company's price-to-sales by hand from its filing and price; the five funds' first and last price dates;
       the index P/E of the latest day unchanged against before the change
-- [ ] 3.3 Quota read (no change expected, 484)
+- [x] 3.3 Quota read (no change expected, 484): 484 of 500 after the dev runs
 
 ## 4. After merge
 

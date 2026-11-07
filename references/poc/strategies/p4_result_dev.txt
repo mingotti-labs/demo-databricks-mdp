@@ -1,17 +1,12 @@
 1. latest day, members, with revenue, with price_to_sales_ratio, used:
-[['2026-11-06', '500', '487', '480', '488']]
+[['2026-11-06', '500', '487', '476', '488']]
    concepts used for revenue on each member's latest filing:
 [['RevenueFromContractWithCustomerExcludingAssessedTax', '245'], ['Revenues', '218'], ['RevenueFromContractWithCustomerIncludingAssessedTax', '21'], [None, '11'], ['RevenuesNetOfInterestExpense', '4']]
 2. one member by hand (largest price-to-sales on the latest day):
-[['CPT', '99.440002', '100069681', '9950929278.779362', '14933000.000000', '666.3717', '666.3717'], ['PLTR', '160.380005', '2409153000', '386379970185.765000', '7288260000.000000', '53.0140', '53.0140'], ['CRWD', '216.899994', '1023934842', '222091461086.190948', '5396145000.000000', '41.1574', '41.1574']]
-   members above 15: [['17']]
+[['PLTR', '160.380005', '2409153000', '386379970185.765000', '7288260000.000000', '53.0140', '53.0140'], ['CRWD', '216.899994', '1023934842', '222091461086.190948', '5396145000.000000', '41.1574', '41.1574'], ['MRNA', '254.190002', '404620975', '102850606444.491950', '2525000000.000000', '40.7329', '40.7329']]
+   members above 15: [['14']]
 3. bear funds in price_daily:
 [['PSQ', '2006-06-21', '2026-11-06', '5128'], ['SDS', '2006-07-13', '2026-11-06', '5113'], ['SH', '2006-06-21', '2026-11-06', '5128'], ['SPXU', '2009-06-25', '2026-11-06', '4370'], ['SQQQ', '2010-02-11', '2026-11-06', '4211']]
 4. index P/E on 2026-10-30, dev then prd:
-Traceback (most recent call last):
-  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\strategies\p4_inputs_dev.py", line 45, in <module>
-    print("  ", env, run("DEFAULT", f"""SELECT used_member_count, price_earnings_trailing_twelve_months_ratio,
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Workspace\labs\mingotti-works\demo-databricks-mdp\references\poc\inflation-deflation-monitor\probe.py", line 23, in run
-    raise RuntimeError(out["status"].get("error", {}).get("message", out["status"]))
-RuntimeError: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `used_member_count` cannot be resolved. Did you mean one of the following? [`member_count`, `index_code`, `members_used_count`, `currency_code`, `market_value_amount`]. SQLSTATE: 42703; line 1 pos 7
+   dev [['487', '24.8392', '47.5762', '40.3563']]
+   prd [['488', '24.8312', '47.5566', '40.3434']]
