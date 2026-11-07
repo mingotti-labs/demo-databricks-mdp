@@ -30,7 +30,8 @@ COMMENTS = {
     ),
     "event_code": (
         "setup_start: the first week the strategy's setup conditions are all true; entry: an entry rule fired while the "
-        "setup is on; setup_end: the first week the setup is no longer true. A setup period runs from its setup_start "
+        "setup is on (strategy 002: a red light, price-to-sales above 15 and three straight weeks down); setup_end: the "
+        "first week the setup is no longer true. A setup period runs from its setup_start "
         "to its setup_end; a period that has no setup_end yet is still on."
     ),
     "event_name": "Display name of the event: Setup starts, Entry or Setup ends.",
@@ -65,7 +66,7 @@ COMMENTS = {
     ),
     "down_week_count": (
         "Strategy 002 only: how many weeks in a row the stock's weekly close has been below the previous week's, up to "
-        "this week. The entry fires the week it reaches 6. Empty for strategy 001."
+        "this week. The setup starts at 3 or more; the entry fires the week it reaches 6. Empty for strategy 001."
     ),
     "reason_text": "One plain sentence saying why the event happened.",
     "currency_code": "Currency of the amounts: USD.",

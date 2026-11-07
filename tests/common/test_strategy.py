@@ -39,20 +39,23 @@ def test_the_interim_watch_is_a_small_fall_and_the_entry_a_further_drop():
 
 
 def test_short_selling_setup_and_entry():
-    assert short_selling_setup(week(price_to_sales=15.1))
-    assert not short_selling_setup(week(price_to_sales=15.0))
-    assert not short_selling_setup(week(price_to_sales=None))
-    assert not short_selling_setup(week(price_to_sales=20, red=False))
+    assert short_selling_setup(week(price_to_sales=15.1, down=3))
+    assert not short_selling_setup(week(price_to_sales=15.0, down=3))
+    assert not short_selling_setup(week(price_to_sales=None, down=3))
+    assert not short_selling_setup(week(price_to_sales=20, red=False, down=3))
+    assert not short_selling_setup(week(price_to_sales=20, down=2))
+    assert not short_selling_setup(week(price_to_sales=20, down=0))
     assert short_selling_entry(week(price_to_sales=20, down=6))
     assert not short_selling_entry(week(price_to_sales=20, down=7))
     assert not short_selling_entry(week(price_to_sales=5, down=6))
+    assert not short_selling_entry(week(price_to_sales=20, down=5))
 
 
 def test_the_query_has_the_key_columns_the_events_and_the_thresholds():
     sql = strategy_events_query()
     for text in ("strategy_code", "trading_symbol_code", "event_date", "event_code", "setup_start_date", "entry_number",
                  "is_first_entry", "'^GSPC'", "monitor_code = 'market_climate'", "> 15", "= 6", "-0.025", "-0.05",
-                 "lag(week_close, 5)", "'setup_start'", "'setup_end'", "'entry'"):
+                 "lag(week_close, 5)", "'setup_start'", "'setup_end'", "'entry'", "s.down_weeks >= 3"):
         assert text in sql, text
 
 

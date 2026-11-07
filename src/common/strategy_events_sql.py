@@ -21,6 +21,7 @@ from common.strategy import (
     QUARTER_BAND,
     QUARTER_DROP_RATIO,
     SHORT_SELLING_CODE,
+    SETUP_DOWN_WEEKS,
     SHORT_SELLING_NAME,
     events_values_sql,
 )
@@ -96,7 +97,8 @@ def strategy_events_query(domain: str = DOMAIN, climate_source: str = "monitor_d
              CAST(NULL AS DECIMAL(18, 6)) AS five_weeks_close_amount,
              CAST(s.week_close / s.previous_close - 1 AS DECIMAL(18, 10)) AS week_change_ratio,
              m.price_to_sales_ratio, CAST(s.down_weeks AS INT) AS down_week_count,
-             r.is_red AND m.price_to_sales_ratio > {PRICE_TO_SALES_MIN} AS is_setup_on, s.ingested_timestamp
+             r.is_red AND m.price_to_sales_ratio > {PRICE_TO_SALES_MIN} AND s.down_weeks >= {SETUP_DOWN_WEEKS} AS is_setup_on,
+             s.ingested_timestamp
       FROM stock_streak s
       JOIN index_weeks w ON w.week_start = s.week_start
       JOIN red r ON r.signal_date = w.week_end_date
@@ -178,8 +180,10 @@ def reason_text_sql() -> str:
           ': invest a quarter of equity in the bear fund.')
         WHEN {bear} THEN concat('The S&P 500 fell ', {change}, '% on the week: invest ',
           CASE WHEN n.entry_band_code = '{HALF_BAND}' THEN 'half' ELSE 'a quarter' END, ' of equity in the bear fund on Monday.')
-        WHEN n.event_code = 'setup_start' THEN concat('A market climate light is red and price-to-sales is ',
-          round(n.price_to_sales_ratio, 1), ', above {PRICE_TO_SALES_MIN}.')
-        WHEN n.event_code = 'setup_end' THEN 'No climate light is red, or price-to-sales is no longer above {PRICE_TO_SALES_MIN}.'
+        WHEN n.event_code = 'setup_start' THEN concat('A market climate light is red, price-to-sales is ',
+          round(n.price_to_sales_ratio, 1), ' (above {PRICE_TO_SALES_MIN}) and the stock has closed ', n.down_week_count,
+          ' weeks in a row down.')
+        WHEN n.event_code = 'setup_end' THEN concat('The setup no longer holds: no climate light is red, price-to-sales is ',
+          'at or below {PRICE_TO_SALES_MIN}, or the stock rose this week (', n.down_week_count, ' weeks down now).')
         ELSE concat('The stock closed its ', n.down_week_count, 'th week in a row down while the setup is on.')
       END"""

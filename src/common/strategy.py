@@ -22,6 +22,7 @@ HALF_DROP_RATIO = -0.05
 QUARTER_DROP_RATIO = -0.025
 INTERIM_DAYS = (0, 1, 2)  # Monday, Tuesday, Wednesday of the week after the watch week, as days after its Monday
 PRICE_TO_SALES_MIN = 15
+SETUP_DOWN_WEEKS = 3
 DOWN_WEEKS_FOR_ENTRY = 6
 
 HALF_BAND = "half_of_equity"
@@ -72,8 +73,13 @@ def is_interim_entry(watch_close: float, day_close: float) -> bool:
 
 
 def short_selling_setup(week: Week) -> bool:
-    """Any climate light red and price-to-sales above 15 (empty price-to-sales never sets up)."""
-    return week.is_red and week.price_to_sales is not None and week.price_to_sales > PRICE_TO_SALES_MIN
+    """Any climate light red, price-to-sales above 15 (empty never sets up) and three straight weeks down."""
+    return (
+        week.is_red
+        and week.price_to_sales is not None
+        and week.price_to_sales > PRICE_TO_SALES_MIN
+        and week.down_weeks >= SETUP_DOWN_WEEKS
+    )
 
 
 def short_selling_entry(week: Week) -> bool:
