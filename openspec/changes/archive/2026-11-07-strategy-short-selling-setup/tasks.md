@@ -12,5 +12,5 @@
 
 ## 3. After merge
 
-- [ ] 3.1 prd: CI runs `investments`; the table equals dev
-- [ ] 3.2 Archive; planning: design rules section; memory
+- [x] 3.1 prd: CI ran `investments` (success); the table equals dev: strategy 001 6/5/1, strategy 002 47/45/2, all columns described (`p12_strategy_table_dev_prd_3weeks.txt`)
+- [x] 3.2 Archive; planning: design rules section; memory
