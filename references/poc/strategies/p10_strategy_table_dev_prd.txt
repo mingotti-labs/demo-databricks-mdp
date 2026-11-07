@@ -1,0 +1,5 @@
+dev [['bear_market_fund', 'entry', '1', '2026-11-06'], ['bear_market_fund', 'setup_end', '5', '2026-09-25'], ['bear_market_fund', 'setup_start', '6', '2026-10-23'], ['short_selling', 'entry', '2', '2026-10-30'], ['short_selling', 'setup_end', '94', '2026-11-06'], ['short_selling', 'setup_start', '108', '2026-11-06']]
+dev columns without description: [['0']]
+prd [['bear_market_fund', 'entry', '1', '2026-11-06'], ['bear_market_fund', 'setup_end', '5', '2026-09-25'], ['bear_market_fund', 'setup_start', '6', '2026-10-23'], ['short_selling', 'entry', '2', '2026-10-30'], ['short_selling', 'setup_end', '94', '2026-11-06'], ['short_selling', 'setup_start', '108', '2026-11-06']]
+prd columns without description: [['0']]
+prd latest price date per stock sample: [['532']]

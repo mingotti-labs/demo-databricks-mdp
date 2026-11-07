@@ -23,6 +23,7 @@
 
 ## 4. After merge
 
-- [ ] 4.1 prd: CI runs `investments`, `portfolio`, `sec`, `yahoo`; the user starts one more `run--investments--prd`;
-      P4 on prd matches dev
-- [ ] 4.2 Archive; planning design status updated; memory updated
+- [x] 4.1 prd: CI ran only `portfolio` and `investments` (it does not pick `sec` or `yahoo` for CSV changes); the user ran
+      rba, sec, wikipedia, yahoo and investments by hand, and yahoo again for 73 symbols that missed the latest day; P4 on prd
+      matches dev (`p4_result_prd.txt`)
+- [x] 4.2 Archive; planning design status updated; memory updated

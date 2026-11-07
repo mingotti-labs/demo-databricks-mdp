@@ -675,7 +675,9 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   trailing twelve months and balance sheet figures from SEC facts; the share count is the cover-page
   `shares_outstanding_count`, plus `weighted_average_shares_basic_count` for companies with several
   share classes, whose cover total SEC no longer sends; four more columns hold the rolling
-  10-year average of annual earnings, plain and inflation-adjusted, and the CPI of the period end),
+  10-year average of annual earnings, plain and inflation-adjusted, and the CPI of the period end; `revenue`, trailing
+  twelve months from the first of five SEC concepts a filing reports, `strategy-inputs`: for a few filers (real estate trusts, banks)
+  it is only a sub-line of their revenue),
   `price_indicator_daily` (200-day moving average of the adjusted close and its 20-day slope,
   `market-climate-silver`; the 52-week high and low of the reported prices, `inflation-deflation-monitor`),
   `market_rate_indicator_daily` (per series and `^GSPC` trading day: the CPI index, its change against the previous
@@ -703,7 +705,15 @@ The committed edition is `free` (dev and prd only): a metastore is capped at
   trailing 12-month and 10-year (plain and inflation-adjusted) earnings and the three price/earnings
   ratios per day from 2025-10-28, with member counts, summed from `valuation_daily_index_member` (every
   current member per day: inputs, `is_used` and why not, share of market value, P/E without it and its
-  effect; `market-climate-dashboard`). `monitor_daily_signal`: long table (day, monitor,
+  effect; `market-climate-dashboard`; also trailing revenue and `price_to_sales_ratio`, empty when revenue is below net income,
+  `strategy-inputs`). `strategy_daily_event` (`strategy-events`): one row per strategy, symbol, day and event
+  (`setup_start`, `entry` numbered with `is_first_entry`, `setup_end`), only when something happens; strategy 001
+  `bear_market_fund` on `^GSPC` (setup: any climate light red and the week close below five weeks earlier; entry: a
+  week down 2.5% or 5%, or an interim Monday-Wednesday close 2.5% below the week) and strategy 002 `short_selling` on the
+  members (setup: red and price-to-sales above 15; entry: the sixth straight weekly close down); weeks are Monday-based
+  and complete on their Friday or once it has passed, so a holiday week uses Thursday's close; rules in
+  `src/common/strategy.py`, query in `strategy_events_sql.py`; story files `strategy-001`, `strategy-002`.
+  `monitor_daily_signal`: long table (day, monitor,
   lens, signal) holding the market climate's three yes/no answers and its result ("Market climate long
   run" and "Market climate modern": red 2-3 yes = sell, yellow 1 = buy and hold, green 0 = strong buy);
   further monitors add rows. Thresholds in `src/common/market_climate.py`, queries in
@@ -742,6 +752,13 @@ the decision record behind what's built.
 
 ## Operational notes
 
+- **CI does not run `sec` or `yahoo` for a change to `data/portfolio/*.csv`** (it picked only `portfolio` and
+  `investments` for `strategy-inputs`): a new SEC concept or a new benchmark symbol needs `run--sec--prd` and
+  `run--yahoo--prd` started by hand (then `investments`), in the order wikipedia, sec, yahoo, investments; all
+  runs one at a time. A Yahoo run can miss the latest day for some symbols (73 of 532 on 2026-11-07); the next run fills it.
+- **`verify_silver_domain` fails on stale sources**: RBA data older than 7 days (`rba_cash_rate_target`), or a current member
+  with no price in 7 days (an index change, for example KVUE leaving on 2026-11-04: run `wikipedia`, then `yahoo`).
+  Refresh the source, do not loosen the check.
 - **A new table that a Genie agent (or dashboard) lists must exist in the target before the deploy that updates the
   agent.** The agent update fails with `Table '...' does not exist (403)`, and CI skips its unit runs when a deploy
   fails, so the merge deadlocks (`inflation-deflation-monitor`, prd, 2026-11-05). Fix: the owner of the target starts
