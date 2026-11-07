@@ -14,7 +14,7 @@
 
 ## 3. Run and check in dev
 
-- [ ] 3.1 Quota read (484 expected); draft PR deployed; `run_investments verify=true`
+- [x] 3.1 Quota read (484 expected); draft PR deployed; `run_investments verify=true`
 - [ ] 3.2 Dev counts equal P5's shape; quota read (488 expected)
 
 ## 4. After merge
