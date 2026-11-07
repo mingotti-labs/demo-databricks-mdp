@@ -35,6 +35,14 @@ switched concept is handled. Rejected: one concept per company (wrong for switch
 revenue is not above zero. It sits next to the P/E inputs in `valuation_daily_index_member` (no new table, same day and
 member grain). The index P/E and `is_used` do not change: a missing revenue does not exclude a member.
 
+Guard (found in the dev check, probe P6; Claude's call, 2026-11-07): the ratio is empty when revenue is below net income.
+Some filers book most of their revenue under a concept the mapping does not cover (Camden: lease income, 1.57 bn; banks:
+interest income), so the highest-priority concept that has a value is only a sub-line (Camden 14.9 million against 1.1
+billion of net income, a price-to-sales of 666). Revenue below profit is impossible for a normal company, so those four
+members (CPT, MTB, HBAN, IBKR on 2026-11-06) get no ratio instead of a wrong one, and cannot become false short
+candidates; the `revenue` column keeps the filing's value and its description says so. Rejected: the largest revenue
+concept (does not help banks), adding lease and interest income concepts (a long tail, each needs a check).
+
 ### D3. Bear funds as benchmarks
 
 Five rows of kind `bear_fund` (probe P0, `references/poc/strategies/p0_result.txt`): SQQQ (NGM, from 2010), PSQ, SH, SDS

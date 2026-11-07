@@ -5,7 +5,7 @@ tables:
   - raw: concept_mapping_raw
     keys: [figure, taxonomy, concept]
     columns: [figure, priority, taxonomy, concept, ingested_timestamp]
-    reference_rows: 46
+    reference_rows: 51
     scd2: concept_mapping_scd2
   - raw: predecessor_ciks_raw
     keys: [cik]
@@ -30,5 +30,5 @@ tables:
   - raw: benchmarks_raw
     keys: [symbol]
     columns: [symbol, name, kind, sector, ingested_timestamp]
-    reference_rows: 24
+    reference_rows: 29
     scd2: benchmarks_scd2

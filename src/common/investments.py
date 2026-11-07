@@ -20,6 +20,7 @@ SPECIAL_DIVIDEND_LOOKBACK = 4
 # (the quarter on a 10-Q, the year on a 10-K), never a sum of periods.
 FIGURES = [
     ("net_income", "duration", "USD"),
+    ("revenue", "duration", "USD"),
     ("operating_cash_flow", "duration", "USD"),
     ("capex", "duration", "USD"),
     ("dividends_paid", "duration", "USD"),
@@ -202,6 +203,14 @@ COMPANY_FUNDAMENTALS_COMMENTS = {
         "Net income in US dollars, trailing twelve months to period_end_date: a 10-K's fiscal year, or on a 10-Q "
         "the latest annual value plus this year's year-to-date minus last year's. A rolling window that moves "
         "one quarter per filing. Not adjusted for inflation."
+    ),
+    "revenue": (
+        "Revenue in US dollars, trailing twelve months to period_end_date: a 10-K's fiscal year, or on a 10-Q "
+        "the latest annual value plus this year's year-to-date minus last year's. A rolling window that moves "
+        "one quarter per filing. Total revenue (SEC concept Revenues) when reported, else the revenue from "
+        "contracts with customers; a bank's is net of interest expense. Empty when the filing reports none. "
+        "Can be only part of the company's revenue for filers that book most of it under another concept "
+        "(some real estate trusts and banks). Not adjusted for inflation."
     ),
     "shares_outstanding_count": (
         "Shares outstanding from the filing's cover page; empty for companies with several share classes "
