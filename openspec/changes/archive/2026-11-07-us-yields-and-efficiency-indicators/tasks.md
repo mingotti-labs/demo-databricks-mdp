@@ -19,9 +19,9 @@
 
 - [x] 4.1 Draft PR #197 deployed; `run_fred` then `run_investments verify=true` in dev succeeded; the four yields have full history (3-month from 1981, 2-year from 1976, 1- and 3-year from 1962)
 - [x] 4.2 Genie benchmark evaluation in dev passes (17 of 17); quota read: 496 of 500 (no table added by this change; the earlier 488 was out of date)
-- [ ] 4.3 The user checks the Yield Deep Dive in dev
+- [x] 4.3 The user checks the Yield Deep Dive in dev (chart looks ok)
 
 ## 5. After merge
 
-- [ ] 5.1 prd: CI deploys and runs `fred` and `investments`; the user checks the Yield Deep Dive in prd
-- [ ] 5.2 Archive; planning story `strategy-004` (indicators done, units of the efficiency ratio); memory
+- [x] 5.1 prd: CI deployed and ran the units; yields from 1962/1976/1981 to 2026-11-05, 58 of 58 queries (`p4_dashboard_queries_prd.txt`), Genie 17 of 17; the user said go
+- [x] 5.2 Archive; planning story `strategy-004` (indicators done, units of the efficiency ratio); memory
