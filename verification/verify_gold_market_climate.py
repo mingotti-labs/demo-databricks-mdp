@@ -4,7 +4,8 @@
 # the valuation of the latest day (members used, a plausible price/earnings ratio, ratios equal market
 # value over earnings), a climate row for both lenses on every valuation day, every light following
 # its yes count and every yes count equal to the answers, and the latest day's market value close to
-# a recomputation by another route. Each check lists the offenders it finds; the notebook fails with all
+# a recomputation by another route, and the strategy events (unique key, every entry and end inside a setup
+# period, entry numbers, bands following the week's change). Each check lists the offenders it finds; the notebook fails with all
 # of them. Run only by run_investments.
 dbutils.widgets.text("catalog", "")
 dbutils.widgets.text("workspace_file_path", "")
@@ -155,6 +156,40 @@ checks["currency: a currency row whose answer does not follow its value and aver
   WHERE monitor_code = 'currency' AND signal_code != 'summary' AND is_yes != (measured_value > threshold_value)
     AND abs(measured_value - threshold_value) > 0.00001
   LIMIT 10"""
+
+checks["strategy_daily_event: key (strategy_code, trading_symbol_code, event_date, event_code) not unique"] = f"""
+  SELECT concat_ws(',', strategy_code, trading_symbol_code, CAST(event_date AS STRING), event_code)
+  FROM {GOLD}.strategy_daily_event
+  GROUP BY strategy_code, trading_symbol_code, event_date, event_code HAVING count(*) > 1"""
+checks["strategy_daily_event: an entry or a setup end without its setup start"] = f"""
+  SELECT concat_ws(',', e.strategy_code, e.trading_symbol_code, CAST(e.event_date AS STRING), e.event_code)
+  FROM {GOLD}.strategy_daily_event e
+  LEFT JOIN {GOLD}.strategy_daily_event s
+    ON s.strategy_code = e.strategy_code AND s.trading_symbol_code = e.trading_symbol_code
+   AND s.event_code = 'setup_start' AND s.event_date = e.setup_start_date
+  WHERE e.event_code IN ('entry', 'setup_end') AND s.event_date IS NULL"""
+checks["strategy_daily_event: an entry or a setup end dated before its setup start"] = f"""
+  SELECT concat_ws(',', strategy_code, trading_symbol_code, CAST(event_date AS STRING), event_code)
+  FROM {GOLD}.strategy_daily_event WHERE event_code != 'setup_start' AND event_date < setup_start_date"""
+checks["strategy_daily_event: a setup period with two setup ends"] = f"""
+  SELECT concat_ws(',', strategy_code, trading_symbol_code, CAST(setup_start_date AS STRING))
+  FROM {GOLD}.strategy_daily_event WHERE event_code = 'setup_end'
+  GROUP BY strategy_code, trading_symbol_code, setup_start_date HAVING count(*) > 1"""
+checks["strategy_daily_event: a first entry that is not entry number 1, or an entry number that skips"] = f"""
+  SELECT concat_ws(',', strategy_code, trading_symbol_code, CAST(setup_start_date AS STRING))
+  FROM {GOLD}.strategy_daily_event WHERE event_code = 'entry'
+  GROUP BY strategy_code, trading_symbol_code, setup_start_date
+  HAVING min(entry_number) != 1 OR max(entry_number) != count(*) OR count_if(is_first_entry) != 1"""
+checks["strategy_daily_event: a short selling event of a stock with price-to-sales at or below 15 on a setup start"] = f"""
+  SELECT concat_ws(',', trading_symbol_code, CAST(event_date AS STRING)) FROM {GOLD}.strategy_daily_event
+  WHERE strategy_code = 'short_selling' AND event_code = 'setup_start'
+    AND (price_to_sales_ratio IS NULL OR price_to_sales_ratio <= 15)"""
+checks["strategy_daily_event: a bear fund entry whose band does not follow the week change"] = f"""
+  SELECT concat_ws(',', CAST(event_date AS STRING), entry_band_code) FROM {GOLD}.strategy_daily_event
+  WHERE strategy_code = 'bear_market_fund' AND event_code = 'entry' AND (
+    (entry_band_code = 'half_of_equity' AND week_change_ratio > -0.05)
+    OR (entry_band_code = 'quarter_of_equity' AND (week_change_ratio > -0.025 OR week_change_ratio <= -0.05))
+    OR (entry_band_code = 'interim_quarter_of_equity' AND (week_change_ratio >= 0 OR week_change_ratio <= -0.025)))"""
 
 failures = [f"{name}: {found}" for name, sql in checks.items() if (found := offenders(sql))]
 assert not failures, "\n".join(failures)

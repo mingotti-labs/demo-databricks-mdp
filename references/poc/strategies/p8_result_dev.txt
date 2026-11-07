@@ -1,0 +1,9 @@
+filings with revenue, revenue = net income, revenue < net income, revenue < 0:
+[['26488', '0', '154', '1']]
+latest filing per well known company (symbol, revenue m, net income m, concepts):
+   ['AAPL', '478834.0', '132175.0', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'NetIncomeLoss', '2026-11-03']
+   ['JPM', '203153.0', '65979.0', 'RevenuesNetOfInterestExpense', 'NetIncomeLoss', '2026-11-03']
+   ['MSFT', '346445.0', '142631.0', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'NetIncomeLoss', '2026-10-28']
+   ['NVDA', '302970.0', '192880.0', 'Revenues', 'NetIncomeLoss', '2026-08-26']
+   ['WMT', '735840.0', '22076.0', 'Revenues', 'NetIncomeLoss', '2026-08-28']
+   ['XOM', '396627.0', '40622.0', 'Revenues', 'NetIncomeLoss', '2026-11-02']
