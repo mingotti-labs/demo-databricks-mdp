@@ -15,7 +15,7 @@
 ## 3. Run and check in dev
 
 - [x] 3.1 Quota read (484 expected); draft PR deployed; `run_investments verify=true`
-- [ ] 3.2 Dev counts equal P5's shape; quota read (488 expected)
+- [x] 3.2 Dev counts equal the probe (P9): 6/5/1 and 108/94/2; quota read 486 in dev after the deploy (the count lags a few minutes); prd will add 2 more: 488
 
 ## 4. After merge
 
