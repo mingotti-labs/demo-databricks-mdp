@@ -42,6 +42,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: databricks/setup-cli@v1.17.0
+        with:
+          version: 1.17.0
       - name: Validate bundle (dev)
         run: databricks bundle validate --target dev
       - name: Validate patterns bundle (dev)
@@ -59,5 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: databricks/setup-cli@v1.17.0
+        with:
+          version: 1.17.0
       - name: Deploy bundle (dev)
         run: databricks bundle deploy --target dev --force
