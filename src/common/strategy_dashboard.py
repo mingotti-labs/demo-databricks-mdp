@@ -31,7 +31,7 @@ from common.strategy_queries import DATASETS as STRATEGY_DATASETS
 
 DATASETS = {**STRATEGY_DATASETS, "ds_history_range_options": CLIMATE_DATASETS["ds_history_range_options"]}
 DATE_DATASETS = ["ds_strategy_freshness", "ds_bear_week", "ds_bear_checks", "ds_bear_funds", "ds_short_gate",
-                 "ds_short_candidates", "ds_short_events"] + DATE_BOUND
+                 "ds_short_candidates", "ds_short_events", "ds_efficient_summary", "ds_efficient_closest"] + DATE_BOUND
 CHART_DATASETS = ["ds_fund_chart"]
 GREY = "#8A8F98"
 
@@ -147,6 +147,27 @@ def short_page() -> dict:
     ]}
 
 
+def efficient_page() -> dict:
+    summary = [("screen_date", "Screen of", None), ("screened_count", "Members screened", NUMBER0), ("passing_count", "Members passing", NUMBER0),
+               ("result_text", "Result", None), ("result_light", "Light", None, "light"), ("highest_tr60_ratio", "Highest tr60", NUMBER2)]
+    closest = [("trading_symbol_code", "Symbol", None), ("company_name", "Company", None), ("efficiency_tr60_ratio", "tr60", NUMBER2),
+               ("efficiency_light", "tr60 light", None, "light"), ("volume_light", "Volume light", None, "light"), ("pass_light", "Passes", None, "light"),
+               ("efficiency_r60_ratio", "r60 (information only)", NUMBER2), ("close_sixty_day_change_ratio", "60-day change", PERCENT),
+               ("price_range_sixty_day_average_ratio", "Average range", PERCENT), ("true_range_sixty_day_average_ratio", "Average true range", PERCENT),
+               ("volume_sixty_day_average_count", "Average volume (shares)", NUMBER0)]
+    return {"name": "efficient-stocks", "displayName": "Efficient Stocks", "pageType": "PAGE_TYPE_CANVAS", "layoutVersion": "GRID_V1", "layout": [
+        text("efficient-title", ["# Strategy 004: Trading Efficient Stocks\n", "\n", "Find S&P 500 stocks that rise steadily, with little back and forth, over the last 60 days.\n", "\n",
+                                 "- Screen: tr60 is 15 or more and the 60-day average volume is above 200,000 shares\n",
+                                 "- tr60: the 60-day price change in dollars divided by the 60-day average true range in dollars\n",
+                                 "- r60 (the same change over the average daily range) is shown for information; it does not decide\n",
+                                 "- Not checked yet: a smooth 60-day rise, no flat-then-jump pattern, not parabolic, no sudden widening of the daily range\n", "\n",
+                                 "The table lists the 20 members closest to passing, highest tr60 first. Change the date at the top: the screen is of the latest trading day on or before it."], 0, 0, 12, 7),
+        table("efficient-summary", "Screen of the day", "ds_efficient_summary", summary, 0, 7, 12, 3),
+        table("efficient-closest", "The 20 members closest to passing", "ds_efficient_closest", closest, 0, 10, 12, 12,
+              "Green tr60 light: tr60 is 15 or more. Green volume light: average volume above 200,000. Green passes light: both."),
+    ]}
+
+
 def filters_page() -> dict:
     return {"name": "filters", "displayName": "Filters", "pageType": "PAGE_TYPE_GLOBAL_FILTERS", "layoutVersion": "GRID_V1", "layout": [
         filter_widget("filter-as-of", "As of date (latest complete week on or before it)", "filter-date-picker",
@@ -154,4 +175,4 @@ def filters_page() -> dict:
 
 
 def build() -> str:
-    return dashboard_json(dataset_entries({**DATASETS, **company_datasets()}, parameters), [bear_page(), fund_page(), short_page(), company_page(), filters_page()])
+    return dashboard_json(dataset_entries({**DATASETS, **company_datasets()}, parameters), [bear_page(), fund_page(), short_page(), efficient_page(), company_page(), filters_page()])

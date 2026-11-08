@@ -70,6 +70,8 @@ EXAMPLES = {
     "ds_short_gate": ("Is the market climate red, so that short selling can run?", "The lights of the latest climate day and the gate."),
     "ds_short_candidates": ("Which stocks are short selling candidates this week?", "Open setup periods of the latest complete week: price-to-sales, weeks down, setup and entry lights."),
     "ds_short_events": ("What are the latest short selling events?", "The 40 latest setup starts, entries and setup ends."),
+    "ds_efficient_summary": ("How many stocks pass the efficient stocks screen today?", "Members screened and passing on the latest S&P 500 trading day, and the highest tr60."),
+    "ds_efficient_closest": ("Which stocks are closest to passing the efficient stocks screen?", "The 20 members with the highest tr60: tr60, r60 (information only), 60-day change, average range and true range, average volume and the lights."),
 }
 QUERIES = {**DATASETS, **INFLATION_DATASETS, **CURRENCY_DATASETS, **STRATEGY_DATASETS}
 SAMPLE_QUESTIONS = [
@@ -77,6 +79,7 @@ SAMPLE_QUESTIONS = [
     "Which sector has the highest P/E?", "Why is EQT's P/E so high?", "What is the inflation rating today?",
     "Which currencies are gaining against the Australian dollar?", "Rank the countries by interest rate and currency change.",
     "Is the bear market fund setup on?", "Which stocks are short selling candidates this week?",
+    "Which stocks are closest to passing the efficient stocks screen?",
 ]
 LATEST_SIGNAL = f"(SELECT max(signal_date) FROM {GOLD}.monitor_daily_signal)"
 LATEST_MEMBER = f"(SELECT max(valuation_date) FROM {GOLD}.valuation_daily_index_member)"
@@ -161,6 +164,7 @@ def extra_benchmarks() -> list[tuple[str, str]]:
     ranking = for_genie(QUERIES["ds_yield_ranking"][1])
     candidates = for_genie(QUERIES["ds_short_candidates"][1])
     bear_week = for_genie(QUERIES["ds_bear_week"][1])
+    closest = for_genie(QUERIES["ds_efficient_closest"][1])
     return [(
         "Which country has the highest short-term rate plus 12-month currency change against the Australian dollar?",
         f"SELECT currency_name, short_plus_12m FROM ({ranking}) WHERE rank_position = 1",
@@ -170,6 +174,9 @@ def extra_benchmarks() -> list[tuple[str, str]]:
     ), (
         "Which stocks are short selling candidates this week?",
         f"SELECT trading_symbol_code FROM ({candidates}) ORDER BY trading_symbol_code",
+    ), (
+        "Which stocks are closest to passing the efficient stocks screen?",
+        f"SELECT trading_symbol_code FROM ({closest}) ORDER BY efficiency_tr60_ratio DESC",
     )]
 
 

@@ -1,16 +1,16 @@
 ## 1. Rules and queries
 
-- [ ] 1.1 `strategy.py`: `EFFICIENT_STOCKS_CODE`, `EFFICIENCY_MIN`, `EFFICIENT_VOLUME_MIN`, `efficient_stock_passes`; tests
-- [ ] 1.2 `ds_efficient_summary` and `ds_efficient_closest` in `strategy_queries.py`; run on dev and prd read-only (probe)
+- [x] 1.1 `strategy.py`: `EFFICIENT_STOCKS_CODE`, `EFFICIENCY_MIN`, `EFFICIENT_VOLUME_MIN`, `efficient_stock_passes`; tests
+- [x] 1.2 `ds_efficient_summary` and `ds_efficient_closest` in `strategy_queries.py`; run on dev read-only (probe: 499 screened, 0 pass, MRNA tr60 10.3 first on 2026-11-06); the prd read was blocked by the auto-mode classifier, so prd is checked in 4.1
 
 ## 2. Page and agent
 
-- [ ] 2.1 Page "Efficient Stocks" in `strategy_dashboard.py`; date binding; generated dashboard; tests
-- [ ] 2.2 Genie: instructions, examples, one benchmark; generated agent file; every example and benchmark SQL runs in dev
+- [x] 2.1 Page "Efficient Stocks" in `strategy_dashboard.py`; date binding; generated dashboard; tests
+- [x] 2.2 Genie: instructions, examples, one benchmark; generated agent file; every example and benchmark SQL runs in dev
 
 ## 3. Run and check in dev
 
-- [ ] 3.1 Draft PR deployed; all dashboard queries run in dev (`p3_test_queries.py`); Genie benchmark evaluation passes
+- [x] 3.1 Draft PR #200 deployed (deploy-dev pass); all strategy dashboard queries run in dev (`p3_test_queries.py`); Genie benchmark evaluation on dev 18/18 (eval run 01f1db4e29841f11affed148b586558d)
 - [ ] 3.2 The user checks the page in dev
 
 ## 4. After merge

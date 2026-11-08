@@ -10,6 +10,8 @@ states are the same query the events table is built from. Also the example SQL o
 from common.market_climate_queries import HISTORY_DATES, HISTORY_START
 from common.strategy import (
     BEAR_FUND_CODE,
+    EFFICIENCY_MIN,
+    EFFICIENT_VOLUME_MIN,
     FIVE_WEEKS,
     HALF_DROP_RATIO,
     QUARTER_DROP_RATIO,
@@ -29,6 +31,21 @@ SHORT_WEEK = (
     f"short_week AS (SELECT max(week_end_date) AS day FROM states WHERE strategy_code = '{SHORT_SELLING_CODE}' "
     f"AND week_end_date <= {AS_OF_DATE})"
 )
+EFFICIENT_DAY = (
+    f"screen_day AS (SELECT max(price_date) AS day FROM {SILVER}.price_daily "
+    f"WHERE trading_symbol_code = '^GSPC' AND price_date <= {AS_OF_DATE})"
+)
+EFFICIENT_SCREEN = f"""screen AS (
+  SELECT l.trading_symbol_code, c.company_name, p.price_date, p.efficiency_tr60_ratio, p.efficiency_r60_ratio,
+    p.close_sixty_day_change_ratio, p.price_range_sixty_day_average_ratio, p.true_range_sixty_day_average_ratio,
+    p.volume_sixty_day_average_count,
+    p.efficiency_tr60_ratio >= {EFFICIENCY_MIN} AS is_efficient,
+    coalesce(p.volume_sixty_day_average_count > {EFFICIENT_VOLUME_MIN}, false) AS is_liquid
+  FROM valuation_daily_index_member m
+  JOIN {SILVER}.price_indicator_daily p ON p.listing_id = m.listing_id AND p.price_date = m.valuation_date
+  LEFT JOIN {SILVER}.listing l ON l.listing_id = m.listing_id
+  LEFT JOIN {SILVER}.company c ON c.company_id = m.company_id
+  WHERE m.valuation_date = (SELECT day FROM screen_day) AND p.efficiency_tr60_ratio IS NOT NULL)"""
 FUNDS = [
     ("SQQQ", "ProShares UltraPro Short QQQ", "3x short Nasdaq-100"),
     ("PSQ", "ProShares Short QQQ", "1x short Nasdaq-100"),
@@ -195,4 +212,25 @@ SELECT e.event_date, e.trading_symbol_code, e.event_name, e.setup_start_date, e.
 FROM strategy_daily_event e
 WHERE e.strategy_code = '{SHORT_SELLING_CODE}' AND e.event_date <= {AS_OF_DATE}
 ORDER BY e.event_date DESC, e.trading_symbol_code LIMIT 40
+""")
+
+dataset("ds_efficient_summary", "Strategy 004 efficient stocks screen of the day", f"""
+WITH {EFFICIENT_DAY}, {EFFICIENT_SCREEN}
+SELECT (SELECT day FROM screen_day) AS screen_date, count(*) AS screened_count,
+  count_if(is_efficient AND is_liquid) AS passing_count,
+  CASE WHEN count_if(is_efficient AND is_liquid) = 0 THEN 'No stock passes the screen'
+       ELSE concat(count_if(is_efficient AND is_liquid), ' stock(s) pass the screen') END AS result_text,
+  CASE WHEN count_if(is_efficient AND is_liquid) = 0 THEN 'grey' ELSE 'green' END AS result_light,
+  max(efficiency_tr60_ratio) AS highest_tr60_ratio
+FROM screen
+""")
+
+dataset("ds_efficient_closest", "Strategy 004 members closest to passing", f"""
+WITH {EFFICIENT_DAY}, {EFFICIENT_SCREEN}
+SELECT trading_symbol_code, company_name, efficiency_tr60_ratio, efficiency_r60_ratio, close_sixty_day_change_ratio,
+  price_range_sixty_day_average_ratio, true_range_sixty_day_average_ratio, volume_sixty_day_average_count,
+  CASE WHEN is_efficient THEN 'green' ELSE 'grey' END AS efficiency_light,
+  CASE WHEN is_liquid THEN 'green' ELSE 'grey' END AS volume_light,
+  CASE WHEN is_efficient AND is_liquid THEN 'green' ELSE 'grey' END AS pass_light
+FROM screen ORDER BY efficiency_tr60_ratio DESC LIMIT 20
 """)

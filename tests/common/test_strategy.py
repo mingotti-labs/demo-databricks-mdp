@@ -4,6 +4,7 @@ from common.strategy import (
     Week,
     bear_fund_band,
     bear_fund_setup,
+    efficient_stock_passes,
     is_interim_entry,
     is_interim_watch,
     short_selling_entry,
@@ -49,6 +50,14 @@ def test_short_selling_setup_and_entry():
     assert not short_selling_entry(week(price_to_sales=20, down=7))
     assert not short_selling_entry(week(price_to_sales=5, down=6))
     assert not short_selling_entry(week(price_to_sales=20, down=5))
+
+
+def test_efficient_stock_passes_on_tr60_and_volume_only():
+    assert efficient_stock_passes(15.0, 200_001)
+    assert not efficient_stock_passes(14.9, 5_000_000)
+    assert not efficient_stock_passes(15.0, 200_000)
+    assert not efficient_stock_passes(None, 5_000_000)
+    assert not efficient_stock_passes(20.0, None)
 
 
 def test_the_query_has_the_key_columns_the_events_and_the_thresholds():
