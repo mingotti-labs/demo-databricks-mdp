@@ -2,7 +2,7 @@
 
 Strategy 004 (Trading Efficient Stocks) has its indicators in `price_indicator_daily` since
 `us-yields-and-efficiency-indicators`: the efficiency ratios r60 and tr60 and the 60-day average volume. The user wants the
-strategy on the Strategy Monitor now, even though no stock passes the screen today (2026-11-06: highest r60 13.3, PTC),
+strategy on the Strategy Monitor now, even though no stock passes the screen today (2026-11-06: highest tr60 10.3, MRNA),
 and then to move on to strategy 005. The story has screening rules only; its setup, entry, exit and the numbers of its
 smoothness rules are not written yet.
 
@@ -10,10 +10,10 @@ smoothness rules are not written yet.
 
 - Strategy Monitor, new page "Efficient Stocks": the screen of the day (latest trading day on or before the dashboard's
   date) over the S&P 500 members, with the rules, how many stocks pass, and the 20 members closest to passing (highest
-  r60) with r60, tr60, the 60-day change, the average range and true range as a share of the close, the average volume and
+  tr60) with tr60, r60 (for information), the 60-day change, the average range and true range as a share of the close, the average volume and
   a light per rule. The story's smoothness rules are listed as not checked yet.
-- Screen rules as constants in `src/common/strategy.py`: r60 and tr60 both 15 or more, 60-day average volume above
-  200,000 shares.
+- Screen rules as constants in `src/common/strategy.py`: tr60 15 or more, 60-day average volume above 200,000 shares.
+  r60 is shown for information only and does not decide.
 - Genie agent: the screen in its instructions, the page's queries as examples and one benchmark ("Which stocks are closest
   to passing the efficient stocks screen?").
 - No rows in `strategy_daily_event`: a screen is not a setup or an entry; events come with the entry rules.

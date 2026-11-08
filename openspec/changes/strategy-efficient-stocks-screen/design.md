@@ -8,7 +8,8 @@
 - The Strategy Monitor is generated (`strategy_queries.py`, `strategy_dashboard.py`); its date filter drives every dataset
   in `DATE_DATASETS`. Genie examples come from `EXAMPLES` in `market_climate_genie.py`, benchmarks from `BENCHMARKS` and
   `extra_benchmarks()`.
-- Probe E3 and the table of 2026-11-06 (dev): no member passes; PTC 13.3, MRNA 11.4 (one jump of 176%), ACN 10.7.
+- Probe E3 and the table of 2026-11-06 (dev): no member passes; highest r60 PTC 13.3, MRNA 11.4 (one jump of 176%), ACN
+  10.7; highest tr60 MRNA 10.3, PTC 10.0.
 
 ## Goals / Non-Goals
 
@@ -22,10 +23,9 @@
 ### D1. Screen rules
 
 `EFFICIENT_STOCKS_CODE = "efficient_stocks"`, `EFFICIENCY_MIN = 15` and `EFFICIENT_VOLUME_MIN = 200_000` in
-`strategy.py`. A stock passes when r60 >= 15, tr60 >= 15 and the 60-day average volume > 200,000 (my call: both ratios,
-since the story names one "efficiency number" and the user defined two; a stock with r60 >= 15 and tr60 < 15 is shown with
-a yellow efficiency light and does not pass). A function `efficient_stock_passes(r60, tr60, volume)` is the reference for
-the tests.
+`strategy.py`. A stock passes when tr60 >= 15 and the 60-day average volume > 200,000 (user, 2026-11-08: the check is on
+tr60 only; r60 is shown for information and never decides). A function `efficient_stock_passes(tr60, volume)` is the
+reference for the tests.
 
 The smoothness rules of the story (a smooth 60-day rise, no flat-jump-flat pattern, not parabolic, no sudden widening of
 the daily range) are listed on the page as "not checked yet" until the user gives them numbers.
@@ -40,19 +40,18 @@ day. A member without indicators that day (too little history) is left out.
 
 After "Short Selling": a text with the rules (the story's screen and that the smoothness rules are not checked yet), a
 summary table (day, members screened, members passing, the text "No stock passes today" or the count), and the table of the
-20 members with the highest r60 that day: symbol, company, r60, tr60, 60-day change, average range and true range as a share
-of the close, average volume, and lights (efficiency: green both >= 15, yellow one, grey none; volume: green or grey;
-passes: green or grey). Datasets `ds_efficient_summary` and `ds_efficient_closest`, both date-bound.
+20 members with the highest tr60 that day: symbol, company, tr60, r60 (for information), 60-day change, average range and
+true range as a share of the close, average volume, and lights (tr60: green >= 15, grey below; volume: green or grey;
+passes: green or grey; no light for r60). Datasets `ds_efficient_summary` and `ds_efficient_closest`, both date-bound.
 
 ### D4. Genie
 
-Instructions: the screen rules and that a stock passes on both ratios and the volume. Examples: the two datasets. One
+Instructions: the screen rules, that a stock passes on tr60 and the volume, and that r60 is for information only. Examples: the two datasets. One
 benchmark: "Which stocks are closest to passing the efficient stocks screen?" answered by `ds_efficient_closest` with the
 latest day (not "which pass", which is empty today and would not test the agent).
 
 ## Risks / Trade-offs
 
-- [Both ratios required is my call] → the lights show each; changing to r60 only is one line.
 - [No history of the screen] → the date at the top shows any past day; a history comes with entries and events.
 
 ## Migration Plan
