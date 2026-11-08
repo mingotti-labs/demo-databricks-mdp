@@ -7,7 +7,8 @@ TBD - created by archiving change fred-rates. Update Purpose after archive.
 
 ### Requirement: Series fetched
 Each run SHALL fetch every series named in `src/common/fred_series.py`
-(`DGS10`, the US 10-year Treasury yield; `DFF`, the effective federal funds
+(`DGS10`, the US 10-year Treasury yield; `DGS3MO`, `DGS1`, `DGS2` and `DGS3`, the US 3-month, 1-year, 2-year and
+3-year Treasury yields; `DFF`, the effective federal funds
 rate; `DFEDTARU` and `DFEDTARL`, the upper and lower limit of the federal funds
 target range; `CPIAUCSL`, `CPIAUCNS` and `CPILFESL`, the US consumer price index
 for all urban consumers: all items seasonally adjusted, all items not seasonally
@@ -26,6 +27,11 @@ frequency and its observations.
 - **THEN** rows exist for `series_id` `DGS10` with `title` "Market Yield on U.S.
   Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment
   Basis", `units` `Percent` and `frequency` `Daily`
+
+#### Scenario: The short-term US yields are fetched
+- **WHEN** `run_fred` runs for the first time after `DGS3MO`, `DGS1`, `DGS2` and `DGS3` are added
+- **THEN** rows exist for each with `frequency` `Daily`, `DGS3MO` from 1981-09-01, `DGS2` from 1976-06-01 and `DGS1` and
+  `DGS3` from 1962-01-02
 
 #### Scenario: The Fed's policy rate is fetched
 - **WHEN** `run_fred` runs
