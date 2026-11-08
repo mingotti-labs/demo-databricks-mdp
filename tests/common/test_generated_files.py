@@ -87,12 +87,14 @@ def test_strategy_dashboard_pages_datasets_and_parameters():
     from common import strategy_dashboard
 
     dashboard = json.loads(strategy_dashboard.build())
-    assert [p["displayName"] for p in dashboard["pages"]] == ["Bear Market Fund", "Bear Fund Deep Dive", "Short Selling", "Company Deep Dive", "Filters"]
+    assert [p["displayName"] for p in dashboard["pages"]] == ["Bear Market Fund", "Bear Fund Deep Dive", "Short Selling", "Efficient Stocks", "Company Deep Dive", "Filters"]
     datasets = {d["name"]: d for d in dashboard["datasets"]}
     assert all(d["queryLines"][0].strip() for d in datasets.values())
     assert {p["keyword"] for p in datasets["ds_fund_chart"]["parameters"]} == {"fund_code", "history_range_code"}
     assert {p["keyword"] for p in datasets["ds_bear_period_events"]["parameters"]} == {"setup_period"}
     assert {p["keyword"] for p in datasets["ds_short_candidates"]["parameters"]} == {"as_of_date"}
+    assert {p["keyword"] for p in datasets["ds_efficient_closest"]["parameters"]} == {"as_of_date"}
+    assert {p["keyword"] for p in datasets["ds_efficient_summary"]["parameters"]} == {"as_of_date"}
     widgets = {w["widget"]["name"] for page in dashboard["pages"] for w in page["layout"]}
     assert {"bear-week", "bear-checks", "bear-funds", "fund-chart", "short-candidates", "short-gate"} <= widgets
     chart = next(w["widget"] for page in dashboard["pages"] for w in page["layout"] if w["widget"]["name"] == "fund-chart")
@@ -105,3 +107,12 @@ def test_strategy_queries_read_the_shared_states_and_use_the_rule_thresholds():
     assert "is_setup_on" in DATASETS["ds_short_candidates"][1] and "is_setup_on" in DATASETS["ds_bear_week"][1]
     assert "-0.05" in DATASETS["ds_bear_week"][1] and "-0.025" in DATASETS["ds_bear_week"][1]
     assert ":as_of_date" in DATASETS["ds_bear_week"][1] and ":setup_period" in DATASETS["ds_bear_period_events"][1]
+
+
+def test_the_efficient_stocks_screen_decides_on_tr60_and_volume_not_r60():
+    from common.strategy_queries import DATASETS
+
+    closest = DATASETS["ds_efficient_closest"][1]
+    assert "efficiency_tr60_ratio >= 15" in closest and "volume_sixty_day_average_count > 200000" in closest
+    assert "ORDER BY efficiency_tr60_ratio DESC" in closest
+    assert "efficiency_r60_ratio >=" not in closest and "efficiency_r60_ratio >=" not in DATASETS["ds_efficient_summary"][1]

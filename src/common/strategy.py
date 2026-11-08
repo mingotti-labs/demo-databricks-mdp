@@ -24,6 +24,9 @@ INTERIM_DAYS = (0, 1, 2)  # Monday, Tuesday, Wednesday of the week after the wat
 PRICE_TO_SALES_MIN = 15
 SETUP_DOWN_WEEKS = 3
 DOWN_WEEKS_FOR_ENTRY = 6
+EFFICIENT_STOCKS_CODE = "efficient_stocks"
+EFFICIENCY_MIN = 15
+EFFICIENT_VOLUME_MIN = 200_000
 
 HALF_BAND = "half_of_equity"
 QUARTER_BAND = "quarter_of_equity"
@@ -85,6 +88,11 @@ def short_selling_setup(week: Week) -> bool:
 def short_selling_entry(week: Week) -> bool:
     """The week the streak of weekly closes down reaches six, with the setup on."""
     return short_selling_setup(week) and week.down_weeks == DOWN_WEEKS_FOR_ENTRY
+
+
+def efficient_stock_passes(tr60: float | None, volume: float | None) -> bool:
+    """Strategy 004 screen: tr60 of 15 or more and a 60-day average volume above 200,000; r60 never decides."""
+    return tr60 is not None and volume is not None and tr60 >= EFFICIENCY_MIN and volume > EFFICIENT_VOLUME_MIN
 
 
 def events_values_sql() -> str:

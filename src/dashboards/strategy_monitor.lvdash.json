@@ -246,6 +246,54 @@
       ]
     },
     {
+      "name": "ds_efficient_summary",
+      "displayName": "Strategy 004 efficient stocks screen of the day",
+      "queryLines": [
+        "WITH screen_day AS (SELECT max(price_date) AS day FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' AND price_date <= coalesce(:as_of_date, DATE '9999-12-31')), screen AS ( SELECT l.trading_symbol_code, c.company_name, p.price_date, p.efficiency_tr60_ratio, p.efficiency_r60_ratio, p.close_sixty_day_change_ratio, p.price_range_sixty_day_average_ratio, p.true_range_sixty_day_average_ratio, p.volume_sixty_day_average_count, p.efficiency_tr60_ratio >= 15 AS is_efficient, coalesce(p.volume_sixty_day_average_count > 200000, false) AS is_liquid FROM valuation_daily_index_member m JOIN silver_domain_investments.price_indicator_daily p ON p.listing_id = m.listing_id AND p.price_date = m.valuation_date LEFT JOIN silver_domain_investments.listing l ON l.listing_id = m.listing_id LEFT JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.valuation_date = (SELECT day FROM screen_day) AND p.efficiency_tr60_ratio IS NOT NULL) SELECT (SELECT day FROM screen_day) AS screen_date, count(*) AS screened_count, count_if(is_efficient AND is_liquid) AS passing_count, CASE WHEN count_if(is_efficient AND is_liquid) = 0 THEN 'No stock passes the screen' ELSE concat(count_if(is_efficient AND is_liquid), ' stock(s) pass the screen') END AS result_text, CASE WHEN count_if(is_efficient AND is_liquid) = 0 THEN 'grey' ELSE 'green' END AS result_light, max(efficiency_tr60_ratio) AS highest_tr60_ratio FROM screen "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ds_efficient_closest",
+      "displayName": "Strategy 004 members closest to passing",
+      "queryLines": [
+        "WITH screen_day AS (SELECT max(price_date) AS day FROM silver_domain_investments.price_daily WHERE trading_symbol_code = '^GSPC' AND price_date <= coalesce(:as_of_date, DATE '9999-12-31')), screen AS ( SELECT l.trading_symbol_code, c.company_name, p.price_date, p.efficiency_tr60_ratio, p.efficiency_r60_ratio, p.close_sixty_day_change_ratio, p.price_range_sixty_day_average_ratio, p.true_range_sixty_day_average_ratio, p.volume_sixty_day_average_count, p.efficiency_tr60_ratio >= 15 AS is_efficient, coalesce(p.volume_sixty_day_average_count > 200000, false) AS is_liquid FROM valuation_daily_index_member m JOIN silver_domain_investments.price_indicator_daily p ON p.listing_id = m.listing_id AND p.price_date = m.valuation_date LEFT JOIN silver_domain_investments.listing l ON l.listing_id = m.listing_id LEFT JOIN silver_domain_investments.company c ON c.company_id = m.company_id WHERE m.valuation_date = (SELECT day FROM screen_day) AND p.efficiency_tr60_ratio IS NOT NULL) SELECT trading_symbol_code, company_name, efficiency_tr60_ratio, efficiency_r60_ratio, close_sixty_day_change_ratio, price_range_sixty_day_average_ratio, true_range_sixty_day_average_ratio, volume_sixty_day_average_count, CASE WHEN is_efficient THEN 'green' ELSE 'grey' END AS efficiency_light, CASE WHEN is_liquid THEN 'green' ELSE 'grey' END AS volume_light, CASE WHEN is_efficient AND is_liquid THEN 'green' ELSE 'grey' END AS pass_light FROM screen ORDER BY efficiency_tr60_ratio DESC LIMIT 20 "
+      ],
+      "parameters": [
+        {
+          "keyword": "as_of_date",
+          "displayName": "As of date",
+          "dataType": "DATE",
+          "defaultSelection": {
+            "values": {
+              "dataType": "DATE",
+              "values": [
+                {
+                  "value": "now/d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "ds_history_range_options",
       "displayName": "History ranges",
       "queryLines": [
@@ -1787,6 +1835,501 @@
       ]
     },
     {
+      "name": "efficient-stocks",
+      "displayName": "Efficient Stocks",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "efficient-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Strategy 004: Trading Efficient Stocks\n",
+                "\n",
+                "Find S&P 500 stocks that rise steadily, with little back and forth, over the last 60 days.\n",
+                "\n",
+                "- Screen: tr60 is 15 or more and the 60-day average volume is above 200,000 shares\n",
+                "- tr60: the 60-day price change in dollars divided by the 60-day average true range in dollars\n",
+                "- r60 (the same change over the average daily range) is shown for information; it does not decide\n",
+                "- Not checked yet: a smooth 60-day rise, no flat-then-jump pattern, not parabolic, no sudden widening of the daily range\n",
+                "\n",
+                "The table lists the 20 members closest to passing, highest tr60 first. Change the date at the top: the screen is of the latest trading day on or before it."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "efficient-summary",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_efficient_summary",
+                  "fields": [
+                    {
+                      "name": "screen_date",
+                      "expression": "`screen_date`"
+                    },
+                    {
+                      "name": "screened_count",
+                      "expression": "`screened_count`"
+                    },
+                    {
+                      "name": "passing_count",
+                      "expression": "`passing_count`"
+                    },
+                    {
+                      "name": "result_text",
+                      "expression": "`result_text`"
+                    },
+                    {
+                      "name": "result_light",
+                      "expression": "`result_light`"
+                    },
+                    {
+                      "name": "highest_tr60_ratio",
+                      "expression": "`highest_tr60_ratio`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "screen_date",
+                    "displayName": "Screen of",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "screened_count",
+                    "displayName": "Members screened",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "passing_count",
+                    "displayName": "Members passing",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "result_text",
+                    "displayName": "Result",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "result_light",
+                    "displayName": "Light",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "highest_tr60_ratio",
+                    "displayName": "Highest tr60",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Screen of the day"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "efficient-closest",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_efficient_closest",
+                  "fields": [
+                    {
+                      "name": "trading_symbol_code",
+                      "expression": "`trading_symbol_code`"
+                    },
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "efficiency_tr60_ratio",
+                      "expression": "`efficiency_tr60_ratio`"
+                    },
+                    {
+                      "name": "efficiency_light",
+                      "expression": "`efficiency_light`"
+                    },
+                    {
+                      "name": "volume_light",
+                      "expression": "`volume_light`"
+                    },
+                    {
+                      "name": "pass_light",
+                      "expression": "`pass_light`"
+                    },
+                    {
+                      "name": "efficiency_r60_ratio",
+                      "expression": "`efficiency_r60_ratio`"
+                    },
+                    {
+                      "name": "close_sixty_day_change_ratio",
+                      "expression": "`close_sixty_day_change_ratio`"
+                    },
+                    {
+                      "name": "price_range_sixty_day_average_ratio",
+                      "expression": "`price_range_sixty_day_average_ratio`"
+                    },
+                    {
+                      "name": "true_range_sixty_day_average_ratio",
+                      "expression": "`true_range_sixty_day_average_ratio`"
+                    },
+                    {
+                      "name": "volume_sixty_day_average_count",
+                      "expression": "`volume_sixty_day_average_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "trading_symbol_code",
+                    "displayName": "Symbol",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "company_name",
+                    "displayName": "Company",
+                    "alignContent": "left"
+                  },
+                  {
+                    "fieldName": "efficiency_tr60_ratio",
+                    "displayName": "tr60",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "efficiency_light",
+                    "displayName": "tr60 light",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "volume_light",
+                    "displayName": "Volume light",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "pass_light",
+                    "displayName": "Passes",
+                    "alignContent": "left",
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "red"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 5
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "yellow"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 6
+                          }
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "green"
+                            },
+                            "operator": "=="
+                          },
+                          "backgroundColor": {
+                            "themeColorType": "visualizationColors",
+                            "position": 3
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "efficiency_r60_ratio",
+                    "displayName": "r60 (information only)",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "close_sixty_day_change_ratio",
+                    "displayName": "60-day change",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "price_range_sixty_day_average_ratio",
+                    "displayName": "Average range",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "true_range_sixty_day_average_ratio",
+                    "displayName": "Average true range",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "volume_sixty_day_average_count",
+                    "displayName": "Average volume (shares)",
+                    "alignContent": "left",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "exact",
+                        "places": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "The 20 members closest to passing",
+                "showDescription": true,
+                "description": "Green tr60 light: tr60 is 15 or more. Green volume light: average volume above 200,000. Green passes light: both."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 12,
+            "height": 12
+          }
+        }
+      ]
+    },
+    {
       "name": "company-deep-dive",
       "displayName": "Company Deep Dive",
       "pageType": "PAGE_TYPE_CANVAS",
@@ -2415,6 +2958,32 @@
                 }
               },
               {
+                "name": "q_ds_efficient_summary_as_of_date",
+                "query": {
+                  "datasetName": "ds_efficient_summary",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "q_ds_efficient_closest_as_of_date",
+                "query": {
+                  "datasetName": "ds_efficient_closest",
+                  "disaggregated": false,
+                  "parameters": [
+                    {
+                      "name": "as_of_date",
+                      "keyword": "as_of_date"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "q_ds_company_check_as_of_date",
                 "query": {
                   "datasetName": "ds_company_check",
@@ -2486,6 +3055,14 @@
                   {
                     "parameterName": "as_of_date",
                     "queryName": "q_ds_short_events_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_efficient_summary_as_of_date"
+                  },
+                  {
+                    "parameterName": "as_of_date",
+                    "queryName": "q_ds_efficient_closest_as_of_date"
                   },
                   {
                     "parameterName": "as_of_date",
