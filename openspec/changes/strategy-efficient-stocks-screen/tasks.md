@@ -10,7 +10,7 @@
 
 ## 3. Run and check in dev
 
-- [ ] 3.1 Draft PR deployed; all dashboard queries run in dev (`p3_test_queries.py`); Genie benchmark evaluation passes
+- [x] 3.1 Draft PR #200 deployed (deploy-dev pass); all strategy dashboard queries run in dev (`p3_test_queries.py`); Genie benchmark evaluation on dev 18/18 (eval run 01f1db4e29841f11affed148b586558d)
 - [ ] 3.2 The user checks the page in dev
 
 ## 4. After merge
