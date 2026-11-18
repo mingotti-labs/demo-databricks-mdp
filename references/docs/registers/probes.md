@@ -297,3 +297,11 @@ Folders `references/poc/us-yields/` and `references/poc/efficiency-indicators/`.
 | E4 | Does the new price_indicator_daily query give the formula's figures? | On prd's prices (read only): one row per price_daily row (241,178), true range never below the range, highest r60 13.31 and tr60 10.29 on the latest day, as E3 (`p4_indicator_query.py`, `p4_result_prd.txt`). Dev after the run: 13.32 and 10.29. |
 | Y2 | Do the four US yields reach dev and do all dashboard queries run? | Full histories (3-month from 1981, 2-year from 1976, 1- and 3-year from 1962, all to 2026-11-05); all 58 dashboard queries succeed (`references/poc/us-yields/p2_dev_after_run.txt`, `p3_dashboard_queries_dev.txt`). |
 | Y3 | Does prd match after the merge? | The four yields with full history to 2026-11-05, 196,435 indicator rows with r60, all 58 dashboard queries succeed (`references/poc/us-yields/p4_dashboard_queries_prd.txt`), Genie evaluation 17 of 17 (run 01f1daa524bc18b580b270452f9f3f72). |
+
+## pattern-scd2-history-migration (change pattern-scd2-history-migration)
+
+Folder `references/poc/scd2-history-migration/` (`probe.py` helpers, one script per probe).
+
+| Probe | Question | Answer |
+|---|---|---|
+| P1 | Can a SQL `AUTO CDC ONCE` flow backfill an SCD2 table from the legacy SCD2 table, legacy dates landing in `__START_AT`/`__END_AT`, and stay idle afterwards? | Not from a batch view: `Source data for the APPLY CHANGES target ... must be a streaming query` (P1a, `p1a_batch_view_*`). Yes from a streaming view over the legacy table (retirement test via a stream-static join): 4 of 4 rows with matching dates, the retired asset closed at its `end_date`; second update `QUEUED` then `IDLE`, table unchanged (P1b, `p1_pipeline.sql`, `p1_result.txt`). |

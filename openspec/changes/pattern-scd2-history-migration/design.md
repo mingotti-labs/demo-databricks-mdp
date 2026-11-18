@@ -51,16 +51,27 @@ table closes a version on another date than the next `start_date`, `__END_AT` ta
 next `start_date`; step 80 lists such rows.
 
 ```sql
-CREATE TEMPORARY VIEW asset_history AS ...;   -- changes and delete events, change_ts TIMESTAMP
+CREATE TEMPORARY VIEW asset_history AS          -- streaming: P1a
+SELECT e.* FROM (
+  SELECT explode(CASE WHEN <retired> THEN array(<change>, <delete>) ELSE array(<change>) END) AS e
+  FROM STREAM(asset_dim_legacy) l
+  JOIN (SELECT asset_id, max(start_date) AS last_start_date
+        FROM asset_dim_legacy GROUP BY asset_id) last   -- static lookup
+    ON l.asset_id = last.asset_id);
 CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
 CREATE FLOW backfill_history AS AUTO CDC ONCE INTO asset_dim_migrated
-  FROM asset_history KEYS (asset_id) APPLY AS DELETE WHEN is_delete
+  FROM STREAM(asset_history) KEYS (asset_id) APPLY AS DELETE WHEN is_delete
   SEQUENCE BY change_ts COLUMNS * EXCEPT (is_delete, change_ts) STORED AS SCD TYPE 2;
 ```
-Dates are cast to `TIMESTAMP`: the live flows' versions are timestamps, and flows on one
-target share the sequence type. The docs show `AUTO CDC ONCE` only with `FROM SNAPSHOT`;
-P1 proves it from a batch view. Fallback: the Python API with `once=True`; the pattern
-IDs then end `_python`.
+`<retired>` is `l.end_date IS NOT NULL AND l.start_date = last.last_start_date`. Dates are
+cast to `TIMESTAMP`: the live flows' versions are timestamps, and flows on one target share
+the sequence type.
+**P1 (2026-11-18)**: from a batch view, `AUTO CDC ONCE` fails (P1a: `Source data for the
+APPLY CHANGES target ... must be a streaming query`); `ONCE` means "run once", the source
+must still be a stream. Hence the streaming view, with the retirement test from a
+stream-static join instead of a subquery (P1b). Result: every legacy row arrived with
+`__START_AT = start_date` and `__END_AT = end_date`, the retired asset included; the second
+update left `backfill_history` `IDLE` and the table unchanged.
 Rejected: `INSERT INTO ONCE` with `__START_AT`/`__END_AT` copied directly (an append flow
 into an Auto CDC target is not documented as supported).
 
