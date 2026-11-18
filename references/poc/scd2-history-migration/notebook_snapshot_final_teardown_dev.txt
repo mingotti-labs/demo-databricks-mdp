@@ -1,0 +1,133 @@
+=== cell: dbutils.widgets.text("catalog", "mdp_dev")
+mdp_dev.pattern_bronze_publish
+/Workspace/Users/handsonessential@gmail.com/poc/scd2-history-migration/notebooks/transformations/bronze_publish_scd2_autocdc_backfill_snapshot_sql/asset_dim_migrated.sql
+=== cell: spark.sql(f"""
+=== cell: spark.sql(f"""
+=== cell: spark.sql(f"""
+view refreshed at 2026-11-18 11:29:48.897000
+=== cell: spark.sql(f"""
+legacy_rows | assets | distinct_dates
+9 | 4 | 10
+=== cell: def write_pipeline_file(text: str) -> None:
+-- Written by the notebook bronze_publish_scd2_autocdc_backfill_snapshot_sql (step 30).
+CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
+=== cell: sql_views = f"""
+
+CREATE TEMPORARY VIEW asset_history AS
+SELECT asset_id, asset_name, asset_owner,
+       CAST(start_date AS TIMESTAMP) AS valid_from, CAST(end_date AS TIMESTAMP) AS valid_to
+FROM mdp_dev.pattern_bronze_publish.asset_dim_legacy;
+
+CREATE TEMPORARY VIEW asset_live AS
+SELECT asset_id, asset_name, asset_owner FROM mdp_dev.pattern_bronze_publish.asset_source;
+
+CREATE TEMPORARY VIEW asset_union AS
+SELECT asset_id, asset_name, asset_owner, valid_from, valid_to, false AS is_live FROM asset_history
+UNION ALL
+SELECT asset_id, asset_name, asset_owner, CAST(NULL AS TIMESTAMP), CAST(NULL AS TIMESTAMP), true
+FROM asset_live;
+
+CREATE TEMPORARY VIEW asset_versions AS
+SELECT valid_from AS version, false AS is_live FROM asset_history
+UNION SELECT valid_to, false FROM asset_history WHERE valid_to IS NOT NULL
+UNION SELECT last_altered, true FROM mdp_dev.information_schema.tables
+      WHERE table_schema = 'pattern_bronze_publish' AND table_name = 'asset_source';
+
+CREATE TEMPORARY VIEW asset_cutover AS
+SELECT max(version) AS last_legacy_version FROM asset_versions WHERE NOT is_live;
+=== cell: sql_flow = """
+
+CREATE FLOW migrate_and_load AS AUTO CDC INTO asset_dim_migrated
+FROM SNAPSHOT (
+  SELECT u.asset_id, u.asset_name, u.asset_owner
+  FROM asset_union u CROSS JOIN asset_cutover c
+  WHERE CASE WHEN u.is_live
+             THEN (SELECT version FROM current_snapshot_version()) > c.last_legacy_version
+             ELSE (SELECT version FROM current_snapshot_version()) <= c.last_legacy_version
+                  AND u.valid_from <= (SELECT version FROM current_snapshot_version())
+                  AND (u.valid_to IS NULL
+                       OR u.valid_to > (SELECT version FROM current_snapshot_version())) END
+)
+WITH VERSION (
+  SELECT min(version) AS version FROM asset_versions
+  WHERE NOT EXISTS (SELECT 1 FROM last_snapshot_version())
+     OR version > (SELECT version FROM last_snapshot_version())
+  HAVING min(version) IS NOT NULL
+)
+KEYS (asset_id)
+STORED AS SCD TYPE 2;
+=== cell: existing = [p for p in w.pipelines.list_pipelines(filter=f"name LIKE '{pipeline_
+created pipeline 8b0b4df1-f896-41de-888a-6229d7e217e1
+update 97ef3f84-cd63-4f52-808a-fd281d918eac: COMPLETED
+asset_id | asset_name | asset_owner | __START_AT | __END_AT
+A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | None
+A2 | Valve | Cy | 2024-02-01T00:00:00.000Z | 2024-09-01T00:00:00.000Z
+A2 | Valve | Dan | 2024-09-01T00:00:00.000Z | 2025-03-01T00:00:00.000Z
+A3 | Fan | Di | 2024-03-01T00:00:00.000Z | 2025-05-01T00:00:00.000Z
+A3 | Fan | Eli | 2025-05-01T00:00:00.000Z | 2026-11-18T11:29:48.897Z
+A3 | Fan | Hal | 2026-11-18T11:29:48.897Z | None
+A4 | Belt | Flo | 2024-04-01T00:00:00.000Z | 2024-10-01T00:00:00.000Z
+A4 | Belt | Gil | 2024-10-01T00:00:00.000Z | None
+=== cell: spark.sql(f"UPDATE {base} SET asset_owner = 'Ivy' WHERE asset_id = 'A1'")
+view refreshed at 2026-11-18 11:35:59.285000
+=== cell: second_update = run_pipeline(pipeline_id)
+update c0be12a9-1a1e-49a6-92fc-251a9ded3324: COMPLETED
+asset_id | asset_name | asset_owner | __START_AT | __END_AT
+A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | 2026-11-18T11:35:59.285Z
+A1 | Pump | Ivy | 2026-11-18T11:35:59.285Z | None
+A2 | Valve | Cy | 2024-02-01T00:00:00.000Z | 2024-09-01T00:00:00.000Z
+A2 | Valve | Dan | 2024-09-01T00:00:00.000Z | 2025-03-01T00:00:00.000Z
+A3 | Fan | Di | 2024-03-01T00:00:00.000Z | 2025-05-01T00:00:00.000Z
+A3 | Fan | Eli | 2025-05-01T00:00:00.000Z | 2026-11-18T11:29:48.897Z
+A3 | Fan | Hal | 2026-11-18T11:29:48.897Z | None
+A4 | Belt | Flo | 2024-04-01T00:00:00.000Z | 2024-10-01T00:00:00.000Z
+A4 | Belt | Gil | 2024-10-01T00:00:00.000Z | 2026-11-18T11:35:59.285Z
+A5 | Motor | Jo | 2026-11-18T11:35:59.285Z | None
+=== cell: results = []
+update_id | status | timestamp
+97ef3f84-cd63-4f52-808a-fd281d918eac | QUEUED | 2026-11-18T11:30:48.554Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | PLANNING | 2026-11-18T11:30:48.569Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | STARTING | 2026-11-18T11:30:48.598Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:30:48.642Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:30:52.122Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:31:09.479Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:31:24.038Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:31:29.042Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:31:29.054Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:31:39.251Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:31:54.422Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:32:16.116Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:32:29.041Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:32:29.044Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:32:37.731Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:33:00.984Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:33:25.989Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:33:29.041Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:33:29.043Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:33:52.088Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | RUNNING | 2026-11-18T11:34:19.956Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:34:29.041Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:34:29.043Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | COMPLETED | 2026-11-18T11:34:46.754Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:34:46.792Z
+97ef3f84-cd63-4f52-808a-fd281d918eac | None | 2026-11-18T11:34:46.794Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | QUEUED | 2026-11-18T11:36:34.392Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | PLANNING | 2026-11-18T11:36:34.409Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | STARTING | 2026-11-18T11:36:34.440Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | RUNNING | 2026-11-18T11:36:34.491Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | RUNNING | 2026-11-18T11:36:39.463Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | COMPLETED | 2026-11-18T11:37:12.721Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | None | 2026-11-18T11:37:12.771Z
+c0be12a9-1a1e-49a6-92fc-251a9ded3324 | None | 2026-11-18T11:37:12.782Z
+PASS backfill matches the legacy table
+PASS history not reloaded by the second update
+PASS step-60 changes applied at the view's refresh time
+=== cell: if teardown:
+dropped __materialization_mat_3193f4b6_6186_488c_8c2c_a581f6f60c10_asset_source_1
+dropped event_log_3193f4b6_6186_488c_8c2c_a581f6f60c10
+dropped __materialization_mat_8b0b4df1_f896_41de_888a_6229d7e217e1_asset_dim_migrated_1
+teardown done

@@ -19,7 +19,7 @@
 - [x] 2.3 Step 55: create or reuse the pipeline and run it (D1)
 - [x] 2.4 Steps 60, 70: change the base table, refresh the view, run again
 - [x] 2.5 Step 80 (D7) and step 90
-- [ ] 2.6 Run it top to bottom in dev, then once more (pipeline reused); save the output in
+- [x] 2.6 Run it top to bottom in dev, then once more (pipeline reused); save the output in
       `references/poc/scd2-history-migration/`; run step 90 with approval
 
 ## 3. Stream notebook (`bronze_publish_scd2_autocdc_backfill_stream_sql.py`)
@@ -29,7 +29,7 @@
 - [x] 3.3 Step 55: create or reuse the pipeline and run it
 - [x] 3.4 Steps 60, 70: append rows, run again
 - [x] 3.5 Step 80 (D7) and step 90
-- [ ] 3.6 Run it top to bottom in dev, then once more; save the output; run step 90 with approval
+- [x] 3.6 Run it top to bottom in dev, then once more; save the output; run step 90 with approval
 
 ## 4. Docs
 
@@ -40,5 +40,5 @@
 
 ## 5. Verify
 
-- [ ] 5.1 `openspec validate pattern-scd2-history-migration --strict`; patterns bundle
+- [x] 5.1 `openspec validate pattern-scd2-history-migration --strict`; patterns bundle
       `databricks bundle validate`; quota re-read shows the slots back
