@@ -26,7 +26,9 @@ Agreed with the user. Step 30 writes `asset_dim_migrated.sql` into
 schema filled in from the widgets. Step 55 looks the pipeline up by name and creates it
 otherwise with `WorkspaceClient().pipelines.create(...)`: serverless, triggered,
 `catalog`/`schema` from the widgets, one `glob` library on that folder. The SQL text lives
-once, in the notebook, and is shown in it.
+once, in the notebook, and is shown in it. The pipeline publishes its event log as
+`event_log_<pipeline id>` in the schema (1 slot, seen in P1); step 90 drops it with the
+tables and the twins.
 Rejected: a bundle pipeline resource plus a separate `.sql` file (three files to copy).
 
 ### D2. Backfill: replay the legacy versions; Auto CDC writes `__START_AT` and `__END_AT`

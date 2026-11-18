@@ -58,11 +58,11 @@ None.
 ## Impact
 
 - Dev only, `mdp_dev.pattern_bronze_publish`. No main-bundle change, no CI unit, no prd.
-- Table slots while a notebook's tables exist: snapshot notebook 6 (`asset_dim_legacy` 1,
-  `asset_source_base` 1, `asset_source` 2, `asset_dim_migrated` 2); stream notebook 4
-  (`asset_dim_legacy` 1, `asset_source` 1, `asset_dim_migrated` 2). Temporary views take no
-  slot; the pipelines get no Unity Catalog event log (the notebooks read
-  `event_log(<pipeline id>)`).
+- Table slots while a notebook's tables exist: snapshot notebook 7 (`asset_dim_legacy` 1,
+  `asset_source_base` 1, `asset_source` 2, `asset_dim_migrated` 2, the pipeline's event log
+  1); stream notebook 5 (`asset_dim_legacy` 1, `asset_source` 1, `asset_dim_migrated` 2,
+  event log 1). Temporary views take no slot. A pipeline created through the API publishes
+  its event log as `event_log_<pipeline id>` in its schema (seen in P1); step 90 drops it.
 - Both notebooks use the engagement's table names in one schema, so only one notebook's
   tables exist at a time: run step 90 before switching.
 - The quota was 488 to 496 of 500 on 2026-11-10 (stop line 488): re-read it before the
