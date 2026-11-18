@@ -5,7 +5,7 @@
 - [x] 1.2 P1: `AUTO CDC ONCE` from a batch temporary view in SQL (fallback: Python `once=True`)
 - [x] 1.3 P2: snapshot flow next to the backfill: refused (one flow per snapshot target); D4
       changed to one snapshot flow
-- [ ] 1.3b P2c: the one flow of D4 (temporary views in the snapshot query, `last_altered` as
+- [x] 1.3b P2c: the one flow of D4 (temporary views in the snapshot query, `last_altered` as
       version, first-update result, update without refresh; fallbacks in D4)
 - [ ] 1.4 P3: change feed streamed in SQL; an unchanged appended row opens no version
       (fallback in D5)

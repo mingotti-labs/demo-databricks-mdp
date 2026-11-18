@@ -121,13 +121,12 @@ Auto CDC names `__START_AT`/`__END_AT` (agreed).
 
   CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
   CREATE FLOW migrate_and_load AS AUTO CDC INTO asset_dim_migrated
-  FROM SNAPSHOT (
-    WITH cur AS (SELECT version AS v FROM current_snapshot_version())
+  FROM SNAPSHOT (                               -- v = (SELECT version FROM current_snapshot_version())
     SELECT u.asset_id, u.asset_name, u.asset_owner
-    FROM asset_union u CROSS JOIN cur CROSS JOIN asset_cutover c
-    WHERE CASE WHEN u.is_live THEN cur.v > c.last_legacy_version
-               ELSE cur.v <= c.last_legacy_version AND u.valid_from <= cur.v
-                    AND (u.valid_to IS NULL OR u.valid_to > cur.v) END
+    FROM asset_union u CROSS JOIN asset_cutover c
+    WHERE CASE WHEN u.is_live THEN v > c.last_legacy_version
+               ELSE v <= c.last_legacy_version AND u.valid_from <= v
+                    AND (u.valid_to IS NULL OR u.valid_to > v) END
   )
   WITH VERSION (
     SELECT min(version) AS version FROM asset_versions
@@ -148,7 +147,16 @@ Auto CDC names `__START_AT`/`__END_AT` (agreed).
   never read again. Live versions are dated with the view's refresh time, not a business
   date; several refreshes between two runs are seen as one.
 - Cost: see D6, "Performance".
-- P2c proves it. Fallbacks: if the snapshot query cannot read temporary views, the union is
+- `current_snapshot_version()` must be called in a plain scalar subquery each time it is
+  needed (`v` above); inside a `WITH` (CTE) it is not resolved (P2c-a:
+  `UNRESOLVABLE_TABLE_VALUED_FUNCTION`). The pipeline ran on runtime 18.3 (CURRENT channel).
+- **P2c (2026-11-18), passed**: update 1 gave the legacy rows with exact dates (the retired
+  asset closed at its `end_date`), closed and opened only the asset the view changed, at the
+  view's `last_altered`, and left the unchanged asset alone; after changes and `REFRESH
+  MATERIALIZED VIEW`, `last_altered` moved and update 2 applied a change, a delete and an
+  insert at that time; update 3 without a refresh changed nothing (4 seconds). The first
+  update took about 2 minutes for 6 versions (about 20 seconds per version, Free Edition).
+- Fallbacks (not needed in P2c): if the snapshot query cannot read temporary views, the union is
   written inline in it; if `last_altered` does not move on a refresh, or cannot be read in
   the version query, the version of the live part becomes the pipeline update's time in a
   Python snapshot flow with a version function (`dp.create_auto_cdc_from_snapshot_flow`
@@ -192,7 +200,9 @@ Auto CDC names `__START_AT`/`__END_AT` (agreed).
   one, committed on its own. A first update that replays history costs about
   *number of distinct dates x rows per snapshot*: 20 monthly batches of 1 million rows is
   20 comparisons; 5 years of business-day changes on 50,000 rows is about 1,250 commits
-  and may take hours. After that, each update compares one snapshot. Measure first:
+  and may take hours. Measured in P2c on Free Edition serverless: about 20 seconds per
+  version on 5 rows, so a fixed cost per version dominates small snapshots (1,250 dates
+  would be about 7 hours). After that, each update compares one snapshot. Measure first:
   `count(DISTINCT start_date)` plus `count(DISTINCT end_date)` of the legacy table (the
   number of distinct dates is not known for the client yet). Many dates: test the first
   update on a copy at full size before the cut-over, or let the first update run as its

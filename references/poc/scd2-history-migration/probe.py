@@ -49,6 +49,7 @@ def create_pipeline(profile: str, name: str, paths: list[str]) -> str:
         "schema": "pattern_bronze_publish",
         "serverless": True,
         "continuous": False,
+        "configuration": {"pipelines.numUpdateRetryAttempts": "0"},
         "libraries": [{"file": {"path": p}} for p in paths],
     }
     return cli(profile, "pipelines", "create", "--json", json.dumps(spec))["pipeline_id"]
