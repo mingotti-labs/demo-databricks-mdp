@@ -14,10 +14,10 @@
 
 ## 2. Snapshot notebook (`bronze_publish_scd2_autocdc_backfill_snapshot_sql.py`)
 
-- [ ] 2.1 Widgets; steps 10, 15, 20, 25 (legacy table, base table, materialized view, seed, D8)
-- [ ] 2.2 Steps 30, 40, 50: write the pipeline file (D2, D4)
-- [ ] 2.3 Step 55: create or reuse the pipeline and run it (D1)
-- [ ] 2.4 Steps 60, 70: change the base table, refresh the view, run again
+- [x] 2.1 Widgets; steps 10, 15, 20, 25 (legacy table, base table, materialized view, seed, D8)
+- [x] 2.2 Steps 30, 40, 50: write the pipeline file (D2, D4)
+- [x] 2.3 Step 55: create or reuse the pipeline and run it (D1)
+- [x] 2.4 Steps 60, 70: change the base table, refresh the view, run again
 - [ ] 2.5 Step 80 (D7) and step 90
 - [ ] 2.6 Run it top to bottom in dev, then once more (pipeline reused); save the output in
       `references/poc/scd2-history-migration/`; run step 90 with approval

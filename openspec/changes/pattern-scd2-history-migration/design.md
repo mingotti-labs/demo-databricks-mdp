@@ -28,7 +28,13 @@ otherwise with `WorkspaceClient().pipelines.create(...)`: serverless, triggered,
 `catalog`/`schema` from the widgets, one `glob` library on that folder. The SQL text lives
 once, in the notebook, and is shown in it. The pipeline publishes its event log as
 `event_log_<pipeline id>` in the schema (1 slot, seen in P1); step 90 drops it with the
-tables and the twins.
+tables and the twins. Found in the dev run (2026-11-18):
+- The pipeline is created through the REST API (`w.api_client.do`): the SDK on serverless
+  notebooks has no `PathPattern`, so it cannot build the folder (glob) library.
+- Steps 10 to 25 recreate the tables, so a reused pipeline runs a full refresh in step 55;
+  otherwise it keeps its saved version and reads the recreated view as a change.
+- A one-time serverless job run retries a failed notebook from the top; run it with
+  `max_retries: 0`.
 Rejected: a bundle pipeline resource plus a separate `.sql` file (three files to copy).
 
 ### D2. Stream notebook backfill: replay the legacy versions; Auto CDC writes `__START_AT` and `__END_AT`
