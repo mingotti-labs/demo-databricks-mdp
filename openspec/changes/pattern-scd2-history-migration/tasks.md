@@ -1,33 +1,43 @@
-## 1. Probe
+## 1. Probes
 
 - [ ] 1.1 Re-read the table quota (`databricks resource-quotas get-quota metastore ... table-quota`);
-      if above 484, agree a clean-up with the user before any run
-- [ ] 1.2 P1 (design.md): minimal pipeline with D3's two flows on three rows in dev; record
-      the result in `references/poc/scd2-history-migration/` and `references/docs/registers/probes.md`;
-      switch to the Python fallback if SQL refuses `AUTO CDC ONCE` from a batch view
+      if a run would pass the stop line, agree a clean-up with the user first
+- [ ] 1.2 P1: `AUTO CDC ONCE` from a batch temporary view in SQL (fallback: Python `once=True`)
+- [ ] 1.3 P2: materialized view from a serverless notebook; `last_altered` moves on refresh and
+      is readable in the version query; snapshot flow next to the backfill; first-update result
+      (fallbacks in design.md D4)
+- [ ] 1.4 P3: change feed streamed in SQL; an unchanged appended row opens no version
+      (fallback in D5)
+- [ ] 1.5 Record P1 to P3 in `references/poc/scd2-history-migration/` and
+      `references/docs/registers/probes.md`; drop the probe tables and twins with approval
 
-## 2. Notebook
+## 2. Snapshot notebook (`bronze_publish_scd2_autocdc_backfill_snapshot_sql.py`)
 
-- [ ] 2.1 Widgets and steps 10, 15, 20, 25 (tables and seed data, D7)
-- [ ] 2.2 Steps 30, 40, 50: write `transformations/asset_dim_migrated.sql` (D3)
-- [ ] 2.3 Step 55: create or reuse the pipeline with the SDK and run it to completion (D1)
-- [ ] 2.4 Steps 60, 70: seed new changes, run again
-- [ ] 2.5 Step 80: the checks in D5
-- [ ] 2.6 Step 90: teardown behind the `teardown` widget
+- [ ] 2.1 Widgets; steps 10, 15, 20, 25 (legacy table, base table, materialized view, seed, D8)
+- [ ] 2.2 Steps 30, 40, 50: write the pipeline file (D2, D4)
+- [ ] 2.3 Step 55: create or reuse the pipeline and run it (D1)
+- [ ] 2.4 Steps 60, 70: change the base table, refresh the view, run again
+- [ ] 2.5 Step 80 (D7) and step 90
+- [ ] 2.6 Run it top to bottom in dev, then once more (pipeline reused); save the output in
+      `references/poc/scd2-history-migration/`; run step 90 with approval
 
-## 3. Run in dev
+## 3. Stream notebook (`bronze_publish_scd2_autocdc_backfill_stream_sql.py`)
 
-- [ ] 3.1 `databricks bundle validate` and deploy of the patterns bundle (syncs the notebook)
-- [ ] 3.2 Run the notebook top to bottom in dev; step 80 passes; save the output in
-      `references/poc/scd2-history-migration/`
-- [ ] 3.3 Run it a second time: the pipeline is reused, step 80 still passes
-- [ ] 3.4 Run step 90 with approval; quota re-read shows the slots back
+- [ ] 3.1 Widgets; steps 10, 15, 20, 25 (legacy table, append-only source with change feed, seed)
+- [ ] 3.2 Steps 30, 40, 50: write the pipeline file (D2, D5)
+- [ ] 3.3 Step 55: create or reuse the pipeline and run it
+- [ ] 3.4 Steps 60, 70: append rows, run again
+- [ ] 3.5 Step 80 (D7) and step 90
+- [ ] 3.6 Run it top to bottom in dev, then once more; save the output; run step 90 with approval
 
 ## 4. Docs
 
-- [ ] 4.1 `design-patterns.md` entry, `references/patterns/README.md` section (steps, slots, removal)
-- [ ] 4.2 `tag_patterns` mapping for `asset_dim_migrated`
+- [ ] 4.1 `references/patterns/README.md`: both notebooks (steps, slots, removal) and the
+      `WITH VERSION` guide (D6)
+- [ ] 4.2 `design-patterns.md`: two entries
+- [ ] 4.3 `tag_patterns` mapping for `asset_dim_migrated`
 
 ## 5. Verify
 
-- [ ] 5.1 `openspec validate pattern-scd2-history-migration --strict`, patterns bundle validate in the PR
+- [ ] 5.1 `openspec validate pattern-scd2-history-migration --strict`; patterns bundle
+      `databricks bundle validate`; quota re-read shows the slots back
