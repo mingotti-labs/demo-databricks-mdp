@@ -9,7 +9,7 @@
 ## 2. Notebook
 
 - [ ] 2.1 Widgets and steps 10, 15, 20, 25 (tables and seed data, D7)
-- [ ] 2.2 Steps 30, 40, 50: write `transformations/dim_asset_migrated.sql` (D3)
+- [ ] 2.2 Steps 30, 40, 50: write `transformations/asset_dim_migrated.sql` (D3)
 - [ ] 2.3 Step 55: create or reuse the pipeline with the SDK and run it to completion (D1)
 - [ ] 2.4 Steps 60, 70: seed new changes, run again
 - [ ] 2.5 Step 80: the checks in D5
@@ -26,7 +26,7 @@
 ## 4. Docs
 
 - [ ] 4.1 `design-patterns.md` entry, `references/patterns/README.md` section (steps, slots, removal)
-- [ ] 4.2 `tag_patterns` mapping for `dim_asset_migrated`
+- [ ] 4.2 `tag_patterns` mapping for `asset_dim_migrated`
 
 ## 5. Verify
 

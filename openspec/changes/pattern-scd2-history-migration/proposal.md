@@ -12,24 +12,24 @@ wants it as one notebook that can be copied to another workspace and run step by
   `references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_history_migration_sql.py`,
   with widgets `catalog` (default `mdp_dev`) and `schema` (default `pattern_bronze_publish`).
   Its numbered steps:
-  - **10** create `asset_dim` (`asset_id`, `asset_name`, `asset_owner`, `start_date`,
+  - **10** create `asset_dim_legacy` (`asset_id`, `asset_name`, `asset_owner`, `start_date`,
     `end_date`): the old SCD2 dimension.
   - **15** create `asset_source`: a simulated live source, one row per change
     (`asset_id`, `asset_name`, `asset_owner`, `updated_at`), append-only.
-  - **20** seed `asset_source`; **25** seed `asset_dim` with history (several versions per
+  - **20** seed `asset_source`; **25** seed `asset_dim_legacy` with history (several versions per
     asset, one asset closed).
-  - **30** write `dim_asset_migrated.sql` into a `transformations/` folder next to the
+  - **30** write `asset_dim_migrated.sql` into a `transformations/` folder next to the
     notebook; the pipeline picks up that folder.
-  - **40** in that file, a once-only Auto CDC flow loads the history into
-    `dim_asset_migrated` from the temporary view `asset_history` (reads `asset_dim`).
+  - **40** in that file, a once-only Auto CDC backfill flow loads the history into
+    `asset_dim_migrated` from the temporary view `asset_history` (reads `asset_dim_legacy`).
   - **50** in the same file, a streaming Auto CDC flow loads live changes from the
     temporary view `asset_live` (reads `asset_source` as a stream).
-    `dim_asset_migrated` is `STORED AS SCD TYPE 2`.
+    `asset_dim_migrated` is `STORED AS SCD TYPE 2`.
   - **55** create the pipeline (serverless, triggered) with the Databricks SDK, or reuse
     it by name, and run it.
   - **60** seed new changes into `asset_source`; **70** run the pipeline again.
-  - **80** check: (1) the history flow did not run in the second update and the history
-    rows are unchanged; (2) every new change from step 60 is in `dim_asset_migrated`,
+  - **80** check: (1) the backfill flow did not run in the second update and the history
+    rows are unchanged; (2) every new change from step 60 is in `asset_dim_migrated`,
     with the version it replaces closed.
   - **90** (off unless the `teardown` widget is `true`) delete the pipeline and drop the
     tables and their hidden twins.
@@ -48,7 +48,7 @@ None.
 ## Impact
 
 - Dev only, `mdp_dev.pattern_bronze_publish`. No main-bundle change, no CI unit, no prd.
-- Table slots while it exists: `asset_dim` 1, `asset_source` 1, `dim_asset_migrated` 2
+- Table slots while it exists: `asset_dim_legacy` 1, `asset_source` 1, `asset_dim_migrated` 2
   (streaming table and its twin) = 4. The views are temporary (no slot); the pipeline gets
   no Unity Catalog event log (the notebook reads `event_log(<pipeline id>)`).
 - The quota was 488 to 496 of 500 on 2026-11-10 (stop line 488): re-read it before the
@@ -63,6 +63,6 @@ None. The schema `pattern_bronze_publish` already exists (iac, dev only).
 
 ## Model
 
-Opus: the history flow's SQL form (`AUTO CDC ONCE` from a batch view, next to a streaming
+Opus: the backfill flow's SQL form (`AUTO CDC ONCE` from a batch view, next to a streaming
 Auto CDC flow on the same target) must be proven by a probe first, and may need the
 Python fallback (D3).

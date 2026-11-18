@@ -16,24 +16,23 @@ widgets, so it runs in another workspace by changing those widgets only.
 - **THEN** step 55 reuses the existing pipeline instead of creating a second one
 
 ### Requirement: History loaded once without a stage table
-`dim_asset_migrated` SHALL be a streaming table `STORED AS SCD TYPE 2`, keyed by `asset_id`,
-whose history comes from a once-only flow reading the temporary view `asset_history` over
-`asset_dim`. No table other than `asset_dim`, `asset_source` and `dim_asset_migrated` SHALL
+`asset_dim_migrated` SHALL be a streaming table `STORED AS SCD TYPE 2`, keyed by `asset_id`,
+whose history comes from a once-only backfill flow reading the temporary view `asset_history` over
+`asset_dim_legacy`. No table other than `asset_dim_legacy`, `asset_source` and `asset_dim_migrated` SHALL
 be created.
 
 #### Scenario: First update
 - **WHEN** the pipeline runs for the first time
-- **THEN** every `asset_dim` version is a version of `dim_asset_migrated` with
-  `__START_AT` equal to its `start_date`, closed at the next version's `start_date`, and a
-  retired asset's last version is closed at its `end_date`
+- **THEN** every `asset_dim_legacy` row is a row of `asset_dim_migrated` with the same values,
+  `__START_AT` equal to its `start_date` and `__END_AT` equal to its `end_date` (null when open)
 
 #### Scenario: Later update
 - **WHEN** the pipeline runs again without a full refresh
-- **THEN** the history flow writes no rows and the history versions are unchanged
+- **THEN** the backfill flow writes no rows and the history versions are unchanged
 
 ### Requirement: Live changes kept as SCD type 2
 A second flow SHALL apply changes from the temporary view `asset_live`, a streaming read of
-`asset_source`, to `dim_asset_migrated` with the same key and sequence column.
+`asset_source`, to `asset_dim_migrated` with the same key and sequence column.
 
 #### Scenario: New changes seeded
 - **WHEN** step 60 appends changes to `asset_source` and the pipeline runs again
@@ -50,7 +49,7 @@ one pass or fail line per check, and fail the cell when a check fails.
 
 ### Requirement: Clean removal
 Step 90 SHALL run only when the `teardown` widget is `true`, and SHALL delete the pipeline
-and drop the three tables and the hidden twin of `dim_asset_migrated`.
+and drop the three tables and the hidden twin of `asset_dim_migrated`.
 
 #### Scenario: Teardown
 - **WHEN** step 90 runs with `teardown = true`
