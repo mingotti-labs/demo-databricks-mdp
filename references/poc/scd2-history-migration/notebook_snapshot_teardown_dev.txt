@@ -1,0 +1,2 @@
+--- left in pattern_bronze_publish after teardown
+   ['zz_p1_legacy']

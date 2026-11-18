@@ -186,8 +186,10 @@ Auto CDC names `__START_AT`/`__END_AT` (agreed).
   replay. Rejected for that reason.
 - Limit: two rows for the same asset in one write share a commit time; their order is
   undefined. The source must write one change per asset per write (stated in step 15).
-- Fallback: if SQL cannot stream the change feed, the Python API
-  (`spark.readStream.option("readChangeFeed", "true").table(...)`).
+- **P3 (2026-11-18), passed**: the change feed streams in SQL; the backfill and the live flow
+  share the target (in the first update they ran together, ordered by sequence); a re-appended
+  row equal to the open version opened no version; `backfill_history` stayed `IDLE` after the
+  first update. The Python fallback was not needed.
 
 ### D6. `WITH VERSION`, how it works (goes into the README guide)
 - Two queries: a version query returning zero or one row with one orderable value, and a
