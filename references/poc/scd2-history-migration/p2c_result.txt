@@ -1,0 +1,54 @@
+--- view
+   ['zz_p2c_source', 'MATERIALIZED_VIEW', '2026-11-18T09:50:16.509Z']
+--- pipeline fd058e5b-9025-41f2-be30-b354357d68a5
+--- update a7777562-c6b0-48cc-9558-54b08a4ec62c: COMPLETED
+--- after update 1 (expect legacy dates exact; A3 Di closed and A3 Eve opened at the view refresh; A1 Bob unchanged)
+   ['A1', 'Pump', 'Ann', '2024-01-01T00:00:00.000Z', '2024-06-01T00:00:00.000Z']
+   ['A1', 'Pump', 'Bob', '2024-06-01T00:00:00.000Z', None]
+   ['A2', 'Valve', 'Cy', '2024-02-01T00:00:00.000Z', '2025-03-01T00:00:00.000Z']
+   ['A3', 'Fan', 'Di', '2024-03-01T00:00:00.000Z', '2026-11-18T09:50:16.509Z']
+   ['A3', 'Fan', 'Eve', '2026-11-18T09:50:16.509Z', None]
+--- view refreshed after changes
+   ['zz_p2c_source', 'MATERIALIZED_VIEW', '2026-11-18T09:56:13.804Z']
+--- update 0380fd45-cc6c-4b37-885c-29a7ea231462: COMPLETED
+--- after update 2 (expect A1 Fay, A3 closed, A4 new)
+   ['A1', 'Pump', 'Ann', '2024-01-01T00:00:00.000Z', '2024-06-01T00:00:00.000Z']
+   ['A1', 'Pump', 'Bob', '2024-06-01T00:00:00.000Z', '2026-11-18T09:56:13.804Z']
+   ['A1', 'Pump', 'Fay', '2026-11-18T09:56:13.804Z', None]
+   ['A2', 'Valve', 'Cy', '2024-02-01T00:00:00.000Z', '2025-03-01T00:00:00.000Z']
+   ['A3', 'Fan', 'Di', '2024-03-01T00:00:00.000Z', '2026-11-18T09:50:16.509Z']
+   ['A3', 'Fan', 'Eve', '2026-11-18T09:50:16.509Z', '2026-11-18T09:56:13.804Z']
+   ['A4', 'Drill', 'Gus', '2026-11-18T09:56:13.804Z', None]
+--- update bb14853a-bc3e-448d-aaf8-6bc1228ed4b3: COMPLETED
+--- after update 3, no refresh (expect unchanged)
+   ['A1', 'Pump', 'Ann', '2024-01-01T00:00:00.000Z', '2024-06-01T00:00:00.000Z']
+   ['A1', 'Pump', 'Bob', '2024-06-01T00:00:00.000Z', '2026-11-18T09:56:13.804Z']
+   ['A1', 'Pump', 'Fay', '2026-11-18T09:56:13.804Z', None]
+   ['A2', 'Valve', 'Cy', '2024-02-01T00:00:00.000Z', '2025-03-01T00:00:00.000Z']
+   ['A3', 'Fan', 'Di', '2024-03-01T00:00:00.000Z', '2026-11-18T09:50:16.509Z']
+   ['A3', 'Fan', 'Eve', '2026-11-18T09:50:16.509Z', '2026-11-18T09:56:13.804Z']
+   ['A4', 'Drill', 'Gus', '2026-11-18T09:56:13.804Z', None]
+--- flow_progress events
+   ['4d8c2967-c413-4e12-a3eb-a77534637d4d', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'FAILED', '2026-11-18T09:50:54.496Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'QUEUED', '2026-11-18T09:52:33.379Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'PLANNING', '2026-11-18T09:52:33.396Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'STARTING', '2026-11-18T09:52:33.428Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:52:33.476Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:52:36.737Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:52:54.940Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:53:09.222Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:53:24.437Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:53:45.724Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:54:06.620Z']
+   ['a7777562-c6b0-48cc-9558-54b08a4ec62c', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'COMPLETED', '2026-11-18T09:54:27.876Z']
+   ['0380fd45-cc6c-4b37-885c-29a7ea231462', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'QUEUED', '2026-11-18T09:56:50.747Z']
+   ['0380fd45-cc6c-4b37-885c-29a7ea231462', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'PLANNING', '2026-11-18T09:56:50.767Z']
+   ['0380fd45-cc6c-4b37-885c-29a7ea231462', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'STARTING', '2026-11-18T09:56:50.800Z']
+   ['0380fd45-cc6c-4b37-885c-29a7ea231462', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:56:50.850Z']
+   ['0380fd45-cc6c-4b37-885c-29a7ea231462', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:56:56.226Z']
+   ['0380fd45-cc6c-4b37-885c-29a7ea231462', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'COMPLETED', '2026-11-18T09:57:25.520Z']
+   ['bb14853a-bc3e-448d-aaf8-6bc1228ed4b3', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'QUEUED', '2026-11-18T09:58:06.180Z']
+   ['bb14853a-bc3e-448d-aaf8-6bc1228ed4b3', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'PLANNING', '2026-11-18T09:58:06.199Z']
+   ['bb14853a-bc3e-448d-aaf8-6bc1228ed4b3', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'STARTING', '2026-11-18T09:58:06.235Z']
+   ['bb14853a-bc3e-448d-aaf8-6bc1228ed4b3', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'RUNNING', '2026-11-18T09:58:06.287Z']
+   ['bb14853a-bc3e-448d-aaf8-6bc1228ed4b3', 'mdp_dev.pattern_bronze_publish.zz_p2c_migrated', 'COMPLETED', '2026-11-18T09:58:10.221Z']

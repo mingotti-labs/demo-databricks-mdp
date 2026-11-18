@@ -237,6 +237,32 @@ pipeline. Reference only: code in the patterns bundle,
 `references/patterns/src/bronze_publish/bronze_publish_scd2_merge_sql.py` (job
 `bronze--pattern--publish--scd2--merge--sql--<target>`). Evidence: `dev`.
 
+### bronze_publish_scd2_autocdc_backfill_snapshot_sql
+Migrates a legacy SCD2 dimension (`start_date`/`end_date`) with its history into a
+pipeline-owned SCD2 table without a stage table, then keeps it current from a
+materialized view with no change timestamp. One SQL snapshot flow `WITH VERSION`: the
+versions are first every distinct legacy date (the snapshot is the legacy rows valid on
+that date, so the dates land exactly in `__START_AT`/`__END_AT`), then each refresh of
+the view (`information_schema.tables.last_altered`). The history is read once: versions
+only move forward. One flow because a snapshot target takes no other flow
+(`MULTI_QUERY_SNAPSHOT_TARGET_NOT_SUPPORTED`). The first update costs one full
+comparison per distinct legacy date (about 20 s each on Free Edition). One notebook does
+every step: `references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_backfill_snapshot_sql.py`
+(tables `asset_dim_legacy`, `asset_source_base`, `asset_source`, `asset_dim_migrated`;
+guide in `references/patterns/README.md`). Used by: none (engagement reference).
+Evidence: `dev` (probes P2, P2c and notebook runs, `references/poc/scd2-history-migration/`).
+
+### bronze_publish_scd2_autocdc_backfill_stream_sql
+The same migration when the live source is an append-only table without a timestamp: a
+once-only Auto CDC flow (`AUTO CDC ONCE`) replays the legacy versions as change events
+(`start_date`, plus a delete event at the `end_date` of a retired asset) from a streaming
+view over the legacy table, and a streaming Auto CDC flow reads the source's change data
+feed, sequenced by `_commit_timestamp`. `ONCE` still needs a streaming source. One
+notebook does every step:
+`references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_backfill_stream_sql.py`
+(tables `asset_dim_legacy`, `asset_source`, `asset_dim_migrated`). Used by: none
+(engagement reference). Evidence: `dev` (probes P1, P3 and notebook runs).
+
 ## Data quality
 
 ### bronze_quarantine_null_key_python

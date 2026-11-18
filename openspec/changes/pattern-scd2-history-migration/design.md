@@ -26,11 +26,19 @@ Agreed with the user. Step 30 writes `asset_dim_migrated.sql` into
 schema filled in from the widgets. Step 55 looks the pipeline up by name and creates it
 otherwise with `WorkspaceClient().pipelines.create(...)`: serverless, triggered,
 `catalog`/`schema` from the widgets, one `glob` library on that folder. The SQL text lives
-once, in the notebook, and is shown in it.
+once, in the notebook, and is shown in it. The pipeline publishes its event log as
+`event_log_<pipeline id>` in the schema (1 slot, seen in P1); step 90 drops it with the
+tables and the twins. Found in the dev run (2026-11-18):
+- The pipeline is created through the REST API (`w.api_client.do`): the SDK on serverless
+  notebooks has no `PathPattern`, so it cannot build the folder (glob) library.
+- Steps 10 to 25 recreate the tables, so a reused pipeline runs a full refresh in step 55;
+  otherwise it keeps its saved version and reads the recreated view as a change.
+- A one-time serverless job run retries a failed notebook from the top; run it with
+  `max_retries: 0`.
 Rejected: a bundle pipeline resource plus a separate `.sql` file (three files to copy).
 
-### D2. Backfill: replay the legacy versions; Auto CDC writes `__START_AT` and `__END_AT`
-Same in both notebooks. Auto CDC does not accept `__START_AT`/`__END_AT` as input. It writes
+### D2. Stream notebook backfill: replay the legacy versions; Auto CDC writes `__START_AT` and `__END_AT`
+Stream notebook only (the snapshot notebook backfills inside its one flow, D4). Auto CDC does not accept `__START_AT`/`__END_AT` as input. It writes
 them from the `SEQUENCE BY` value of the events it receives: a new version's `__START_AT` is
 the value of the event that created it; an open version's `__END_AT` is the value of the
 next event for the same key (a change or a delete).
@@ -51,16 +59,27 @@ table closes a version on another date than the next `start_date`, `__END_AT` ta
 next `start_date`; step 80 lists such rows.
 
 ```sql
-CREATE TEMPORARY VIEW asset_history AS ...;   -- changes and delete events, change_ts TIMESTAMP
+CREATE TEMPORARY VIEW asset_history AS          -- streaming: P1a
+SELECT e.* FROM (
+  SELECT explode(CASE WHEN <retired> THEN array(<change>, <delete>) ELSE array(<change>) END) AS e
+  FROM STREAM(asset_dim_legacy) l
+  JOIN (SELECT asset_id, max(start_date) AS last_start_date
+        FROM asset_dim_legacy GROUP BY asset_id) last   -- static lookup
+    ON l.asset_id = last.asset_id);
 CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
 CREATE FLOW backfill_history AS AUTO CDC ONCE INTO asset_dim_migrated
-  FROM asset_history KEYS (asset_id) APPLY AS DELETE WHEN is_delete
+  FROM STREAM(asset_history) KEYS (asset_id) APPLY AS DELETE WHEN is_delete
   SEQUENCE BY change_ts COLUMNS * EXCEPT (is_delete, change_ts) STORED AS SCD TYPE 2;
 ```
-Dates are cast to `TIMESTAMP`: the live flows' versions are timestamps, and flows on one
-target share the sequence type. The docs show `AUTO CDC ONCE` only with `FROM SNAPSHOT`;
-P1 proves it from a batch view. Fallback: the Python API with `once=True`; the pattern
-IDs then end `_python`.
+`<retired>` is `l.end_date IS NOT NULL AND l.start_date = last.last_start_date`. Dates are
+cast to `TIMESTAMP`: the live flows' versions are timestamps, and flows on one target share
+the sequence type.
+**P1 (2026-11-18)**: from a batch view, `AUTO CDC ONCE` fails (P1a: `Source data for the
+APPLY CHANGES target ... must be a streaming query`); `ONCE` means "run once", the source
+must still be a stream. Hence the streaming view, with the retirement test from a
+stream-static join instead of a subquery (P1b). Result: every legacy row arrived with
+`__START_AT = start_date` and `__END_AT = end_date`, the retired asset included; the second
+update left `backfill_history` `IDLE` and the table unchanged.
 Rejected: `INSERT INTO ONCE` with `__START_AT`/`__END_AT` copied directly (an append flow
 into an Auto CDC target is not documented as supported).
 
@@ -76,39 +95,78 @@ notebook's tables exist at a time. Pipeline display names
 `bronze--pattern--publish--scd2--backfill--stream--sql--dev`. The SCD2 columns keep the
 Auto CDC names `__START_AT`/`__END_AT` (agreed).
 
-### D4. Snapshot notebook: materialized view source, `WITH VERSION`
+### D4. Snapshot notebook: one snapshot flow `WITH VERSION` for the backfill and the live loads
+- **Why one flow (P2)**: a target fed by a snapshot flow accepts no other flow
+  (`MULTI_QUERY_SNAPSHOT_TARGET_NOT_SUPPORTED ... only supports one flow per destination`,
+  on the CURRENT and PREVIEW channels). So the once-only backfill of D2 cannot sit next to
+  the live snapshot flow; the one snapshot flow does both.
 - Source: `asset_source_base` (plain Delta table, one row per asset, changed in place) and a
   real materialized view `asset_source AS SELECT asset_id, asset_name, asset_owner FROM
   asset_source_base`, created and refreshed by the notebook (`REFRESH MATERIALIZED VIEW`).
-- Live flow:
+  A materialized view created from SQL gets its own hidden pipeline: 3 slots (the view,
+  its twin, that pipeline's event log; seen in P2).
+- Flow:
   ```sql
-  CREATE TEMPORARY VIEW asset_live AS SELECT asset_id, asset_name, asset_owner FROM asset_source;
-  CREATE FLOW live_snapshot AS AUTO CDC INTO asset_dim_migrated
-  FROM SNAPSHOT (SELECT * FROM asset_live)
+  CREATE TEMPORARY VIEW asset_history AS        -- legacy versions with their validity
+  SELECT asset_id, asset_name, asset_owner,
+         CAST(start_date AS TIMESTAMP) AS valid_from, CAST(end_date AS TIMESTAMP) AS valid_to
+  FROM asset_dim_legacy;
+  CREATE TEMPORARY VIEW asset_live AS           -- the materialized view: current state
+  SELECT asset_id, asset_name, asset_owner FROM asset_source;
+  CREATE TEMPORARY VIEW asset_union AS          -- both parts; the flow picks one per version
+  SELECT asset_id, asset_name, asset_owner, valid_from, valid_to, false AS is_live FROM asset_history
+  UNION ALL
+  SELECT asset_id, asset_name, asset_owner, NULL, NULL, true FROM asset_live;
+  CREATE TEMPORARY VIEW asset_versions AS       -- every version to process
+  SELECT valid_from AS version, false AS is_live FROM asset_history
+  UNION SELECT valid_to, false FROM asset_history WHERE valid_to IS NOT NULL
+  UNION SELECT last_altered, true FROM <catalog>.information_schema.tables
+        WHERE table_schema = '<schema>' AND table_name = 'asset_source';
+  CREATE TEMPORARY VIEW asset_cutover AS        -- the last legacy version
+  SELECT max(version) AS last_legacy_version FROM asset_versions WHERE NOT is_live;
+
+  CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
+  CREATE FLOW migrate_and_load AS AUTO CDC INTO asset_dim_migrated
+  FROM SNAPSHOT (                               -- v = (SELECT version FROM current_snapshot_version())
+    SELECT u.asset_id, u.asset_name, u.asset_owner
+    FROM asset_union u CROSS JOIN asset_cutover c
+    WHERE CASE WHEN u.is_live THEN v > c.last_legacy_version
+               ELSE v <= c.last_legacy_version AND u.valid_from <= v
+                    AND (u.valid_to IS NULL OR u.valid_to > v) END
+  )
   WITH VERSION (
-    SELECT last_altered AS version
-    FROM <catalog>.information_schema.tables
-    WHERE table_schema = '<schema>' AND table_name = 'asset_source'
-      AND (NOT EXISTS (SELECT 1 FROM last_snapshot_version())
-           OR last_altered > (SELECT version FROM last_snapshot_version()))
+    SELECT min(version) AS version FROM asset_versions
+    WHERE NOT EXISTS (SELECT 1 FROM last_snapshot_version())
+       OR version > (SELECT version FROM last_snapshot_version())
+    HAVING min(version) IS NOT NULL
   )
   KEYS (asset_id)
   STORED AS SCD TYPE 2;
   ```
-- Behaviour: one snapshot per refresh of the view. A changed row closes its version and
-  opens a new one; a missing asset closes its version (retirement needs no delete event); a
-  new asset opens one. Live versions are dated with the view's refresh time, not a business
-  date. Several refreshes between two pipeline runs are seen as one: the view keeps only
-  the current state.
-- A target takes at most one snapshot flow, and a snapshot flow next to regular Auto CDC
-  flows needs "snapshot and regular Auto CDC interoperability" (skill reference). P2 proves
-  it with the backfill, and that the first update gives the legacy history plus only the
-  real differences.
-- Fallbacks: if `last_altered` does not move on a refresh, or cannot be read in the version
-  query, the Python snapshot flow `dp.create_auto_cdc_from_snapshot_flow(source="asset_live")`
-  (each pipeline update is a snapshot, dated with the update time; used by acnc and iso). If
-  the first update mixes the flows badly, the notebook writes the live flow into the file
-  after the first update.
+- The union is a view (`asset_union`, the user's idea); only the filter on the version
+  stays inside `FROM SNAPSHOT`, because `current_snapshot_version()` works only there.
+- Behaviour, first update: one snapshot per distinct legacy date, in order (the assets
+  valid on that date), then one for the view. Every legacy `start_date` and `end_date`
+  lands in `__START_AT`/`__END_AT`; a retired asset is missing from the snapshot on its
+  `end_date`, so it is closed then (no delete event). Later updates: the saved version is
+  past every legacy date, so only a new refresh of the view is processed; the history is
+  never read again. Live versions are dated with the view's refresh time, not a business
+  date; several refreshes between two runs are seen as one.
+- Cost: see D6, "Performance".
+- `current_snapshot_version()` must be called in a plain scalar subquery each time it is
+  needed (`v` above); inside a `WITH` (CTE) it is not resolved (P2c-a:
+  `UNRESOLVABLE_TABLE_VALUED_FUNCTION`). The pipeline ran on runtime 18.3 (CURRENT channel).
+- **P2c (2026-11-18), passed**: update 1 gave the legacy rows with exact dates (the retired
+  asset closed at its `end_date`), closed and opened only the asset the view changed, at the
+  view's `last_altered`, and left the unchanged asset alone; after changes and `REFRESH
+  MATERIALIZED VIEW`, `last_altered` moved and update 2 applied a change, a delete and an
+  insert at that time; update 3 without a refresh changed nothing (4 seconds). The first
+  update took about 2 minutes for 6 versions (about 20 seconds per version, Free Edition).
+- Fallbacks (not needed in P2c): if the snapshot query cannot read temporary views, the union is
+  written inline in it; if `last_altered` does not move on a refresh, or cannot be read in
+  the version query, the version of the live part becomes the pipeline update's time in a
+  Python snapshot flow with a version function (`dp.create_auto_cdc_from_snapshot_flow`
+  with a callable source).
 
 ### D5. Stream notebook: append-only source without a timestamp
 - Source: `asset_source` with `delta.enableChangeDataFeed = true`, rows only appended (one
@@ -128,8 +186,10 @@ Auto CDC names `__START_AT`/`__END_AT` (agreed).
   replay. Rejected for that reason.
 - Limit: two rows for the same asset in one write share a commit time; their order is
   undefined. The source must write one change per asset per write (stated in step 15).
-- Fallback: if SQL cannot stream the change feed, the Python API
-  (`spark.readStream.option("readChangeFeed", "true").table(...)`).
+- **P3 (2026-11-18), passed**: the change feed streams in SQL; the backfill and the live flow
+  share the target (in the first update they ran together, ordered by sequence); a re-appended
+  row equal to the open version opened no version; `backfill_history` stayed `IDLE` after the
+  first update. The Python fallback was not needed.
 
 ### D6. `WITH VERSION`, how it works (goes into the README guide)
 - Two queries: a version query returning zero or one row with one orderable value, and a
@@ -144,15 +204,28 @@ Auto CDC names `__START_AT`/`__END_AT` (agreed).
 - The version must change only when the data changes. `current_timestamp()` always moves,
   so the version query never returns zero rows and the update never ends. Good versions: a
   file's modification time, an extract date, a view's last refresh time (D4).
+- **Performance**: every version is a full comparison of the snapshot against the previous
+  one, committed on its own. A first update that replays history costs about
+  *number of distinct dates x rows per snapshot*: 20 monthly batches of 1 million rows is
+  20 comparisons; 5 years of business-day changes on 50,000 rows is about 1,250 commits
+  and may take hours. Measured in P2c on Free Edition serverless: about 20 seconds per
+  version on 5 rows, so a fixed cost per version dominates small snapshots (1,250 dates
+  would be about 7 hours). After that, each update compares one snapshot. Measure first:
+  `count(DISTINCT start_date)` plus `count(DISTINCT end_date)` of the legacy table (the
+  number of distinct dates is not known for the client yet). Many dates: test the first
+  update on a copy at full size before the cut-over, or let the first update run as its
+  own job before the pipeline is scheduled.
 
 ### D7. What step 80 checks
 - **Backfill matches the legacy table** (after the first update): every `asset_dim_legacy`
   row has a row in `asset_dim_migrated` with the same `asset_id`, `asset_name`,
   `asset_owner`, `__START_AT = start_date` and `__END_AT = end_date` (both null when open),
   and no extra rows other than the live changes the step-20 seed implies. Differences listed.
-- **Backfill did not run again**: in `event_log(<pipeline id>)`, the second update has no
-  `flow_progress` event with rows written for `backfill_history`, and the backfilled rows are
-  identical before and after (count and a hash over all columns, kept in a Python variable).
+- **Backfill did not run again**: the backfilled rows are identical before and after the
+  second update (count and a hash over all columns, kept in a Python variable). Stream
+  notebook: the event log shows `backfill_history` `IDLE` in the second update (as in P1).
+  Snapshot notebook: the versions processed by the second update are all later than the
+  last legacy version.
 - **Changes added**: every change made in step 60 is an open version in
   `asset_dim_migrated` and the version it replaced is closed at the same time. Snapshot
   notebook: that time is the view's refresh time, and a deleted asset is closed. Stream
@@ -174,16 +247,21 @@ Scripts and output in `references/poc/scd2-history-migration/`, one row each in
 
 - **P1** (both): `AUTO CDC ONCE` from a batch temporary view in SQL; the second update
   writes nothing from it.
-- **P2** (snapshot): the notebook can create the materialized view on serverless compute;
-  `information_schema.tables.last_altered` changes on each refresh and is readable in the
-  version query; the snapshot flow and the backfill share the target; the first update
-  gives the legacy history plus only the real differences.
+- **P2** (snapshot): can a snapshot flow share the target with the once-only backfill? No
+  (D4); the view's `last_altered` could be read once after creation, the rest was not
+  reached.
+- **P2c** (snapshot): the one flow of D4. Does the snapshot query read the temporary views;
+  does `last_altered` move on a refresh and work in the version query; does the first
+  update give the legacy history with its dates plus only the real differences; does an
+  update without a refresh process nothing? Also: can a serverless notebook create the
+  materialized view (checked in the notebook run)?
 - **P3** (stream): the change feed streams in SQL (`WITH (readChangeFeed = true)`); an
   appended row equal to the current version opens no new version.
 
 ## Risks / Trade-offs
 
 - [A probe fails] -> its fallback in D2, D4 or D5; the rest of the design is unchanged.
+- [Many distinct legacy dates make the first snapshot update slow] -> measure first (D6).
 - [Live version dates are not business dates] -> stated in both notebooks; it follows from
   a source without a timestamp.
 - [Table quota at the stop line] -> re-read before the first run; step 90 frees the slots.

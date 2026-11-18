@@ -1,0 +1,24 @@
+--- pipeline 5f5f5a08-8f60-4b77-8516-4afa4a302a20
+--- update 4f1ca17b-49bf-49e5-86ec-a3d615701949: COMPLETED
+--- legacy vs migrated after update 1
+   ['A1', 'Ann', '2024-01-01', '2024-06-01', '2024-01-01T00:00:00.000Z', '2024-06-01T00:00:00.000Z', 'true']
+   ['A1', 'Bob', '2024-06-01', None, '2024-06-01T00:00:00.000Z', None, 'true']
+   ['A2', 'Cy', '2024-02-01', '2025-03-01', '2024-02-01T00:00:00.000Z', '2025-03-01T00:00:00.000Z', 'true']
+   ['A3', 'Di', '2024-03-01', None, '2024-03-01T00:00:00.000Z', None, 'true']
+--- update 0d19b87d-009b-4157-8e75-d1dc87ff436c: COMPLETED
+--- legacy vs migrated after update 2
+   ['A1', 'Ann', '2024-01-01', '2024-06-01', '2024-01-01T00:00:00.000Z', '2024-06-01T00:00:00.000Z', 'true']
+   ['A1', 'Bob', '2024-06-01', None, '2024-06-01T00:00:00.000Z', None, 'true']
+   ['A2', 'Cy', '2024-02-01', '2025-03-01', '2024-02-01T00:00:00.000Z', '2025-03-01T00:00:00.000Z', 'true']
+   ['A3', 'Di', '2024-03-01', None, '2024-03-01T00:00:00.000Z', None, 'true']
+--- flow_progress events
+   ['4f1ca17b-49bf-49e5-86ec-a3d615701949', 'mdp_dev.pattern_bronze_publish.backfill_history', 'QUEUED', None, '2026-11-18T09:02:08.350Z']
+   ['4f1ca17b-49bf-49e5-86ec-a3d615701949', 'mdp_dev.pattern_bronze_publish.backfill_history', 'STARTING', None, '2026-11-18T09:02:12.968Z']
+   ['4f1ca17b-49bf-49e5-86ec-a3d615701949', 'mdp_dev.pattern_bronze_publish.backfill_history', 'RUNNING', None, '2026-11-18T09:02:17.220Z']
+   ['4f1ca17b-49bf-49e5-86ec-a3d615701949', 'mdp_dev.pattern_bronze_publish.backfill_history', 'RUNNING', None, '2026-11-18T09:02:48.148Z']
+   ['4f1ca17b-49bf-49e5-86ec-a3d615701949', 'mdp_dev.pattern_bronze_publish.backfill_history', 'COMPLETED', None, '2026-11-18T09:02:48.239Z']
+   ['4f1ca17b-49bf-49e5-86ec-a3d615701949', 'pipelines.flowTimeMetrics.missingFlowName', None, None, '2026-11-18T09:02:48.265Z']
+   ['4f1ca17b-49bf-49e5-86ec-a3d615701949', 'mdp_dev.pattern_bronze_publish.backfill_history', None, None, '2026-11-18T09:02:48.277Z']
+   ['0d19b87d-009b-4157-8e75-d1dc87ff436c', 'mdp_dev.pattern_bronze_publish.backfill_history', 'QUEUED', None, '2026-11-18T09:03:28.827Z']
+   ['0d19b87d-009b-4157-8e75-d1dc87ff436c', 'mdp_dev.pattern_bronze_publish.backfill_history', 'IDLE', None, '2026-11-18T09:03:31.484Z']
+   ['0d19b87d-009b-4157-8e75-d1dc87ff436c', 'pipelines.flowTimeMetrics.missingFlowName', None, None, '2026-11-18T09:03:31.509Z']

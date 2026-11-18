@@ -1,0 +1,5 @@
+--- view created
+   ['zz_p2_source', 'MATERIALIZED_VIEW', '2026-11-18T09:17:29.536Z']
+--- pipeline efa1db7f-7602-4008-9bc3-04872bd383e0
+--- update 65aef508-8a09-480d-8e36-71137c7f0748: FAILED
+   ERROR: [MULTI_QUERY_SNAPSHOT_TARGET_NOT_SUPPORTED] 'mdp_dev.pattern_bronze_publish.zz_p2_migrated' already contains a APPLY CHANGES FROM SNAPSHOT query 'mdp_dev.pattern_bronze_publish.zz_p2_migrated'. Currently, this API only supports one flow per destination.

@@ -1,0 +1,116 @@
+=== cell: dbutils.widgets.text("catalog", "mdp_dev")
+mdp_dev.pattern_bronze_publish
+/Workspace/Users/handsonessential@gmail.com/poc/scd2-history-migration/notebooks/transformations/bronze_publish_scd2_autocdc_backfill_stream_sql/asset_dim_migrated.sql
+=== cell: spark.sql(f"""
+=== cell: spark.sql(f"""
+=== cell: spark.sql(f"""
+written at 2026-11-18 11:15:41
+=== cell: spark.sql(f"""
+=== cell: def write_pipeline_file(text: str) -> None:
+-- Written by the notebook bronze_publish_scd2_autocdc_backfill_stream_sql (step 30).
+CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
+=== cell: sql_backfill = f"""
+
+CREATE TEMPORARY VIEW asset_history AS
+SELECT e.asset_id, e.asset_name, e.asset_owner, e.change_ts, e.is_delete
+FROM (
+  SELECT explode(
+    CASE WHEN l.end_date IS NOT NULL AND l.start_date = last.last_start_date
+      THEN array(
+        named_struct('asset_id', l.asset_id, 'asset_name', l.asset_name, 'asset_owner', l.asset_owner,
+                     'change_ts', CAST(l.start_date AS TIMESTAMP), 'is_delete', false),
+        named_struct('asset_id', l.asset_id, 'asset_name', l.asset_name, 'asset_owner', l.asset_owner,
+                     'change_ts', CAST(l.end_date AS TIMESTAMP), 'is_delete', true))
+      ELSE array(
+        named_struct('asset_id', l.asset_id, 'asset_name', l.asset_name, 'asset_owner', l.asset_owner,
+                     'change_ts', CAST(l.start_date AS TIMESTAMP), 'is_delete', false))
+    END) AS e
+  FROM STREAM(mdp_dev.pattern_bronze_publish.asset_dim_legacy) l
+  JOIN (SELECT asset_id, max(start_date) AS last_start_date FROM mdp_dev.pattern_bronze_publish.asset_dim_legacy GROUP BY asset_id) last
+    ON l.asset_id = last.asset_id
+);
+
+CREATE FLOW backfill_history AS AUTO CDC ONCE INTO asset_dim_migrated
+FROM STREAM(asset_history)
+KEYS (asset_id)
+APPLY AS DELETE WHEN is_delete
+SEQUENCE BY change_ts
+COLUMNS * EXCEPT (is_delete, change_ts)
+STORED AS SCD TYPE 2;
+=== cell: sql_live = f"""
+
+CREATE TEMPORARY VIEW asset_live AS
+SELECT asset_id, asset_name, asset_owner, _commit_timestamp AS change_ts, false AS is_delete
+FROM STREAM(mdp_dev.pattern_bronze_publish.asset_source) WITH (readChangeFeed = true)
+WHERE _change_type = 'insert';
+
+CREATE FLOW live_stream AS AUTO CDC INTO asset_dim_migrated
+FROM STREAM(asset_live)
+KEYS (asset_id)
+APPLY AS DELETE WHEN is_delete
+SEQUENCE BY change_ts
+COLUMNS * EXCEPT (is_delete, change_ts)
+STORED AS SCD TYPE 2;
+=== cell: existing = [p for p in w.pipelines.list_pipelines(filter=f"name LIKE '{pipeline_
+created pipeline 44087a29-5a5e-4a13-ade1-a58e1d0c0994
+update 57f989c8-ed2c-44da-b24e-4b09ec5623f5: COMPLETED
+asset_id | asset_name | asset_owner | __START_AT | __END_AT
+A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | None
+A2 | Valve | Cy | 2024-02-01T00:00:00.000Z | 2024-09-01T00:00:00.000Z
+A2 | Valve | Dan | 2024-09-01T00:00:00.000Z | 2025-03-01T00:00:00.000Z
+A3 | Fan | Di | 2024-03-01T00:00:00.000Z | 2025-05-01T00:00:00.000Z
+A3 | Fan | Eli | 2025-05-01T00:00:00.000Z | 2026-11-18T11:15:41.000Z
+A3 | Fan | Hal | 2026-11-18T11:15:41.000Z | None
+A4 | Belt | Flo | 2024-04-01T00:00:00.000Z | 2024-10-01T00:00:00.000Z
+A4 | Belt | Gil | 2024-10-01T00:00:00.000Z | None
+=== cell: spark.sql(f"""
+written at 2026-11-18 11:18:02
+=== cell: second_update = run_pipeline(pipeline_id)
+update b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9: COMPLETED
+asset_id | asset_name | asset_owner | __START_AT | __END_AT
+A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | 2026-11-18T11:18:02.000Z
+A1 | Pump | Ivy | 2026-11-18T11:18:02.000Z | None
+A2 | Valve | Cy | 2024-02-01T00:00:00.000Z | 2024-09-01T00:00:00.000Z
+A2 | Valve | Dan | 2024-09-01T00:00:00.000Z | 2025-03-01T00:00:00.000Z
+A3 | Fan | Di | 2024-03-01T00:00:00.000Z | 2025-05-01T00:00:00.000Z
+A3 | Fan | Eli | 2025-05-01T00:00:00.000Z | 2026-11-18T11:15:41.000Z
+A3 | Fan | Hal | 2026-11-18T11:15:41.000Z | None
+A4 | Belt | Flo | 2024-04-01T00:00:00.000Z | 2024-10-01T00:00:00.000Z
+A4 | Belt | Gil | 2024-10-01T00:00:00.000Z | None
+A5 | Motor | Jo | 2026-11-18T11:18:02.000Z | None
+=== cell: results = []
+update_id | flow_name | status | timestamp
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.live_stream | QUEUED | 2026-11-18T11:16:32.401Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.backfill_history | QUEUED | 2026-11-18T11:16:32.406Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.live_stream | STARTING | 2026-11-18T11:16:34.857Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.live_stream | RUNNING | 2026-11-18T11:16:40.267Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.backfill_history | STARTING | 2026-11-18T11:16:45.005Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.backfill_history | RUNNING | 2026-11-18T11:16:48.663Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.live_stream | RUNNING | 2026-11-18T11:17:10.523Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.live_stream | COMPLETED | 2026-11-18T11:17:10.636Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.live_stream | None | 2026-11-18T11:17:12.247Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | pipelines.flowTimeMetrics.missingFlowName | None | 2026-11-18T11:17:12.267Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.backfill_history | None | 2026-11-18T11:17:12.269Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.backfill_history | RUNNING | 2026-11-18T11:17:31.173Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.backfill_history | COMPLETED | 2026-11-18T11:17:31.205Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | pipelines.flowTimeMetrics.missingFlowName | None | 2026-11-18T11:17:31.225Z
+57f989c8-ed2c-44da-b24e-4b09ec5623f5 | mdp_dev.pattern_bronze_publish.backfill_history | None | 2026-11-18T11:17:31.228Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.backfill_history | QUEUED | 2026-11-18T11:18:39.109Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.live_stream | QUEUED | 2026-11-18T11:18:39.114Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.live_stream | STARTING | 2026-11-18T11:18:42.878Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.live_stream | RUNNING | 2026-11-18T11:18:46.440Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.backfill_history | IDLE | 2026-11-18T11:18:49.606Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.live_stream | None | 2026-11-18T11:19:24.025Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | pipelines.flowTimeMetrics.missingFlowName | None | 2026-11-18T11:19:24.041Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.live_stream | RUNNING | 2026-11-18T11:19:39.454Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.live_stream | COMPLETED | 2026-11-18T11:19:39.598Z
+b01ea59a-9b94-49ed-b0c3-79fd8af0b4b9 | mdp_dev.pattern_bronze_publish.live_stream | None | 2026-11-18T11:19:39.629Z
+PASS backfill matches the legacy table
+PASS history not reloaded by the second update (backfill_history idle)
+PASS step-60 changes applied at their commit time, unchanged row ignored
+=== cell: if teardown:
+teardown skipped (set the widget to true)

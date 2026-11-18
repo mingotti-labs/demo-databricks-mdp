@@ -1,0 +1,16 @@
+--- view created
+   ['zz_p2c_source', 'MATERIALIZED_VIEW', '2026-11-18T09:50:16.509Z']
+--- pipeline fd058e5b-9025-41f2-be30-b354357d68a5
+--- update 4d8c2967-c413-4e12-a3eb-a77534637d4d: FAILED
+   ERROR: [UNRESOLVABLE_TABLE_VALUED_FUNCTION] Could not resolve current_snapshot_version to a table-valued function.
+Please make sure that current_snapshot_version is defined as a table-valued function and that all required parameters are provided correctly.
+If current_snapshot_version is not defined, please create the table-valued function before using it.
+For more information about defining table-valued functions, please refer to the Apache Spark documentation. SQLSTATE: 42883; line 3 pos 40;
+'Project ['u.asset_id, 'u.asset_name, 'u.asset_owner]
++- 'Filter CASE WHEN 'u.is_live THEN ('cur.v > 'c.last_
+   ERROR: [UNRESOLVABLE_TABLE_VALUED_FUNCTION] Could not resolve current_snapshot_version to a table-valued function.
+Please make sure that current_snapshot_version is defined as a table-valued function and that all required parameters are provided correctly.
+If current_snapshot_version is not defined, please create the table-valued function before using it.
+For more information about defining table-valued functions, please refer to the Apache Spark documentation. SQLSTATE: 42883; line 3 pos 40;
+'Project ['u.asset_id, 'u.asset_name, 'u.asset_owner]
++- 'Filter CASE WHEN 'u.is_live THEN ('cur.v > 'c.last_

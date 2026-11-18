@@ -3,6 +3,8 @@
 # pattern. A pattern_bronze table is named after its pattern file, so the register
 # ID is "bronze_" + table name (the four lakeflow_query_postgresql_<table> tables share
 # the ID bronze_lakeflow_query_postgresql); a pattern_bronze_publish table is named by the ID.
+# The SCD2 migration notebooks use the engagement's table names (asset_*) and tag their
+# own target, so pattern_bronze_publish tables not named bronze_publish_* are skipped.
 # Idempotent; run after the pattern pipelines.
 dbutils.widgets.text("catalog", "")
 catalog = dbutils.widgets.get("catalog")
@@ -23,6 +25,8 @@ tagged = 0
 for schema, prefix in SCHEMAS.items():
     for t in client.tables.list(catalog_name=catalog, schema_name=schema):
         if t.name.startswith(("event_log_", "__materialization_")):
+            continue
+        if schema == "pattern_bronze_publish" and not t.name.startswith("bronze_publish_"):
             continue
         name = t.name
         if name.startswith("lakeflow_query_postgresql_"):
