@@ -18,8 +18,9 @@ from widgets, and write its own pipeline file and create its own pipeline.
 
 ### Requirement: History backfilled once without a stage table
 `asset_dim_migrated` SHALL be a streaming table `STORED AS SCD TYPE 2`, keyed by `asset_id`,
-whose history comes from a once-only backfill flow reading the temporary view
-`asset_history` over `asset_dim_legacy`. No table other than the notebook's source tables,
+whose history comes from `asset_dim_legacy` through the temporary view `asset_history`, read
+once: in the stream notebook by a once-only backfill flow, in the snapshot notebook by the
+legacy versions of its one snapshot flow. No table other than the notebook's source tables,
 `asset_dim_legacy` and `asset_dim_migrated` SHALL be created.
 
 #### Scenario: First update
@@ -29,12 +30,13 @@ whose history comes from a once-only backfill flow reading the temporary view
 
 #### Scenario: Later update
 - **WHEN** the pipeline runs again without a full refresh
-- **THEN** the backfill flow writes no rows and the backfilled versions are unchanged
+- **THEN** the history is not read again and the backfilled versions are unchanged
 
 ### Requirement: Live changes from a materialized view
-In the snapshot notebook, a snapshot flow with `WITH VERSION` SHALL apply the current state
-of the materialized view `asset_source` (no timestamp column), read through the temporary
-view `asset_live`, to `asset_dim_migrated`. The version SHALL change only when the view is
+In the snapshot notebook, one snapshot flow with `WITH VERSION` SHALL write
+`asset_dim_migrated`: first one snapshot per distinct legacy date, then the current state of
+the materialized view `asset_source` (no timestamp column), read through the temporary view
+`asset_live`. After the legacy dates, the version SHALL change only when the view is
 refreshed.
 
 #### Scenario: View refreshed with changes

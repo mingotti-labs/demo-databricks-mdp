@@ -24,8 +24,6 @@ workspace and run step by step.
     asset, one asset retired).
   - **30** write `asset_dim_migrated.sql` into a `transformations/` folder named after the
     notebook; the pipeline picks up that folder.
-  - **40** in that file, the backfill: a once-only Auto CDC flow from the temporary view
-    `asset_history` (reads `asset_dim_legacy`) into `asset_dim_migrated`, `STORED AS SCD TYPE 2`.
   - **55** create the pipeline (serverless, triggered) with the Databricks SDK, or reuse it
     by name, and run it. **70** run it again after step 60.
   - **80** checks: the backfill matches the legacy table row by row; the backfill did not
@@ -38,11 +36,13 @@ workspace and run step by step.
   |---|---|---|
   | 15 | plain table `asset_source_base` (one row per asset) and materialized view `asset_source` over it (`asset_id`, `asset_name`, `asset_owner`) | table `asset_source` (`asset_id`, `asset_name`, `asset_owner`), change data feed on, rows only appended |
   | 20 | seed `asset_source_base`, refresh `asset_source` | append the first rows |
-  | 50 | snapshot flow from `asset_live` (reads `asset_source`) `WITH VERSION` = the view's last refresh time | streaming flow from `asset_live` (change feed of `asset_source`), sequenced by `_commit_timestamp` |
+  | 40 | temporary views `asset_history` (legacy versions with their dates) and `asset_live` (the view), and `asset_union` over both | the backfill: a once-only Auto CDC flow from the streaming view `asset_history` over `asset_dim_legacy` |
+  | 50 | one snapshot flow `WITH VERSION` from `asset_union`: first every legacy date in order (the backfill), then each refresh of the view (a target fed by a snapshot flow takes no other flow, P2) | streaming flow from `asset_live` (change feed of `asset_source`), sequenced by `_commit_timestamp` |
   | 60 | update, insert and delete rows in `asset_source_base`, refresh `asset_source` | append new rows |
 
 - **Docs**: two entries in `references/docs/registers/design-patterns.md`; a section in
-  `references/patterns/README.md` with both notebooks and a guide to `WITH VERSION`; the
+  `references/patterns/README.md` with both notebooks, a guide to `WITH VERSION` and its
+  first-update cost (number of distinct legacy dates); the
   `design_pattern` tag mapping for `tag_patterns`.
 
 ## Capabilities
@@ -58,9 +58,10 @@ None.
 ## Impact
 
 - Dev only, `mdp_dev.pattern_bronze_publish`. No main-bundle change, no CI unit, no prd.
-- Table slots while a notebook's tables exist: snapshot notebook 7 (`asset_dim_legacy` 1,
-  `asset_source_base` 1, `asset_source` 2, `asset_dim_migrated` 2, the pipeline's event log
-  1); stream notebook 5 (`asset_dim_legacy` 1, `asset_source` 1, `asset_dim_migrated` 2,
+- Table slots while a notebook's tables exist: snapshot notebook 8 (`asset_dim_legacy` 1,
+  `asset_source_base` 1, `asset_source` 3 (a materialized view created from SQL has its own
+  hidden pipeline and event log, seen in P2), `asset_dim_migrated` 2, the pipeline's event
+  log 1); stream notebook 5 (`asset_dim_legacy` 1, `asset_source` 1, `asset_dim_migrated` 2,
   event log 1). Temporary views take no slot. A pipeline created through the API publishes
   its event log as `event_log_<pipeline id>` in its schema (seen in P1); step 90 drops it.
 - Both notebooks use the engagement's table names in one schema, so only one notebook's
