@@ -280,6 +280,7 @@ else:
     print("created pipeline", pipeline_id)
 
 first_update = run_pipeline(pipeline_id, full_refresh=bool(existing))
+spark.sql(f"ALTER STREAMING TABLE {migrated} SET TAGS ('design_pattern' = 'bronze_publish_scd2_autocdc_backfill_snapshot_sql')")
 cutover = spark.sql(f"""
 SELECT max(d) FROM (SELECT start_date AS d FROM {legacy} UNION SELECT end_date FROM {legacy})
 """).first()[0]
@@ -390,10 +391,14 @@ if teardown:
     spark.sql(f"DROP MATERIALIZED VIEW IF EXISTS {source}")
     for name in ["asset_dim_migrated", "asset_source_base", "asset_dim_legacy"]:
         spark.sql(f"DROP TABLE IF EXISTS {target}.{name}")
-    for t in w.tables.list(catalog_name=catalog, schema_name=schema):
-        if any(t.name in (f"event_log_{o}",) or t.name.startswith(f"__materialization_mat_{o}_") for o in owners):
-            spark.sql(f"DROP TABLE IF EXISTS {target}.`{t.name}`")
-            print("dropped", t.name)
+    # information_schema, not the tables API: the API does not list twins or event logs.
+    names = spark.sql(f"""
+        SELECT table_name FROM {catalog}.information_schema.tables WHERE table_schema = '{schema}'
+    """).collect()
+    for (name,) in names:
+        if any(name == f"event_log_{o}" or name.startswith(f"__materialization_mat_{o}_") for o in owners):
+            spark.sql(f"DROP TABLE IF EXISTS {target}.`{name}`")
+            print("dropped", name)
     w.workspace.delete(pipeline_folder, recursive=True)
     print("teardown done")
 else:
