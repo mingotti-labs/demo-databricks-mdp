@@ -74,21 +74,38 @@ Run the source pattern first.
 After running any patterns, `databricks bundle run tag_patterns` sets each table's
 `design_pattern` tag (register: `references/docs/registers/design-patterns.md`).
 
-## SCD2 migration with history, no stage table (`bronze_publish_scd2_autocdc_backfill_{snapshot,stream}_sql`)
+## SCD2 migration with history, no stage table (`bronze_publish_scd2_autocdc_backfill_*_sql`)
 
-Two notebooks in `src/bronze_publish/` move a legacy SCD2 dimension (`asset_dim_legacy`, with
+Four notebooks in `src/bronze_publish/` move a legacy SCD2 dimension (`asset_dim_legacy`, with
 `start_date`/`end_date`) and its history into a pipeline-owned SCD2 table (`asset_dim_migrated`), then keep
 it current from a live source that has no change timestamp. Each notebook does every step (10 to 90): it
 creates and seeds the tables, writes `asset_dim_migrated.sql` into `transformations/<notebook>/` next to
 itself, creates (or reuses, with a full refresh) the pipeline, runs it twice and checks the result.
 To use them elsewhere, change the `catalog` and `schema` widgets and point the views at the real tables.
-Run one notebook at a time: both use the same table names. `teardown = true` runs step 90, which deletes the
+Run one notebook at a time: they use the same table names. `teardown = true` runs step 90, which deletes the
 pipeline and drops the tables, their hidden twins and event logs.
 
 | Notebook | Live source | Flows | Slots while it exists |
 |---|---|---|---|
 | `..._snapshot_sql` | materialized view (current state only) | one snapshot flow `WITH VERSION`: every legacy date, then each refresh of the view | 8 |
 | `..._stream_sql` | append-only table, change data feed on | `AUTO CDC ONCE` backfill + streaming Auto CDC over the change feed (`_commit_timestamp`) | 5 |
+| `..._snapshot_sid_sql` | materialized view; legacy table has a surrogate key `asset_sid` | as `..._snapshot_sql`, with the key (below) | 8 |
+| `..._snapshot_sid_keyed_sql` | as `..._snapshot_sid_sql` | as `..._snapshot_sid_sql`, plus the view `asset_dim_keyed` | 9 |
+
+### Surrogate key (`..._sid_sql`, `..._sid_keyed_sql`)
+
+- Both sides hash the row's own values: `row_hash` = SHA-256 text of `asset_id`, `asset_name`,
+  `asset_owner` (an empty value hashes as `<null>`). The history keeps its keys.
+- A live row reuses the key of the newest legacy row with the same `row_hash` when that row is still
+  open; otherwise its key is `xxhash64(row_hash)` (BIGINT). An unchanged row keeps the open legacy key,
+  so the first live snapshot opens no version for it.
+- Risk (accepted in `..._sid_sql`): a row that changes back to earlier values gets that earlier key
+  again, one key on two versions. The pipeline cannot read its own target to tell (`Graph is not
+  topologically sorted ... cycle`, probe P4).
+- `..._sid_keyed_sql` adds the view `asset_dim_keyed`: the stored key up to the cut-over (the last
+  legacy date), `xxhash64(row_hash, __START_AT)` after it, so one key per version. Consumers read the view.
+
+Skills that write the pipeline `.sql` file for each of the four notebooks: `references/skills/`.
 
 Run in dev as a one-time serverless job with `max_retries: 0` (a failed run is otherwise retried from the
 top), or interactively.

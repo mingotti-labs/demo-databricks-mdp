@@ -240,6 +240,24 @@ Small and fixed (no Faker), so the expected result is readable in the notebook:
   table; stream: one appended row per open asset). Unchanged rows must open no new version.
 - Step 60: one changed asset, one new asset, and in the snapshot notebook one deleted asset.
 
+### D9. Surrogate key variants of the snapshot notebook (added 2026-11-19, user request)
+The engagement's legacy table can carry a surrogate key per version (`asset_sid`, BIGINT).
+Two more notebooks, copies of the snapshot notebook with the key as the first column:
+- `..._snapshot_sid_sql`: both sides compute `row_hash` (SHA-256 text of the row's own
+  values, an empty value as `<null>`; the key itself is not hashed, the live view has none).
+  A live row takes the key of the newest legacy row with the same `row_hash` (a duplicate
+  left by an error counts once) only when that row is still open; otherwise
+  `xxhash64(row_hash)`. Unchanged rows thus carry the open legacy key and open no version.
+  Accepted risk: a row that changes back to earlier values gets that earlier key again.
+- `..._snapshot_sid_keyed_sql`: the same pipeline plus a plain view `asset_dim_keyed`: the
+  stored key up to the cut-over, `xxhash64(row_hash, __START_AT)` after, one key per version.
+- Rejected: reading the target's current rows in the pipeline (refused as a cycle, P4 B).
+- No new proposal: same pattern family, change not yet archived (user, 2026-11-19).
+- Each of the four notebooks has a skill in `references/skills/<pattern id with hyphens>/`
+  (agentskills.io layout: `SKILL.md`, `assets/template.sql`, `references/examples.md`) that
+  writes the pipeline `.sql` file from a few inputs; each template, filled with the notebook's
+  values, equals the SQL the notebook ran in dev.
+
 ## Probes
 
 Scripts and output in `references/poc/scd2-history-migration/`, one row each in
@@ -257,6 +275,9 @@ Scripts and output in `references/poc/scd2-history-migration/`, one row each in
   materialized view (checked in the notebook run)?
 - **P3** (stream): the change feed streams in SQL (`WITH (readChangeFeed = true)`); an
   appended row equal to the current version opens no new version.
+- **P4** (snapshot with key, D9): A, the open-legacy-key lookup, on inline rows (3 slots);
+  B, the same reading the target's own current rows. A keeps the keys and shows the
+  change-back risk; B is refused (cycle).
 
 ## Risks / Trade-offs
 
