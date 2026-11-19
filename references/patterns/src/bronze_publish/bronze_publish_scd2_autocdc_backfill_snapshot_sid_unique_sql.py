@@ -448,6 +448,7 @@ assert duplicates == 0 and legacy_keys_kept
 
 # COMMAND ----------
 
+# MAGIC %md
 # MAGIC ## Step 90: remove everything (only when `teardown` is `true`)
 # MAGIC
 # MAGIC Deletes the pipeline, then drops the tables, the hidden `__materialization_mat_*` twins and

@@ -1,0 +1,140 @@
+run 236161342205819
+{'life_cycle_state': 'TERMINATED', 'result_state': 'SUCCESS', 'state_message': '', 'user_cancelled_or_timedout': False}
+=== cell: dbutils.widgets.text("catalog", "mdp_dev")
+mdp_dev.pattern_bronze_publish
+/Workspace/Users/handsonessential@gmail.com/poc/scd2-history-migration/notebooks/transformations/bronze_publish_scd2_autocdc_backfill_snapshot_sid_sql/asset_dim_migrated.sql
+=== cell: spark.sql(f"""
+=== cell: spark.sql(f"""
+=== cell: spark.sql(f"""
+view refreshed at 2026-11-19 10:15:01.807000
+=== cell: spark.sql(f"""
+legacy_rows | assets | distinct_dates
+10 | 4 | 11
+=== cell: def write_pipeline_file(text: str) -> None:
+-- Written by the notebook bronze_publish_scd2_autocdc_backfill_snapshot_sid_sql (step 30).
+CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
+=== cell: sql_views = f"""
+
+CREATE TEMPORARY VIEW asset_history AS
+SELECT asset_sid, asset_id, asset_name, asset_owner,
+       CAST(start_date AS TIMESTAMP) AS valid_from, CAST(end_date AS TIMESTAMP) AS valid_to,
+       sha2(concat_ws('|', coalesce(asset_id, '<null>'), coalesce(asset_name, '<null>'),
+                      coalesce(asset_owner, '<null>')), 256) AS row_hash
+FROM mdp_dev.pattern_bronze_publish.asset_dim_legacy;
+
+CREATE TEMPORARY VIEW asset_legacy_key AS
+SELECT row_hash, asset_sid
+FROM (SELECT row_hash, asset_sid, valid_to,
+             row_number() OVER (PARTITION BY row_hash ORDER BY valid_from DESC) AS rank
+      FROM asset_history)
+WHERE rank = 1 AND valid_to IS NULL;
+
+CREATE TEMPORARY VIEW asset_live AS
+SELECT coalesce(k.asset_sid, xxhash64(l.row_hash)) AS asset_sid,
+       l.asset_id, l.asset_name, l.asset_owner
+FROM (SELECT asset_id, asset_name, asset_owner, sha2(concat_ws('|', coalesce(asset_id, '<null>'), coalesce(asset_name, '<null>'),
+                      coalesce(asset_owner, '<null>')), 256) AS row_hash FROM mdp_dev.pattern_bronze_publish.asset_source) l
+LEFT JOIN asset_legacy_key k ON k.row_hash = l.row_hash;
+
+CREATE TEMPORARY VIEW asset_union AS
+SELECT asset_sid, asset_id, asset_name, asset_owner, valid_from, valid_to, false AS is_live
+FROM asset_history
+UNION ALL
+SELECT asset_sid, asset_id, asset_name, asset_owner, CAST(NULL AS TIMESTAMP), CAST(NULL AS TIMESTAMP), true
+FROM asset_live;
+
+CREATE TEMPORARY VIEW asset_versions AS
+SELECT valid_from AS version, false AS is_live FROM asset_history
+UNION SELECT valid_to, false FROM asset_history WHERE valid_to IS NOT NULL
+UNION SELECT last_altered, true FROM mdp_dev.information_schema.tables
+      WHERE table_schema = 'pattern_bronze_publish' AND table_name = 'asset_source';
+
+CREATE TEMPORARY VIEW asset_cutover AS
+SELECT max(version) AS last_legacy_version FROM asset_versions WHERE NOT is_live;
+=== cell: sql_flow = """
+
+CREATE FLOW migrate_and_load AS AUTO CDC INTO asset_dim_migrated
+FROM SNAPSHOT (
+  SELECT u.asset_sid, u.asset_id, u.asset_name, u.asset_owner
+  FROM asset_union u CROSS JOIN asset_cutover c
+  WHERE CASE WHEN u.is_live
+             THEN (SELECT version FROM current_snapshot_version()) > c.last_legacy_version
+             ELSE (SELECT version FROM current_snapshot_version()) <= c.last_legacy_version
+                  AND u.valid_from <= (SELECT version FROM current_snapshot_version())
+                  AND (u.valid_to IS NULL
+                       OR u.valid_to > (SELECT version FROM current_snapshot_version())) END
+)
+WITH VERSION (
+  SELECT min(version) AS version FROM asset_versions
+  WHERE NOT EXISTS (SELECT 1 FROM last_snapshot_version())
+     OR version > (SELECT version FROM last_snapshot_version())
+  HAVING min(version) IS NOT NULL
+)
+KEYS (asset_id)
+STORED AS SCD TYPE 2;
+=== cell: existing = [p for p in w.pipelines.list_pipelines(filter=f"name LIKE '{pipeline_
+created pipeline f27a0a7b-e653-49ea-8438-11a788101dc3
+update a8d7e3fa-80d4-4622-a9ca-2b37373c8c56: COMPLETED
+asset_sid | asset_id | asset_name | asset_owner | __START_AT | __END_AT
+101 | A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+102 | A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+103 | A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | None
+201 | A2 | Valve | Cy | 2024-02-01T00:00:00.000Z | 2024-09-01T00:00:00.000Z
+202 | A2 | Valve | Dan | 2024-09-01T00:00:00.000Z | 2025-03-01T00:00:00.000Z
+301 | A3 | Fan | Eli | 2024-03-01T00:00:00.000Z | 2024-08-01T00:00:00.000Z
+302 | A3 | Fan | Di | 2024-08-01T00:00:00.000Z | 2025-05-01T00:00:00.000Z
+303 | A3 | Fan | Eli | 2025-05-01T00:00:00.000Z | 2026-11-19T10:15:01.807Z
+8879085400349809515 | A3 | Fan | Hal | 2026-11-19T10:15:01.807Z | None
+401 | A4 | Belt | Flo | 2024-04-01T00:00:00.000Z | 2024-10-01T00:00:00.000Z
+402 | A4 | Belt | Gil | 2024-10-01T00:00:00.000Z | None
+=== cell: spark.sql(f"UPDATE {base} SET asset_owner = 'Ivy' WHERE asset_id = 'A1'")
+view refreshed at 2026-11-19 10:21:43.083000
+=== cell: second_update = run_pipeline(pipeline_id)
+update 4f309001-6672-45b8-a80e-48cfb815f7c8: COMPLETED
+asset_sid | asset_id | asset_name | asset_owner | __START_AT | __END_AT
+101 | A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+102 | A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+103 | A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | 2026-11-19T10:21:43.083Z
+684130599783158316 | A1 | Pump | Ivy | 2026-11-19T10:21:43.083Z | None
+201 | A2 | Valve | Cy | 2024-02-01T00:00:00.000Z | 2024-09-01T00:00:00.000Z
+202 | A2 | Valve | Dan | 2024-09-01T00:00:00.000Z | 2025-03-01T00:00:00.000Z
+301 | A3 | Fan | Eli | 2024-03-01T00:00:00.000Z | 2024-08-01T00:00:00.000Z
+302 | A3 | Fan | Di | 2024-08-01T00:00:00.000Z | 2025-05-01T00:00:00.000Z
+303 | A3 | Fan | Eli | 2025-05-01T00:00:00.000Z | 2026-11-19T10:15:01.807Z
+8879085400349809515 | A3 | Fan | Hal | 2026-11-19T10:15:01.807Z | None
+401 | A4 | Belt | Flo | 2024-04-01T00:00:00.000Z | 2024-10-01T00:00:00.000Z
+402 | A4 | Belt | Gil | 2024-10-01T00:00:00.000Z | 2026-11-19T10:21:43.083Z
+6648427201095168530 | A5 | Motor | Jo | 2026-11-19T10:21:43.083Z | None
+=== cell: spark.sql(f"UPDATE {base} SET asset_owner = 'Cid' WHERE asset_id = 'A1'")
+view refreshed at 2026-11-19 10:23:51.436000
+update 7392b16e-85ac-40e6-a9ca-077ff2ad8879: COMPLETED
+asset_sid | asset_id | asset_name | asset_owner | __START_AT | __END_AT
+101 | A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+102 | A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+103 | A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | 2026-11-19T10:21:43.083Z
+684130599783158316 | A1 | Pump | Ivy | 2026-11-19T10:21:43.083Z | 2026-11-19T10:23:51.436Z
+103 | A1 | Pump | Cid | 2026-11-19T10:23:51.436Z | None
+=== cell: results = []
+RISK (expected): keys used by more than one version: [(103, 2)]
+PASS backfill matches the legacy table, keys included
+PASS history not reloaded by the later updates
+PASS live versions: unchanged rows keep the open legacy key, new versions get new keys
+=== cell: ONE_KEY_PER_VERSION = f"""
+asset_sid | asset_id | asset_name | asset_owner | __START_AT | __END_AT
+101 | A1 | Pump | Ann | 2024-01-01T00:00:00.000Z | 2024-06-01T00:00:00.000Z
+102 | A1 | Pump | Bob | 2024-06-01T00:00:00.000Z | 2025-01-15T00:00:00.000Z
+103 | A1 | Pump | Cid | 2025-01-15T00:00:00.000Z | 2026-11-19T10:21:43.083Z
+-3459481347981574700 | A1 | Pump | Ivy | 2026-11-19T10:21:43.083Z | 2026-11-19T10:23:51.436Z
+9147570052319605740 | A1 | Pump | Cid | 2026-11-19T10:23:51.436Z | None
+201 | A2 | Valve | Cy | 2024-02-01T00:00:00.000Z | 2024-09-01T00:00:00.000Z
+202 | A2 | Valve | Dan | 2024-09-01T00:00:00.000Z | 2025-03-01T00:00:00.000Z
+301 | A3 | Fan | Eli | 2024-03-01T00:00:00.000Z | 2024-08-01T00:00:00.000Z
+302 | A3 | Fan | Di | 2024-08-01T00:00:00.000Z | 2025-05-01T00:00:00.000Z
+303 | A3 | Fan | Eli | 2025-05-01T00:00:00.000Z | 2026-11-19T10:15:01.807Z
+-8530337591592182912 | A3 | Fan | Hal | 2026-11-19T10:15:01.807Z | None
+401 | A4 | Belt | Flo | 2024-04-01T00:00:00.000Z | 2024-10-01T00:00:00.000Z
+402 | A4 | Belt | Gil | 2024-10-01T00:00:00.000Z | 2026-11-19T10:21:43.083Z
+-4353820567545255268 | A5 | Motor | Jo | 2026-11-19T10:21:43.083Z | None
+PASS one key per version with the step-85 query
+=== cell: if teardown:
+teardown skipped (set the widget to true)
