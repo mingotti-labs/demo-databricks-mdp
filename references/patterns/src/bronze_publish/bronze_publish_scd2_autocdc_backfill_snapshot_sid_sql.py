@@ -22,7 +22,7 @@
 # MAGIC values it had after the cut-over gets its earlier new key again: one key, two versions.
 # MAGIC Step 75 shows it. The pipeline cannot read its own target to tell (probe P4 variant B:
 # MAGIC `Graph is not topologically sorted ... cycle`). If every version needs its own key, use the
-# MAGIC pattern `..._snapshot_sid_keyed_sql`: the same pipeline plus a view with one key per version.
+# MAGIC pattern `..._snapshot_sid_unique_sql`: the same pipeline plus a view with one key per version.
 # MAGIC
 # MAGIC Run the steps in order. To copy to another workspace, change the `catalog` and `schema`
 # MAGIC widgets. Step 90 removes everything when `teardown` is `true`.

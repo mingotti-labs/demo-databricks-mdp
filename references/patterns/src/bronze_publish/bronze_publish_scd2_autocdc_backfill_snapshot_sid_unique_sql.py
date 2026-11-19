@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # SCD2 migration with history and one surrogate key per version, live source = materialized view
 # MAGIC
-# MAGIC Pattern `bronze_publish_scd2_autocdc_backfill_snapshot_sid_keyed_sql`. The same migration as
+# MAGIC Pattern `bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql`. The same migration as
 # MAGIC `bronze_publish_scd2_autocdc_backfill_snapshot_sql` (one Auto CDC snapshot flow `WITH VERSION`:
 # MAGIC every legacy date, then each refresh of the view), for a legacy table that also has a
 # MAGIC surrogate key `asset_sid` (BIGINT) per version.
@@ -21,7 +21,7 @@
 # MAGIC changed back": a row that returns to earlier values gets that earlier key again (pattern
 # MAGIC `..._snapshot_sid_sql`, which accepts this). The pipeline cannot read its own target to tell
 # MAGIC either (probe P4 variant B: `Graph is not topologically sorted ... cycle`). So step 85 adds the
-# MAGIC view `asset_dim_keyed`: up to the cut-over the stored (legacy) key, after it
+# MAGIC view `asset_dim_unique`: up to the cut-over the stored (legacy) key, after it
 # MAGIC `xxhash64(row_hash, __START_AT)`, one key per version. Read the dimension through the view.
 # MAGIC
 # MAGIC Run the steps in order. To copy to another workspace, change the `catalog` and `schema`
@@ -41,8 +41,8 @@ legacy = f"{target}.asset_dim_legacy"
 base = f"{target}.asset_source_base"
 source = f"{target}.asset_source"
 migrated = f"{target}.asset_dim_migrated"
-keyed = f"{target}.asset_dim_keyed"
-pipeline_name = f"bronze--pattern--publish--scd2--backfill--snapshot--sid--keyed--sql--{schema}"
+unique = f"{target}.asset_dim_unique"
+pipeline_name = f"bronze--pattern--publish--scd2--backfill--snapshot--sid--unique--sql--{schema}"
 
 notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
 pipeline_folder = f"/Workspace{notebook_path.rsplit('/', 1)[0]}/transformations/{notebook_path.rsplit('/', 1)[1]}"
@@ -191,7 +191,7 @@ def write_pipeline_file(text: str) -> None:
     w.workspace.upload(pipeline_file, io.BytesIO(text.encode()), format=ImportFormat.RAW, overwrite=True)
 
 
-sql_target = """-- Written by the notebook bronze_publish_scd2_autocdc_backfill_snapshot_sid_keyed_sql (step 30).
+sql_target = """-- Written by the notebook bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql (step 30).
 CREATE OR REFRESH STREAMING TABLE asset_dim_migrated;
 """
 write_pipeline_file(sql_target)
@@ -312,7 +312,7 @@ else:
     print("created pipeline", pipeline_id)
 
 first_update = run_pipeline(pipeline_id, full_refresh=bool(existing))
-spark.sql(f"ALTER STREAMING TABLE {migrated} SET TAGS ('design_pattern' = 'bronze_publish_scd2_autocdc_backfill_snapshot_sid_keyed_sql')")
+spark.sql(f"ALTER STREAMING TABLE {migrated} SET TAGS ('design_pattern' = 'bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql')")
 cutover = spark.sql(f"""
 SELECT max(d) FROM (SELECT start_date AS d FROM {legacy} UNION SELECT end_date FROM {legacy})
 """).first()[0]
@@ -429,17 +429,17 @@ assert all(ok for _, ok in results), "a check failed"
 # COMMAND ----------
 
 spark.sql(f"""
-CREATE OR REPLACE VIEW {keyed} AS
+CREATE OR REPLACE VIEW {unique} AS
 SELECT CASE WHEN __START_AT <= TIMESTAMP'{cutover}' THEN asset_sid
             ELSE xxhash64({ROW_HASH}, __START_AT) END AS asset_sid,
        asset_id, asset_name, asset_owner, __START_AT, __END_AT
 FROM {migrated}
 """)
-spark.sql(f"ALTER VIEW {keyed} SET TAGS ('design_pattern' = 'bronze_publish_scd2_autocdc_backfill_snapshot_sid_keyed_sql')")
-display(spark.sql(f"SELECT * FROM {keyed} ORDER BY asset_id, __START_AT"))
-duplicates = spark.sql(f"SELECT asset_sid FROM {keyed} GROUP BY asset_sid HAVING count(*) > 1").count()
+spark.sql(f"ALTER VIEW {unique} SET TAGS ('design_pattern' = 'bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql')")
+display(spark.sql(f"SELECT * FROM {unique} ORDER BY asset_id, __START_AT"))
+duplicates = spark.sql(f"SELECT asset_sid FROM {unique} GROUP BY asset_sid HAVING count(*) > 1").count()
 legacy_keys_kept = spark.sql(f"""
-SELECT count(*) FROM {legacy} l JOIN {keyed} k
+SELECT count(*) FROM {legacy} l JOIN {unique} k
   ON k.asset_sid = l.asset_sid AND k.__START_AT = CAST(l.start_date AS TIMESTAMP)
 """).first()[0] == spark.table(legacy).count()
 print("PASS" if duplicates == 0 else "FAIL", "one key per version in the view")
@@ -461,7 +461,7 @@ if teardown:
     for pid in pipeline_ids:
         w.pipelines.delete(pid)
     owners = [pid.replace("-", "_") for pid in pipeline_ids + [view_pipeline] if pid]
-    spark.sql(f"DROP VIEW IF EXISTS {keyed}")
+    spark.sql(f"DROP VIEW IF EXISTS {unique}")
     spark.sql(f"DROP MATERIALIZED VIEW IF EXISTS {source}")
     for name in ["asset_dim_migrated", "asset_source_base", "asset_dim_legacy"]:
         spark.sql(f"DROP TABLE IF EXISTS {target}.{name}")

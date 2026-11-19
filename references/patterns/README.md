@@ -90,9 +90,9 @@ pipeline and drops the tables, their hidden twins and event logs.
 | `..._snapshot_sql` | materialized view (current state only) | one snapshot flow `WITH VERSION`: every legacy date, then each refresh of the view | 8 |
 | `..._stream_sql` | append-only table, change data feed on | `AUTO CDC ONCE` backfill + streaming Auto CDC over the change feed (`_commit_timestamp`) | 5 |
 | `..._snapshot_sid_sql` | materialized view; legacy table has a surrogate key `asset_sid` | as `..._snapshot_sql`, with the key (below) | 8 |
-| `..._snapshot_sid_keyed_sql` | as `..._snapshot_sid_sql` | as `..._snapshot_sid_sql`, plus the view `asset_dim_keyed` | 9 |
+| `..._snapshot_sid_unique_sql` | as `..._snapshot_sid_sql` | as `..._snapshot_sid_sql`, plus the view `asset_dim_unique` | 9 |
 
-### Surrogate key (`..._sid_sql`, `..._sid_keyed_sql`)
+### Surrogate key (`..._sid_sql`, `..._sid_unique_sql`)
 
 - Both sides hash the row's own values: `row_hash` = SHA-256 text of `asset_id`, `asset_name`,
   `asset_owner` (an empty value hashes as `<null>`). The history keeps its keys.
@@ -102,7 +102,7 @@ pipeline and drops the tables, their hidden twins and event logs.
 - Risk (accepted in `..._sid_sql`): a row that changes back to earlier values gets that earlier key
   again, one key on two versions. The pipeline cannot read its own target to tell (`Graph is not
   topologically sorted ... cycle`, probe P4).
-- `..._sid_keyed_sql` adds the view `asset_dim_keyed`: the stored key up to the cut-over (the last
+- `..._sid_unique_sql` adds the view `asset_dim_unique`: the stored key up to the cut-over (the last
   legacy date), `xxhash64(row_hash, __START_AT)` after it, so one key per version. Consumers read the view.
 
 Skills that write the pipeline `.sql` file for each of the four notebooks: `references/skills/`.

@@ -249,7 +249,7 @@ Two more notebooks, copies of the snapshot notebook with the key as the first co
   left by an error counts once) only when that row is still open; otherwise
   `xxhash64(row_hash)`. Unchanged rows thus carry the open legacy key and open no version.
   Accepted risk: a row that changes back to earlier values gets that earlier key again.
-- `..._snapshot_sid_keyed_sql`: the same pipeline plus a plain view `asset_dim_keyed`: the
+- `..._snapshot_sid_unique_sql`: the same pipeline plus a plain view `asset_dim_unique`: the
   stored key up to the cut-over, `xxhash64(row_hash, __START_AT)` after, one key per version.
 - Rejected: reading the target's current rows in the pipeline (refused as a cycle, P4 B).
 - No new proposal: same pattern family, change not yet archived (user, 2026-11-19).

@@ -1,4 +1,4 @@
--- Pattern bronze_publish_scd2_autocdc_backfill_snapshot_sid_keyed_sql (pipeline part): legacy SCD2 history with its
+-- Pattern bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql (pipeline part): legacy SCD2 history with its
 -- surrogate key, then a materialized view without a timestamp (version = its refresh time).
 -- Live key: the open legacy key with the same row hash, else xxhash64(row_hash).
 CREATE OR REFRESH STREAMING TABLE {{target}};

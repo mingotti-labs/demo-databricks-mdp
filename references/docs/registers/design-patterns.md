@@ -274,11 +274,11 @@ key, two versions); the pipeline cannot read its own target to tell (probe P4). 
 `references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_backfill_snapshot_sid_sql.py`.
 Used by: none (engagement reference). Evidence: `dev` (probe P4 and notebook run).
 
-### bronze_publish_scd2_autocdc_backfill_snapshot_sid_keyed_sql
-The same pipeline plus the view `asset_dim_keyed`, one key per version: the stored
+### bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql
+The same pipeline plus the view `asset_dim_unique`, one key per version: the stored
 (legacy) key up to the cut-over (the last legacy date), `xxhash64(row_hash, __START_AT)`
 after it. Consumers read the view. Notebook:
-`references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_backfill_snapshot_sid_keyed_sql.py`.
+`references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql.py`.
 Used by: none (engagement reference). Evidence: `dev` (probe P4 and notebook run).
 
 ## Data quality

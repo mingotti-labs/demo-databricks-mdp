@@ -41,7 +41,7 @@ Derived:
 - Known risk: a row that changes back to its open legacy values, or to values it had after the cut-over,
   gets that earlier key again (one key, two versions). The pipeline cannot read its own target to tell
   (`Graph is not topologically sorted ... cycle`). If no two versions may share a key, use the skill
-  `bronze-publish-scd2-autocdc-backfill-snapshot-sid-keyed-sql` instead.
+  `bronze-publish-scd2-autocdc-backfill-snapshot-sid-unique-sql` instead.
 - The legacy table needs at most one row per key on any date, or the snapshot fails on duplicate keys.
 - First update cost: one snapshot per distinct legacy date (about 20 s each on Free Edition).
 - The target takes no second flow; a full refresh replays the legacy dates.
