@@ -1,0 +1,5 @@
+--- pipeline 47ead2c0-53c0-4084-a6ed-67c7b5fbe318
+--- live version 2026-01-01: ('A1', 'Pump', 'Cid'), ('A3', 'Fan', 'Hal'), ('A4', 'Belt', 'Gil')
+--- update 9667583f-29ab-40a9-8462-92a9d54294af: FAILED
+   ERROR: Graph is not topologically sorted. There is a cycle between asset_current and mdp_dev.pattern_bronze_publish.zz_p4_migrated.
+(the target was never created, so the probe's follow-up queries had nothing to read)
