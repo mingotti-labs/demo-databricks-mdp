@@ -42,3 +42,16 @@
 
 - [x] 5.1 `openspec validate pattern-scd2-history-migration --strict`; patterns bundle
       `databricks bundle validate`; quota re-read shows the slots back
+
+## 6. Surrogate key variants and skills (D9, added 2026-11-19)
+
+- [x] 6.1 P4: open-legacy-key lookup (A) and reading the target (B, refused); record in
+      `references/poc/scd2-history-migration/` and `probes.md`
+- [x] 6.2 `..._snapshot_sid_sql.py`: run in dev, save the output, teardown
+- [x] 6.3 `..._snapshot_sid_unique_sql.py`: run in dev, save the output, teardown
+- [x] 6.4 README, `design-patterns.md`: both notebooks
+- [x] 6.5 Skills in `references/skills/`, one per notebook; filled templates equal the
+      notebooks' pipeline SQL
+- [x] 6.6 `openspec validate pattern-scd2-history-migration --strict`; quota back
+- [x] 6.7 The snapshot skills' `.sql` output, loaded as-is into a scratch pipeline on the sid
+      notebook's tables, equals the notebook's table (`skill_check.py`, `skill_check_result.txt`)

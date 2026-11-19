@@ -79,3 +79,28 @@ pipeline and drop its tables and their hidden twins.
 #### Scenario: Teardown
 - **WHEN** step 90 runs with `teardown = true`
 - **THEN** the pipeline and all table slots of that notebook are gone
+
+### Requirement: Surrogate key variants
+The patterns bundle SHALL hold two more snapshot notebooks for a legacy table with a surrogate
+key `asset_sid`: `bronze_publish_scd2_autocdc_backfill_snapshot_sid_sql.py` and
+`bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql.py`. Both SHALL keep every
+legacy key; a live row SHALL take the key of the newest legacy row with the same row hash when
+that row is open, and `xxhash64(row_hash)` otherwise. The unique notebook SHALL add the view
+`asset_dim_unique` with one key per version.
+
+#### Scenario: Unchanged live row
+- **WHEN** a live row has the same values as its open legacy version
+- **THEN** it keeps that version's key and no new version is opened
+
+#### Scenario: Row changes back to its open legacy values
+- **WHEN** a live row changes and later returns to its open legacy values
+- **THEN** `asset_dim_migrated` gives the returned version the legacy key again (the stated
+  risk), and `asset_dim_unique` gives it a new key
+
+### Requirement: A skill per notebook
+`references/skills/` SHALL hold one skill per notebook that writes its pipeline `.sql` file
+from the inputs it lists, following the agentskills.io layout.
+
+#### Scenario: Template equals the tested SQL
+- **WHEN** a skill's template is filled with its notebook's table and column names
+- **THEN** the result equals the notebook's pipeline SQL apart from view and flow names

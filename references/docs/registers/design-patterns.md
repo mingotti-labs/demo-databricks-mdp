@@ -263,6 +263,24 @@ notebook does every step:
 (tables `asset_dim_legacy`, `asset_source`, `asset_dim_migrated`). Used by: none
 (engagement reference). Evidence: `dev` (probes P1, P3 and notebook runs).
 
+### bronze_publish_scd2_autocdc_backfill_snapshot_sid_sql
+The snapshot migration for a legacy table with a surrogate key per version (`asset_sid`,
+BIGINT). Both sides hash the row's own values (`row_hash`, SHA-256 text; an empty value
+hashes as `<null>`). The history keeps its keys; a live row reuses the key of the newest
+legacy row with the same hash when that row is still open, otherwise its key is
+`xxhash64(row_hash)`. An unchanged row keeps the open legacy key, so it opens no version.
+Accepted risk: a row that changes back to earlier values gets that earlier key again (one
+key, two versions); the pipeline cannot read its own target to tell (probe P4). Notebook:
+`references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_backfill_snapshot_sid_sql.py`.
+Used by: none (engagement reference). Evidence: `dev` (probe P4 and notebook run).
+
+### bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql
+The same pipeline plus the view `asset_dim_unique`, one key per version: the stored
+(legacy) key up to the cut-over (the last legacy date), `xxhash64(row_hash, __START_AT)`
+after it. Consumers read the view. Notebook:
+`references/patterns/src/bronze_publish/bronze_publish_scd2_autocdc_backfill_snapshot_sid_unique_sql.py`.
+Used by: none (engagement reference). Evidence: `dev` (probe P4 and notebook run).
+
 ## Data quality
 
 ### bronze_quarantine_null_key_python
