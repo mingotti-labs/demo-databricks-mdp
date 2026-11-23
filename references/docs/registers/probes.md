@@ -283,6 +283,7 @@ Scripts and results in `references/poc/strategies/`.
 | P15 | Do the agent's examples and benchmarks run? | All 53 on dev (`p15_genie_examples_dev.txt`). |
 | P16 | Does the agent pass its benchmark evaluation with the strategies? | 17 of 17 on dev (`p16_genie_eval_dev.txt`). The first deploy failed because the Genie API wants a table's column_configs sorted by column name (400); fixed and the sorting test now covers the column lists. |
 | P17 | Does the prd agent pass its benchmark evaluation after the strategy monitor deploy? | 17 of 17 on prd (`p17_genie_eval_prd.txt`); all 11 strategy dashboard queries run on prd. |
+| P18 | Why did NVDA give no short-selling entry on the week to 2026-11-13 (climate red)? | Climate red every day; streak correct (6 down on 2026-11-13). Price-to-sales fell to 14.85 on 2026-11-06 (week 5), so the setup ended a week before the sixth down week (12.95 on 2026-11-13). Rule works as written (`p18_result_prd.txt`). |
 
 ## us-yields-and-efficiency-indicators (change us-yields-and-efficiency-indicators)
 
